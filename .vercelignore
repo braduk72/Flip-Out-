@@ -1,0 +1,8 @@
+node_modules
+.git
+.claude
+public/images/cloudflared-windows-amd64.msi
+public/images/cards/special
+public/images/cards/space
+public/images/contestants
+public/images/gameshowStages

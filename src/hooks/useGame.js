@@ -13,6 +13,10 @@ function shuffle(arr) {
   return a
 }
 
+const DIFFICULTY_PAIRS    = { Easy: 5, Medium: 7, Hard: 9,    Lethal: 9    }
+const DIFFICULTY_AI_KNOWN = { Easy: 0.40, Medium: 0.85, Hard: 0.97, Lethal: 1.00 }
+const DIFFICULTY_AI_MEM   = { Easy: 0.25, Medium: 0.75, Hard: 0.92, Lethal: 1.00 }
+
 function buildBoard(deck, numPairs = 7, numSpecials = 2) {
   const images = getDeckImages(deck, numPairs)
 
@@ -35,9 +39,9 @@ function buildBoard(deck, numPairs = 7, numSpecials = 2) {
 
 // ── Initial state ─────────────────────────────────────────────────────────────
 
-function makeInitial(deck) {
+function makeInitial(deck, numPairs = 7) {
   return {
-    cards:          buildBoard(deck),
+    cards:          buildBoard(deck, numPairs),
     flipped:        [],      // up to 2 card indices currently revealed
     matched:        [],      // card indices permanently matched
     consumed:       [],      // special card indices that have fired
@@ -55,6 +59,7 @@ function makeInitial(deck) {
     pendingResolve:  null,   // { whose } — both cards face-up, awaiting match check
     gameOver:       false,
     winner:         null,
+    jokerUsed:      false,   // one joker allowed per round
   }
 }
 
@@ -173,6 +178,27 @@ function reducer(state, action) {
 
     case 'STOPWATCH_END':
       return { ...state, stopwatchEnd: null, turn: otherTurn(state.turn) }
+
+    case 'USE_JOKER': {
+      if (state.jokerUsed || state.flipped.length !== 1 || state.turn !== 'player') return state
+      const firstIdx = state.flipped[0]
+      const firstCard = state.cards[firstIdx]
+      if (firstCard.type !== 'regular') return state
+      const matchIdx = state.cards.findIndex((c, i) =>
+        c.type === 'regular' &&
+        c.pairId === firstCard.pairId &&
+        i !== firstIdx &&
+        !state.matched.includes(i) &&
+        !state.consumed.includes(i)
+      )
+      if (matchIdx === -1) return state
+      return {
+        ...state,
+        flipped: [firstIdx, matchIdx],
+        jokerUsed: true,
+        pendingResolve: { whose: 'player' },
+      }
+    }
 
     case 'DICE_RESULT': {
       const { die1, die2 } = action
@@ -353,7 +379,7 @@ function applySpecial(state, index, whose) {
       const picks = shuffle(pool).slice(0, 3)
       return {
         ...base,
-        turn: otherTurn(whose),
+        turn: whose,  // keep turn with the player who played it — they get to pick in the dark
         activeEffect: { type: 'flashlight', data: { picks } },
       }
     }
@@ -401,9 +427,14 @@ function applySpecial(state, index, whose) {
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
-export function useGame(deck) {
-  const [state, dispatch] = useReducer(reducer, deck, makeInitial)
+export function useGame(deck, difficulty = 'Medium') {
+  const [state, dispatch] = useReducer(reducer, { deck, difficulty }, ({ deck, difficulty }) => {
+    const numPairs = DIFFICULTY_PAIRS[difficulty] ?? 7
+    return makeInitial(deck, numPairs)
+  })
   const aiMemory = useRef({})    // { cardIndex: pairId } — what AI has seen
+  const aiKnown  = DIFFICULTY_AI_KNOWN[difficulty] ?? 0.85
+  const aiMem    = DIFFICULTY_AI_MEM[difficulty]   ?? 0.75
 
   const flipCard = useCallback(index => {
     dispatch({ type: 'FLIP_CARD', index })
@@ -431,6 +462,10 @@ export function useGame(deck) {
 
   const commitResolve = useCallback((whose) => {
     dispatch({ type: 'RESOLVE_FLIP', whose })
+  }, [])
+
+  const useJoker = useCallback(() => {
+    dispatch({ type: 'USE_JOKER' })
   }, [])
 
   // Teach the AI what it sees
@@ -465,7 +500,7 @@ export function useGame(deck) {
             !matched.includes(parseInt(idx)) &&
             !consumed.includes(parseInt(idx))
         )
-        if (knownMatch && Math.random() < 0.85) {
+        if (knownMatch && Math.random() < aiKnown) {
           return parseInt(knownMatch[0])
         }
       }
@@ -481,7 +516,7 @@ export function useGame(deck) {
           const iB = parseInt(idxB)
           return pid === pairId && iB !== iA && !matched.includes(iB) && !consumed.includes(iB)
         })
-        if (matchB && Math.random() < 0.75) return iA
+        if (matchB && Math.random() < aiMem) return iA
       }
     }
 
@@ -489,5 +524,5 @@ export function useGame(deck) {
     return available[Math.floor(Math.random() * available.length)].i
   }, [])
 
-  return { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, commitResolve }
+  return { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, commitResolve, useJoker }
 }

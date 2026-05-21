@@ -1,141 +1,189 @@
 .page {
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(ellipse at 50% 40%, #2D0060 0%, #0D0020 70%);
+  flex-direction: column;
+  background: url('/images/home-bg.jpg') center top / cover no-repeat;
   position: relative;
   overflow: hidden;
 }
 
-.inner {
+/* ── Top bar ── */
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 0;
+  z-index: 10;
+}
+
+.playerAvatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(255, 215, 0, 0.8);
+  overflow: hidden;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.45);
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  animation: avatarPulse 3s ease-in-out infinite;
+}
+
+.playerAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@keyframes avatarPulse {
+  0%,  60%, 100% { transform: rotate(0deg);    box-shadow: 0 0 12px rgba(255,215,0,0.45); }
+  65%            { transform: rotate(180deg);   box-shadow: 0 0 22px rgba(255,215,0,0.9); }
+  70%            { transform: rotate(360deg);   box-shadow: 0 0 28px rgba(255,215,0,1);   }
+  80%            { transform: rotate(360deg);   box-shadow: 0 0 12px rgba(255,215,0,0.45); }
+}
+
+
+.audioIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4A0090 0%, #2A0060 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.audioOff { opacity: 0.35; }
+
+.coinDisplay {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1.5px solid rgba(255, 215, 0, 0.55);
+  border-radius: 50px;
+  padding: 4px 10px 4px 4px;
+}
+
+.coinIcon {
+  width: clamp(28px, 7vw, 36px);
+  height: auto;
+}
+
+.coinDigits {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.digitImg {
+  height: clamp(18px, 4.5vw, 24px);
+  width: auto;
+}
+
+/* ── Mascot ── */
+.mascotWrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.mascot {
+  width: clamp(214px, 66vw, 348px);
+  height: auto;
+  filter:
+    drop-shadow(0 0 6px white)
+    drop-shadow(0 0 6px white)
+    drop-shadow(0 0 6px white)
+    drop-shadow(0 0 6px white)
+    drop-shadow(0 8px 28px rgba(0, 0, 0, 0.65));
+}
+
+/* ── Bottom panel ── */
+.bottomPanel {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
-  z-index: 1;
-  padding: 24px;
-  text-align: center;
+  gap: 10px;
+  padding: 20px 20px 10px;
+  background: linear-gradient(
+    to bottom,
+    rgba(5, 0, 18, 0)    0%,
+    rgba(5, 0, 18, 0.88) 16%,
+    rgba(5, 0, 18, 0.97) 100%
+  );
+  z-index: 10;
 }
 
-.logo {
+/* ── Difficulty ── */
+.actionRow {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  filter: drop-shadow(0 0 30px rgba(255,215,0,0.5));
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
 }
 
-.logoFlip {
-  font-size: clamp(56px, 16vw, 96px);
-  font-weight: 900;
-  color: var(--yellow);
-  letter-spacing: -2px;
-  line-height: 1;
-  text-shadow: 4px 4px 0 #8B0000, 0 0 40px rgba(255,215,0,0.4);
-}
-
-.logoOut {
-  font-size: clamp(56px, 16vw, 96px);
-  font-weight: 900;
-  color: #FFFFFF;
-  letter-spacing: -2px;
-  line-height: 1;
-  text-shadow: 4px 4px 0 #2D0060, 0 0 40px rgba(255,255,255,0.2);
-}
-
-.tagline {
-  font-size: clamp(12px, 3.5vw, 18px);
-  font-weight: 700;
-  color: var(--white-dim);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-}
-
-.sub {
-  font-size: clamp(11px, 3vw, 15px);
-  color: var(--white-faint);
-  font-style: italic;
-  font-family: Arial, sans-serif;
-  font-weight: 400;
-}
-
-.playBtn {
-  margin-top: 8px;
-  padding: 16px 56px;
-  background: var(--yellow);
-  color: #1A0040;
-  font-family: 'Arial Black', Arial, sans-serif;
-  font-size: clamp(18px, 5vw, 26px);
-  font-weight: 900;
-  border-radius: 50px;
+.diffBtn {
+  background: none;
   border: none;
   cursor: pointer;
-  box-shadow: 0 6px 30px rgba(255,215,0,0.45), 0 2px 0 #CC9900;
-  transition: transform 0.1s, box-shadow 0.1s;
-  letter-spacing: 2px;
+  padding: 0;
+  width: clamp(80px, 22vw, 110px);
+  transition: transform 0.1s, filter 0.1s;
 }
 
-.playBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 36px rgba(255,215,0,0.55), 0 2px 0 #CC9900;
+.diffBtn img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
-.playBtn:active {
-  transform: translateY(1px);
-  box-shadow: 0 3px 16px rgba(255,215,0,0.4), 0 1px 0 #CC9900;
+.diffBtn:hover {
+  transform: scale(1.06);
 }
 
-.badges {
-  display: flex;
-  gap: 10px;
-  margin-top: 4px;
-  flex-wrap: wrap;
-  justify-content: center;
+.diffBtn:active {
+  transform: scale(0.96);
 }
 
-.badge {
-  padding: 5px 14px;
-  border-radius: 50px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.2);
-  font-size: clamp(10px, 2.5vw, 13px);
-  color: var(--white-dim);
-  font-family: Arial, sans-serif;
-  font-weight: 700;
-}
-
-.pickerWrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-top: 4px;
-}
-
+/* ── Player picker ── */
 .pickerLabel {
-  font-size: 9px;
+  font-size: clamp(11px, 3vw, 14px);
   font-weight: 900;
-  letter-spacing: 2px;
-  color: var(--white-faint);
+  letter-spacing: 3px;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+  margin: 0;
 }
 
 .pickerGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  width: 88%;
+  padding: 4px 16px 6px;
 }
 
 .pickerBtn {
-  width: 100%;
-  aspect-ratio: 1 / 1;
+  width: clamp(104px, 28vw, 144px);
+  height: clamp(104px, 28vw, 144px);
   border-radius: 50%;
   padding: 0;
-  border: 2.5px solid rgba(255,255,255,0.15);
+  border: 2.5px solid rgba(255, 255, 255, 0.15);
   background: none;
   cursor: pointer;
-  transition: transform 0.1s, border-color 0.15s;
+  transition: transform 0.1s, border-color 0.15s, box-shadow 0.15s;
   overflow: hidden;
+  scroll-snap-align: center;
 }
 
 .pickerBtn img {
@@ -147,52 +195,151 @@
 
 .pickerBtn:hover {
   transform: scale(1.1);
-  border-color: rgba(255,215,0,0.5);
+  border-color: rgba(255, 215, 0, 0.5);
 }
 
 .pickerSelected {
-  border-color: var(--yellow) !important;
-  box-shadow: 0 0 12px rgba(255,215,0,0.6);
+  border-color: #FFD700 !important;
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.7);
+  transform: scale(1.14);
+}
+
+
+/* ── Play button ── */
+.playBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: clamp(100px, 28vw, 140px);
+  transition: transform 0.1s, filter 0.1s;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5));
+}
+
+.playBtn img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.playBtn:hover {
+  transform: translateY(-3px);
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 20px rgba(255, 215, 0, 0.4));
+}
+
+.playBtn:active {
+  transform: translateY(3px);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+/* ── Knockout Gauntlet button ── */
+.knockoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 340px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(255, 80, 0, 0.55);
+  background: rgba(60, 0, 0, 0.55);
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.15s, box-shadow 0.15s;
+  box-shadow: 0 0 16px rgba(255, 80, 0, 0.15);
+}
+
+.knockoutBtn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 140, 0, 0.8);
+  box-shadow: 0 4px 20px rgba(255, 120, 0, 0.35);
+}
+
+.knockoutBtn:active { transform: translateY(1px); }
+
+.knockoutIcon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.knockoutText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.knockoutTitle {
+  font-size: clamp(12px, 3.5vw, 15px);
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #FFD700;
+}
+
+.knockoutProgress {
+  font-size: clamp(10px, 2.5vw, 12px);
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.5px;
+}
+
+.knockoutArrow {
+  font-size: 22px;
+  color: rgba(255, 215, 0, 0.6);
+  flex-shrink: 0;
+}
+
+/* ── Bottom nav ── */
+.bottomNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 10px 0 env(safe-area-inset-bottom, 12px);
+  background: rgba(5, 0, 18, 0.97);
+  border-top: 1px solid rgba(255, 215, 0, 0.2);
+  z-index: 20;
+}
+
+.navBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  padding: 4px 14px;
+  border-radius: 12px;
+  transition: color 0.15s;
+}
+
+.navImg {
+  width: clamp(40px, 11vw, 56px);
+  height: clamp(40px, 11vw, 56px);
+  object-fit: contain;
+  display: block;
+  transition: transform 0.1s, filter 0.1s;
+}
+
+.navBtn:hover .navImg {
   transform: scale(1.12);
 }
 
-.audioRow {
-  display: flex;
-  gap: 12px;
-  margin-top: 4px;
+.navActive .navImg {
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
 }
 
-.audioToggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  border-radius: 50px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.25);
-  color: var(--white);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.audioToggle span { font-family: 'Arial Black', Arial, sans-serif; }
-
-.audioToggle:hover {
-  background: rgba(255,255,255,0.15);
-}
-
-.audioOff {
-  opacity: 0.4;
-  border-color: rgba(255,255,255,0.1);
-}
-
-.bolt1, .bolt2 {
+.settingsDropdown {
   position: absolute;
-  font-size: clamp(60px, 15vw, 120px);
-  opacity: 0.06;
-  pointer-events: none;
+  bottom: 80px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  background: rgba(10, 0, 30, 0.92);
+  border: 1.5px solid rgba(255, 215, 0, 0.4);
+  border-radius: 16px;
+  padding: 10px 8px;
+  z-index: 50;
 }
-.bolt1 { top: 8%;  left: 4%;  transform: rotate(-20deg); }
-.bolt2 { bottom: 8%; right: 4%; transform: rotate(160deg); }

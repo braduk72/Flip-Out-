@@ -1,66 +1,71 @@
 import styles from './Home.module.css'
+import BottomNav from '../components/BottomNav'
 
-const CONTESTANT_COUNT = 12
+const DIFFICULTIES = ['Easy', 'Medium', 'Hard']
 
-export default function Home({ onPlay, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx }) {
+export default function Home({ onPlay, onKnockout, onShop, onAvatar, onSettings, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty, onDifficulty, gauntletStep }) {
+  const hasGoldCard = !!localStorage.getItem('fo_gold_card')
+  const coins = parseInt(localStorage.getItem('fo_coins') || '0')
   return (
     <div className={styles.page}>
-      <div className={styles.inner}>
-        <div className={styles.logo}>
-          <span className={styles.logoFlip}>Flip</span>
-          <span className={styles.logoOut}>Out!</span>
-        </div>
-        <p className={styles.tagline}>The Matching Pairs Card Game</p>
-        <p className={styles.sub}>But not as you know it.</p>
 
-        <button className={styles.playBtn} onClick={onPlay}>
-          ▶ PLAY
+      {/* Top bar */}
+      <div className={styles.topBar}>
+        <button className={styles.playerAvatar} onClick={onAvatar} aria-label="Change player">
+          <img src={`/images/a${portrait}.png`} alt="" draggable="false" />
         </button>
-
-        <div className={styles.badges}>
-          <span className={styles.badge}>Ages 4+</span>
-          <span className={styles.badge}>1–2 Players</span>
-          <span className={styles.badge}>15 Min</span>
-        </div>
-
-        {/* Portrait picker */}
-        <div className={styles.pickerWrap}>
-          <p className={styles.pickerLabel}>CHOOSE YOUR PLAYER</p>
-          <div className={styles.pickerGrid}>
-            {Array.from({ length: CONTESTANT_COUNT }, (_, i) => i + 1).map(i => (
-              <button
-                key={i}
-                className={`${styles.pickerBtn} ${portrait === i ? styles.pickerSelected : ''}`}
-                onClick={() => onPortrait(i)}
-                aria-label={`Select portrait ${i}`}
-              >
-                <img src={`/images/contestants/${i}.png`} alt="" draggable="false" />
-              </button>
+        <div className={styles.coinDisplay}>
+          <img src="/images/coin.png" alt="" className={styles.coinIcon} draggable="false" />
+          <div className={styles.coinDigits}>
+            {String(coins).split('').map((d, i) => (
+              <img key={i} src={`/images/${d}.png`} alt={d} className={styles.digitImg} draggable="false" />
             ))}
-          </div>
-
-          {/* Sound toggles */}
-          <div className={styles.audioRow}>
-            <button
-              className={`${styles.audioToggle} ${!musicOn ? styles.audioOff : ''}`}
-              onClick={onToggleMusic}
-              aria-label={musicOn ? 'Mute music' : 'Unmute music'}
-            >
-              🎵 <span>MUSIC</span>
-            </button>
-            <button
-              className={`${styles.audioToggle} ${!sfxOn ? styles.audioOff : ''}`}
-              onClick={onToggleSfx}
-              aria-label={sfxOn ? 'Mute sound effects' : 'Unmute sound effects'}
-            >
-              🔊 <span>SOUND</span>
-            </button>
           </div>
         </div>
       </div>
 
-      <div className={styles.bolt1}>⚡</div>
-      <div className={styles.bolt2}>⚡</div>
+      {/* Mascot */}
+      <div className={styles.mascotWrap}>
+        <img src="/images/mascot3b.png" alt="" className={styles.mascot} draggable="false" />
+      </div>
+
+      {/* Bottom panel */}
+      <div className={styles.bottomPanel}>
+
+        <div className={styles.actionRow}>
+          <button
+            className={styles.diffBtn}
+            onClick={() => onDifficulty(DIFFICULTIES[(DIFFICULTIES.indexOf(difficulty) + 1) % DIFFICULTIES.length])}
+            aria-label={`Difficulty: ${difficulty}`}
+          >
+            <img src={`/images/dif${DIFFICULTIES.indexOf(difficulty) + 1}.png`} alt={difficulty} draggable="false" />
+          </button>
+          <button className={styles.playBtn} onClick={onPlay} aria-label="Play">
+            <img src="/images/play.png" alt="PLAY" draggable="false" />
+          </button>
+        </div>
+
+        {/* Knockout Gauntlet entry */}
+        <button className={styles.knockoutBtn} onClick={onKnockout} aria-label="Knockout Gauntlet">
+          <span className={styles.knockoutIcon}>🏆</span>
+          <div className={styles.knockoutText}>
+            <span className={styles.knockoutTitle}>
+              KNOCKOUT GAUNTLET{hasGoldCard ? ' ✦' : ''}
+            </span>
+            {gauntletStep > 0 && gauntletStep < 10
+              ? <span className={styles.knockoutProgress}>{gauntletStep}/10 defeated · keep going!</span>
+              : gauntletStep >= 10
+              ? <span className={styles.knockoutProgress}>✓ Champion — play again?</span>
+              : <span className={styles.knockoutProgress}>Face all 9 opponents — then Professor Claw</span>
+            }
+          </div>
+          <span className={styles.knockoutArrow}>›</span>
+        </button>
+
+      </div>
+
+      <BottomNav active="home" onShop={onShop} onHome={() => {}} onSettings={onSettings} />
+
     </div>
   )
 }

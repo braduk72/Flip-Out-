@@ -1,0 +1,40 @@
+.bottomNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 10px 0 env(safe-area-inset-bottom, 12px);
+  background: rgba(5, 0, 18, 0.97);
+  border-top: 1px solid rgba(255, 215, 0, 0.2);
+  z-index: 20;
+  flex-shrink: 0;
+}
+
+.navBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  padding: 4px 14px;
+  border-radius: 12px;
+  transition: color 0.15s;
+}
+
+.navImg {
+  width: clamp(40px, 11vw, 56px);
+  height: clamp(40px, 11vw, 56px);
+  object-fit: contain;
+  display: block;
+  transition: transform 0.1s, filter 0.1s;
+}
+
+.navBtn:hover .navImg {
+  transform: scale(1.12);
+}
+
+.navActive .navImg {
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+}

@@ -1,0 +1,539 @@
+/* ═══════════════════════════════════════════════
+   ROUND START CINEMATIC
+   ═══════════════════════════════════════════════ */
+
+.page {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  font-family: 'Courier New', Courier, monospace;
+  animation: pageIn 0.3s ease both;
+}
+
+@keyframes pageIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Portrait ── */
+.portraitWrap {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.portrait {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  filter: contrast(1.1) brightness(0.8);
+  animation: portraitZoom 8s ease-out both;
+}
+
+@keyframes portraitZoom {
+  from { transform: scale(1.1); }
+  to   { transform: scale(1.0); }
+}
+
+/* CRT scan line overlay */
+.scanLine {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 0, 0, 0.15) 3px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.scanLine::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, rgba(0,229,255,0.07), transparent);
+  animation: scanSweep 2.2s linear infinite;
+}
+
+@keyframes scanSweep {
+  from { top: -60px; }
+  to   { top: 100%; }
+}
+
+/* Gradient fade to info panel */
+.gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.25) 0%,
+    transparent      20%,
+    rgba(0,0,0,0.35) 60%,
+    #000             100%
+  );
+  z-index: 2;
+}
+
+/* ═══════════════════════════════════════════════
+   CROSSHAIR TARGETING SYSTEM
+   Seek phase: 2.5s slow sweep across portrait
+   Lock phase: snaps at 2.5s
+   ═══════════════════════════════════════════════ */
+
+.crosshairWrap {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  translate: -50% -50%;
+  width: 160px;
+  height: 160px;
+  z-index: 5;
+  pointer-events: none;
+  animation: chSeek 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Slow deliberate sweep — wide arcs so you can watch it hunt */
+@keyframes chSeek {
+  0%   { transform: translate(-80px, -90px); opacity: 0; }
+  8%   { opacity: 1; }
+  22%  { transform: translate(65px,  -45px); }
+  38%  { transform: translate(-55px,  50px); }
+  54%  { transform: translate(70px,   20px); }
+  68%  { transform: translate(-30px, -35px); }
+  82%  { transform: translate(22px,   10px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ── Outer targeting ring ── */
+.chRingOuter {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid #00e5ff;
+  box-shadow:
+    0 0 12px rgba(0,229,255,0.7),
+    inset 0 0 12px rgba(0,229,255,0.2);
+  animation: ringLock 0.35s cubic-bezier(0.34, 1.9, 0.64, 1) 2.5s both;
+}
+
+@keyframes ringLock {
+  0%   { transform: scale(1);    border-color: #00e5ff; box-shadow: 0 0 12px rgba(0,229,255,0.7), inset 0 0 12px rgba(0,229,255,0.2); }
+  35%  { transform: scale(0.74); border-color: #ffffff; box-shadow: 0 0 70px rgba(0,229,255,1),   inset 0 0 40px rgba(0,229,255,0.8); }
+  100% { transform: scale(1);    border-color: #00e5ff; box-shadow: 0 0 24px rgba(0,229,255,0.9), inset 0 0 14px rgba(0,229,255,0.3); }
+}
+
+/* ── Inner ring — counter-spins into place, then breathes ── */
+.chRingInner {
+  position: absolute;
+  inset: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,229,255,0.5);
+  box-shadow: 0 0 6px rgba(0,229,255,0.35);
+  animation:
+    innerRingIn    2.5s ease-out both,
+    innerRingPulse 2.0s ease-in-out 2.8s infinite;
+}
+
+@keyframes innerRingIn {
+  0%   { transform: rotate(-180deg) scale(2.2); opacity: 0; }
+  40%  { opacity: 0.4; }
+  100% { transform: rotate(0deg) scale(1); opacity: 1; }
+}
+
+@keyframes innerRingPulse {
+  0%, 100% { transform: scale(1);    opacity: 0.5; }
+  50%       { transform: scale(0.9);  opacity: 0.9; }
+}
+
+/* ── Crosshair lines — 2px thick for visibility ── */
+.chHLine {
+  position: absolute;
+  top: 50%;
+  left:  -55px;
+  right: -55px;
+  height: 2px;
+  translate: 0 -1px;
+  background: rgba(0,229,255,0.85);
+  filter: drop-shadow(0 0 3px #00e5ff);
+  transform-origin: center;
+  animation: hLineIn 1.8s ease-out 0.1s both;
+}
+
+@keyframes hLineIn {
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
+
+.chVLine {
+  position: absolute;
+  left: 50%;
+  top:    -55px;
+  bottom: -55px;
+  width: 2px;
+  translate: -1px 0;
+  background: rgba(0,229,255,0.85);
+  filter: drop-shadow(0 0 3px #00e5ff);
+  transform-origin: center;
+  animation: vLineIn 1.8s ease-out 0.1s both;
+}
+
+@keyframes vLineIn {
+  from { transform: scaleY(0); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+
+/* ── Centre dot — flares white on lock ── */
+.chCenter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: #00e5ff;
+  box-shadow: 0 0 10px #00e5ff, 0 0 20px rgba(0,229,255,0.6);
+  animation: centerFlare 0.38s ease 2.48s both;
+}
+
+@keyframes centerFlare {
+  0%   { transform: scale(1);   background: #00e5ff; box-shadow: 0 0 10px #00e5ff; }
+  40%  { transform: scale(4.5); background: #ffffff; box-shadow: 0 0 40px #fff, 0 0 80px rgba(0,229,255,1); }
+  100% { transform: scale(1);   background: #00e5ff; box-shadow: 0 0 12px #00e5ff, 0 0 24px rgba(0,229,255,0.5); }
+}
+
+/* ── Corner brackets — slam in on lock ── */
+.chBracket {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-style: solid;
+  border-color: #00ff88;
+  box-shadow: 0 0 8px rgba(0,255,136,0.8);
+  animation: bracketLock 0.4s cubic-bezier(0.34, 1.7, 0.64, 1) 2.48s both;
+}
+
+.chBrTL { top: -8px;    left: -8px;    border-width: 2px 0 0 2px; }
+.chBrTR { top: -8px;    right: -8px;   border-width: 2px 2px 0 0; }
+.chBrBL { bottom: -8px; left: -8px;    border-width: 0 0 2px 2px; }
+.chBrBR { bottom: -8px; right: -8px;   border-width: 0 2px 2px 0; }
+
+@keyframes bracketLock {
+  from { opacity: 0; transform: scale(3); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Portrait flash on lock ── */
+.lockFlash {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background: rgba(0,229,255,0.25);
+  pointer-events: none;
+  opacity: 0;
+  animation: lockFlash 0.6s ease 2.48s both;
+}
+
+@keyframes lockFlash {
+  0%   { opacity: 0; }
+  15%  { opacity: 1; }
+  60%  { opacity: 0.2; }
+  100% { opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════
+   PARTICLE BURSTS (teal / green / white)
+   ═══════════════════════════════════════════════ */
+
+.particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 7;
+}
+
+.pt {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+
+@keyframes ptTeal {
+  0%   { box-shadow: 0 0 0 0 #00e5ff,0 0 0 0 #00e5ff,0 0 0 0 #00ffcc,0 0 0 0 #00e5ff,0 0 0 0 #00e5ff,0 0 0 0 #00ffcc,0 0 0 0 #00e5ff,0 0 0 0 #00e5ff; opacity:1; }
+  65%  { box-shadow: 0 -80px 0 3px #00e5ff,57px -57px 0 3px #00e5ff,80px 0 0 3px #00ffcc,57px 57px 0 3px #00e5ff,0 80px 0 3px #00e5ff,-57px 57px 0 3px #00ffcc,-80px 0 0 3px #00e5ff,-57px -57px 0 3px #00e5ff; opacity:1; }
+  100% { box-shadow: 0 -110px 0 0 transparent,78px -78px 0 0 transparent,110px 0 0 0 transparent,78px 78px 0 0 transparent,0 110px 0 0 transparent,-78px 78px 0 0 transparent,-110px 0 0 0 transparent,-78px -78px 0 0 transparent; opacity:0; }
+}
+
+@keyframes ptGreen {
+  0%   { box-shadow: 0 0 0 0 #00ff88,0 0 0 0 #00ff88,0 0 0 0 #88ffc8,0 0 0 0 #00ff88,0 0 0 0 #00ff88,0 0 0 0 #88ffc8,0 0 0 0 #00ff88,0 0 0 0 #00ff88; opacity:1; }
+  65%  { box-shadow: 0 -80px 0 3px #00ff88,57px -57px 0 3px #00ff88,80px 0 0 3px #88ffc8,57px 57px 0 3px #00ff88,0 80px 0 3px #00ff88,-57px 57px 0 3px #88ffc8,-80px 0 0 3px #00ff88,-57px -57px 0 3px #00ff88; opacity:1; }
+  100% { box-shadow: 0 -110px 0 0 transparent,78px -78px 0 0 transparent,110px 0 0 0 transparent,78px 78px 0 0 transparent,0 110px 0 0 transparent,-78px 78px 0 0 transparent,-110px 0 0 0 transparent,-78px -78px 0 0 transparent; opacity:0; }
+}
+
+@keyframes ptWhite {
+  0%   { box-shadow: 0 0 0 0 #aaffff,0 0 0 0 #aaffff,0 0 0 0 #ffffff,0 0 0 0 #aaffff,0 0 0 0 #aaffff,0 0 0 0 #ffffff,0 0 0 0 #aaffff,0 0 0 0 #aaffff; opacity:1; }
+  65%  { box-shadow: 0 -80px 0 3px #aaffff,57px -57px 0 3px #aaffff,80px 0 0 3px #ffffff,57px 57px 0 3px #aaffff,0 80px 0 3px #aaffff,-57px 57px 0 3px #ffffff,-80px 0 0 3px #aaffff,-57px -57px 0 3px #aaffff; opacity:1; }
+  100% { box-shadow: 0 -110px 0 0 transparent,78px -78px 0 0 transparent,110px 0 0 0 transparent,78px 78px 0 0 transparent,0 110px 0 0 transparent,-78px 78px 0 0 transparent,-110px 0 0 0 transparent,-78px -78px 0 0 transparent; opacity:0; }
+}
+
+/* All fire just after the lock at 2.5s */
+.pt1 { top: 30%; left: 20%; animation: ptTeal  1.2s ease-out 2.65s both; }
+.pt2 { top: 18%; right: 16%; animation: ptGreen 1.2s ease-out 2.80s both; }
+.pt3 { top: 44%; left: 52%; animation: ptWhite 1.2s ease-out 2.95s both; }
+.pt4 { top: 22%; left: 38%; animation: ptTeal  1.2s ease-out 3.15s both; }
+.pt5 { top: 36%; right: 22%; animation: ptGreen 1.2s ease-out 3.30s both; }
+.pt6 { top: 14%; left: 26%; animation: ptWhite 1.2s ease-out 3.50s both; }
+
+/* ═══════════════════════════════════════════════
+   HUD CORNERS & BADGES
+   ═══════════════════════════════════════════════ */
+
+.corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  z-index: 3;
+  animation: cornerIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+}
+
+@keyframes cornerIn {
+  from { opacity: 0; transform: scale(1.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.tl { top: 12px;    left: 12px;    border-top: 2px solid;  border-left: 2px solid; }
+.tr { top: 12px;    right: 12px;   border-top: 2px solid;  border-right: 2px solid; }
+.bl { bottom: 12px; left: 12px;    border-bottom: 2px solid; border-left: 2px solid; }
+.br { bottom: 12px; right: 12px;   border-bottom: 2px solid; border-right: 2px solid; }
+
+.roundBadge {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 4;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  border: 1px solid;
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.6);
+  white-space: nowrap;
+  animation: badgeIn 0.4s ease 0.4s both;
+  text-shadow: 0 0 10px currentColor;
+}
+
+@keyframes badgeIn {
+  from { opacity: 0; transform: translate(-50%, -6px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* TARGET LOCKED — flickers in after lock */
+.targetLockedLabel {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: #00e5ff;
+  text-shadow:
+    0 0 10px rgba(0,229,255,1),
+    0 0 24px rgba(0,229,255,0.6),
+    0 0 48px rgba(0,229,255,0.3);
+  white-space: nowrap;
+  opacity: 0;
+  animation: targetLockedAppear 0.8s linear 2.85s forwards;
+}
+
+@keyframes targetLockedAppear {
+  0%,  5%  { opacity: 0; }
+  6%, 11%  { opacity: 1; }
+  12%, 17% { opacity: 0; }
+  18%, 23% { opacity: 1; }
+  24%, 29% { opacity: 0; }
+  30%, 35% { opacity: 1; }
+  36%, 41% { opacity: 0; }
+  42%, 47% { opacity: 1; }
+  48%, 53% { opacity: 0; }
+  54%, 100%{ opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════
+   INFO PANEL
+   ═══════════════════════════════════════════════ */
+
+.infoPanel {
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #000 0%, #020808 100%);
+  border-top: 1px solid rgba(0,229,255,0.35);
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: infoIn 0.4s ease 0.35s both;
+  position: relative;
+  overflow: hidden;
+}
+
+.infoPanel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
+@keyframes infoIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.statusBar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  letter-spacing: 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0,229,255,0.1);
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00e5ff;
+  box-shadow: 0 0 6px #00e5ff;
+  flex-shrink: 0;
+  animation: dotBlink 0.75s steps(1) infinite;
+}
+
+@keyframes dotBlink {
+  0%, 49% { opacity: 1; }
+  50%, 100%{ opacity: 0; }
+}
+
+.statusText  { font-weight: 700; color: #00e5ff; }
+.statusSpacer { flex: 1; }
+.statusCode  { font-size: 8px; color: rgba(255,255,255,0.2); }
+
+.name {
+  font-size: clamp(22px, 7vw, 32px);
+  font-weight: 900;
+  letter-spacing: 4px;
+  line-height: 1;
+  font-family: 'Arial Black', Arial, sans-serif;
+  text-shadow: 0 0 20px rgba(255,255,255,0.15);
+  animation: nameIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
+}
+
+@keyframes nameIn {
+  from { transform: translateX(-12px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+.threatRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.threatCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  border: 1px solid rgba(0,229,255,0.12);
+  background: rgba(0,229,255,0.03);
+  border-radius: 4px;
+}
+
+.threatLabel { font-size: 8px; letter-spacing: 1.5px; color: rgba(255,255,255,0.3); }
+.threatValue { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: rgba(255,255,255,0.85); }
+
+.fightWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: 2px;
+  animation: fightIn 0.4s ease 0.9s both;
+}
+
+@keyframes fightIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.fightLabel {
+  font-size: clamp(18px, 5.5vw, 26px);
+  font-weight: 900;
+  letter-spacing: 6px;
+  font-family: 'Arial Black', Arial, sans-serif;
+  text-shadow: 0 0 20px currentColor;
+  animation: fightPulse 1s ease-in-out 1.2s infinite;
+}
+
+@keyframes fightPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+/* CONTINUE button — slides up after animations settle */
+.continueBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 0;
+  background: transparent;
+  border: 1px solid;
+  border-radius: 6px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+  animation: continueBtnIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) 3.6s both;
+  position: relative;
+  z-index: 1;
+}
+
+.continueBtn:hover  { background: rgba(0,229,255,0.08); }
+.continueBtn:active { transform: scale(0.98); }
+
+@keyframes continueBtnIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.continueBtnArrow {
+  font-size: 11px;
+  animation: arrowPulse 0.8s ease-in-out 4.1s infinite;
+}
+
+@keyframes arrowPulse {
+  0%, 100% { transform: translateX(0); opacity: 1; }
+  50%       { transform: translateX(3px); opacity: 0.7; }
+}
