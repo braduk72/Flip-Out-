@@ -92,6 +92,8 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const [showInterstitial, setShowInterstitial] = useState(false)
   const pendingAction = useRef(null)
   const [tornadoCol, setTornadoCol] = useState(-1)
+  const [diceDisplay, setDiceDisplay] = useState([1, 1])
+  const [diceRevealed, setDiceRevealed] = useState(false)
 
   // Solo mode timer
   const [elapsed, setElapsed] = useState(0)
@@ -326,6 +328,33 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       return () => clearTimeout(t)
     }
   }, [activeEffect, clearEffect])
+
+  // Dice — roll animation then reveal final values
+  useEffect(() => {
+    if (activeEffect?.type !== 'dice') { setDiceRevealed(false); return }
+    const { die1, die2 } = activeEffect.data
+    setDiceRevealed(false)
+    // Build timing schedule: fast → slow
+    const delays = [
+      ...Array(10).fill(60),
+      ...Array(6).fill(100),
+      ...Array(3).fill(160),
+      ...Array(2).fill(230),
+    ]
+    let elapsed = 0
+    const timers = delays.map(d => {
+      elapsed += d
+      return setTimeout(() => setDiceDisplay([
+        Math.ceil(Math.random() * 6),
+        Math.ceil(Math.random() * 6),
+      ]), elapsed)
+    })
+    const revealTimer = setTimeout(() => {
+      setDiceDisplay([die1, die2])
+      setDiceRevealed(true)
+    }, elapsed + 280)
+    return () => { timers.forEach(clearTimeout); clearTimeout(revealTimer) }
+  }, [activeEffect?.type]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Clear frozen when the turn comes BACK to the player (after opponent used their frozen turn)
   useEffect(() => {
@@ -595,8 +624,27 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
           )}
         </div>
 
+        {/* Dice roll overlay */}
+        {activeEffect?.type === 'dice' && (
+          <div className={styles.diceOverlay}>
+            <div className={styles.diceRow}>
+              <span className={`${styles.dieFace} ${diceRevealed ? styles.diceReveal : styles.diceRolling}`}>
+                {['⚀','⚁','⚂','⚃','⚄','⚅'][diceDisplay[0] - 1]}
+              </span>
+              <span className={`${styles.dieFace} ${diceRevealed ? styles.diceReveal : styles.diceRolling}`}>
+                {['⚀','⚁','⚂','⚃','⚄','⚅'][diceDisplay[1] - 1]}
+              </span>
+            </div>
+            {diceRevealed && (
+              <div className={styles.diceResultText}>
+                {activeEffect.data.isDouble ? '🎉 DOUBLE! Take another turn!' : 'No double — turn passes'}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Effect overlay banner */}
-        {activeEffect && activeEffect.type !== 'no_match' && effectCard && (
+        {activeEffect && activeEffect.type !== 'no_match' && activeEffect.type !== 'dice' && effectCard && (
           <div
             className={styles.effectBanner}
             style={{ '--effect-color': effectCard.color }}
