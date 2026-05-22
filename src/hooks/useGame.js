@@ -170,8 +170,10 @@ function reducer(state, action) {
       return applySpecial({ ...state, pendingSpecial: null }, index, whose, seed ?? {})
     }
 
-    case 'HIDE_FLIPPED':
-      return { ...state, flipped: [], turn: otherTurn(state.turn) }
+    case 'HIDE_FLIPPED': {
+      const keepTurn = state.stopwatchEnd && Date.now() < state.stopwatchEnd
+      return { ...state, flipped: [], turn: keepTurn ? state.turn : otherTurn(state.turn) }
+    }
 
     case 'CLEAR_EFFECT':
       return { ...state, activeEffect: null }
@@ -476,6 +478,10 @@ export function useGame(deck, difficulty = 'Medium', prebuiltCards = null, initi
     dispatch({ type: 'RESOLVE_FLIP', whose })
   }, [])
 
+  const endStopwatch = useCallback(() => {
+    dispatch({ type: 'STOPWATCH_END' })
+  }, [])
+
   const useJoker = useCallback(() => {
     dispatch({ type: 'USE_JOKER' })
   }, [])
@@ -536,7 +542,7 @@ export function useGame(deck, difficulty = 'Medium', prebuiltCards = null, initi
     return available[Math.floor(Math.random() * available.length)].i
   }, [])
 
-  return { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, useJoker }
+  return { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, endStopwatch, useJoker }
 }
 
 export { buildBoard }

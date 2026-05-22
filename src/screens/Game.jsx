@@ -78,7 +78,7 @@ function generateSpecialSeed(specialType, index, cards, matched, consumed) {
 }
 
 export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, yourTurn = true, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, gauntletStep }) {
-  const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, useJoker } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player')
+  const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, endStopwatch, useJoker } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player')
   const devSpecials = new URLSearchParams(window.location.search).has('specials')
   const [devToolsOpen, setDevToolsOpen] = useState(() => devSpecials || localStorage.getItem('fo_dev_toolbar') === 'on')
   const [jokersRemaining, setJokersRemaining] = useState(() => getJokersRemaining())
@@ -106,7 +106,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     cards, flipped, matched, consumed, frozen,
     playerScore, aiScore, turn, stunned,
     playerShield, aiShield, crownHolder,
-    activeEffect, pendingSpecial, pendingResolve, gameOver, winner,
+    activeEffect, pendingSpecial, pendingResolve, stopwatchEnd, gameOver, winner,
   } = state
 
   const prevTurnRef = useRef(turn)
@@ -251,26 +251,37 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     return () => clearTimeout(t)
   }, [pendingSpecial, applyPendingSpecial])
 
-  // Resolve match/no-match after zoom animation plays on both cards
+  // Fire STOPWATCH_END when the 10-second window expires
+  useEffect(() => {
+    if (!stopwatchEnd) return
+    const remaining = stopwatchEnd - Date.now()
+    if (remaining <= 0) { endStopwatch(); return }
+    const t = setTimeout(endStopwatch, remaining)
+    return () => clearTimeout(t)
+  }, [stopwatchEnd, endStopwatch])
+
+  const stopwatchActive = stopwatchEnd && Date.now() < stopwatchEnd
+
+  // Resolve match/no-match — instant during stopwatch, normal otherwise
   useEffect(() => {
     if (!pendingResolve) return
     const t = setTimeout(
       () => commitResolve(pendingResolve.whose),
-      950
+      stopwatchActive ? 50 : 950
     )
     return () => clearTimeout(t)
-  }, [pendingResolve, commitResolve])
+  }, [pendingResolve, commitResolve]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Handle no-match — hide cards after delay
+  // Handle no-match — hide cards after delay (fast during stopwatch)
   useEffect(() => {
     if (activeEffect?.type === 'no_match') {
       const t = setTimeout(() => {
         hideFlipped()
         clearEffect()
-      }, 1800)
+      }, stopwatchActive ? 150 : 1800)
       return () => clearTimeout(t)
     }
-  }, [activeEffect, hideFlipped, clearEffect])
+  }, [activeEffect, hideFlipped, clearEffect]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Clear effect after display — long enough for players to read
   useEffect(() => {
