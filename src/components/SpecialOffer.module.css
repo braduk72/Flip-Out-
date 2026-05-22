@@ -181,30 +181,74 @@
   padding: 14px 0 12px;
   border-radius: 50px;
   border: none;
-  background: linear-gradient(135deg, #26c25a 0%, #1a9e48 100%);
+  background: linear-gradient(180deg, #32d96a 0%, #1a9e48 60%, #157a38 100%);
   color: #fff;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(38,194,90,0.5);
-  transition: transform 0.1s;
+  box-shadow:
+    0 6px 0 #0e5a28,
+    0 8px 16px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+  transition: transform 0.08s, box-shadow 0.08s;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
+  gap: 2px;
+  position: relative;
+  z-index: 1;
 }
 
-.buyBtn:hover  { transform: translateY(-2px); }
-.buyBtn:active { transform: translateY(1px);  }
+.buyBtn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 0 #0e5a28,
+    0 10px 20px rgba(0,0,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.buyBtn:active {
+  transform: translateY(4px);
+  box-shadow:
+    0 2px 0 #0e5a28,
+    0 4px 8px rgba(0,0,0,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+}
 
 .buyBtnPrice {
-  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  line-height: 1;
+}
+
+.poundSign {
+  font-size: 26px;
   font-weight: 900;
   font-family: 'Arial Black', Arial, sans-serif;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
   line-height: 1;
+}
+
+.priceDigit {
+  height: 30px;
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+}
+
+.priceDot {
+  font-size: 26px;
+  font-weight: 900;
+  font-family: 'Arial Black', Arial, sans-serif;
+  color: #fff;
+  line-height: 1;
+  margin: 0 1px;
 }
 
 .buyBtnSub {
   font-size: 10px;
   font-weight: 600;
-  opacity: 0.8;
+  opacity: 0.85;
   letter-spacing: 0.5px;
+  color: #fff;
 }

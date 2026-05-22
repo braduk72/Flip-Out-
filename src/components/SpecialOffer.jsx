@@ -81,7 +81,13 @@ export default function SpecialOffer({ onClose, onBuy }) {
         </div>
 
         <button className={styles.buyBtn} onClick={handleBuy}>
-          <span className={styles.buyBtnPrice}>£1.99</span>
+          <span className={styles.buyBtnPrice}>
+            <span className={styles.poundSign}>£</span>
+            {'1.99'.split('').map((ch, i) =>
+              ch === '.' ? <span key={i} className={styles.priceDot}>.</span>
+                         : <img key={i} src={`/images/${ch}.png`} alt={ch} className={styles.priceDigit} />
+            )}
+          </span>
           <span className={styles.buyBtnSub}>Tap to unlock</span>
         </button>
       </div>
