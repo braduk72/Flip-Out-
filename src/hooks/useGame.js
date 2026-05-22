@@ -40,8 +40,11 @@ function buildBoard(deck, numPairs = 7, numSpecials = 2) {
 // ── Initial state ─────────────────────────────────────────────────────────────
 
 function makeInitial(deck, numPairs = 7, prebuiltCards = null, initialTurn = 'player') {
+  const devSpecials = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('specials')
+  const boardPairs    = devSpecials ? 1 : numPairs
+  const boardSpecials = devSpecials ? SPECIAL_POOL.length : 2
   return {
-    cards:          prebuiltCards ?? buildBoard(deck, numPairs),
+    cards:          prebuiltCards ?? buildBoard(deck, boardPairs, boardSpecials),
     flipped:        [],      // up to 2 card indices currently revealed
     matched:        [],      // card indices permanently matched
     consumed:       [],      // special card indices that have fired

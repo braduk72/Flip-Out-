@@ -55,7 +55,8 @@ export default function App() {
     const numPairs = { Easy: 5, Medium: 7, Hard: 9, Lethal: 9 }[mp.difficulty] ?? 7
     setMpDeck(deckObj)
     if (mp.isHost) {
-      const cards = buildBoard(deckObj, numPairs)
+      const devSpecials = new URLSearchParams(window.location.search).has('specials')
+      const cards = buildBoard(deckObj, devSpecials ? 1 : numPairs, devSpecials ? 14 : 2)
       setMpCards(cards)
       mp.sendBoard(cards)
     }
