@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import styles from './SeasonMap.module.css'
 import BottomNav from '../components/BottomNav'
 import { ACTIVE_SEASON } from '../data/seasonalOpponents'
@@ -88,19 +88,35 @@ const ALL_NODES = [
 
 export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps }) {
   const scrollRef  = useRef(null)
+  const imgRef     = useRef(null)
   const currentIdx = Math.min(seasonStep, ALL_NODES.length - 1)
 
-  // Auto-scroll to current node on mount
-  useEffect(() => {
-    const el = scrollRef.current
-    if (!el) return
-    const pos    = NODE_POSITIONS[currentIdx]
-    const canvas = 1600
-    const ratio  = pos.y / canvas
-    // Scroll so the current node sits ~40% from top of viewport
-    const scrollTarget = el.scrollHeight * ratio - el.clientHeight * 0.4
-    el.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' })
+  // Fog height: covers everything above the current node, shrinks as player advances
+  const fogHeight = seasonStep >= ALL_NODES.length
+    ? 0
+    : Math.max(0, NODE_POSITIONS[currentIdx].y - 6)
+
+  // Scroll: pan from top (boss) down to current node for cinematic reveal
+  const doScroll = useCallback(() => {
+    const el  = scrollRef.current
+    const img = imgRef.current
+    if (!el || !img) return
+    const pos         = NODE_POSITIONS[currentIdx]
+    const imgH        = img.offsetHeight
+    const scrollTarget = (pos.y / 100) * imgH - el.clientHeight * 0.42
+    // Start at top, pause, then sweep down
+    el.scrollTo({ top: 0, behavior: 'instant' })
+    setTimeout(() => {
+      el.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' })
+    }, 650)
   }, [currentIdx])
+
+  useEffect(() => {
+    const img = imgRef.current
+    if (!img) return
+    if (img.complete) { doScroll() }
+    else { img.addEventListener('load', doScroll, { once: true }) }
+  }, [doScroll])
 
   return (
     <div className={styles.page}>
@@ -117,7 +133,19 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
         <div className={styles.mapCanvas}>
 
           {/* Map image — natural dimensions drive the canvas height */}
-          <img src="/images/season1map.png" className={styles.mapBgImg} alt="" draggable="false" />
+          <img ref={imgRef} src="/images/season1map.png" className={styles.mapBgImg} alt="" draggable="false" />
+
+          {/* ── Fog of war — shrinks upward as player advances ── */}
+          <div className={styles.fogZone} style={{ height: `${fogHeight}%` }}>
+            <div className={styles.fogBody} />
+            <div className={styles.fogCloud0} />
+            <div className={styles.fogCloud1} />
+            <div className={styles.fogCloud2} />
+            <div className={styles.fogCloud3} />
+            <div className={styles.fogCloud4} />
+            <div className={styles.fogCloud5} />
+            <div className={styles.fogEdge} />
+          </div>
 
           {/* ── Steam emitters ── */}
           {STEAM_EMITTERS.map((pos, i) => (
