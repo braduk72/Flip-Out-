@@ -19,9 +19,9 @@ const COIN_PACKS = [
 const JOKER_RELOAD_PRICE = 50
 
 const POWERUPS = [
-  { id: 'pu_peek',    label: 'Peek',    desc: 'Briefly reveal all cards',   price: 50, qty: 3, emoji: '👁️' },
-  { id: 'pu_freeze',  label: 'Freeze',  desc: 'Stop the timer for 5s',      price: 50, qty: 3, emoji: '❄️' },
-  { id: 'pu_shuffle', label: 'Shuffle', desc: 'Reshuffle unmatched cards',   price: 50, qty: 3, emoji: '🔀' },
+  { id: 'pu_xray',    label: 'X-Ray',   desc: 'Peek at 2 cards before your turn', price: 50, qty: 3, image: '/images/cards/special/xray.png'    },
+  { id: 'pu_freeze',  label: 'Freeze',  desc: 'Freeze surrounding cards for a turn',   price: 50, qty: 3, image: '/images/cards/special/freeze.png'  },
+  { id: 'pu_shuffle', label: 'Shuffle', desc: 'Reshuffle all unmatched cards',   price: 50, qty: 3, image: '/images/cards/special/shuffle.png' },
 ]
 
 const BUNDLES = [
@@ -104,7 +104,7 @@ export default function Shop({ onBack, navProps }) {
         <button className={styles.removeAdsCard} onClick={navProps?.onSpin}>
           <div className={styles.removeAdsText}>
             <span className={styles.removeAdsTitle}>Daily Spin Wheel</span>
-            <span className={styles.removeAdsDesc}>Spin for coins and power-ups · 2 free spins daily</span>
+            <span className={styles.removeAdsDesc}>Spin for coins and power-ups · up to 2 spins daily</span>
           </div>
           <span className={styles.removeAdsPrice}>FREE</span>
         </button>
@@ -121,7 +121,7 @@ export default function Shop({ onBack, navProps }) {
         </button>
         <div className={styles.chestTiers}>
           <div className={styles.chestTierLocked}>
-            <span className={styles.chestTierReward}>🪙 ×150</span>
+            <span className={styles.chestTierReward}><img src="/images/coin.png" alt="coins" className={styles.chestTierCoin} /> ×150</span>
             <span className={styles.chestTierLabel}>Free</span>
             <span className={styles.chestTierLock}>🔒</span>
           </div>
@@ -137,13 +137,14 @@ export default function Shop({ onBack, navProps }) {
         <div className={styles.powerupGrid}>
           {POWERUPS.map(pu => (
             <button key={pu.id} className={styles.powerupCard}>
-              <span className={styles.powerupEmoji}>{pu.emoji}</span>
-              <span className={styles.powerupLabel}>{pu.label}</span>
+              <img src={pu.image} alt={pu.label} className={styles.powerupImg} />
+              <span className={styles.powerupLabel}>
+                {pu.label}{pu.qty && <span className={styles.powerupQty}> ×{pu.qty}</span>}
+              </span>
               <span className={styles.powerupDesc}>{pu.desc}</span>
               <div className={styles.powerupPrice}>
                 <img src="/images/coin.png" alt="" className={styles.powerupCoin} />
                 {pu.price}
-                {pu.qty && <span className={styles.powerupQty}> ×{pu.qty}</span>}
               </div>
             </button>
           ))}
