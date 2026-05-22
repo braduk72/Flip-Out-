@@ -4,7 +4,7 @@ import BottomNav from '../components/BottomNav'
 import AdBanner from '../components/AdBanner'
 import SpecialOffer, { shouldShowOffer, markOfferSeen } from '../components/SpecialOffer'
 
-export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, onSettings, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, gauntletStep, mode = 'vs', onMode }) {
+export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, onSettings, onSeason, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, gauntletStep, seasonStep = 0, mode = 'vs', onMode }) {
   const hasGoldCard = !!localStorage.getItem('fo_gold_card')
   const coins = parseInt(localStorage.getItem('fo_coins') || '0')
   const [showOffer, setShowOffer] = useState(false)
@@ -81,6 +81,23 @@ export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, o
           <div className={styles.knockoutText}>
             <span className={styles.knockoutTitle}>PLAY ONLINE</span>
             <span className={styles.knockoutProgress}>Quick Match · Create · Join Room</span>
+          </div>
+          <span className={styles.knockoutArrow}>›</span>
+        </button>
+
+        {/* Season map entry */}
+        <button className={styles.seasonBtn} onClick={onSeason} aria-label="Season map">
+          <span className={styles.knockoutIcon}>🗺️</span>
+          <div className={styles.knockoutText}>
+            <span className={styles.knockoutTitle}>
+              SEASON 1 · THE RECKONING
+            </span>
+            {seasonStep >= 5
+              ? <span className={styles.knockoutProgress}>✦ Season complete — gold card earned!</span>
+              : seasonStep > 0
+              ? <span className={styles.knockoutProgress}>{seasonStep}/5 defeated · keep going!</span>
+              : <span className={styles.knockoutProgress}>Limited time · exclusive rewards</span>
+            }
           </div>
           <span className={styles.knockoutArrow}>›</span>
         </button>

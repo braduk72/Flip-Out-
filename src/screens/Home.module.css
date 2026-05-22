@@ -327,6 +327,30 @@
 
 .onlineBtn:active { transform: translateY(1px); }
 
+/* ── Season button ── */
+.seasonBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 340px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(160, 60, 255, 0.6);
+  background: rgba(40, 0, 80, 0.6);
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.15s, box-shadow 0.15s;
+  box-shadow: 0 0 16px rgba(140, 0, 255, 0.15);
+}
+
+.seasonBtn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(200, 100, 255, 0.85);
+  box-shadow: 0 4px 20px rgba(160, 0, 255, 0.35);
+}
+
+.seasonBtn:active { transform: translateY(1px); }
+
 /* ── Knockout Gauntlet button ── */
 .knockoutBtn {
   display: flex;
