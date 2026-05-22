@@ -3,26 +3,27 @@ import styles from './SeasonMap.module.css'
 import BottomNav from '../components/BottomNav'
 import { ACTIVE_SEASON } from '../data/seasonalOpponents'
 
-// Node positions on the 800×1600 map canvas (percentage of canvas size)
-// Match these to the landmarks you paint on season1map.png
+// Node positions as % of image (width × height).
+// Calibrated to the three robocat landmark figures in season1map.png
+// x=left%, y=top%
 const NODE_POSITIONS = [
-  { x: 200, y: 1460 }, // c1 — VEXOR
-  { x: 580, y: 1180 }, // c2 — DREAD
-  { x: 160, y: 900  }, // c3 — MALIX
-  { x: 600, y: 580  }, // c4 — OBLIQUE
-  { x: 400, y: 140  }, // boss
+  { x: 50, y: 91 }, // N0 VEXOR   — large green start circle, bottom centre
+  { x: 66, y: 75 }, // N1 DREAD   — lower-right winding path section
+  { x: 44, y: 57 }, // N2 MALIX   — white/teal robocat platform, mid green zone
+  { x: 50, y: 32 }, // N3 OBLIQUE — gold robocat platform, industrial zone
+  { x: 48, y:  5 }, // N4 BOSS    — red boss robocat, danger zone top
 ]
 
-// SVG path winding through the nodes (drawn on the 800×1600 canvas)
-const PATH_D = `
-  M 200,1560
-  C 200,1520 200,1500 200,1460
-  C 200,1380 580,1280 580,1180
-  C 580,1060 160,980  160,900
-  C 160,760  600,660  600,580
-  C 600,400  400,280  400,140
-  C 400,100  400,60   400,20
-`
+// Steam emitter positions (x%, y%) — pipe/chimney spots in the industrial zone
+const STEAM_EMITTERS = [
+  { x: 8,  y: 52 }, { x: 18, y: 44 },
+  { x: 82, y: 48 }, { x: 91, y: 38 },
+]
+
+// Electric cloud positions — float in the red danger zone
+const CLOUD_POSITIONS = [
+  { x: 15, y: 14 }, { x: 75, y: 10 }, { x: 40, y: 20 },
+]
 
 const ALL_NODES = [
   ...ACTIVE_SEASON.opponents,
@@ -59,23 +60,35 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
       <div className={styles.mapScroll} ref={scrollRef}>
         <div className={styles.mapCanvas}>
 
-          {/* Background image — shows CSS fallback until season1map.png is dropped in */}
-          <div className={styles.mapBg} />
+          {/* Map image — natural dimensions drive the canvas height */}
+          <img src="/images/season1map.png" className={styles.mapBgImg} alt="" draggable="false" />
 
-          {/* SVG path */}
-          <svg className={styles.pathSvg} viewBox="0 0 800 1600" preserveAspectRatio="xMidYMid meet">
-            {/* Full path (dim) */}
-            <path d={PATH_D} className={styles.pathTrack} />
-            {/* Completed portion (bright) — redrawn up to current node */}
-            {seasonStep > 0 && (
-              <path d={PATH_D} className={styles.pathDone}
-                strokeDasharray="2000"
-                strokeDashoffset={String(2000 - (seasonStep / ALL_NODES.length) * 2000)}
-              />
-            )}
-          </svg>
+          {/* ── Steam emitters ── */}
+          {STEAM_EMITTERS.map((pos, i) => (
+            <div key={`steam-${i}`} className={styles.steamEmitter}
+              style={{ left: `${pos.x}%`, top: `${pos.y}%`, animationDelay: `${i * 0.7}s` }}>
+              <div className={`${styles.steamPuff} ${styles[`steamPuff${i % 3}`]}`} />
+              <div className={`${styles.steamPuff} ${styles[`steamPuff${(i+1) % 3}`]}`} style={{ animationDelay: `${i * 0.4 + 0.5}s` }} />
+            </div>
+          ))}
 
-          {/* Nodes */}
+          {/* ── Electric clouds ── */}
+          {CLOUD_POSITIONS.map((pos, i) => (
+            <div key={`cloud-${i}`} className={styles.cloud}
+              style={{ left: `${pos.x}%`, top: `${pos.y}%`, animationDelay: `${i * 2.3}s` }}>
+              <div className={styles.cloudBody} />
+              <svg className={styles.lightning} viewBox="0 0 60 80" style={{ animationDelay: `${i * 1.7 + 0.4}s` }}>
+                <polyline points="30,0 18,35 26,35 14,80" className={styles.boltA} />
+                <polyline points="40,5 32,32 38,32 28,70"  className={styles.boltB} />
+              </svg>
+            </div>
+          ))}
+
+          {/* ── Wandering robots — tiny c1/c2 sprites drifting near the path edges ── */}
+          <img src="/images/c1.png" alt="" className={`${styles.wanderer} ${styles.wandererA}`} draggable="false" />
+          <img src="/images/c2.png" alt="" className={`${styles.wanderer} ${styles.wandererB}`} draggable="false" />
+
+          {/* ── Opponent nodes ── */}
           {ALL_NODES.map((opp, i) => {
             const pos    = NODE_POSITIONS[i]
             const status = i < seasonStep ? 'done' : i === seasonStep ? 'current' : 'locked'
@@ -85,7 +98,7 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
               <div
                 key={opp.id}
                 className={`${styles.node} ${styles[status]} ${isBoss ? styles.nodeBoss : ''}`}
-                style={{ left: `${(pos.x / 800) * 100}%`, top: `${(pos.y / 1600) * 100}%` }}
+                style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
                 onClick={status === 'current' ? onFight : undefined}
                 role={status === 'current' ? 'button' : undefined}
                 aria-label={status === 'current' ? `Fight ${opp.name}` : opp.name}
@@ -106,7 +119,6 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
                     {isBoss ? '💀' : '🔒'}
                   </div>
                 )}
-
                 <div className={styles.nodeLabel}>
                   {status === 'locked' ? '???' : opp.name}
                 </div>
