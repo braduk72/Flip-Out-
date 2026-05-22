@@ -523,7 +523,15 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
             <img src={effectCard.image} alt={effectCard.name} className={styles.effectIcon} />
             <div>
               <div className={styles.effectName}>{effectCard.name}</div>
-              <div className={styles.effectDesc}>{effectCard.description}</div>
+              {activeEffect.type === 'dice' ? (
+                <div className={styles.effectDesc}>
+                  {['⚀','⚁','⚂','⚃','⚄','⚅'][activeEffect.data.die1 - 1]}{' '}
+                  {['⚀','⚁','⚂','⚃','⚄','⚅'][activeEffect.data.die2 - 1]}{' '}
+                  {activeEffect.data.isDouble ? '🎉 DOUBLE — extra turn!' : 'No double — turn passes'}
+                </div>
+              ) : (
+                <div className={styles.effectDesc}>{effectCard.description}</div>
+              )}
             </div>
           </div>
         )}
