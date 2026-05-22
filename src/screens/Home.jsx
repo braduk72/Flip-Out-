@@ -54,6 +54,16 @@ export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, o
           </button>
         </div>
 
+        {/* Play Online */}
+        <button className={styles.onlineBtn} onClick={onOnline} aria-label="Play Online">
+          <span style={{fontSize:'20px'}}>🌐</span>
+          <div className={styles.knockoutText}>
+            <span className={styles.knockoutTitle}>PLAY ONLINE</span>
+            <span className={styles.knockoutProgress}>Quick Match · Create · Join Room</span>
+          </div>
+          <span className={styles.knockoutArrow}>›</span>
+        </button>
+
         {/* Knockout Gauntlet entry */}
         <button className={styles.knockoutBtn} onClick={onKnockout} aria-label="Knockout Gauntlet">
           <span className={styles.knockoutIcon}>🏆</span>
