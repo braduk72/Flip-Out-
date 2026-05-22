@@ -56,13 +56,14 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  padding: 32px 32px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  padding: 20px 24px;
   position: relative;
   z-index: 1;
   flex: 1;
   align-content: center;
+  overflow-y: auto;
 }
 
 .avatarBtn {
@@ -109,4 +110,57 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* ── Locked seasonal slots ── */
+.lockedSlot {
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  border: 3px dashed rgba(255, 215, 0, 0.25);
+  background: rgba(255, 215, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+
+.lockedSlot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    rgba(255, 215, 0, 0.04) 0deg 30deg,
+    transparent             30deg 60deg
+  );
+  animation: lockedSpin 12s linear infinite;
+}
+
+@keyframes lockedSpin {
+  to { rotate: 360deg; }
+}
+
+.lockedQ {
+  font-size: 32px;
+  font-weight: 900;
+  font-family: 'Arial Black', Arial, sans-serif;
+  color: rgba(255, 215, 0, 0.35);
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.lockedLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255, 215, 0, 0.3);
+  font-family: Arial, sans-serif;
+  position: relative;
+  z-index: 1;
 }
