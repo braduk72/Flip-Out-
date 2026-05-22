@@ -29,14 +29,14 @@ function getUsed() {
 }
 
 const SEGMENTS = [
-  { label: '×5',    icon: '🪙', type: 'coins',   value: 5,    color: '#e8a838', weight: 35     },
-  { label: '×1',    icon: '❄️', type: 'freeze',               color: '#3ecfd4', weight: 10     },
-  { label: '×20',   icon: '🪙', type: 'coins',   value: 20,   color: '#e84b4b', weight: 14     },
-  { label: '×1',    icon: '👁️', type: 'peek',                 color: '#9b4fe8', weight: 8      },
+  { label: '×30',   icon: '🪙', type: 'coins',   value: 30,   color: '#e8a838', weight: 8      },
+  { label: '×1',    icon: '❄️', type: 'freeze',               color: '#3ecfd4', weight: 22     },
+  { label: '×200',  icon: '🪙', type: 'coins',   value: 200,  color: '#e84b4b', weight: 3      },
+  { label: '×1',    icon: '👁️', type: 'peek',                 color: '#9b4fe8', weight: 20     },
   { label: '×1000', icon: '🪙', type: 'coins',   value: 1000, color: '#26c25a', weight: 0.0001 },
-  { label: '×1',    icon: '🔀', type: 'shuffle',              color: '#3b82f6', weight: 6      },
-  { label: '×10',   icon: '🪙', type: 'coins',   value: 10,   color: '#f97316', weight: 22     },
-  { label: '×1',    icon: '❄️', type: 'freeze',               color: '#3ecfd4', weight: 5      },
+  { label: '×1',    icon: '🔀', type: 'shuffle',              color: '#3b82f6', weight: 18     },
+  { label: '×50',   icon: '🪙', type: 'coins',   value: 50,   color: '#f97316', weight: 5      },
+  { label: '×1',    icon: '❄️', type: 'freeze',               color: '#3ecfd4', weight: 24     },
 ]
 
 function weightedRandomSeg() {
