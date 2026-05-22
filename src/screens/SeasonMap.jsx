@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import styles from './SeasonMap.module.css'
 import BottomNav from '../components/BottomNav'
 import { ACTIVE_SEASON } from '../data/seasonalOpponents'
@@ -26,58 +26,34 @@ const CLOUD_POSITIONS = [
 ]
 
 // Robomice — scattered across the map, heavier in the green zone
-// x%, y%, scale (size), animClass, delay
+// x%, y%, scale, animClass, delay, colour (g=teal, o=orange, p=pink)
 const MICE = [
-  { x:  8, y: 88, s: 1.0, anim: 'mouseA', delay: 0.0  },
-  { x: 72, y: 83, s: 0.8, anim: 'mouseB', delay: 2.9  },
-  { x: 18, y: 76, s: 0.9, anim: 'mouseC', delay: 1.1  },
-  { x: 80, y: 70, s: 0.7, anim: 'mouseA', delay: 4.6  },
-  { x:  6, y: 63, s: 1.0, anim: 'mouseD', delay: 6.3  },
-  { x: 85, y: 58, s: 0.8, anim: 'mouseB', delay: 0.5  },
-  { x: 25, y: 50, s: 0.7, anim: 'mouseC', delay: 3.8  },
-  { x: 70, y: 43, s: 0.9, anim: 'mouseD', delay: 5.2  },
+  { x:  8, y: 88, s: 1.0, anim: 'mouseA', delay: 0.0, colour: 'g' },
+  { x: 72, y: 83, s: 0.8, anim: 'mouseB', delay: 2.9, colour: 'o' },
+  { x: 18, y: 76, s: 0.9, anim: 'mouseC', delay: 1.1, colour: 'p' },
+  { x: 80, y: 70, s: 0.7, anim: 'mouseA', delay: 4.6, colour: 'g' },
+  { x:  6, y: 63, s: 1.0, anim: 'mouseD', delay: 6.3, colour: 'o' },
+  { x: 85, y: 58, s: 0.8, anim: 'mouseB', delay: 0.5, colour: 'p' },
+  { x: 25, y: 50, s: 0.7, anim: 'mouseC', delay: 3.8, colour: 'g' },
+  { x: 70, y: 43, s: 0.9, anim: 'mouseD', delay: 5.2, colour: 'o' },
 ]
 
-// Inline SVG robomouse — points right, scaleX(-1) to face left
-function RoboMouse({ scale = 1, style }) {
+// Animated sprite robomouse — cycles 4 frames at 6fps
+function RoboMouse({ scale = 1, colour = 'g' }) {
+  const [frame, setFrame] = useState(1)
+  useEffect(() => {
+    const t = setInterval(() => setFrame(f => f === 4 ? 1 : f + 1), 167)
+    return () => clearInterval(t)
+  }, [])
+  const size = Math.round(48 * scale)
   return (
-    <svg
-      viewBox="0 0 44 28"
-      width={Math.round(32 * scale)}
-      height={Math.round(20 * scale)}
-      style={style}
+    <img
+      src={`/images/m${colour}${frame}.png`}
+      alt=""
+      draggable="false"
       className={styles.roboMouse}
-    >
-      {/* Body */}
-      <ellipse cx="18" cy="18" rx="14" ry="9" fill="#7a7a8a" />
-      {/* Head */}
-      <ellipse cx="34" cy="15" rx="9" ry="8" fill="#9a9aaa" />
-      {/* Ears */}
-      <circle cx="30" cy="7"  r="4.5" fill="#6a6a7a" />
-      <circle cx="30" cy="7"  r="2.5" fill="#aa5577" />
-      <circle cx="38" cy="6"  r="3.5" fill="#6a6a7a" />
-      <circle cx="38" cy="6"  r="2"   fill="#aa5577" />
-      {/* Eye — glowing green */}
-      <circle cx="36" cy="14" r="2.5" fill="#001a00" />
-      <circle cx="36" cy="14" r="1.5" fill="#00e864" />
-      <circle cx="36" cy="14" r="0.6" fill="#ccffcc" />
-      {/* Snout */}
-      <ellipse cx="43" cy="17" rx="2" ry="1.5" fill="#888898" />
-      {/* Whiskers */}
-      <line x1="43" y1="16" x2="44" y2="14" stroke="#ccc" strokeWidth="0.5" />
-      <line x1="43" y1="17" x2="44" y2="17" stroke="#ccc" strokeWidth="0.5" />
-      <line x1="43" y1="18" x2="44" y2="20" stroke="#ccc" strokeWidth="0.5" />
-      {/* Mechanical body plate */}
-      <rect x="10" y="14" width="12" height="7" rx="2" fill="#5a5a6a" />
-      <circle cx="16" cy="17" r="1.5" fill="#aaa" />
-      <line x1="13" y1="17" x2="19" y2="17" stroke="#888" strokeWidth="0.6" />
-      {/* Tail — angular robo style */}
-      <polyline points="4,20 0,18 0,23 4,24" stroke="#5a5a6a" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-      {/* Legs — little stubs */}
-      <rect x="10" y="24" width="4" height="3" rx="1" fill="#666" />
-      <rect x="16" y="24" width="4" height="3" rx="1" fill="#666" />
-      <rect x="22" y="24" width="4" height="3" rx="1" fill="#666" />
-    </svg>
+      style={{ width: size, height: size }}
+    />
   )
 }
 
@@ -179,7 +155,7 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
                 animationDelay: `${m.delay}s`,
               }}
             >
-              <RoboMouse scale={m.s} />
+              <RoboMouse scale={m.s} colour={m.colour} />
             </div>
           ))}
 
