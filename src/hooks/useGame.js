@@ -1,6 +1,6 @@
 import { useReducer, useRef, useCallback } from 'react'
 import { getDeckImages } from '../data/decks'
-import { pickRandomSpecials } from '../data/specialCards'
+import { pickRandomSpecials, SPECIAL_POOL } from '../data/specialCards'
 
 // ── Board builder ─────────────────────────────────────────────────────────────
 
@@ -211,6 +211,19 @@ function reducer(state, action) {
         activeEffect: { type: 'dice', data: { die1, die2, isDouble } },
         turn: isDouble ? state.turn : otherTurn(state.turn),
       }
+    }
+
+    case 'DEV_SPECIAL': {
+      const { specialType, seed } = action
+      // Temporarily patch card[0] to be the desired special type, apply the
+      // effect, then restore the original card and remove it from consumed.
+      const patchedCards = [...state.cards]
+      patchedCards[0] = { ...patchedCards[0], type: 'special', specialType, pairId: null }
+      const result = applySpecial(
+        { ...state, cards: patchedCards, pendingSpecial: null },
+        0, 'player', seed ?? {}
+      )
+      return { ...result, cards: state.cards, consumed: result.consumed.filter(i => i !== 0) }
     }
 
     default:
@@ -467,6 +480,10 @@ export function useGame(deck, difficulty = 'Medium', prebuiltCards = null, initi
     dispatch({ type: 'APPLY_SPECIAL', index, whose, seed })
   }, [])
 
+  const triggerDevSpecial = useCallback((specialType, seed = {}) => {
+    dispatch({ type: 'DEV_SPECIAL', specialType, seed })
+  }, [])
+
   const commitResolve = useCallback((whose) => {
     dispatch({ type: 'RESOLVE_FLIP', whose })
   }, [])
@@ -531,7 +548,7 @@ export function useGame(deck, difficulty = 'Medium', prebuiltCards = null, initi
     return available[Math.floor(Math.random() * available.length)].i
   }, [])
 
-  return { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, commitResolve, useJoker }
+  return { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, useJoker }
 }
 
 export { buildBoard }

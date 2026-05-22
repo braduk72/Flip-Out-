@@ -78,7 +78,7 @@ function generateSpecialSeed(specialType, index, cards, matched, consumed) {
 }
 
 export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, yourTurn = true, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, gauntletStep }) {
-  const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, commitResolve, useJoker } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player')
+  const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, useJoker } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player')
   const devSpecials = new URLSearchParams(window.location.search).has('specials')
   const [devToolsOpen, setDevToolsOpen] = useState(() => devSpecials || localStorage.getItem('fo_dev_toolbar') === 'on')
   const [jokersRemaining, setJokersRemaining] = useState(() => getJokersRemaining())
@@ -776,7 +776,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
               <button
                 key={type}
                 title={type}
-                onClick={() => applyPendingSpecial(0, 'player', generateSpecialSeed(type, 0, cards, matched, consumed))}
+                onClick={() => triggerDevSpecial(type, generateSpecialSeed(type, 0, cards, matched, consumed))}
                 style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'2px', background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:'8px', padding:'4px 6px', cursor:'pointer' }}
               >
                 <img src={`/images/cards/special/${type}.png`} alt={type} style={{ width:'32px', height:'32px', objectFit:'contain', display:'block' }} />
