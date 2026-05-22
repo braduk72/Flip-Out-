@@ -4,8 +4,6 @@ import BottomNav from '../components/BottomNav'
 import { ACTIVE_SEASON } from '../data/seasonalOpponents'
 
 // Node positions as % of image (width × height).
-// Calibrated to the three robocat landmark figures in season1map.png
-// x=left%, y=top%
 const NODE_POSITIONS = [
   { x: 50, y: 91 }, // N0 VEXOR   — large green start circle, bottom centre
   { x: 66, y: 75 }, // N1 DREAD   — lower-right winding path section
@@ -20,13 +18,14 @@ const STEAM_EMITTERS = [
   { x: 82, y: 48 }, { x: 91, y: 38 },
 ]
 
-// Electric cloud positions — float in the red danger zone
+// Electric storm clouds in the danger zone (each gets a real dark cloud + lightning)
 const CLOUD_POSITIONS = [
-  { x: 15, y: 14 }, { x: 75, y: 10 }, { x: 40, y: 20 },
+  { x: 15, y: 14, src: '/images/cld_pd1.png' },
+  { x: 75, y: 10, src: '/images/cld_pd3.png' },
+  { x: 40, y: 20, src: '/images/cld_pd2.png' },
 ]
 
 // Robomice — scattered across the map, heavier in the green zone
-// x%, y%, scale, animClass, delay, colour (g=teal, o=orange, p=pink)
 const MICE = [
   { x:  8, y: 88, s: 1.0, anim: 'mouseA', delay: 0.0, colour: 'g' },
   { x: 72, y: 83, s: 0.8, anim: 'mouseB', delay: 2.9, colour: 'o' },
@@ -36,6 +35,32 @@ const MICE = [
   { x: 85, y: 58, s: 0.8, anim: 'mouseB', delay: 0.5, colour: 'p' },
   { x: 25, y: 50, s: 0.7, anim: 'mouseC', delay: 3.8, colour: 'g' },
   { x: 70, y: 43, s: 0.9, anim: 'mouseD', delay: 5.2, colour: 'o' },
+]
+
+// Tesla coils — industrial zone (y 38-48%) + danger zone (y 14-22%)
+// colour: b=blue, y=yellow, p=pink
+const TESLA_COILS = [
+  { x: 13, y: 44, colour: 'b', scale: 0.85, delay: 0.0 },
+  { x: 84, y: 38, colour: 'y', scale: 0.75, delay: 1.8 },
+  { x: 22, y: 18, colour: 'p', scale: 0.90, delay: 0.9 },
+  { x: 76, y: 14, colour: 'b', scale: 0.80, delay: 3.2 },
+]
+
+// Fog cloud sprites — layered from bottom edge (wispy/light) to top (dark smoke)
+const FOG_CLOUDS = [
+  // Bottom edge — flat white, slow drift
+  { src: '/images/cld_fw2.png', cls: 'fogD0' },
+  { src: '/images/cld_fw1.png', cls: 'fogD1' },
+  { src: '/images/cld_fw3.png', cls: 'fogD2' },
+  // Mid fog — flat medium grey
+  { src: '/images/cld_fm2.png', cls: 'fogD3' },
+  { src: '/images/cld_pm2.png', cls: 'fogD4' },
+  // Upper mid — dark puffs
+  { src: '/images/cld_pd2.png', cls: 'fogD5' },
+  { src: '/images/cld_fd2.png', cls: 'fogD6' },
+  // Near top — heavy smoke
+  { src: '/images/cld_fs2.png', cls: 'fogD7' },
+  { src: '/images/cld_fs1.png', cls: 'fogD8' },
 ]
 
 // Animated sprite robomouse — cycles 4 frames at 6fps
@@ -57,6 +82,25 @@ function RoboMouse({ scale = 1, colour = 'g' }) {
   )
 }
 
+// Animated tesla coil — cycles 4 frames at ~4.5fps
+function TeslaCoil({ colour = 'b', scale = 1 }) {
+  const [frame, setFrame] = useState(1)
+  useEffect(() => {
+    const t = setInterval(() => setFrame(f => f === 4 ? 1 : f + 1), 220)
+    return () => clearInterval(t)
+  }, [])
+  const size = Math.round(72 * scale)
+  return (
+    <img
+      src={`/images/tc_${colour}${frame}.png`}
+      alt=""
+      draggable="false"
+      className={styles.teslaImg}
+      style={{ width: size, height: size }}
+    />
+  )
+}
+
 const ALL_NODES = [
   ...ACTIVE_SEASON.opponents,
   ACTIVE_SEASON.boss,
@@ -67,13 +111,10 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
   const imgRef     = useRef(null)
   const currentIdx = Math.min(seasonStep, ALL_NODES.length - 1)
 
-  // Fog height: covers the danger zone above the player, stays well clear of the
-  // green start zone. Shrinks upward as the player advances.
   const fogHeight = seasonStep >= ALL_NODES.length
     ? 0
     : Math.max(0, NODE_POSITIONS[currentIdx].y - 38)
 
-  // Scroll: pan from top (boss) down to current node for cinematic reveal
   const doScroll = useCallback(() => {
     const el  = scrollRef.current
     const img = imgRef.current
@@ -81,7 +122,6 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
     const pos         = NODE_POSITIONS[currentIdx]
     const imgH        = img.offsetHeight
     const scrollTarget = (pos.y / 100) * imgH - el.clientHeight * 0.42
-    // Start at top, pause, then sweep down
     el.scrollTo({ top: 0, behavior: 'instant' })
     setTimeout(() => {
       el.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' })
@@ -112,15 +152,13 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
           {/* Map image — natural dimensions drive the canvas height */}
           <img ref={imgRef} src="/images/season1map.png" className={styles.mapBgImg} alt="" draggable="false" />
 
-          {/* ── Fog of war — shrinks upward as player advances ── */}
+          {/* ── Fog of war — real cloud sprites drifting in layers ── */}
           <div className={styles.fogZone} style={{ height: `${fogHeight}%` }}>
             <div className={styles.fogBody} />
-            <div className={styles.fogCloud0} />
-            <div className={styles.fogCloud1} />
-            <div className={styles.fogCloud2} />
-            <div className={styles.fogCloud3} />
-            <div className={styles.fogCloud4} />
-            <div className={styles.fogCloud5} />
+            {FOG_CLOUDS.map((c, i) => (
+              <img key={i} src={c.src} alt="" draggable="false"
+                className={`${styles.fogDrift} ${styles[c.cls]}`} />
+            ))}
           </div>
 
           {/* ── Steam emitters ── */}
@@ -132,15 +170,25 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
             </div>
           ))}
 
-          {/* ── Electric clouds ── */}
+          {/* ── Electric storm clouds + lightning ── */}
           {CLOUD_POSITIONS.map((pos, i) => (
             <div key={`cloud-${i}`} className={styles.cloud}
               style={{ left: `${pos.x}%`, top: `${pos.y}%`, animationDelay: `${i * 2.3}s` }}>
-              <div className={styles.cloudBody} />
+              <img src={pos.src} alt="" draggable="false" className={styles.cloudImg} />
               <svg className={styles.lightning} viewBox="0 0 60 80" style={{ animationDelay: `${i * 1.7 + 0.4}s` }}>
                 <polyline points="30,0 18,35 26,35 14,80" className={styles.boltA} />
                 <polyline points="40,5 32,32 38,32 28,70"  className={styles.boltB} />
               </svg>
+            </div>
+          ))}
+
+          {/* ── Tesla coils ── */}
+          {TESLA_COILS.map((tc, i) => (
+            <div key={`tc-${i}`} className={styles.teslaWrap}
+              style={{ left: `${tc.x}%`, top: `${tc.y}%` }}>
+              <div className={styles.teslaFloat} style={{ animationDelay: `${tc.delay}s` }}>
+                <TeslaCoil colour={tc.colour} scale={tc.scale} />
+              </div>
             </div>
           ))}
 

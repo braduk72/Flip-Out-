@@ -119,27 +119,40 @@
   );
 }
 
-/* Drifting grey cloud puffs */
-.fogCloud0, .fogCloud1, .fogCloud2,
-.fogCloud3, .fogCloud4, .fogCloud5 {
+/* ── Drifting real cloud sprite layers ── */
+.fogDrift {
   position: absolute;
-  border-radius: 50%;
-  background: rgba(200, 205, 230, 0.42);
-  filter: blur(22px);
-  animation: fogDrift 12s ease-in-out infinite alternate;
+  pointer-events: none;
+  will-change: transform;
+  height: auto;
 }
 
-.fogCloud0 { width: 80%; height: 14%; top:  4%; left: -12%; animation-duration: 11s; }
-.fogCloud1 { width: 65%; height: 12%; top: 16%; left:  28%; animation-duration: 15s; animation-direction: alternate-reverse; background: rgba(210,215,240,0.38); }
-.fogCloud2 { width: 90%; height: 16%; top: 30%; left: -18%; animation-duration: 13s; background: rgba(185,190,220,0.35); }
-.fogCloud3 { width: 60%; height: 11%; top: 46%; left:  22%; animation-duration: 10s; animation-direction: alternate-reverse; background: rgba(195,200,225,0.30); }
-.fogCloud4 { width: 70%; height: 13%; top: 60%; left: -6%;  animation-duration: 14s; background: rgba(210,215,235,0.25); }
-.fogCloud5 { width: 55%; height: 10%; top: 74%; left:  38%; animation-duration: 16s; animation-direction: alternate-reverse; background: rgba(220,220,240,0.18); }
-
-@keyframes fogDrift {
-  from { transform: translateX(0)    translateY(0);    }
-  to   { transform: translateX(28px) translateY(10px); }
+@keyframes driftLeft {
+  from { transform: translateX(110vw); }
+  to   { transform: translateX(-110vw); }
 }
+
+@keyframes driftRight {
+  from { transform: translateX(-110vw); }
+  to   { transform: translateX(110vw); }
+}
+
+/* Bottom edge — flat white/wispy, slow */
+.fogD0 { width: 65%; top: 82%; opacity: 0.52; animation: driftLeft  23s linear infinite; animation-delay: -7s; }
+.fogD1 { width: 52%; top: 89%; opacity: 0.42; animation: driftRight 28s linear infinite; animation-delay: -14s; }
+.fogD2 { width: 48%; top: 75%; opacity: 0.38; animation: driftLeft  32s linear infinite; animation-delay: -22s; }
+
+/* Mid fog — medium grey */
+.fogD3 { width: 52%; top: 60%; opacity: 0.58; animation: driftRight 20s linear infinite; animation-delay: -5s; }
+.fogD4 { width: 36%; top: 67%; opacity: 0.50; animation: driftLeft  25s linear infinite; animation-delay: -18s; }
+
+/* Upper mid — dark puffs */
+.fogD5 { width: 44%; top: 38%; opacity: 0.72; animation: driftRight 17s linear infinite; animation-delay: -9s; }
+.fogD6 { width: 50%; top: 46%; opacity: 0.66; animation: driftLeft  19s linear infinite; animation-delay: -2s; }
+
+/* Near top — heavy smoke */
+.fogD7 { width: 58%; top: 12%; opacity: 0.82; animation: driftRight 14s linear infinite; animation-delay: -6s; }
+.fogD8 { width: 46%; top:  5%; opacity: 0.76; animation: driftLeft  16s linear infinite; animation-delay: -11s; }
 
 /* ── Steam emitters ── */
 .steamEmitter {
@@ -185,20 +198,19 @@
   to   { transform: translateX(12px);  }
 }
 
-.cloudBody {
-  width: 64px;
-  height: 28px;
-  border-radius: 50px;
-  background: rgba(60, 10, 10, 0.65);
-  box-shadow:
-    0 0 12px rgba(255, 60, 0, 0.4),
-    0 0 24px rgba(255, 0, 0, 0.2);
-  filter: blur(1px);
+.cloudImg {
+  width: 75px;
+  height: auto;
+  display: block;
+  opacity: 0.88;
+  filter:
+    drop-shadow(0 0 10px rgba(130, 60, 255, 0.65))
+    drop-shadow(0 0 24px rgba(100,  0, 200, 0.35));
 }
 
 .lightning {
   position: absolute;
-  top: 22px;
+  top: 90px;
   left: 0;
   width: 60px;
   height: 80px;
@@ -223,6 +235,28 @@
   fill: none;
   stroke: rgba(255, 220, 100, 0.5);
   stroke-width: 1;
+}
+
+/* ── Tesla coils ── */
+.teslaWrap {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.teslaFloat {
+  animation: teslaFloat 3.7s ease-in-out infinite;
+}
+
+.teslaImg {
+  display: block;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.65));
+}
+
+@keyframes teslaFloat {
+  0%, 100% { transform: translateY(0px);  }
+  50%       { transform: translateY(-6px); }
 }
 
 /* ── Robomice ── */
