@@ -347,7 +347,7 @@ export default function App() {
     return <AvatarPicker portrait={portrait} onPortrait={handlePortrait} onBack={() => setScreen('home')} navProps={navProps} />
   }
   if (screen === 'settings') {
-    return <Settings onBack={() => setScreen('home')} musicOn={musicOn} sfxOn={sfxOn} onToggleMusic={toggleMusic} onToggleSfx={toggleSfx} difficulty={difficulty} onDifficulty={handleDifficulty} navProps={navProps} />
+    return <Settings onBack={() => setScreen('home')} onSeason={handleSeasonMap} musicOn={musicOn} sfxOn={sfxOn} onToggleMusic={toggleMusic} onToggleSfx={toggleSfx} difficulty={difficulty} onDifficulty={handleDifficulty} navProps={navProps} />
   }
   if (screen === 'gauntlet') {
     return (
