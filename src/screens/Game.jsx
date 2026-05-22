@@ -61,7 +61,7 @@ function generateSpecialSeed(specialType, index, cards, matched, consumed) {
       return { picks: shuffleArr(pool).slice(0, 3) }
     }
     case 'random': {
-      const options = ['freeze','boom','tornado','magnet','bolt','rocket','dice','shield','stopwatch','crown','flashlight','shuffle','xray']
+      const options = ['freeze','boom','tornado','magnet','bolt','rocket','dice','shield','stopwatch','crown','shuffle','xray']
       const chosen  = options[Math.floor(Math.random() * options.length)]
       return { chosen, innerSeed: generateSpecialSeed(chosen, index, cards, matched, consumed) }
     }
@@ -277,7 +277,6 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     if (
       activeEffect &&
       activeEffect.type !== 'no_match' &&
-      activeEffect.type !== 'flashlight' &&
       activeEffect.type !== 'stopwatch' &&
       activeEffect.type !== 'xray' &&
       activeEffect.type !== 'boom'
@@ -371,14 +370,6 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     return () => clearTimeout(t)
   }, [flipped, activeEffect]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Flashlight effect — close after 3 seconds
-  useEffect(() => {
-    if (activeEffect?.type === 'flashlight') {
-      const t = setTimeout(clearEffect, 3200)
-      return () => clearTimeout(t)
-    }
-  }, [activeEffect, clearEffect])
-
   // X-ray — close after 2 seconds
   useEffect(() => {
     if (activeEffect?.type === 'xray') {
@@ -417,7 +408,6 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const isCardFlipped = i => flipped.includes(i)
   const isRevealed    = i => {
     if (activeEffect?.type === 'xray') return true
-    if (activeEffect?.type === 'flashlight') return activeEffect.data.picks.includes(i)
     if (activeEffect?.type === 'boom')       return activeEffect.data.launched.includes(i)
     if (activeEffect?.type === 'rocket')     return activeEffect.data.line.includes(i)
     if (activeEffect?.type === 'tornado')    return activeEffect.data.trail.includes(i)
@@ -476,7 +466,6 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
           <div
             className={`
               ${styles.board}
-              ${activeEffect?.type === 'flashlight' ? styles.darkRoom : ''}
               ${turn !== 'player' && mode !== 'solo' && mode !== 'mp' ? styles.aiTurn : ''}
             `}
           >
@@ -497,9 +486,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                   }
                 }}
                 backImage={getDeckBackImage(deck)}
-                style={activeEffect?.type === 'flashlight' && isRevealed(i)
-                  ? { filter: 'brightness(14)', position: 'relative', zIndex: 2 }
-                  : undefined}
+                style={undefined}
               />
             ))}
           </div>

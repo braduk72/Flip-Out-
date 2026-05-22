@@ -118,7 +118,6 @@
   transition: filter 0.3s;
 }
 
-.board.darkRoom  { filter: brightness(0.08); }
 .board.aiTurn    { pointer-events: none; }
 
 

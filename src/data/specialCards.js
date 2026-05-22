@@ -69,13 +69,6 @@ export const SPECIAL_CARDS = {
     description: "Your opponent's next matched pair is added to YOUR score",
     color: '#FFD700',
   },
-  flashlight: {
-    id: 'flashlight',
-    name: 'FLASHLIGHT!',
-    image: '/images/cards/special/flashlight.png',
-    description: 'Lights out — flashlight reveals 3 cards one by one in the dark',
-    color: '#FFFACD',
-  },
   random: {
     id: 'random',
     name: 'RANDOM!',
@@ -111,7 +104,7 @@ export const SPECIAL_CARDS = {
 export const SPECIAL_POOL = [
   'freeze', 'boom', 'tornado', 'magnet', 'bolt',
   'rocket', 'dice', 'shield', 'stopwatch', 'crown',
-  'flashlight', 'random', 'shuffle', 'xray',
+  'random', 'shuffle', 'xray',
 ]
 
 export function pickRandomSpecials(count) {

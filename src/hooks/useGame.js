@@ -392,20 +392,8 @@ function applySpecial(state, index, whose, seed = {}) {
         activeEffect: { type: 'crown', data: { whose } },
       }
 
-    case 'flashlight': {
-      const pool = state.cards
-        .map((_, i) => i)
-        .filter(i => !state.matched.includes(i) && !state.consumed.includes(i) && i !== index)
-      const picks = seed.picks ?? shuffle(pool).slice(0, 3)
-      return {
-        ...base,
-        turn: whose,
-        activeEffect: { type: 'flashlight', data: { picks } },
-      }
-    }
-
     case 'random': {
-      const options = ['freeze','boom','tornado','magnet','bolt','rocket','dice','shield','stopwatch','crown','flashlight','shuffle','xray']
+      const options = ['freeze','boom','tornado','magnet','bolt','rocket','dice','shield','stopwatch','crown','shuffle','xray']
       const chosen = seed.chosen ?? options[Math.floor(Math.random() * options.length)]
       const fakeCard = { ...card, specialType: chosen }
       const fakeCards = [...state.cards]
