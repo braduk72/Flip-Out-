@@ -1,9 +1,7 @@
 import styles from './Home.module.css'
 import BottomNav from '../components/BottomNav'
 
-const DIFFICULTIES = ['Easy', 'Medium', 'Hard']
-
-export default function Home({ onPlay, onKnockout, onShop, onAvatar, onSettings, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty, onDifficulty, gauntletStep }) {
+export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, onSettings, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, gauntletStep, mode = 'vs', onMode }) {
   const hasGoldCard = !!localStorage.getItem('fo_gold_card')
   const coins = parseInt(localStorage.getItem('fo_coins') || '0')
   return (
@@ -35,10 +33,10 @@ export default function Home({ onPlay, onKnockout, onShop, onAvatar, onSettings,
         <div className={styles.actionRow}>
           <button
             className={styles.diffBtn}
-            onClick={() => onDifficulty(DIFFICULTIES[(DIFFICULTIES.indexOf(difficulty) + 1) % DIFFICULTIES.length])}
-            aria-label={`Difficulty: ${difficulty}`}
+            onClick={() => onMode(mode === 'solo' ? 'vs' : 'solo')}
+            aria-label={mode === 'solo' ? '1 player' : '2 players'}
           >
-            <img src={`/images/dif${DIFFICULTIES.indexOf(difficulty) + 1}.png`} alt={difficulty} draggable="false" />
+            <img src={mode === 'solo' ? '/images/dif1.png' : '/images/dif2.png'} alt="" draggable="false" />
           </button>
           <button className={styles.playBtn} onClick={onPlay} aria-label="Play">
             <img src="/images/play.png" alt="PLAY" draggable="false" />

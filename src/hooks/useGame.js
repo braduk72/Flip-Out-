@@ -39,9 +39,9 @@ function buildBoard(deck, numPairs = 7, numSpecials = 2) {
 
 // ── Initial state ─────────────────────────────────────────────────────────────
 
-function makeInitial(deck, numPairs = 7) {
+function makeInitial(deck, numPairs = 7, prebuiltCards = null) {
   return {
-    cards:          buildBoard(deck, numPairs),
+    cards:          prebuiltCards ?? buildBoard(deck, numPairs),
     flipped:        [],      // up to 2 card indices currently revealed
     matched:        [],      // card indices permanently matched
     consumed:       [],      // special card indices that have fired
@@ -163,8 +163,8 @@ function reducer(state, action) {
     }
 
     case 'APPLY_SPECIAL': {
-      const { index, whose } = action
-      return applySpecial({ ...state, pendingSpecial: null }, index, whose)
+      const { index, whose, seed } = action
+      return applySpecial({ ...state, pendingSpecial: null }, index, whose, seed ?? {})
     }
 
     case 'HIDE_FLIPPED':
@@ -260,7 +260,7 @@ function resolveFlip(state, flipped, whose) {
   return newState
 }
 
-function applySpecial(state, index, whose) {
+function applySpecial(state, index, whose, seed = {}) {
   const card = state.cards[index]
   const opponent = otherTurn(whose)
   const consumed = [...state.consumed, index]
@@ -328,8 +328,12 @@ function applySpecial(state, index, whose) {
     }
 
     case 'rocket': {
-      const line = rowOrCol(index)
-        .filter(i => !state.matched.includes(i) && !state.consumed.includes(i) && i !== index)
+      const useRow = seed.useRow ?? (Math.random() < 0.5)
+      const rIdx   = Math.floor(index / 4), cIdx = index % 4
+      const rawLine = useRow
+        ? Array.from({ length: 4 }, (_, c) => rIdx * 4 + c)
+        : Array.from({ length: 4 }, (_, r) => r * 4 + cIdx)
+      const line = rawLine.filter(i => !state.matched.includes(i) && !state.consumed.includes(i) && i !== index)
       return {
         ...base,
         turn: otherTurn(whose),
@@ -338,8 +342,8 @@ function applySpecial(state, index, whose) {
     }
 
     case 'dice': {
-      const die1 = Math.ceil(Math.random() * 6)
-      const die2 = Math.ceil(Math.random() * 6)
+      const die1 = seed.die1 ?? Math.ceil(Math.random() * 6)
+      const die2 = seed.die2 ?? Math.ceil(Math.random() * 6)
       const isDouble = die1 === die2
       return {
         ...base,
@@ -376,21 +380,21 @@ function applySpecial(state, index, whose) {
       const pool = state.cards
         .map((_, i) => i)
         .filter(i => !state.matched.includes(i) && !state.consumed.includes(i) && i !== index)
-      const picks = shuffle(pool).slice(0, 3)
+      const picks = seed.picks ?? shuffle(pool).slice(0, 3)
       return {
         ...base,
-        turn: whose,  // keep turn with the player who played it — they get to pick in the dark
+        turn: whose,
         activeEffect: { type: 'flashlight', data: { picks } },
       }
     }
 
     case 'random': {
       const options = ['freeze','boom','tornado','magnet','bolt','rocket','dice','shield','stopwatch','crown','flashlight','shuffle','xray']
-      const chosen = options[Math.floor(Math.random() * options.length)]
+      const chosen = seed.chosen ?? options[Math.floor(Math.random() * options.length)]
       const fakeCard = { ...card, specialType: chosen }
       const fakeCards = [...state.cards]
       fakeCards[index] = fakeCard
-      return applySpecial({ ...state, cards: fakeCards }, index, whose)
+      return applySpecial({ ...state, cards: fakeCards }, index, whose, seed.innerSeed ?? {})
     }
 
     case 'shuffle': {
@@ -398,7 +402,7 @@ function applySpecial(state, index, whose) {
         .map((_, i) => i)
         .filter(i => !state.matched.includes(i) && !state.consumed.includes(i))
       const shuffledCards = [...state.cards]
-      const positions = shuffle(unmatchedIdx)
+      const positions = seed.positions ?? shuffle(unmatchedIdx)
       const pulled = unmatchedIdx.map(i => state.cards[i])
       positions.forEach((pos, i) => { shuffledCards[pos] = pulled[i] })
       return {
@@ -427,10 +431,10 @@ function applySpecial(state, index, whose) {
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
-export function useGame(deck, difficulty = 'Medium') {
-  const [state, dispatch] = useReducer(reducer, { deck, difficulty }, ({ deck, difficulty }) => {
+export function useGame(deck, difficulty = 'Medium', prebuiltCards = null) {
+  const [state, dispatch] = useReducer(reducer, null, () => {
     const numPairs = DIFFICULTY_PAIRS[difficulty] ?? 7
-    return makeInitial(deck, numPairs)
+    return makeInitial(deck, numPairs, prebuiltCards)
   })
   const aiMemory = useRef({})    // { cardIndex: pairId } — what AI has seen
   const aiKnown  = DIFFICULTY_AI_KNOWN[difficulty] ?? 0.85
@@ -456,8 +460,8 @@ export function useGame(deck, difficulty = 'Medium') {
     dispatch({ type: 'CLEAR_FROZEN' })
   }, [])
 
-  const applyPendingSpecial = useCallback((index, whose) => {
-    dispatch({ type: 'APPLY_SPECIAL', index, whose })
+  const applyPendingSpecial = useCallback((index, whose, seed = null) => {
+    dispatch({ type: 'APPLY_SPECIAL', index, whose, seed })
   }, [])
 
   const commitResolve = useCallback((whose) => {
@@ -526,3 +530,5 @@ export function useGame(deck, difficulty = 'Medium') {
 
   return { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, commitResolve, useJoker }
 }
+
+export { buildBoard }

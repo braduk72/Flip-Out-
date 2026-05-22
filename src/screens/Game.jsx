@@ -42,8 +42,42 @@ function randomContestant(exclude) {
   return pick
 }
 
-export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, gauntletStep }) {
-  const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, commitResolve, useJoker } = useGame(deck, difficulty)
+function formatTime(s) {
+  const m = Math.floor(s / 60)
+  return `${m}:${String(s % 60).padStart(2, '0')}`
+}
+
+// Generate all random values for a special card effect (MP: active player sends to server)
+function generateSpecialSeed(specialType, index, cards, matched, consumed) {
+  function shuffleArr(arr) {
+    const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]] } return a
+  }
+  switch (specialType) {
+    case 'dice':
+      return { die1: Math.ceil(Math.random() * 6), die2: Math.ceil(Math.random() * 6) }
+    case 'flashlight': {
+      const pool = cards.map((_, i) => i).filter(i => !matched.includes(i) && !consumed.includes(i) && i !== index)
+      return { picks: shuffleArr(pool).slice(0, 3) }
+    }
+    case 'random': {
+      const options = ['freeze','boom','tornado','magnet','bolt','rocket','dice','shield','stopwatch','crown','flashlight','shuffle','xray']
+      const chosen  = options[Math.floor(Math.random() * options.length)]
+      return { chosen, innerSeed: generateSpecialSeed(chosen, index, cards, matched, consumed) }
+    }
+    case 'shuffle': {
+      const unmatched = cards.map((_, i) => i).filter(i => !matched.includes(i) && !consumed.includes(i))
+      function arr(a) { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[r[i], r[j]] = [r[j], r[i]] } return r }
+      return { positions: arr(unmatched) }
+    }
+    case 'rocket':
+      return { useRow: Math.random() < 0.5 }
+    default:
+      return {}
+  }
+}
+
+export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, gauntletStep }) {
+  const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, commitResolve, useJoker } = useGame(deck, difficulty, prebuiltCards)
   const [jokersRemaining, setJokersRemaining] = useState(() => getJokersRemaining())
   const stageRef   = useRef(randomStage())
   const aiContRef  = useRef(randomContestant(portrait))
@@ -52,6 +86,16 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const [cinematicDismissed, setCinematicDismissed] = useState(false)
   const [portraitFlipped, setPortraitFlipped] = useState(false)
   const [showQuitModal, setShowQuitModal] = useState(false)
+
+  // Solo mode timer
+  const [elapsed, setElapsed] = useState(0)
+  const elapsedRef = useRef(0)
+  const timerStarted = useRef(false)
+  const timerIntervalRef = useRef(null)
+  const [soloFinalTime, setSoloFinalTime] = useState(0)
+  const [soloNewBest, setSoloNewBest] = useState(false)
+  const [soloLevel, setSoloLevel] = useState(0)
+  const [soloPrevBest, setSoloPrevBest] = useState(0)
 
   const {
     cards, flipped, matched, consumed, frozen,
@@ -90,9 +134,111 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     flipped.forEach(i => teachAI(i, cards[i]))
   }, [flipped, cards, teachAI])
 
+  // Solo timer — start on first flip
+  useEffect(() => {
+    if (mode !== 'solo' || timerStarted.current || gameOver || flipped.length === 0) return
+    timerStarted.current = true
+    timerIntervalRef.current = setInterval(() => {
+      elapsedRef.current += 1
+      setElapsed(elapsedRef.current)
+    }, 1000)
+  }, [flipped, gameOver, mode])
+
+  // Solo timer — stop on game over, save stats
+  useEffect(() => {
+    if (mode !== 'solo' || !gameOver) return
+    if (timerIntervalRef.current) { clearInterval(timerIntervalRef.current); timerIntervalRef.current = null }
+    const finalTime = elapsedRef.current
+    setSoloFinalTime(finalTime)
+    const bestKey = `fo_best_${deck.id}_${difficulty}`
+    const stored = parseInt(localStorage.getItem(bestKey) || '0')
+    setSoloPrevBest(stored)
+    if (finalTime > 0 && (stored === 0 || finalTime < stored)) {
+      localStorage.setItem(bestKey, String(finalTime))
+      setSoloNewBest(true)
+    }
+    const levelKey = `fo_solo_level_${difficulty}`
+    const lvl = parseInt(localStorage.getItem(levelKey) || '0') + 1
+    localStorage.setItem(levelKey, String(lvl))
+    setSoloLevel(lvl)
+  }, [gameOver, mode]) // deck.id and difficulty are stable for the life of a game
+
+  // Cleanup timer on unmount
+  useEffect(() => () => { if (timerIntervalRef.current) clearInterval(timerIntervalRef.current) }, [])
+
+  // ── Multiplayer: register opponent flip handler ────────────────────────────
+  useEffect(() => {
+    if (!mpState) return
+    mpState.setOppFlipHandler((index) => {
+      // Opponent flipped — apply as AI flip so local game state stays in sync
+      aiFlip(index)
+    })
+  }, [mpState, aiFlip])
+
+  // ── Multiplayer: register special result handler (seed arrives from server) ─
+  useEffect(() => {
+    if (!mpState) return
+    mpState.setSpecialResultHandler(({ index, seed }) => {
+      // Opponent's special card resolved — apply with their seed
+      applyPendingSpecial(index, 'ai', seed)
+    })
+  }, [mpState, applyPendingSpecial])
+
+  // ── Multiplayer: report flip to server when player flips ──────────────────
+  // (handled inline in onClick — see card grid below)
+
+  // ── Multiplayer: report turn result when resolve completes ────────────────
+  const prevResolveRef = useRef(null)
+  useEffect(() => {
+    if (!mpState?.active || !pendingResolve) return
+    prevResolveRef.current = pendingResolve
+  }, [pendingResolve, mpState])
+
+  useEffect(() => {
+    if (!mpState?.active || !prevResolveRef.current) return
+    if (activeEffect?.type === 'match' && activeEffect.data?.whose === 'player') {
+      mpState.sendTurnResult(true)
+      prevResolveRef.current = null
+    } else if (activeEffect?.type === 'no_match' && prevResolveRef.current?.whose === 'player') {
+      mpState.sendTurnResult(false)
+      prevResolveRef.current = null
+    }
+  }, [activeEffect, mpState])
+
+  // ── Multiplayer: game over relay ───────────────────────────────────────────
+  useEffect(() => {
+    if (!mpState?.active || !gameOver) return
+    mpState.sendGameOver(playerScore, aiScore)
+  }, [gameOver]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Multiplayer: opponent left — show game over overlay ───────────────────
+  // The hook sets status='finished' + opponentLeft=true. We force winner='player'
+  // by awarding a win locally (score-based winner already handled by game state;
+  // if the game wasn't over yet we just show the overlay via opponentLeft flag).
+
   // Fire pending special after flip animation (380ms transition + brief pause)
   useEffect(() => {
     if (!pendingSpecial) return
+
+    if (mode === 'mp' && pendingSpecial.whose === 'player') {
+      // Player triggered a special — generate seed, send to opponent, then apply locally
+      const seed = generateSpecialSeed(
+        cards[pendingSpecial.index]?.specialType,
+        pendingSpecial.index,
+        cards,
+        matched,
+        consumed
+      )
+      mpState?.sendSpecialResult({ index: pendingSpecial.index, seed })
+      const t = setTimeout(() => applyPendingSpecial(pendingSpecial.index, pendingSpecial.whose, seed), 600)
+      return () => clearTimeout(t)
+    }
+
+    if (mode === 'mp' && pendingSpecial.whose === 'ai') {
+      // Opponent's special — don't fire locally, wait for fo:special_result seed
+      return
+    }
+
     const t = setTimeout(
       () => applyPendingSpecial(pendingSpecial.index, pendingSpecial.whose),
       600
@@ -180,12 +326,20 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
   useEffect(() => {
     if (turn === 'ai' && !gameOver && !activeEffect) {
+      if (mode === 'solo') {
+        const t = setTimeout(() => hideFlipped(), 500)
+        return () => clearTimeout(t)
+      }
+      if (mode === 'mp') {
+        // Opponent controls their own turn — do nothing locally
+        return
+      }
       doAITurn()
     }
     return () => {
       if (aiTimerRef.current) clearTimeout(aiTimerRef.current)
     }
-  }, [turn, gameOver, activeEffect, doAITurn])
+  }, [turn, gameOver, activeEffect, doAITurn, mode, hideFlipped])
 
   // Flashlight effect — close after 3 seconds
   useEffect(() => {
@@ -247,14 +401,21 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
         {/* Turn label */}
         <div className={styles.turnBar}>
-          <span className={`${styles.turnDot} ${turn === 'player' ? styles.active : ''}`} />
+          {mode !== 'solo' && <span className={`${styles.turnDot} ${turn === 'player' ? styles.active : ''}`} />}
           <div className={styles.turnLabel}>
             {gameOver
-              ? winner === 'draw' ? '🤝 DRAW!' : winner === 'player' ? '🏆 YOU WIN!' : '😅 AI WINS!'
+              ? (mode === 'solo' ? '✓ DONE!'
+                : mpState?.opponentLeft ? '🏆 OPPONENT LEFT!'
+                : winner === 'draw' ? '🤝 DRAW!'
+                : winner === 'player' ? '🏆 YOU WIN!'
+                : mode === 'mp' ? '😅 OPPONENT WINS!'
+                : '😅 AI WINS!')
+              : mode === 'solo' ? `⏱ ${formatTime(elapsed)}`
+              : mode === 'mp' ? (turn === 'player' ? 'YOUR TURN' : "OPPONENT'S TURN")
               : turn === 'player' ? 'YOUR TURN' : "AI'S TURN"
             }
           </div>
-          <span className={`${styles.turnDot} ${turn === 'ai' ? styles.active : ''} ${difficulty === 'Lethal' && turn === 'ai' ? styles.lethalDot : ''}`} />
+          {mode !== 'solo' && <span className={`${styles.turnDot} ${turn === 'ai' ? styles.active : ''} ${difficulty === 'Lethal' && turn === 'ai' ? styles.lethalDot : ''}`} />}
         </div>
 
         {/* Progress bar */}
@@ -268,7 +429,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
             className={`
               ${styles.board}
               ${activeEffect?.type === 'flashlight' ? styles.darkRoom : ''}
-              ${turn !== 'player' ? styles.aiTurn : ''}
+              ${turn !== 'player' && mode !== 'solo' && mode !== 'mp' ? styles.aiTurn : ''}
             `}
           >
             {cards.map((card, i) => (
@@ -279,7 +440,13 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 isMatched={matched.includes(i)}
                 isFrozen={frozen.includes(i)}
                 isConsumed={consumed.includes(i)}
-                onClick={() => turn === 'player' && !gameOver && flipCard(i)}
+                onClick={() => {
+                  if (gameOver) return
+                  if (mode === 'solo' || turn === 'player') {
+                    flipCard(i)
+                    if (mode === 'mp') mpState?.sendFlip(i)
+                  }
+                }}
                 backImage={getDeckBackImage(deck)}
                 style={activeEffect?.type === 'flashlight' && isRevealed(i)
                   ? { filter: 'brightness(14)', position: 'relative', zIndex: 2 }
@@ -292,7 +459,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
         {/* Joker button — appears when player has flipped one card */}
         {turn === 'player' && flipped.length === 1 && !state.jokerUsed && jokersRemaining > 0 && !gameOver && (
           <button className={styles.jokerBtn} onClick={handleJoker}>
-            <img src="/images/joker.png" alt="Joker" className={styles.jokerImg} />
+            <img src="/images/jokers/1.png" alt="Joker" className={styles.jokerImg} />
             <span className={styles.jokerLabel}>USE JOKER</span>
             <span className={styles.jokerCount}>{jokersRemaining} left today</span>
           </button>
@@ -311,11 +478,17 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
           </div>
           <div className={styles.sidePanel}>
             <div className={`${styles.portraitWrap} ${turn !== 'ai' ? styles.inactive : ''} ${spinning ? styles.spinning : ''} ${difficulty === 'Lethal' && turn === 'ai' ? styles.lethalAiActive : ''}`}>
-              <img src={opponentImage || `/images/a${aiContRef.current}.png`} alt="AI" className={styles.portrait} />
+              <img
+                src={mode === 'mp'
+                  ? `/images/a${mpState?.opponentPortrait ?? 1}.png`
+                  : opponentImage || `/images/a${aiContRef.current}.png`}
+                alt={mode === 'mp' ? 'Opponent' : 'AI'}
+                className={styles.portrait}
+              />
             </div>
             <span className={styles.sideScore}>{aiScore}</span>
             <span className={`${styles.contLabel} ${styles.cpuLabel}`}>
-              CPU{aiShield ? ' 🛡️' : ''}{crownHolder === 'ai' ? ' 👑' : ''}
+              {mode === 'mp' ? 'OPPONENT' : 'CPU'}{aiShield ? ' 🛡️' : ''}{crownHolder === 'ai' ? ' 👑' : ''}
             </span>
           </div>
         </div>
@@ -335,7 +508,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
         )}
 
         {/* Game over overlay */}
-        {gameOver && (
+        {(gameOver || mpState?.opponentLeft) && (
           <>
             {/* ── Gauntlet WIN cinematic ── */}
             {onResult && winner === 'player' && opponentImage && !cinematicDismissed ? (
@@ -417,6 +590,46 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
               </div>
 
+            ) : mode === 'solo' ? (
+              /* ── Solo mode result ── */
+              <div className={styles.gameOverlay}>
+                <div className={styles.gameOverCard}>
+                  <div className={styles.resultEmoji}>⏱️</div>
+                  <div className={styles.resultTitle}>COMPLETED!</div>
+                  <div className={styles.soloTime}>{formatTime(soloFinalTime)}</div>
+                  {soloNewBest && <div className={styles.newBestBadge}>🏆 NEW BEST!</div>}
+                  <div className={styles.soloMeta}>
+                    {soloPrevBest > 0
+                      ? `${soloNewBest ? 'Previous' : 'Best'}: ${formatTime(soloPrevBest)}`
+                      : 'First time!'}
+                  </div>
+                  <div className={styles.soloMeta}>Level {soloLevel} · {difficulty}</div>
+                  <button className={styles.playAgainBtn} onClick={onBack}>Play Again</button>
+                </div>
+              </div>
+            ) : mode === 'mp' ? (
+              /* ── Multiplayer game over ── */
+              <div className={styles.gameOverlay}>
+                <div className={styles.gameOverCard}>
+                  <div className={styles.resultEmoji}>
+                    {mpState?.opponentLeft ? '🚪'
+                      : winner === 'player' ? '🏆'
+                      : winner === 'ai' ? '😅'
+                      : '🤝'}
+                  </div>
+                  <div className={styles.resultTitle}>
+                    {mpState?.opponentLeft ? 'Opponent Left'
+                      : winner === 'player' ? 'You Win!'
+                      : winner === 'ai' ? 'Opponent Wins!'
+                      : "It's a Draw!"}
+                  </div>
+                  <div className={styles.finalScores}>
+                    <span>You: {playerScore}</span>
+                    <span>Opp: {aiScore}</span>
+                  </div>
+                  <button className={styles.playAgainBtn} onClick={onBack}>BACK TO MENU</button>
+                </div>
+              </div>
             ) : (
               /* ── Standard game over card (loss / draw / non-gauntlet) ── */
               <div className={styles.gameOverlay}>

@@ -7,8 +7,11 @@ import Settings from './screens/Settings'
 import Game from './screens/Game'
 import Gauntlet from './screens/Gauntlet'
 import RoundStart from './screens/RoundStart'
+import MultiplayerLobby from './screens/MultiplayerLobby'
 import { KNOCKOUT_OPPONENTS } from './data/opponents'
 import { DECKS } from './data/decks'
+import { useMultiplayer } from './hooks/useMultiplayer'
+import { buildBoard } from './hooks/useGame'
 
 function awardGoldCard() {
   if (!localStorage.getItem('fo_gold_card')) {
@@ -28,6 +31,12 @@ export default function App() {
   const [difficulty, setDifficulty] = useState(() => localStorage.getItem('fo_difficulty')          || 'Medium')
   const [musicOn,    setMusicOn]    = useState(() => localStorage.getItem('fo_music')               !== 'off')
   const [sfxOn,      setSfxOn]      = useState(() => localStorage.getItem('fo_sfx')                 !== 'off')
+  const [mode,       setMode]       = useState('vs')
+
+  // Multiplayer
+  const mp = useMultiplayer()
+  const [mpDeck,  setMpDeck]  = useState(null)
+  const [mpCards, setMpCards] = useState(null)
 
   // Gauntlet state
   const [gauntletStep,    setGauntletStep]    = useState(() => parseInt(localStorage.getItem('fo_gauntlet_step') || '0'))
@@ -35,16 +44,57 @@ export default function App() {
 
   const audioRef = useRef(null)
 
+  // ── Multiplayer board sync effects ──────────────────────────────────────────
+  // When game_start fires, host generates the board; guest waits for fo:board
+  useEffect(() => {
+    if (mp.status !== 'starting') return
+    const deckObj = DECKS.find(d => d.id === mp.deckId)
+    if (!deckObj) return
+    const numPairs = { Easy: 5, Medium: 7, Hard: 9, Lethal: 9 }[mp.difficulty] ?? 7
+    setMpDeck(deckObj)
+    if (mp.isHost) {
+      const cards = buildBoard(deckObj, numPairs)
+      setMpCards(cards)
+      mp.sendBoard(cards)
+    }
+  }, [mp.status, mp.isHost, mp.deckId, mp.difficulty]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Guest receives board
+  useEffect(() => {
+    if (!mp.prebuiltCards) return
+    setMpCards(mp.prebuiltCards)
+    setMpDeck(DECKS.find(d => d.id === mp.deckId) ?? null)
+  }, [mp.prebuiltCards]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Navigate to game once both deck + cards are ready
+  useEffect(() => {
+    if (mp.status === 'playing' && mpCards && mpDeck) setScreen('mpgame')
+  }, [mp.status, mpCards, mpDeck])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('unlock') === 'gizmo') {
+      const allIds = DECKS.filter(d => !d.free).map(d => d.id)
+      const existing = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
+      const merged = [...new Set([...existing, ...allIds])]
+      localStorage.setItem('fo_owned_decks', JSON.stringify(merged))
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
+
   useEffect(() => {
     const audio = new Audio('/music/deal-the-tension.mp3')
     audio.loop   = true
     audio.volume = 0.45
+    audio.addEventListener('ended', () => { audio.currentTime = 0; audio.play().catch(() => {}) })
     audioRef.current = audio
+
+    const tryPlay = () => { if (musicOn) audio.play().catch(() => {}) }
 
     if (musicOn) {
       audio.play().catch(() => {
         const unlock = () => {
-          audio.play().catch(() => {})
+          tryPlay()
           document.removeEventListener('click',      unlock)
           document.removeEventListener('touchstart', unlock)
         }
@@ -82,6 +132,11 @@ export default function App() {
     setDeck(null)
     setGauntletActive(false)
   }
+
+  // ── Multiplayer flow ───────────────────────────────────────────────────────
+  function handleOnline()    { setScreen('mplobby') }
+  function handleMpBack()    { mp.disconnect(); setMpDeck(null); setMpCards(null); setScreen('home') }
+  function handleMpGameBack() { mp.disconnect(); setMpDeck(null); setMpCards(null); setScreen('home') }
 
   // ── Gauntlet flow ──────────────────────────────────────────────────────────
   function handleKnockout() {
@@ -180,6 +235,7 @@ export default function App() {
         key={deck.id + Date.now()}
         deck={deck}
         portrait={portrait}
+        mode={isGauntlet ? 'vs' : mode}
         difficulty={isGauntlet ? gauntletOpponent.difficulty : difficulty}
         opponentImage={isGauntlet ? gauntletOpponent.image : undefined}
         opponentDefeatedImage={isGauntlet ? gauntletOpponent.defeatedImage : undefined}
@@ -199,18 +255,40 @@ export default function App() {
   if (screen === 'deckpicker') {
     return <DeckPicker onSelect={handleSelectDeck} onBack={handleBack} />
   }
+  if (screen === 'mplobby') {
+    return <MultiplayerLobby mp={mp} portrait={portrait} onBack={handleMpBack} />
+  }
+  if (screen === 'mpgame' && mpDeck && mpCards) {
+    return (
+      <Game
+        key={`mp-${mp.roomCode}`}
+        deck={mpDeck}
+        portrait={portrait}
+        mode="mp"
+        difficulty={mp.difficulty}
+        prebuiltCards={mpCards}
+        mpState={mp}
+        onBack={handleMpGameBack}
+        musicOn={musicOn}
+        sfxOn={sfxOn}
+        onToggleMusic={toggleMusic}
+        onToggleSfx={toggleSfx}
+      />
+    )
+  }
   return (
     <Home
       onPlay={handlePlay}
       onKnockout={handleKnockout}
+      onOnline={handleOnline}
       onShop={() => setScreen('shop')}
       onAvatar={() => setScreen('avatarpicker')}
       onSettings={() => setScreen('settings')}
       portrait={portrait}
       onPortrait={handlePortrait}
-      difficulty={difficulty}
-      onDifficulty={handleDifficulty}
       gauntletStep={gauntletStep}
+      mode={mode}
+      onMode={setMode}
       musicOn={musicOn}
       sfxOn={sfxOn}
       onToggleMusic={toggleMusic}

@@ -124,6 +124,33 @@
   z-index: 10;
 }
 
+/* ── Mode toggle ── */
+.modeRow {
+  display: flex;
+  border-radius: 50px;
+  border: 1.5px solid rgba(255, 215, 0, 0.3);
+  overflow: hidden;
+}
+
+.modeBtn {
+  flex: 1;
+  padding: 7px 0;
+  background: rgba(0, 0, 0, 0.35);
+  border: none;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.modeBtnActive {
+  background: rgba(255, 215, 0, 0.18);
+  color: #FFD700;
+}
+
 /* ── Difficulty ── */
 .actionRow {
   display: flex;
@@ -231,6 +258,30 @@
   transform: translateY(3px);
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
+
+/* ── Play Online button ── */
+.onlineBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 340px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(0, 140, 255, 0.55);
+  background: rgba(0, 20, 60, 0.55);
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.15s, box-shadow 0.15s;
+  box-shadow: 0 0 16px rgba(0, 100, 255, 0.12);
+}
+
+.onlineBtn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 180, 255, 0.8);
+  box-shadow: 0 4px 20px rgba(0, 140, 255, 0.3);
+}
+
+.onlineBtn:active { transform: translateY(1px); }
 
 /* ── Knockout Gauntlet button ── */
 .knockoutBtn {
