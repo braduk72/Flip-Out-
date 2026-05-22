@@ -339,6 +339,7 @@
   background: rgba(0,0,0,0.85);
   gap: 24px;
   animation: fadeIn 0.2s ease;
+  cursor: default;
 }
 
 @keyframes fadeIn {
@@ -408,6 +409,22 @@
   gap: 14px;
   box-shadow: 0 0 24px var(--effect-color, rgba(255,215,0,0.3));
   animation: bannerIn 0.3s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.effectDismiss {
+  font-size: 14px;
+  color: rgba(255,255,255,0.45);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.effectDismissHint {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  font-family: Arial, sans-serif;
+  letter-spacing: 0.5px;
 }
 
 @keyframes bannerIn {

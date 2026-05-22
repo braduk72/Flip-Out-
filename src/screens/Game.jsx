@@ -356,13 +356,13 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     return () => { timers.forEach(clearTimeout); clearTimeout(revealTimer) }
   }, [activeEffect?.type]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Clear frozen when the turn comes BACK to the player (after opponent used their frozen turn)
+  // Clear frozen when the turn comes BACK to the player; also clear the effect banner
   useEffect(() => {
     if (frozen.length > 0 && turn === 'player') {
-      const t = setTimeout(clearFrozen, 200)
+      const t = setTimeout(() => { clearFrozen(); clearEffect() }, 200)
       return () => clearTimeout(t)
     }
-  }, [turn, frozen, clearFrozen])
+  }, [turn, frozen, clearFrozen, clearEffect])
 
   // AI turn logic
   const doAITurn = useCallback(() => {
@@ -391,9 +391,11 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   }, [state, cards, flipped, matched, consumed, frozen, aiFlip, hideFlipped, getAIMove])
 
   useEffect(() => {
-    if (turn === 'ai' && !gameOver && !activeEffect) {
+    // In solo, also pass the turn back during freeze so cards don't lock up for 5s
+    const soloFreeze = mode === 'solo' && turn === 'ai' && !gameOver && activeEffect?.type === 'freeze'
+    if ((turn === 'ai' && !gameOver && !activeEffect) || soloFreeze) {
       if (mode === 'solo') {
-        const t = setTimeout(() => hideFlipped(), 500)
+        const t = setTimeout(() => hideFlipped(), soloFreeze ? 1200 : 500)
         return () => clearTimeout(t)
       }
       if (mode === 'mp') {
@@ -468,6 +470,13 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const progress = ((playerScore + aiScore) / totalPairs) * 100
 
   const isCardFlipped = i => flipped.includes(i)
+  const revealEffectType = i => {
+    if (activeEffect?.type === 'xray') return 'xray'
+    if (activeEffect?.type === 'boom'    && activeEffect.data.launched.includes(i)) return 'boom'
+    if (activeEffect?.type === 'rocket'  && activeEffect.data.line.includes(i))     return 'rocket'
+    if (activeEffect?.type === 'tornado' && tornadoCol >= 0 && (i % 4) <= tornadoCol && activeEffect.data.trail.includes(i)) return 'tornado'
+    return null
+  }
   const isRevealed    = i => {
     if (activeEffect?.type === 'xray') return true
     if (activeEffect?.type === 'boom')       return activeEffect.data.launched.includes(i)
@@ -539,6 +548,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 isMatched={matched.includes(i)}
                 isFrozen={frozen.includes(i)}
                 isConsumed={consumed.includes(i)}
+                revealEffect={revealEffectType(i)}
                 onClick={() => {
                   if (gameOver) return
                   if (pendingResolve || pendingSpecial || flipped.length >= 2) return
@@ -626,7 +636,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
         {/* Dice roll overlay */}
         {activeEffect?.type === 'dice' && (
-          <div className={styles.diceOverlay}>
+          <div className={styles.diceOverlay} onClick={diceRevealed ? clearEffect : undefined}>
             <div className={styles.diceRow}>
               <span className={`${styles.dieFace} ${diceRevealed ? styles.diceReveal : styles.diceRolling}`}>
                 {['⚀','⚁','⚂','⚃','⚄','⚅'][diceDisplay[0] - 1]}
@@ -636,9 +646,12 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
               </span>
             </div>
             {diceRevealed && (
-              <div className={styles.diceResultText}>
-                {activeEffect.data.isDouble ? '🎉 DOUBLE! Take another turn!' : 'No double — turn passes'}
-              </div>
+              <>
+                <div className={styles.diceResultText}>
+                  {activeEffect.data.isDouble ? '🎉 DOUBLE! Take another turn!' : 'No double — turn passes'}
+                </div>
+                <div className={styles.effectDismissHint}>tap to dismiss</div>
+              </>
             )}
           </div>
         )}
@@ -648,20 +661,14 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
           <div
             className={styles.effectBanner}
             style={{ '--effect-color': effectCard.color }}
+            onClick={clearEffect}
           >
             <img src={effectCard.image} alt={effectCard.name} className={styles.effectIcon} />
-            <div>
+            <div style={{ flex: 1 }}>
               <div className={styles.effectName}>{effectCard.name}</div>
-              {activeEffect.type === 'dice' ? (
-                <div className={styles.effectDesc}>
-                  {['⚀','⚁','⚂','⚃','⚄','⚅'][activeEffect.data.die1 - 1]}{' '}
-                  {['⚀','⚁','⚂','⚃','⚄','⚅'][activeEffect.data.die2 - 1]}{' '}
-                  {activeEffect.data.isDouble ? '🎉 DOUBLE — extra turn!' : 'No double — turn passes'}
-                </div>
-              ) : (
-                <div className={styles.effectDesc}>{effectCard.description}</div>
-              )}
+              <div className={styles.effectDesc}>{effectCard.description}</div>
             </div>
+            <span className={styles.effectDismiss}>✕</span>
           </div>
         )}
 

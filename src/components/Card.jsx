@@ -1,6 +1,6 @@
 import styles from './Card.module.css'
 
-export default function Card({ card, isFlipped, isMatched, isFrozen, isConsumed, onClick, backImage, style }) {
+export default function Card({ card, isFlipped, isMatched, isFrozen, isConsumed, revealEffect, onClick, backImage, style }) {
   const faceUp = isFlipped && !isMatched
 
   return (
@@ -51,6 +51,12 @@ export default function Card({ card, isFlipped, isMatched, isFrozen, isConsumed,
             <line x1="37" y1="24" x2="31" y2="30" stroke="rgba(200,240,255,0.85)" strokeWidth="1.5" strokeLinecap="round"/>
             <circle cx="24" cy="24" r="4" fill="rgba(220,245,255,0.6)" stroke="rgba(200,240,255,0.95)" strokeWidth="1.5"/>
           </svg>
+          <span className={styles.frozenLabel}>FROZEN</span>
+        </div>
+      )}
+      {revealEffect && (
+        <div className={styles.revealBadge}>
+          <img src={`/images/cards/special/${revealEffect}.png`} alt={revealEffect} />
         </div>
       )}
     </div>
