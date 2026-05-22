@@ -96,6 +96,23 @@ export default function App() {
       localStorage.setItem('fo_owned_decks', JSON.stringify(merged))
       window.history.replaceState({}, '', window.location.pathname)
     }
+    // Dev helpers — never linked publicly
+    if (params.get('resetoffer') === '1') {
+      localStorage.removeItem('fo_offer_seen')
+      localStorage.removeItem('fo_offer_expires')
+      localStorage.removeItem('fo_offer_bought')
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+    if (params.get('resetseason') === '1') {
+      localStorage.removeItem('fo_season1_step')
+      localStorage.removeItem('fo_season1_gold_card')
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+    if (params.get('resetgauntlet') === '1') {
+      localStorage.removeItem('fo_gauntlet_step')
+      localStorage.removeItem('fo_gold_card')
+      window.history.replaceState({}, '', window.location.pathname)
+    }
   }, [])
 
   useEffect(() => {
