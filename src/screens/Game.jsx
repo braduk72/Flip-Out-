@@ -77,10 +77,9 @@ function generateSpecialSeed(specialType, index, cards, matched, consumed) {
   }
 }
 
-const DEV_SPECIALS = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('specials')
-
 export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, yourTurn = true, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, gauntletStep }) {
   const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, commitResolve, useJoker } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player')
+  const devSpecials = new URLSearchParams(window.location.search).has('specials')
   const [jokersRemaining, setJokersRemaining] = useState(() => getJokersRemaining())
   const stageRef   = useRef(randomStage())
   const aiContRef  = useRef(randomContestant(portrait))
@@ -750,16 +749,17 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       {showInterstitial && <Interstitial onClose={handleInterstitialClose} />}
 
       {/* Dev special-card toolbar — visible when ?specials is in URL */}
-      {DEV_SPECIALS && (
-        <div style={{ display:'flex', flexWrap:'wrap', gap:'4px', padding:'6px 8px', background:'rgba(0,0,0,0.75)', justifyContent:'center', position:'relative', zIndex:50 }}>
+      {devSpecials && (
+        <div style={{ display:'flex', flexWrap:'wrap', gap:'4px', padding:'6px 8px', background:'#1a0010', justifyContent:'center', position:'relative', zIndex:50, borderTop:'2px solid #ff0066' }}>
           {SPECIAL_POOL.map(type => (
             <button
               key={type}
               title={type}
               onClick={() => applyPendingSpecial(0, 'player', generateSpecialSeed(type, 0, cards, matched, consumed))}
-              style={{ background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:'8px', padding:'3px', cursor:'pointer' }}
+              style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'2px', background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:'8px', padding:'4px 6px', cursor:'pointer' }}
             >
               <img src={`/images/cards/special/${type}.png`} alt={type} style={{ width:'32px', height:'32px', objectFit:'contain', display:'block' }} />
+              <span style={{ color:'#fff', fontSize:'8px', fontFamily:'Arial', textTransform:'uppercase' }}>{type}</span>
             </button>
           ))}
         </div>
