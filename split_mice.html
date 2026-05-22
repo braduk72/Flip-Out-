@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Robomice Splitter</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #0a0020; color: #fff; padding: 24px; max-width: 960px; margin: 0 auto; }
+  h1   { color: #FFD700; margin-bottom: 4px; }
+  p    { color: rgba(255,255,255,0.65); margin: 6px 0 16px; }
+  input[type=file]  { display: block; margin: 16px 0; padding: 10px; background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,215,0,0.4); border-radius: 8px; color: #fff; cursor: pointer; width: 100%; box-sizing: border-box; }
+  .options { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-end; margin: 12px 0 20px; }
+  .options label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: rgba(255,255,255,0.6); }
+  .options input[type=text]   { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,215,0,0.3); border-radius: 6px; color: #fff; padding: 6px 10px; width: 56px; font-size: 14px; font-family: monospace; }
+  .options input[type=range]  { width: 140px; accent-color: #FFD700; }
+  .threshold-row { display: flex; align-items: center; gap: 10px; }
+  #threshVal { color: #FFD700; font-weight: 700; min-width: 28px; }
+  .row-label { font-size: 13px; font-weight: 700; letter-spacing: 2px; color: rgba(255,215,0,0.7); text-transform: uppercase; margin: 22px 0 8px; }
+  .frames    { display: flex; gap: 14px; flex-wrap: wrap; }
+  .frame     { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .frame canvas { border: 1.5px solid rgba(255,215,0,0.25); border-radius: 8px; background: repeating-conic-gradient(#333 0% 25%, #555 0% 50%) 0 0 / 12px 12px; }
+  .frame a   { font-size: 11px; color: #FFD700; text-decoration: none; background: rgba(255,215,0,0.12); border: 1px solid rgba(255,215,0,0.4); border-radius: 50px; padding: 4px 12px; white-space: nowrap; }
+  .frame a:hover { background: rgba(255,215,0,0.25); }
+  #status { color: #4ade80; margin: 10px 0; font-weight: 700; min-height: 20px; }
+  #dlAll  { display: none; margin: 20px 0 0; padding: 13px 32px; background: linear-gradient(135deg,#FFD700,#e8a800); color: #1a0040; font-weight: 900; font-size: 16px; border: none; border-radius: 50px; cursor: pointer; }
+  #dlAll:hover { filter: brightness(1.1); }
+</style>
+</head>
+<body>
+
+<h1>🐭 Robomice Splitter</h1>
+<p>Load your sprite sheet (4 columns × 3 rows). Adjust the tolerance slider until the background disappears cleanly, then download all 12 PNGs.</p>
+
+<div class="options">
+  <label>Row 1 letter <input type="text" id="c0" value="g" maxlength="2" /></label>
+  <label>Row 2 letter <input type="text" id="c1" value="o" maxlength="2" /></label>
+  <label>Row 3 letter <input type="text" id="c2" value="p" maxlength="2" /></label>
+  <label>
+    Background tolerance
+    <div class="threshold-row">
+      <input type="range" id="thresh" min="0" max="120" value="40" />
+      <span id="threshVal">40</span>
+    </div>
+  </label>
+</div>
+
+<input type="file" accept="image/*" id="fileIn" />
+<div id="status"></div>
+<button id="dlAll">⬇ Download all 12 frames</button>
+<div id="output"></div>
+
+<script>
+let lastImg = null
+const COLS = 4, ROWS = 3
+
+const threshSlider = document.getElementById('thresh')
+const threshVal    = document.getElementById('threshVal')
+threshSlider.addEventListener('input', () => {
+  threshVal.textContent = threshSlider.value
+  if (lastImg) render(lastImg)
+})
+
+// Re-render when colour letters change
+;['c0','c1','c2'].forEach(id =>
+  document.getElementById(id).addEventListener('input', () => { if (lastImg) render(lastImg) })
+)
+
+document.getElementById('fileIn').addEventListener('change', e => {
+  const file = e.target.files[0]
+  if (!file) return
+  const url = URL.createObjectURL(file)
+  const img = new Image()
+  img.onload = () => { lastImg = img; render(img); URL.revokeObjectURL(url) }
+  img.src = url
+})
+
+function removeBackground(ctx, w, h, threshold) {
+  const data = ctx.getImageData(0, 0, w, h)
+  const px   = data.data
+
+  // Sample background colour from the four corners (pick majority)
+  const corners = [0, (w-1)*4, (h-1)*w*4, ((h-1)*w + w-1)*4]
+  let br = 0, bg = 0, bb = 0
+  corners.forEach(i => { br += px[i]; bg += px[i+1]; bb += px[i+2] })
+  br = Math.round(br / corners.length)
+  bg = Math.round(bg / corners.length)
+  bb = Math.round(bb / corners.length)
+
+  for (let i = 0; i < px.length; i += 4) {
+    const dr = Math.abs(px[i]   - br)
+    const dg = Math.abs(px[i+1] - bg)
+    const db = Math.abs(px[i+2] - bb)
+    if (dr + dg + db < threshold * 3) {
+      px[i+3] = 0  // make transparent
+    }
+  }
+  ctx.putImageData(data, 0, 0)
+}
+
+// Store canvases for bulk download
+const frameCanvases = []
+
+function render(img) {
+  const threshold = parseInt(threshSlider.value)
+  const fw = img.width  / COLS
+  const fh = img.height / ROWS
+  frameCanvases.length = 0
+
+  document.getElementById('status').textContent =
+    `${img.width}×${img.height}px sheet — each frame: ${Math.round(fw)}×${Math.round(fh)}px`
+
+  const colours = ['c0','c1','c2'].map(id => document.getElementById(id).value.trim() || '?')
+  const out = document.getElementById('output')
+  out.innerHTML = ''
+
+  for (let row = 0; row < ROWS; row++) {
+    const colour = colours[row]
+    const section = document.createElement('div')
+    section.innerHTML = `<div class="row-label">Row ${row+1} · m${colour}</div>`
+    const framesDiv = document.createElement('div')
+    framesDiv.className = 'frames'
+
+    for (let col = 0; col < COLS; col++) {
+      const frameNum = col + 1
+      const filename = `m${colour}${frameNum}.png`
+
+      // Full-res canvas for export
+      const full = document.createElement('canvas')
+      full.width  = fw
+      full.height = fh
+      const fctx = full.getContext('2d')
+      fctx.drawImage(img, col * fw, row * fh, fw, fh, 0, 0, fw, fh)
+      if (threshold > 0) removeBackground(fctx, fw, fh, threshold)
+      frameCanvases.push({ canvas: full, filename })
+
+      // Preview canvas
+      const displaySize = Math.min(150, fw)
+      const preview = document.createElement('canvas')
+      preview.width  = displaySize
+      preview.height = Math.round(fh * (displaySize / fw))
+      preview.getContext('2d').drawImage(full, 0, 0, preview.width, preview.height)
+
+      const a = document.createElement('a')
+      a.textContent = `⬇ ${filename}`
+      a.download = filename
+      a.href = full.toDataURL('image/png')
+
+      const frameDiv = document.createElement('div')
+      frameDiv.className = 'frame'
+      frameDiv.appendChild(preview)
+      frameDiv.appendChild(a)
+      framesDiv.appendChild(frameDiv)
+    }
+
+    section.appendChild(framesDiv)
+    out.appendChild(section)
+  }
+
+  document.getElementById('dlAll').style.display = 'block'
+}
+
+// Download all 12 at once with a small delay between each
+document.getElementById('dlAll').addEventListener('click', () => {
+  frameCanvases.forEach(({ canvas, filename }, i) => {
+    setTimeout(() => {
+      const a = document.createElement('a')
+      a.download = filename
+      a.href = canvas.toDataURL('image/png')
+      a.click()
+    }, i * 150)
+  })
+})
+</script>
+</body>
+</html>

@@ -28,14 +28,14 @@ const CLOUD_POSITIONS = [
 // Robomice — scattered across the map, heavier in the green zone
 // x%, y%, scale (size), animClass, delay
 const MICE = [
-  { x:  8, y: 88, s: 1.0, anim: 'mouseA', delay: 0    },
-  { x: 72, y: 83, s: 0.8, anim: 'mouseB', delay: 1.4  },
-  { x: 18, y: 76, s: 0.9, anim: 'mouseC', delay: 0.6  },
-  { x: 80, y: 70, s: 0.7, anim: 'mouseA', delay: 2.1  },
-  { x:  6, y: 63, s: 1.0, anim: 'mouseD', delay: 3.0  },
-  { x: 85, y: 58, s: 0.8, anim: 'mouseB', delay: 0.9  },
-  { x: 25, y: 50, s: 0.7, anim: 'mouseC', delay: 1.8  },
-  { x: 70, y: 43, s: 0.9, anim: 'mouseD', delay: 0.3  },
+  { x:  8, y: 88, s: 1.0, anim: 'mouseA', delay: 0.0  },
+  { x: 72, y: 83, s: 0.8, anim: 'mouseB', delay: 2.9  },
+  { x: 18, y: 76, s: 0.9, anim: 'mouseC', delay: 1.1  },
+  { x: 80, y: 70, s: 0.7, anim: 'mouseA', delay: 4.6  },
+  { x:  6, y: 63, s: 1.0, anim: 'mouseD', delay: 6.3  },
+  { x: 85, y: 58, s: 0.8, anim: 'mouseB', delay: 0.5  },
+  { x: 25, y: 50, s: 0.7, anim: 'mouseC', delay: 3.8  },
+  { x: 70, y: 43, s: 0.9, anim: 'mouseD', delay: 5.2  },
 ]
 
 // Inline SVG robomouse — points right, scaleX(-1) to face left
