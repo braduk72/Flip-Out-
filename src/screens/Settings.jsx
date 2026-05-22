@@ -7,7 +7,7 @@ const DIFFICULTIES = [
   { id: 'Hard',   label: '🔴  Hard',   bg: '#7a1500', color: '#ffaaaa' },
 ]
 
-export default function Settings({ onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty, onDifficulty, navProps }) {
+export default function Settings({ onBack, onSeason, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty, onDifficulty, navProps }) {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -16,6 +16,13 @@ export default function Settings({ onBack, musicOn, sfxOn, onToggleMusic, onTogg
       </div>
 
       <div className={styles.list}>
+
+        {/* Difficulty */}
+        {/* Season map shortcut */}
+        <button className={styles.seasonLink} onClick={onSeason}>
+          <span>🗺️  Season 1 · The Reckoning</span>
+          <span className={styles.seasonArrow}>›</span>
+        </button>
 
         {/* Difficulty */}
         <div className={styles.row}>
