@@ -61,6 +61,8 @@
   padding: 32px 32px;
   position: relative;
   z-index: 1;
+  flex: 1;
+  align-content: center;
 }
 
 .avatarBtn {

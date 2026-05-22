@@ -1,6 +1,6 @@
 import styles from './BottomNav.module.css'
 
-export default function BottomNav({ active, onShop, onHome, onSettings }) {
+export default function BottomNav({ active, onShop, onHome, onSettings, onRanks }) {
   return (
     <nav className={styles.bottomNav}>
       <button className={`${styles.navBtn} ${active === 'shop' ? styles.navActive : ''}`} aria-label="Shop" onClick={onShop}>
@@ -9,7 +9,7 @@ export default function BottomNav({ active, onShop, onHome, onSettings }) {
       <button className={`${styles.navBtn} ${active === 'home' ? styles.navActive : ''}`} aria-label="Home" onClick={onHome}>
         <img src="/images/home.png" alt="Home" className={styles.navImg} />
       </button>
-      <button className={`${styles.navBtn} ${active === 'ranks' ? styles.navActive : ''}`} aria-label="Leaderboard">
+      <button className={`${styles.navBtn} ${active === 'ranks' ? styles.navActive : ''}`} aria-label="Leaderboard" onClick={onRanks}>
         <img src="/images/ranks.png" alt="Ranks" className={styles.navImg} />
       </button>
       <button className={`${styles.navBtn} ${active === 'settings' ? styles.navActive : ''}`} aria-label="Settings" onClick={onSettings}>

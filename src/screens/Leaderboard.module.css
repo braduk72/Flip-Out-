@@ -1,0 +1,239 @@
+.page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #1a3a8f 0%, #0d1f4d 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px 8px;
+  flex-shrink: 0;
+}
+
+.backBtn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px 12px;
+  flex-shrink: 0;
+}
+
+.tab {
+  flex: 1;
+  padding: 9px 0;
+  border-radius: 50px;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.tabActive {
+  background: rgba(255,215,0,0.18);
+  border-color: #FFD700;
+  color: #FFD700;
+}
+
+/* ── Podium ── */
+.podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 16px 8px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.podiumSlot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  flex: 1;
+}
+
+.podiumAvatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+
+.firstAvatar {
+  width: 64px;
+  height: 64px;
+  border: 2.5px solid #FFD700;
+  box-shadow: 0 0 14px rgba(255,215,0,0.5);
+}
+
+.meAvatar {
+  border-color: #22c55e !important;
+  box-shadow: 0 0 12px rgba(34,197,94,0.5) !important;
+}
+
+.podiumAvatar img, .myRankAvatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.podiumMedal { font-size: 20px; }
+
+.podiumName {
+  font-size: 11px;
+  font-weight: 900;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  max-width: 80px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podiumScore {
+  font-size: 12px;
+  font-weight: 900;
+  color: #FFD700;
+  font-family: Arial, sans-serif;
+}
+
+.podiumBase {
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+  margin-top: 4px;
+}
+
+.goldBase   { height: 60px; background: linear-gradient(180deg, #FFD700 0%, #b8860b 100%); }
+.silverBase { height: 44px; background: linear-gradient(180deg, #c0c0c0 0%, #808080 100%); }
+.bronzeBase { height: 32px; background: linear-gradient(180deg, #cd7f32 0%, #8b4513 100%); }
+
+/* ── List ── */
+.list {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 0 16px 4px;
+}
+
+.list::-webkit-scrollbar { display: none; }
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  margin-bottom: 6px;
+  background: rgba(255,255,255,0.06);
+}
+
+.meRow {
+  background: rgba(34,197,94,0.15);
+  border: 1.5px solid rgba(34,197,94,0.4);
+}
+
+.rank {
+  width: 22px;
+  font-size: 14px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.rowAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  flex-shrink: 0;
+}
+
+.rowName {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  font-family: Arial, sans-serif;
+}
+
+.rowScore {
+  font-size: 13px;
+  font-weight: 900;
+  color: #FFD700;
+  font-family: Arial, sans-serif;
+}
+
+/* ── My rank pinned bar ── */
+.myRankBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: #22c55e;
+  flex-shrink: 0;
+}
+
+.myRankNum {
+  width: 22px;
+  font-size: 15px;
+  font-weight: 900;
+  color: rgba(0,0,0,0.6);
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.myRankAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(0,0,0,0.2);
+  flex-shrink: 0;
+}
+
+.myRankName {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 900;
+  color: #000;
+  font-family: Arial, sans-serif;
+}
+
+.myRankScore {
+  font-size: 14px;
+  font-weight: 900;
+  color: #000;
+  font-family: Arial, sans-serif;
+}

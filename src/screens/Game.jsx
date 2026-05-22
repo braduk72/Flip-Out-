@@ -4,6 +4,7 @@ import Card from '../components/Card'
 import styles from './Game.module.css'
 import { SPECIAL_CARDS } from '../data/specialCards'
 import { getDeckBackImage, DECKS } from '../data/decks'
+import Interstitial from '../components/Interstitial'
 
 // ── Joker daily pool helpers ───────────────────────────────────────────────────
 function todayKey() { return new Date().toISOString().slice(0, 10) }
@@ -86,6 +87,8 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const [cinematicDismissed, setCinematicDismissed] = useState(false)
   const [portraitFlipped, setPortraitFlipped] = useState(false)
   const [showQuitModal, setShowQuitModal] = useState(false)
+  const [showInterstitial, setShowInterstitial] = useState(false)
+  const pendingAction = useRef(null)
 
   // Solo mode timer
   const [elapsed, setElapsed] = useState(0)
@@ -363,6 +366,24 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     setJokersRemaining(spendJoker())
   }
 
+  // Award trophies + show interstitial before navigating away
+  function addTrophies(count) {
+    const cur = parseInt(localStorage.getItem('fo_trophies') || '0')
+    localStorage.setItem('fo_trophies', String(cur + count))
+  }
+
+  function withInterstitial(cb) {
+    if (localStorage.getItem('fo_no_ads')) { cb(); return }
+    pendingAction.current = cb
+    setShowInterstitial(true)
+  }
+
+  function handleInterstitialClose() {
+    setShowInterstitial(false)
+    pendingAction.current?.()
+    pendingAction.current = null
+  }
+
   const totalPairs = cards.filter(c => c.type === 'regular').length / 2
   const progress = ((playerScore + aiScore) / totalPairs) * 100
 
@@ -583,7 +604,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                     </div>
                   </div>
 
-                  <button className={styles.cinematicNextBtn} onClick={() => setCinematicDismissed(true)}>
+                  <button className={styles.cinematicNextBtn} onClick={() => withInterstitial(() => { addTrophies(10); setCinematicDismissed(true) })}>
                     <span className={styles.nextBtnArrow}>▶</span> CONTINUE
                   </button>
                 </div>
@@ -604,7 +625,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                       : 'First time!'}
                   </div>
                   <div className={styles.soloMeta}>Level {soloLevel} · {difficulty}</div>
-                  <button className={styles.playAgainBtn} onClick={onBack}>Play Again</button>
+                  <button className={styles.playAgainBtn} onClick={() => withInterstitial(onBack)}>Play Again</button>
                 </div>
               </div>
             ) : mode === 'mp' ? (
@@ -627,7 +648,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                     <span>You: {playerScore}</span>
                     <span>Opp: {aiScore}</span>
                   </div>
-                  <button className={styles.playAgainBtn} onClick={onBack}>BACK TO MENU</button>
+                  <button className={styles.playAgainBtn} onClick={() => withInterstitial(onBack)}>BACK TO MENU</button>
                 </div>
               </div>
             ) : (
@@ -648,7 +669,11 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                   </div>
                   <button
                     className={styles.playAgainBtn}
-                    onClick={() => onResult ? onResult(winner) : onBack()}
+                    onClick={() => withInterstitial(() => {
+                      if (winner === 'player') addTrophies(onResult ? 10 : 5)
+                      else addTrophies(1)
+                      if (onResult) onResult(winner); else onBack()
+                    })}
                   >
                     {onResult
                       ? winner === 'player' ? 'NEXT →' : 'GAME OVER! Try again?'
@@ -684,6 +709,9 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
       {/* Back button — outside gameInner so it stays top-right of full screen */}
       <button className={styles.backBtn} onClick={() => onResult && !gameOver ? setShowQuitModal(true) : onBack()}>✕</button>
+
+      {/* Interstitial ad — shown when navigating away from game-over */}
+      {showInterstitial && <Interstitial onClose={handleInterstitialClose} />}
 
       {/* Quit confirmation modal — gauntlet only */}
       {showQuitModal && (

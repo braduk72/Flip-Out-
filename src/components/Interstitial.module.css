@@ -1,0 +1,48 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.adLabel {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: Arial, sans-serif;
+}
+
+.skipBtn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: Arial, sans-serif;
+  padding: 10px 28px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.skipBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.timer {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: Arial, sans-serif;
+  padding: 10px 0;
+}

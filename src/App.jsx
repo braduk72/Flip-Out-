@@ -8,6 +8,8 @@ import Game from './screens/Game'
 import Gauntlet from './screens/Gauntlet'
 import RoundStart from './screens/RoundStart'
 import MultiplayerLobby from './screens/MultiplayerLobby'
+import LuckySpin from './screens/LuckySpin'
+import Leaderboard from './screens/Leaderboard'
 import { KNOCKOUT_OPPONENTS } from './data/opponents'
 import { DECKS } from './data/decks'
 import { useMultiplayer } from './hooks/useMultiplayer'
@@ -187,6 +189,8 @@ export default function App() {
     onShop:     () => setScreen('shop'),
     onHome:     () => setScreen('home'),
     onSettings: () => setScreen('settings'),
+    onRanks:    () => setScreen('leaderboard'),
+    onSpin:     () => setScreen('luckyspin'),
   }
 
   // ── Gauntlet game props ────────────────────────────────────────────────────
@@ -197,6 +201,12 @@ export default function App() {
   // ── Screens ───────────────────────────────────────────────────────────────
   if (screen === 'shop') {
     return <Shop onBack={() => setScreen('home')} navProps={navProps} />
+  }
+  if (screen === 'luckyspin') {
+    return <LuckySpin onBack={() => setScreen('shop')} navProps={navProps} />
+  }
+  if (screen === 'leaderboard') {
+    return <Leaderboard portrait={portrait} onBack={() => setScreen('home')} navProps={navProps} />
   }
   if (screen === 'avatarpicker') {
     return <AvatarPicker portrait={portrait} onPortrait={handlePortrait} onBack={() => setScreen('home')} navProps={navProps} />

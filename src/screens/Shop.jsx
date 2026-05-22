@@ -1,7 +1,9 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { DECKS } from '../data/decks'
 import styles from './Shop.module.css'
 import BottomNav from '../components/BottomNav'
+import AdBanner from '../components/AdBanner'
+import RemoveAdsModal from '../components/RemoveAdsModal'
 
 function getOwnedPaidCount() {
   const owned = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
@@ -30,6 +32,8 @@ const BUNDLES = [
 export default function Shop({ onBack, navProps }) {
   const ownedPaidCount = getOwnedPaidCount()
   const [jokerHovered, setJokerHovered] = useState(false)
+  const [noAds, setNoAds] = useState(() => !!localStorage.getItem('fo_no_ads'))
+  const [showRemoveAdsModal, setShowRemoveAdsModal] = useState(false)
   return (
     <div className={styles.page}>
       <div className={styles.scroll}>
@@ -83,13 +87,50 @@ export default function Shop({ onBack, navProps }) {
 
         {/* Remove Ads */}
         <h2 className={styles.sectionTitle}>🚫 Remove Ads</h2>
-        <button className={styles.removeAdsCard}>
+        <button
+          className={`${styles.removeAdsCard} ${noAds ? styles.lockedItem : ''}`}
+          onClick={() => !noAds && setShowRemoveAdsModal(true)}
+          disabled={noAds}
+        >
           <div className={styles.removeAdsText}>
-            <span className={styles.removeAdsTitle}>Ad-Free Forever</span>
-            <span className={styles.removeAdsDesc}>Play without interruptions</span>
+            <span className={styles.removeAdsTitle}>{noAds ? '✓ Ad-Free Active' : 'Remove Forced Ads'}</span>
+            <span className={styles.removeAdsDesc}>{noAds ? 'Enjoying an ad-free game!' : 'Remove pop-up and banner ads · Rewarded ads remain'}</span>
           </div>
-          <span className={styles.removeAdsPrice}>£1.99</span>
+          {!noAds && <span className={styles.removeAdsPrice}>from £7.99</span>}
         </button>
+
+        {/* Lucky Spin entry */}
+        <h2 className={styles.sectionTitle}>🎡 Lucky Spin</h2>
+        <button className={styles.removeAdsCard} onClick={navProps?.onSpin}>
+          <div className={styles.removeAdsText}>
+            <span className={styles.removeAdsTitle}>Daily Spin Wheel</span>
+            <span className={styles.removeAdsDesc}>Spin for coins and power-ups · 2 free spins daily</span>
+          </div>
+          <span className={styles.removeAdsPrice}>FREE</span>
+        </button>
+
+        {/* Loot Box */}
+        <h2 className={styles.sectionTitle}>📦 Treasure Chest</h2>
+        <button className={`${styles.removeAdsCard} ${styles.chestCard}`}>
+          <div className={styles.chestEmoji}>🎁</div>
+          <div className={styles.removeAdsText}>
+            <span className={styles.removeAdsTitle}>Mystery Chest</span>
+            <span className={styles.removeAdsDesc}>Random coins + power-ups + bonus rewards</span>
+          </div>
+          <span className={styles.removeAdsPrice}>£3.99</span>
+        </button>
+        <div className={styles.chestTiers}>
+          <div className={styles.chestTierLocked}>
+            <span className={styles.chestTierReward}>🪙 ×150</span>
+            <span className={styles.chestTierLabel}>Free</span>
+            <span className={styles.chestTierLock}>🔒</span>
+          </div>
+          <div className={styles.chestTierLocked}>
+            <span className={styles.chestTierReward}>❄️ ×1</span>
+            <span className={styles.chestTierLabel}>Free</span>
+            <span className={styles.chestTierLock}>🔒</span>
+          </div>
+        </div>
 
         {/* Power-ups */}
         <h2 className={styles.sectionTitle}>⚡ Power-ups</h2>
@@ -125,7 +166,14 @@ export default function Shop({ onBack, navProps }) {
         <div className={styles.footer} />
 
       </div>
+      <AdBanner />
       <BottomNav active="shop" {...navProps} />
+      {showRemoveAdsModal && (
+        <RemoveAdsModal
+          onClose={() => setShowRemoveAdsModal(false)}
+          onBuy={() => setNoAds(true)}
+        />
+      )}
     </div>
   )
 }

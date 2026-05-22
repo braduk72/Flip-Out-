@@ -1,9 +1,20 @@
+import { useState, useEffect } from 'react'
 import styles from './Home.module.css'
 import BottomNav from '../components/BottomNav'
+import AdBanner from '../components/AdBanner'
+import SpecialOffer, { shouldShowOffer, markOfferSeen } from '../components/SpecialOffer'
 
 export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, onSettings, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, gauntletStep, mode = 'vs', onMode }) {
   const hasGoldCard = !!localStorage.getItem('fo_gold_card')
   const coins = parseInt(localStorage.getItem('fo_coins') || '0')
+  const [showOffer, setShowOffer] = useState(false)
+
+  useEffect(() => {
+    if (shouldShowOffer()) {
+      const t = setTimeout(() => { markOfferSeen(); setShowOffer(true) }, 1200)
+      return () => clearTimeout(t)
+    }
+  }, [])
   return (
     <div className={styles.page}>
 
@@ -62,7 +73,9 @@ export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, o
 
       </div>
 
+      <AdBanner />
       <BottomNav active="home" onShop={onShop} onHome={() => {}} onSettings={onSettings} />
+      {showOffer && <SpecialOffer onClose={() => setShowOffer(false)} />}
 
     </div>
   )

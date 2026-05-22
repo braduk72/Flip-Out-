@@ -319,3 +319,49 @@
 }
 
 .footer { height: 32px; }
+
+/* ── Loot Box / Chest ── */
+.chestCard {
+  border-color: rgba(255,215,0,0.5) !important;
+  box-shadow: 0 0 16px rgba(255,215,0,0.15);
+}
+
+.chestEmoji {
+  font-size: 32px;
+  margin-right: 4px;
+}
+
+.chestTiers {
+  display: flex;
+  gap: 10px;
+  padding: 0 16px;
+  margin-top: 0;
+}
+
+.chestTierLocked {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: #5C1228;
+  border: 1.5px solid rgba(255,200,200,0.15);
+  border-radius: 14px;
+  padding: 14px 8px;
+}
+
+.chestTierReward {
+  font-size: 18px;
+  font-weight: 900;
+  color: #FFD700;
+  font-family: Arial, sans-serif;
+}
+
+.chestTierLabel {
+  font-size: 14px;
+  font-weight: 900;
+  color: #26c25a;
+  font-family: Arial, sans-serif;
+}
+
+.chestTierLock { font-size: 18px; opacity: 0.5; }
