@@ -181,7 +181,17 @@ function reducer(state, action) {
       const newTurn  = keepTurn ? state.turn : otherTurn(state.turn)
       // Clear stun for whoever just had their turn — bolt stuns for exactly 1 turn
       const newStunned = state.stunned === state.turn ? null : state.stunned
-      return { ...state, flipped: [], turn: newTurn, stunned: newStunned }
+      const next = { ...state, flipped: [], turn: newTurn, stunned: newStunned }
+      // Safety net: catch any game over the resolveFlip path may have missed
+      if (!next.gameOver && checkGameOver(next)) {
+        return {
+          ...next,
+          gameOver: true,
+          winner: next.playerScore > next.aiScore ? 'player'
+            : next.aiScore > next.playerScore ? 'ai' : 'draw',
+        }
+      }
+      return next
     }
 
     case 'CLEAR_EFFECT':
@@ -246,6 +256,8 @@ function resolveFlip(state, flipped, whose) {
   const [a, b] = flipped
   const cardA = state.cards[a]
   const cardB = state.cards[b]
+  // Guard: stale timer fired after flipped was cleared (e.g. solo tap-to-skip)
+  if (!cardA || !cardB) return state
   const isMatch = cardA.pairId === cardB.pairId
 
   if (!isMatch) {
