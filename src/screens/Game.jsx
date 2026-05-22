@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback, useState } from 'react'
 import { useGame } from '../hooks/useGame'
 import Card from '../components/Card'
 import styles from './Game.module.css'
-import { SPECIAL_CARDS } from '../data/specialCards'
+import { SPECIAL_CARDS, SPECIAL_POOL } from '../data/specialCards'
 import { getDeckBackImage, DECKS } from '../data/decks'
 import Interstitial from '../components/Interstitial'
 
@@ -76,6 +76,8 @@ function generateSpecialSeed(specialType, index, cards, matched, consumed) {
       return {}
   }
 }
+
+const DEV_SPECIALS = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('specials')
 
 export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, yourTurn = true, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, gauntletStep }) {
   const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, commitResolve, useJoker } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player')
@@ -746,6 +748,22 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
       {/* Interstitial ad — shown when navigating away from game-over */}
       {showInterstitial && <Interstitial onClose={handleInterstitialClose} />}
+
+      {/* Dev special-card toolbar — visible when ?specials is in URL */}
+      {DEV_SPECIALS && (
+        <div style={{ display:'flex', flexWrap:'wrap', gap:'4px', padding:'6px 8px', background:'rgba(0,0,0,0.75)', justifyContent:'center', position:'relative', zIndex:50 }}>
+          {SPECIAL_POOL.map(type => (
+            <button
+              key={type}
+              title={type}
+              onClick={() => applyPendingSpecial(0, 'player', generateSpecialSeed(type, 0, cards, matched, consumed))}
+              style={{ background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:'8px', padding:'3px', cursor:'pointer' }}
+            >
+              <img src={`/images/cards/special/${type}.png`} alt={type} style={{ width:'32px', height:'32px', objectFit:'contain', display:'block' }} />
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Quit confirmation modal — gauntlet only */}
       {showQuitModal && (
