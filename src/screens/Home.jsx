@@ -21,7 +21,8 @@ export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, o
       {/* Top bar */}
       <div className={styles.topBar}>
         <button className={styles.playerAvatar} onClick={onAvatar} aria-label="Change player">
-          <img src={`/images/a${portrait}.png`} alt="" draggable="false" />
+          <img src="/images/profile.png" alt="" draggable="false" />
+          <span className={styles.playerAvatarLabel}>Profile</span>
         </button>
         <div className={styles.coinDisplay}>
           <img src="/images/coin.png" alt="" className={styles.coinIcon} draggable="false" />

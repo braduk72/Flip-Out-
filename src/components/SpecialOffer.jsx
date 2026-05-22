@@ -84,7 +84,7 @@ export default function SpecialOffer({ onClose, onBuy }) {
           <span className={styles.buyBtnPrice}>
             <img src="/images/pound.png" alt="£" className={styles.poundImg} />
             {'1.99'.split('').map((ch, i) =>
-              ch === '.' ? <span key={i} className={styles.priceDot}>.</span>
+              ch === '.' ? <img key={i} src="/images/dot.png" alt="." className={styles.priceDigit} />
                          : <img key={i} src={`/images/${ch}.png`} alt={ch} className={styles.priceDigit} />
             )}
           </span>
