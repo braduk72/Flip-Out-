@@ -128,45 +128,21 @@ export default function LuckySpin({ onBack, navProps }) {
     <div className={styles.page}>
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onBack}>← Back</button>
-        <h1 className={styles.title}>Lucky Spin</h1>
+        <img src="/images/luckySpinBanner.png" alt="Lucky Spin" className={styles.bannerImg} />
         <div className={styles.spinsLeft}>{freeLeft + adLeft} left</div>
       </div>
 
       <div className={styles.wheelArea}>
-        <div className={styles.pointer}>▼</div>
-        <svg
+        <img src="/images/pointer.png" alt="" className={styles.pointer} />
+        <img
+          src="/images/wheel.png"
+          alt="Spin wheel"
           className={styles.wheel}
-          viewBox="0 0 300 300"
           style={{
             transform: `rotate(${rotation}deg)`,
             transition: spinning ? 'transform 4.2s cubic-bezier(0.17, 0.67, 0.08, 0.99)' : 'none',
           }}
-        >
-          {/* Outer glow dots */}
-          {Array.from({ length: 16 }, (_, i) => {
-            const a = -90 + i * 22.5, dotR = R + 13
-            return <circle key={i} cx={CX + dotR * Math.cos(toRad(a))} cy={CY + dotR * Math.sin(toRad(a))} r="5" fill="#FFD700" />
-          })}
-
-          {/* Sectors */}
-          {SEGMENTS.map((seg, i) => {
-            const { x, y, mid } = labelPos(i)
-            return (
-              <g key={i}>
-                <path d={sectorPath(i)} fill={seg.color} stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
-                <text x={x} y={y - 8} textAnchor="middle" dominantBaseline="middle" fontSize="18"
-                  transform={`rotate(${mid + 90}, ${x}, ${y - 8})`}>{seg.icon}</text>
-                <text x={x} y={y + 10} textAnchor="middle" dominantBaseline="middle"
-                  fill="white" fontSize="11" fontWeight="bold"
-                  transform={`rotate(${mid + 90}, ${x}, ${y + 10})`}>{seg.label}</text>
-              </g>
-            )
-          })}
-
-          {/* Centre hub */}
-          <circle cx={CX} cy={CY} r={22} fill="#1a0040" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
-          <circle cx={CX} cy={CY} r={14} fill="#4A0090" />
-        </svg>
+        />
       </div>
 
       <div className={styles.controls}>

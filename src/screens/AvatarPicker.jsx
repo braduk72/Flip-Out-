@@ -1,7 +1,7 @@
 import styles from './AvatarPicker.module.css'
 import BottomNav from '../components/BottomNav'
 
-const AVATARS = [1, 2, 3, 4]
+const AVATARS = [9, 10, 11, 12, 13, 14, 1, 2, 3, 4, 5, 6, 7, 8]
 
 export default function AvatarPicker({ portrait, onPortrait, onBack, navProps }) {
   function pick(i) {
