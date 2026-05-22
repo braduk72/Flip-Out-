@@ -41,8 +41,11 @@ function buildBoard(deck, numPairs = 7, numSpecials = 2) {
 
 function makeInitial(deck, numPairs = 7, prebuiltCards = null, initialTurn = 'player') {
   const devSpecials = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('specials')
-  const boardPairs    = devSpecials ? 1 : numPairs
-  const boardSpecials = devSpecials ? SPECIAL_POOL.length : 2
+  // Cap pairs to what the deck actually has — prevents malformed boards on small decks
+  const maxPairs      = deck?.cardCount ?? numPairs
+  const boardPairs    = devSpecials ? 1 : Math.min(numPairs, maxPairs)
+  // Scale specials with game size: 1 for small games, 2 for medium+
+  const boardSpecials = devSpecials ? SPECIAL_POOL.length : (boardPairs <= 5 ? 1 : 2)
   return {
     cards:          prebuiltCards ?? buildBoard(deck, boardPairs, boardSpecials),
     flipped:        [],      // up to 2 card indices currently revealed
@@ -401,7 +404,8 @@ function applySpecial(state, index, whose, seed = {}) {
       }
 
     case 'random': {
-      const options = ['freeze','boom','tornado','magnet','bolt','rocket','dice','shield','stopwatch','crown','shuffle','xray']
+      // 'shuffle' excluded — too disruptive to appear via random
+      const options = ['freeze','boom','tornado','magnet','bolt','rocket','dice','shield','stopwatch','crown','xray']
       const chosen = seed.chosen ?? options[Math.floor(Math.random() * options.length)]
       const fakeCard = { ...card, specialType: chosen }
       const fakeCards = [...state.cards]

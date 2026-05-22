@@ -108,11 +108,13 @@ export const SPECIAL_CARDS = {
   },
 }
 
-// Pool used when randomly selecting specials for a game
+// Pool used when randomly selecting specials for a game.
+// 'shuffle' is intentionally excluded — it wipes all card memory and is
+// too disruptive as a common random draw. It can still appear via dev tools.
 export const SPECIAL_POOL = [
   'freeze', 'boom', 'tornado', 'magnet', 'bolt',
   'rocket', 'dice', 'shield', 'stopwatch', 'crown',
-  'random', 'shuffle', 'xray',
+  'random', 'xray',
 ]
 
 export function pickRandomSpecials(count) {
