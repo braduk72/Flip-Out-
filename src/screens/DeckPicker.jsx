@@ -43,16 +43,16 @@ export default function DeckPicker({ onSelect, onBack }) {
     return () => clearInterval(interval)
   }, [])
 
+  function handleHover(deck) {
+    if (deck.free || ownedDecks.includes(deck.id)) setSelected(deck)
+  }
+
   function handleCard(deck) {
     if (!deck.free && !ownedDecks.includes(deck.id)) {
       setBuyDeck(deck)
       return
     }
-    if (selected?.id === deck.id) {
-      onSelect(deck)
-    } else {
-      setSelected(deck)
-    }
+    onSelect(deck)
   }
 
   function surpriseMe() {
@@ -73,16 +73,14 @@ export default function DeckPicker({ onSelect, onBack }) {
         🎲 Surprise Me!
       </button>
 
-      {selected && (
-        <p className={styles.hint}>Tap again to play with <strong>{selected.name}</strong></p>
-      )}
-
       <div className={styles.grid}>
         {DECKS.map((deck, i) => (
           <button
             key={deck.id}
             className={`${styles.deckCard} ${selected?.id === deck.id ? styles.deckSelected : ''}`}
             style={{ '--border-color': deck.borderColor }}
+            onMouseEnter={() => handleHover(deck)}
+            onMouseLeave={() => setSelected(null)}
             onClick={() => handleCard(deck)}
           >
             <div className={styles.deckPreview}>
