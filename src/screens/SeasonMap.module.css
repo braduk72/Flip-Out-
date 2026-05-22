@@ -177,45 +177,61 @@
   stroke-width: 1;
 }
 
-/* ── Wandering robots ── */
-.wanderer {
+/* ── Robomice ── */
+.roboMouse {
+  display: block;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.7));
+}
+
+.mouseWrap {
   position: absolute;
-  width: 5%;
-  height: auto;
-  opacity: 0.7;
   pointer-events: none;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+  transform-origin: center;
 }
 
-.wandererA {
-  top: 68%;
-  left: 4%;
-  animation: wanderA 18s linear infinite;
-}
-
-.wandererB {
-  top: 45%;
-  right: 5%;
-  animation: wanderB 22s linear infinite;
-  animation-delay: -8s;
-}
-
-@keyframes wanderA {
-  0%   { transform: translateX(0)    translateY(0)    scaleX(1);  }
-  20%  { transform: translateX(18px) translateY(-12px) scaleX(1); }
-  40%  { transform: translateX(6px)  translateY(-24px) scaleX(1); }
-  60%  { transform: translateX(24px) translateY(-8px)  scaleX(-1); }
-  80%  { transform: translateX(10px) translateY(10px)  scaleX(-1); }
-  100% { transform: translateX(0)    translateY(0)    scaleX(1);  }
-}
-
-@keyframes wanderB {
+/* Four distinct scurry patterns */
+@keyframes mouseA {
   0%   { transform: translateX(0)     translateY(0)    scaleX(1);  }
-  25%  { transform: translateX(-20px) translateY(-16px) scaleX(-1); }
-  50%  { transform: translateX(-8px)  translateY(-30px) scaleX(-1); }
-  75%  { transform: translateX(-22px) translateY(-10px) scaleX(1);  }
+  15%  { transform: translateX(22px)  translateY(-8px) scaleX(1);  }
+  30%  { transform: translateX(14px)  translateY(6px)  scaleX(1);  }
+  50%  { transform: translateX(30px)  translateY(-4px) scaleX(-1); }
+  70%  { transform: translateX(12px)  translateY(8px)  scaleX(-1); }
+  85%  { transform: translateX(-6px)  translateY(-4px) scaleX(-1); }
   100% { transform: translateX(0)     translateY(0)    scaleX(1);  }
 }
+
+@keyframes mouseB {
+  0%   { transform: translateX(0)     translateY(0)    scaleX(-1); }
+  20%  { transform: translateX(-18px) translateY(-10px) scaleX(-1);}
+  40%  { transform: translateX(-28px) translateY(4px)  scaleX(-1); }
+  55%  { transform: translateX(-10px) translateY(-8px) scaleX(1);  }
+  75%  { transform: translateX(-20px) translateY(12px) scaleX(1);  }
+  100% { transform: translateX(0)     translateY(0)    scaleX(-1); }
+}
+
+@keyframes mouseC {
+  0%   { transform: translateX(0)    translateY(0)    scaleX(1);   }
+  25%  { transform: translateX(16px) translateY(14px) scaleX(1);   }
+  45%  { transform: translateX(26px) translateY(2px)  scaleX(1);   }
+  60%  { transform: translateX(18px) translateY(-10px) scaleX(-1); }
+  80%  { transform: translateX(4px)  translateY(6px)  scaleX(-1);  }
+  100% { transform: translateX(0)    translateY(0)    scaleX(1);   }
+}
+
+@keyframes mouseD {
+  0%   { transform: translateX(0)     translateY(0)    scaleX(1);  }
+  10%  { transform: translateX(10px)  translateY(-14px) scaleX(1); }
+  30%  { transform: translateX(-4px)  translateY(-20px) scaleX(-1);}
+  50%  { transform: translateX(-20px) translateY(-8px) scaleX(-1); }
+  70%  { transform: translateX(-8px)  translateY(6px)  scaleX(-1); }
+  90%  { transform: translateX(8px)   translateY(-4px) scaleX(1);  }
+  100% { transform: translateX(0)     translateY(0)    scaleX(1);  }
+}
+
+.mouseA { animation: mouseA 4.2s ease-in-out infinite; }
+.mouseB { animation: mouseB 5.1s ease-in-out infinite; }
+.mouseC { animation: mouseC 3.8s ease-in-out infinite; }
+.mouseD { animation: mouseD 4.7s ease-in-out infinite; }
 
 /* ── Nodes ── */
 .node {

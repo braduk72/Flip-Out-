@@ -25,6 +25,62 @@ const CLOUD_POSITIONS = [
   { x: 15, y: 14 }, { x: 75, y: 10 }, { x: 40, y: 20 },
 ]
 
+// Robomice — scattered across the map, heavier in the green zone
+// x%, y%, scale (size), animClass, delay
+const MICE = [
+  { x:  8, y: 88, s: 1.0, anim: 'mouseA', delay: 0    },
+  { x: 72, y: 83, s: 0.8, anim: 'mouseB', delay: 1.4  },
+  { x: 18, y: 76, s: 0.9, anim: 'mouseC', delay: 0.6  },
+  { x: 80, y: 70, s: 0.7, anim: 'mouseA', delay: 2.1  },
+  { x:  6, y: 63, s: 1.0, anim: 'mouseD', delay: 3.0  },
+  { x: 85, y: 58, s: 0.8, anim: 'mouseB', delay: 0.9  },
+  { x: 25, y: 50, s: 0.7, anim: 'mouseC', delay: 1.8  },
+  { x: 70, y: 43, s: 0.9, anim: 'mouseD', delay: 0.3  },
+]
+
+// Inline SVG robomouse — points right, scaleX(-1) to face left
+function RoboMouse({ scale = 1, style }) {
+  return (
+    <svg
+      viewBox="0 0 44 28"
+      width={Math.round(32 * scale)}
+      height={Math.round(20 * scale)}
+      style={style}
+      className={styles.roboMouse}
+    >
+      {/* Body */}
+      <ellipse cx="18" cy="18" rx="14" ry="9" fill="#7a7a8a" />
+      {/* Head */}
+      <ellipse cx="34" cy="15" rx="9" ry="8" fill="#9a9aaa" />
+      {/* Ears */}
+      <circle cx="30" cy="7"  r="4.5" fill="#6a6a7a" />
+      <circle cx="30" cy="7"  r="2.5" fill="#aa5577" />
+      <circle cx="38" cy="6"  r="3.5" fill="#6a6a7a" />
+      <circle cx="38" cy="6"  r="2"   fill="#aa5577" />
+      {/* Eye — glowing green */}
+      <circle cx="36" cy="14" r="2.5" fill="#001a00" />
+      <circle cx="36" cy="14" r="1.5" fill="#00e864" />
+      <circle cx="36" cy="14" r="0.6" fill="#ccffcc" />
+      {/* Snout */}
+      <ellipse cx="43" cy="17" rx="2" ry="1.5" fill="#888898" />
+      {/* Whiskers */}
+      <line x1="43" y1="16" x2="44" y2="14" stroke="#ccc" strokeWidth="0.5" />
+      <line x1="43" y1="17" x2="44" y2="17" stroke="#ccc" strokeWidth="0.5" />
+      <line x1="43" y1="18" x2="44" y2="20" stroke="#ccc" strokeWidth="0.5" />
+      {/* Mechanical body plate */}
+      <rect x="10" y="14" width="12" height="7" rx="2" fill="#5a5a6a" />
+      <circle cx="16" cy="17" r="1.5" fill="#aaa" />
+      <line x1="13" y1="17" x2="19" y2="17" stroke="#888" strokeWidth="0.6" />
+      {/* Tail — angular robo style */}
+      <polyline points="4,20 0,18 0,23 4,24" stroke="#5a5a6a" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+      {/* Legs — little stubs */}
+      <rect x="10" y="24" width="4" height="3" rx="1" fill="#666" />
+      <rect x="16" y="24" width="4" height="3" rx="1" fill="#666" />
+      <rect x="22" y="24" width="4" height="3" rx="1" fill="#666" />
+    </svg>
+  )
+}
+
 const ALL_NODES = [
   ...ACTIVE_SEASON.opponents,
   ACTIVE_SEASON.boss,
@@ -84,9 +140,20 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
             </div>
           ))}
 
-          {/* ── Wandering robots — tiny c1/c2 sprites drifting near the path edges ── */}
-          <img src="/images/c1.png" alt="" className={`${styles.wanderer} ${styles.wandererA}`} draggable="false" />
-          <img src="/images/c2.png" alt="" className={`${styles.wanderer} ${styles.wandererB}`} draggable="false" />
+          {/* ── Robomice swarm ── */}
+          {MICE.map((m, i) => (
+            <div
+              key={`mouse-${i}`}
+              className={`${styles.mouseWrap} ${styles[m.anim]}`}
+              style={{
+                left: `${m.x}%`,
+                top:  `${m.y}%`,
+                animationDelay: `${m.delay}s`,
+              }}
+            >
+              <RoboMouse scale={m.s} />
+            </div>
+          ))}
 
           {/* ── Opponent nodes ── */}
           {ALL_NODES.map((opp, i) => {
