@@ -80,6 +80,7 @@ function generateSpecialSeed(specialType, index, cards, matched, consumed) {
 export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, yourTurn = true, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, gauntletStep }) {
   const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, commitResolve, useJoker } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player')
   const devSpecials = new URLSearchParams(window.location.search).has('specials')
+  const [devToolsOpen, setDevToolsOpen] = useState(() => devSpecials || localStorage.getItem('fo_dev_toolbar') === 'on')
   const [jokersRemaining, setJokersRemaining] = useState(() => getJokersRemaining())
   const stageRef   = useRef(randomStage())
   const aiContRef  = useRef(randomContestant(portrait))
@@ -757,22 +758,34 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       {/* Interstitial ad — shown when navigating away from game-over */}
       {showInterstitial && <Interstitial onClose={handleInterstitialClose} />}
 
-      {/* Dev special-card toolbar — visible when ?specials is in URL */}
-      {devSpecials && (
-        <div style={{ display:'flex', flexWrap:'wrap', gap:'4px', padding:'6px 8px', background:'#1a0010', justifyContent:'center', position:'relative', zIndex:50, borderTop:'2px solid #ff0066' }}>
-          {SPECIAL_POOL.map(type => (
-            <button
-              key={type}
-              title={type}
-              onClick={() => applyPendingSpecial(0, 'player', generateSpecialSeed(type, 0, cards, matched, consumed))}
-              style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'2px', background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:'8px', padding:'4px 6px', cursor:'pointer' }}
-            >
-              <img src={`/images/cards/special/${type}.png`} alt={type} style={{ width:'32px', height:'32px', objectFit:'contain', display:'block' }} />
-              <span style={{ color:'#fff', fontSize:'8px', fontFamily:'Arial', textTransform:'uppercase' }}>{type}</span>
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Dev special-card toolbar */}
+      <div style={{ display:'flex', flexDirection:'column', position:'relative', zIndex:50 }}>
+        <button
+          onClick={() => {
+            const next = !devToolsOpen
+            setDevToolsOpen(next)
+            localStorage.setItem('fo_dev_toolbar', next ? 'on' : 'off')
+          }}
+          style={{ alignSelf:'center', margin:'4px 0 2px', padding:'2px 10px', background:'rgba(255,0,102,0.15)', border:'1px solid rgba(255,0,102,0.5)', borderRadius:'50px', color:'#ff0066', fontSize:'9px', fontFamily:'Arial', fontWeight:700, letterSpacing:'1px', cursor:'pointer' }}
+        >
+          {devToolsOpen ? '▲ DEV' : '▼ DEV'}
+        </button>
+        {devToolsOpen && (
+          <div style={{ display:'flex', flexWrap:'wrap', gap:'4px', padding:'6px 8px', background:'#1a0010', justifyContent:'center', borderTop:'2px solid #ff0066' }}>
+            {SPECIAL_POOL.map(type => (
+              <button
+                key={type}
+                title={type}
+                onClick={() => applyPendingSpecial(0, 'player', generateSpecialSeed(type, 0, cards, matched, consumed))}
+                style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'2px', background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:'8px', padding:'4px 6px', cursor:'pointer' }}
+              >
+                <img src={`/images/cards/special/${type}.png`} alt={type} style={{ width:'32px', height:'32px', objectFit:'contain', display:'block' }} />
+                <span style={{ color:'#fff', fontSize:'8px', fontFamily:'Arial', textTransform:'uppercase' }}>{type}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Quit confirmation modal — gauntlet only */}
       {showQuitModal && (
