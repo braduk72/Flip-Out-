@@ -27,12 +27,11 @@
   cursor: pointer;
 }
 
-.title {
-  font-size: 22px;
-  font-weight: 900;
-  color: #FFD700;
-  text-shadow: 0 0 20px rgba(255,215,0,0.6);
-  margin: 0;
+.bannerImg {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(255,215,0,0.5));
 }
 
 .spinsLeft {
@@ -58,12 +57,24 @@
 }
 
 .pointer {
-  font-size: 28px;
-  color: #FFD700;
-  margin-bottom: -10px;
-  filter: drop-shadow(0 2px 6px rgba(255,215,0,0.7));
+  width: clamp(30px, 8vw, 44px);
+  height: auto;
+  margin-bottom: -6px;
+  filter: drop-shadow(0 2px 8px rgba(255,215,0,0.8));
   z-index: 2;
   position: relative;
+  transform-origin: top center;
+}
+
+.pointerTick {
+  animation: pointerTick 0.14s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes pointerTick {
+  0%   { transform: rotate(0deg);   }
+  35%  { transform: rotate(20deg);  }
+  65%  { transform: rotate(-6deg);  }
+  100% { transform: rotate(0deg);   }
 }
 
 .wheel {

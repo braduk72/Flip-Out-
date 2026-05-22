@@ -17,24 +17,61 @@
 }
 
 .playerAvatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  border: 2.5px solid rgba(255, 215, 0, 0.8);
-  overflow: hidden;
-  box-shadow: 0 0 12px rgba(255, 215, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
   background: none;
+  border: none;
   padding: 0;
   cursor: pointer;
   animation: avatarPulse 3s ease-in-out infinite;
 }
 
 .playerAvatar img {
-  width: 100%;
-  height: 100%;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(255, 215, 0, 0.8);
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.45);
   object-fit: cover;
   display: block;
 }
+
+.playerAvatarLabel {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: rgba(255, 215, 0, 0.85);
+  font-family: Arial, sans-serif;
+  text-transform: uppercase;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.profileCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.fbBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.fbBtn img {
+  width: 48px;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+}
+
+.fbBtn:hover { transform: scale(1.08); }
+.fbBtnUsed   { opacity: 0.4; }
 
 @keyframes avatarPulse {
   0%,  60%, 100% { transform: rotate(0deg);    box-shadow: 0 0 12px rgba(255,215,0,0.45); }
@@ -260,6 +297,13 @@
 }
 
 /* ── Play Online button ── */
+.onlineGlobe {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .onlineBtn {
   display: flex;
   align-items: center;
@@ -282,6 +326,30 @@
 }
 
 .onlineBtn:active { transform: translateY(1px); }
+
+/* ── Season button ── */
+.seasonBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 340px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(160, 60, 255, 0.6);
+  background: rgba(40, 0, 80, 0.6);
+  cursor: pointer;
+  transition: transform 0.1s, border-color 0.15s, box-shadow 0.15s;
+  box-shadow: 0 0 16px rgba(140, 0, 255, 0.15);
+}
+
+.seasonBtn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(200, 100, 255, 0.85);
+  box-shadow: 0 4px 20px rgba(160, 0, 255, 0.35);
+}
+
+.seasonBtn:active { transform: translateY(1px); }
 
 /* ── Knockout Gauntlet button ── */
 .knockoutBtn {

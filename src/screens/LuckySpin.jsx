@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import styles from './LuckySpin.module.css'
 import BottomNav from '../components/BottomNav'
 import Interstitial from '../components/Interstitial'
@@ -29,19 +29,60 @@ function getUsed() {
 }
 
 const SEGMENTS = [
-  { label: '×30',   icon: '🪙', type: 'coins',   value: 30,   color: '#e8a838' },
-  { label: '×1',    icon: '❄️', type: 'freeze',               color: '#3ecfd4' },
-  { label: '×200',  icon: '🪙', type: 'coins',   value: 200,  color: '#e84b4b' },
-  { label: '×1',    icon: '👁️', type: 'peek',                 color: '#9b4fe8' },
-  { label: '×1000', icon: '🪙', type: 'coins',   value: 1000, color: '#26c25a' },
-  { label: '×1',    icon: '🔀', type: 'shuffle',              color: '#3b82f6' },
-  { label: '×50',   icon: '🪙', type: 'coins',   value: 50,   color: '#f97316' },
-  { label: '×1',    icon: '❄️', type: 'freeze',               color: '#3ecfd4' },
+  { label: '×30',   icon: '🪙', type: 'coins',   value: 30,   color: '#e8a838', weight: 8      },
+  { label: '×1',    icon: '❄️', type: 'freeze',               color: '#3ecfd4', weight: 22     },
+  { label: '×200',  icon: '🪙', type: 'coins',   value: 200,  color: '#e84b4b', weight: 3      },
+  { label: '×1',    icon: '👁️', type: 'peek',                 color: '#9b4fe8', weight: 20     },
+  { label: '×1000', icon: '🪙', type: 'coins',   value: 1000, color: '#26c25a', weight: 0.0001 },
+  { label: '×1',    icon: '🔀', type: 'shuffle',              color: '#3b82f6', weight: 18     },
+  { label: '×50',   icon: '🪙', type: 'coins',   value: 50,   color: '#f97316', weight: 5      },
+  { label: '×1',    icon: '❄️', type: 'freeze',               color: '#3ecfd4', weight: 24     },
 ]
+
+function weightedRandomSeg() {
+  const total = SEGMENTS.reduce((s, seg) => s + seg.weight, 0)
+  let r = Math.random() * total
+  for (let i = 0; i < SEGMENTS.length; i++) {
+    r -= SEGMENTS[i].weight
+    if (r <= 0) return i
+  }
+  return SEGMENTS.length - 1
+}
 
 const N = SEGMENTS.length
 const SEG_DEG = 360 / N
 const CX = 150, CY = 150, R = 128
+
+// ── Web Audio tick ──────────────────────────────────────────────────────────
+function playTickSound(ctx) {
+  try {
+    const bufLen = Math.floor(ctx.sampleRate * 0.035)
+    const buf    = ctx.createBuffer(1, bufLen, ctx.sampleRate)
+    const data   = buf.getChannelData(0)
+    for (let i = 0; i < bufLen; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.006))
+    }
+    const src  = ctx.createBufferSource()
+    const gain = ctx.createGain()
+    src.buffer = buf
+    gain.gain.value = 0.35
+    src.connect(gain)
+    gain.connect(ctx.destination)
+    src.start()
+  } catch (_) {}
+}
+
+// ── Tick schedule: ease-out-cubic matches wheel deceleration ────────────────
+function getTickTimes(totalDeg, duration = 4200) {
+  const count = Math.floor(totalDeg / SEG_DEG)
+  const times = []
+  for (let n = 1; n <= count; n++) {
+    const frac = (n * SEG_DEG) / totalDeg          // 0→1 through spin
+    const t    = 1 - Math.pow(1 - frac, 1 / 3)    // inverse cubic ease-out
+    times.push(t * duration)
+  }
+  return times
+}
 const toRad = d => d * Math.PI / 180
 
 function sectorPath(i) {
@@ -63,21 +104,51 @@ export default function LuckySpin({ onBack, navProps }) {
   const [spinning, setSpinning] = useState(false)
   const [prize, setPrize]       = useState(null)
   const [showAd, setShowAd]     = useState(false)
-  const rotRef = useRef(0)
+  const rotRef       = useRef(0)
+  const pointerRef   = useRef(null)
+  const tickTimers   = useRef([])
+  const audioCtxRef  = useRef(null)
+
+  // Clean up tick timers on unmount
+  useEffect(() => () => tickTimers.current.forEach(clearTimeout), [])
+
+  function triggerPointerTick() {
+    const el = pointerRef.current
+    if (!el) return
+    el.classList.remove(styles.pointerTick)
+    void el.offsetWidth                         // force reflow so animation restarts
+    el.classList.add(styles.pointerTick)
+  }
 
   const freeLeft = Math.max(0, MAX_FREE - used.free)
   const adLeft   = Math.max(0, MAX_AD   - used.ad)
 
   function doSpin(isAd = false) {
     if (spinning || prize) return
-    const targetSeg   = Math.floor(Math.random() * N)
+
+    // Initialise AudioContext on first user gesture
+    if (!audioCtxRef.current) {
+      try { audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)() } catch (_) {}
+    }
+
+    const targetSeg   = weightedRandomSeg()
     const targetAngle = (360 - (targetSeg * SEG_DEG + SEG_DEG / 2) + 360) % 360
     const minSpin     = rotRef.current + 5 * 360
     const n           = Math.ceil((minSpin - targetAngle) / 360)
     const finalRot    = n * 360 + targetAngle
+    const totalDeg    = finalRot - rotRef.current
     rotRef.current    = finalRot
     setRotation(finalRot)
     setSpinning(true)
+
+    // Schedule pointer ticks + audio
+    tickTimers.current.forEach(clearTimeout)
+    tickTimers.current = getTickTimes(totalDeg).map(t =>
+      setTimeout(() => {
+        triggerPointerTick()
+        if (audioCtxRef.current) playTickSound(audioCtxRef.current)
+      }, t)
+    )
 
     // Record spin
     resetIfNewDay()
@@ -118,45 +189,27 @@ export default function LuckySpin({ onBack, navProps }) {
     <div className={styles.page}>
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onBack}>← Back</button>
-        <h1 className={styles.title}>Lucky Spin</h1>
+        <img src="/images/luckySpinBanner.png" alt="Lucky Spin" className={styles.bannerImg} />
         <div className={styles.spinsLeft}>{freeLeft + adLeft} left</div>
       </div>
 
       <div className={styles.wheelArea}>
-        <div className={styles.pointer}>▼</div>
-        <svg
+        <img
+          ref={pointerRef}
+          src="/images/pointer.png"
+          alt=""
+          className={styles.pointer}
+          onAnimationEnd={() => pointerRef.current?.classList.remove(styles.pointerTick)}
+        />
+        <img
+          src="/images/wheel2.png"
+          alt="Spin wheel"
           className={styles.wheel}
-          viewBox="0 0 300 300"
           style={{
             transform: `rotate(${rotation}deg)`,
             transition: spinning ? 'transform 4.2s cubic-bezier(0.17, 0.67, 0.08, 0.99)' : 'none',
           }}
-        >
-          {/* Outer glow dots */}
-          {Array.from({ length: 16 }, (_, i) => {
-            const a = -90 + i * 22.5, dotR = R + 13
-            return <circle key={i} cx={CX + dotR * Math.cos(toRad(a))} cy={CY + dotR * Math.sin(toRad(a))} r="5" fill="#FFD700" />
-          })}
-
-          {/* Sectors */}
-          {SEGMENTS.map((seg, i) => {
-            const { x, y, mid } = labelPos(i)
-            return (
-              <g key={i}>
-                <path d={sectorPath(i)} fill={seg.color} stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" />
-                <text x={x} y={y - 8} textAnchor="middle" dominantBaseline="middle" fontSize="18"
-                  transform={`rotate(${mid + 90}, ${x}, ${y - 8})`}>{seg.icon}</text>
-                <text x={x} y={y + 10} textAnchor="middle" dominantBaseline="middle"
-                  fill="white" fontSize="11" fontWeight="bold"
-                  transform={`rotate(${mid + 90}, ${x}, ${y + 10})`}>{seg.label}</text>
-              </g>
-            )
-          })}
-
-          {/* Centre hub */}
-          <circle cx={CX} cy={CY} r={22} fill="#1a0040" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
-          <circle cx={CX} cy={CY} r={14} fill="#4A0090" />
-        </svg>
+        />
       </div>
 
       <div className={styles.controls}>

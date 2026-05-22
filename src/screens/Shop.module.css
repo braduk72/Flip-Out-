@@ -216,15 +216,20 @@
 
 .powerupCard:hover { transform: translateY(-3px); }
 
-.powerupEmoji {
-  font-size: 32px;
-  line-height: 1;
+.powerupImg {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 8px;
 }
 
 .powerupLabel {
   font-size: 13px;
   font-weight: 900;
   color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .powerupDesc {
@@ -255,6 +260,14 @@
   font-weight: 700;
   color: rgba(255, 215, 0, 0.7);
   letter-spacing: 0.5px;
+}
+
+.chestTierCoin {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 1px;
 }
 
 /* ── Bundles ── */

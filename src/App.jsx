@@ -10,10 +10,16 @@ import RoundStart from './screens/RoundStart'
 import MultiplayerLobby from './screens/MultiplayerLobby'
 import LuckySpin from './screens/LuckySpin'
 import Leaderboard from './screens/Leaderboard'
+import SeasonMap from './screens/SeasonMap'
 import { KNOCKOUT_OPPONENTS } from './data/opponents'
+import { ACTIVE_SEASON } from './data/seasonalOpponents'
 import { DECKS } from './data/decks'
 import { useMultiplayer } from './hooks/useMultiplayer'
 import { buildBoard } from './hooks/useGame'
+
+const SEASONAL_SCREENS = ['seasonmap', 'seasonroundstart', 'seasongame']
+const SEASONAL_MUSIC   = '/music/season1.mp3'
+const MAIN_MUSIC       = '/music/deal-the-tension.mp3'
 
 function awardGoldCard() {
   if (!localStorage.getItem('fo_gold_card')) {
@@ -42,9 +48,16 @@ export default function App() {
 
   // Gauntlet state
   const [gauntletStep,    setGauntletStep]    = useState(() => parseInt(localStorage.getItem('fo_gauntlet_step') || '0'))
-  const [gauntletActive,  setGauntletActive]  = useState(false) // true while playing a gauntlet fight
+  const [gauntletActive,  setGauntletActive]  = useState(false)
 
-  const audioRef = useRef(null)
+  // Season state
+  const SEASON_NODES = [...ACTIVE_SEASON.opponents, ACTIVE_SEASON.boss]
+  const [seasonStep,   setSeasonStep]   = useState(() => parseInt(localStorage.getItem('fo_season1_step') || '0'))
+  const [seasonActive, setSeasonActive] = useState(false)
+
+  const audioRef       = useRef(null)
+  const seasonAudioRef = useRef(null)
+  const seasonMusicOk  = useRef(false) // true once we've confirmed season1.mp3 exists
 
   // ── Multiplayer board sync effects ──────────────────────────────────────────
   // When game_start fires, host generates the board; guest waits for fo:board
@@ -83,6 +96,23 @@ export default function App() {
       localStorage.setItem('fo_owned_decks', JSON.stringify(merged))
       window.history.replaceState({}, '', window.location.pathname)
     }
+    // Dev helpers — never linked publicly
+    if (params.get('resetoffer') === '1') {
+      localStorage.removeItem('fo_offer_seen')
+      localStorage.removeItem('fo_offer_expires')
+      localStorage.removeItem('fo_offer_bought')
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+    if (params.get('resetseason') === '1') {
+      localStorage.removeItem('fo_season1_step')
+      localStorage.removeItem('fo_season1_gold_card')
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+    if (params.get('resetgauntlet') === '1') {
+      localStorage.removeItem('fo_gauntlet_step')
+      localStorage.removeItem('fo_gold_card')
+      window.history.replaceState({}, '', window.location.pathname)
+    }
   }, [])
 
   useEffect(() => {
@@ -108,6 +138,47 @@ export default function App() {
 
     return () => { audio.pause(); audio.src = '' }
   }, [])
+
+  // ── Seasonal music crossfade ──────────────────────────────────────────────
+  useEffect(() => {
+    if (!musicOn) return
+    const isSeasonal = SEASONAL_SCREENS.includes(screen)
+
+    if (isSeasonal) {
+      // Fade main music out
+      if (audioRef.current) audioRef.current.pause()
+      // Start seasonal music (silently ignore 404 if file not added yet)
+      if (!seasonAudioRef.current) {
+        const a = new Audio(SEASONAL_MUSIC)
+        a.loop   = true
+        a.volume = 0
+        a.play().then(() => {
+          seasonMusicOk.current = true
+          // Fade in
+          let v = 0
+          const ramp = setInterval(() => {
+            v = Math.min(0.45, v + 0.03)
+            a.volume = v
+            if (v >= 0.45) clearInterval(ramp)
+          }, 80)
+        }).catch(() => {
+          // season1.mp3 not added yet — fall back to main
+          seasonMusicOk.current = false
+          if (audioRef.current) audioRef.current.play().catch(() => {})
+        })
+        seasonAudioRef.current = a
+      } else {
+        seasonAudioRef.current.play().catch(() => {})
+      }
+    } else {
+      // Leaving seasonal screens — stop seasonal music, resume main
+      if (seasonAudioRef.current) {
+        seasonAudioRef.current.pause()
+        sessionAudioRef.current.currentTime = 0
+      }
+      if (audioRef.current && musicOn) audioRef.current.play().catch(() => {})
+    }
+  }, [screen, musicOn]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleMusic() {
     const next = !musicOn
@@ -182,6 +253,37 @@ export default function App() {
     localStorage.setItem('fo_gauntlet_step', '0')
   }
 
+  // ── Season flow ────────────────────────────────────────────────────────────
+  function handleSeasonMap() { setScreen('seasonmap') }
+
+  function handleSeasonFight() {
+    const ownedIds  = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
+    const available = DECKS.filter(d => d.free || ownedIds.includes(d.id))
+    const d         = available[Math.floor(Math.random() * available.length)]
+    setDeck(d)
+    setSeasonActive(true)
+    setScreen('seasongame')
+  }
+
+  function handleSeasonResult(winner) {
+    if (winner === 'player') {
+      const next = seasonStep + 1
+      setSeasonStep(next)
+      localStorage.setItem('fo_season1_step', String(next))
+      // Beat the seasonal boss — award season gold card
+      if (seasonStep === SEASON_NODES.length - 1) {
+        const key = ACTIVE_SEASON.boss.rewardKey
+        if (!localStorage.getItem(key)) {
+          localStorage.setItem(key, new Date().toISOString().slice(0, 10))
+        }
+        addCoins(150)
+      }
+    }
+    setDeck(null)
+    setSeasonActive(false)
+    setScreen('seasonmap')
+  }
+
   // ── Misc ──────────────────────────────────────────────────────────────────
   function handlePortrait(idx) { setPortrait(idx); localStorage.setItem('fo_portrait', idx) }
   function handleDifficulty(d) { setDifficulty(d); localStorage.setItem('fo_difficulty', d) }
@@ -200,6 +302,38 @@ export default function App() {
     : null
 
   // ── Screens ───────────────────────────────────────────────────────────────
+  if (screen === 'seasonmap') {
+    return (
+      <SeasonMap
+        seasonStep={seasonStep}
+        onFight={handleSeasonFight}
+        onBack={() => setScreen('home')}
+        navProps={navProps}
+      />
+    )
+  }
+  if (screen === 'seasongame' && deck) {
+    const opp = SEASON_NODES[Math.min(seasonStep, SEASON_NODES.length - 1)]
+    return (
+      <Game
+        key={`season-${seasonStep}-${deck.id}`}
+        deck={deck}
+        portrait={portrait}
+        mode="vs"
+        difficulty={opp.difficulty === 'SeasonBoss' ? 'Lethal' : 'Hard'}
+        opponentImage={opp.image}
+        opponentName={opp.name}
+        opponentModel={opp.model}
+        opponentBio={opp.bio}
+        onBack={() => { setDeck(null); setSeasonActive(false); setScreen('seasonmap') }}
+        onResult={handleSeasonResult}
+        musicOn={musicOn}
+        sfxOn={sfxOn}
+        onToggleMusic={toggleMusic}
+        onToggleSfx={toggleSfx}
+      />
+    )
+  }
   if (screen === 'shop') {
     return <Shop onBack={() => setScreen('home')} navProps={navProps} />
   }
@@ -293,12 +427,14 @@ export default function App() {
       onPlay={handlePlay}
       onKnockout={handleKnockout}
       onOnline={handleOnline}
+      onSeason={handleSeasonMap}
       onShop={() => setScreen('shop')}
       onAvatar={() => setScreen('avatarpicker')}
       onSettings={() => setScreen('settings')}
       portrait={portrait}
       onPortrait={handlePortrait}
       gauntletStep={gauntletStep}
+      seasonStep={seasonStep}
       mode={mode}
       onMode={setMode}
       musicOn={musicOn}
