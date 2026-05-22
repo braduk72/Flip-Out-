@@ -68,7 +68,7 @@ export default function SpecialOffer({ onClose, onBuy }) {
 
         <div className={styles.bannerArt}>🎁</div>
 
-        <h2 className={styles.title}>Special Offer!</h2>
+        <h2 className={styles.title}>Limited Time Offer!</h2>
         <p className={styles.subtitle}>One-time deal — never shown again!</p>
 
         <div className={styles.itemsGrid}>
