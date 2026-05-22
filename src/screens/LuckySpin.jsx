@@ -29,15 +29,25 @@ function getUsed() {
 }
 
 const SEGMENTS = [
-  { label: '×30',   icon: '🪙', type: 'coins',   value: 30,   color: '#e8a838' },
-  { label: '×1',    icon: '❄️', type: 'freeze',               color: '#3ecfd4' },
-  { label: '×200',  icon: '🪙', type: 'coins',   value: 200,  color: '#e84b4b' },
-  { label: '×1',    icon: '👁️', type: 'peek',                 color: '#9b4fe8' },
-  { label: '×1000', icon: '🪙', type: 'coins',   value: 1000, color: '#26c25a' },
-  { label: '×1',    icon: '🔀', type: 'shuffle',              color: '#3b82f6' },
-  { label: '×50',   icon: '🪙', type: 'coins',   value: 50,   color: '#f97316' },
-  { label: '×1',    icon: '❄️', type: 'freeze',               color: '#3ecfd4' },
+  { label: '×30',   icon: '🪙', type: 'coins',   value: 30,   color: '#e8a838', weight: 35     },
+  { label: '×1',    icon: '❄️', type: 'freeze',               color: '#3ecfd4', weight: 10     },
+  { label: '×200',  icon: '🪙', type: 'coins',   value: 200,  color: '#e84b4b', weight: 14     },
+  { label: '×1',    icon: '👁️', type: 'peek',                 color: '#9b4fe8', weight: 8      },
+  { label: '×1000', icon: '🪙', type: 'coins',   value: 1000, color: '#26c25a', weight: 0.0001 },
+  { label: '×1',    icon: '🔀', type: 'shuffle',              color: '#3b82f6', weight: 6      },
+  { label: '×50',   icon: '🪙', type: 'coins',   value: 50,   color: '#f97316', weight: 22     },
+  { label: '×1',    icon: '❄️', type: 'freeze',               color: '#3ecfd4', weight: 5      },
 ]
+
+function weightedRandomSeg() {
+  const total = SEGMENTS.reduce((s, seg) => s + seg.weight, 0)
+  let r = Math.random() * total
+  for (let i = 0; i < SEGMENTS.length; i++) {
+    r -= SEGMENTS[i].weight
+    if (r <= 0) return i
+  }
+  return SEGMENTS.length - 1
+}
 
 const N = SEGMENTS.length
 const SEG_DEG = 360 / N
@@ -70,7 +80,7 @@ export default function LuckySpin({ onBack, navProps }) {
 
   function doSpin(isAd = false) {
     if (spinning || prize) return
-    const targetSeg   = Math.floor(Math.random() * N)
+    const targetSeg   = weightedRandomSeg()
     const targetAngle = (360 - (targetSeg * SEG_DEG + SEG_DEG / 2) + 360) % 360
     const minSpin     = rotRef.current + 5 * 360
     const n           = Math.ceil((minSpin - targetAngle) / 360)
