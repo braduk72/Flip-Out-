@@ -91,10 +91,11 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
   const imgRef     = useRef(null)
   const currentIdx = Math.min(seasonStep, ALL_NODES.length - 1)
 
-  // Fog height: covers everything above the current node, shrinks as player advances
+  // Fog height: covers the danger zone above the player, stays well clear of the
+  // green start zone. Shrinks upward as the player advances.
   const fogHeight = seasonStep >= ALL_NODES.length
     ? 0
-    : Math.max(0, NODE_POSITIONS[currentIdx].y - 6)
+    : Math.max(0, NODE_POSITIONS[currentIdx].y - 38)
 
   // Scroll: pan from top (boss) down to current node for cinematic reveal
   const doScroll = useCallback(() => {
@@ -144,7 +145,6 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
             <div className={styles.fogCloud3} />
             <div className={styles.fogCloud4} />
             <div className={styles.fogCloud5} />
-            <div className={styles.fogEdge} />
           </div>
 
           {/* ── Steam emitters ── */}

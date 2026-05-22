@@ -105,51 +105,40 @@
   transition: height 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Main gradient body — dense red/crimson at top, amber in middle */
+/* Main gradient body — grey mist dense at top, fades to nothing at bottom */
 .fogBody {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(60,  0,  0, 0.92) 0%,
-    rgba(90, 20,  0, 0.88) 25%,
-    rgba(100, 45, 0, 0.80) 55%,
-    rgba(80,  30, 0, 0.65) 75%,
-    transparent            100%
+    rgba(50,  55,  80, 0.90) 0%,
+    rgba(70,  75, 100, 0.80) 20%,
+    rgba(90,  95, 120, 0.65) 45%,
+    rgba(120, 125, 150, 0.35) 75%,
+    transparent              100%
   );
 }
 
-/* Soft gradient fade at the bottom edge of the fog — blends into clear map */
-.fogEdge {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 18%;
-  background: linear-gradient(to bottom, transparent, rgba(40, 15, 0, 0.55));
-  pointer-events: none;
-}
-
-/* Drifting cloud shapes inside the fog */
+/* Drifting grey cloud puffs */
 .fogCloud0, .fogCloud1, .fogCloud2,
 .fogCloud3, .fogCloud4, .fogCloud5 {
   position: absolute;
   border-radius: 50%;
-  background: rgba(160, 60, 20, 0.28);
-  filter: blur(18px);
+  background: rgba(200, 205, 230, 0.42);
+  filter: blur(22px);
   animation: fogDrift 12s ease-in-out infinite alternate;
 }
 
-.fogCloud0 { width: 70%; height: 12%; top:  5%; left: -10%; animation-duration: 11s; }
-.fogCloud1 { width: 60%; height: 10%; top: 18%; left:  30%; animation-duration: 15s; animation-direction: alternate-reverse; }
-.fogCloud2 { width: 80%; height: 14%; top: 32%; left: -15%; animation-duration: 13s; background: rgba(120,40,0,0.22); }
-.fogCloud3 { width: 55%; height: 10%; top: 48%; left:  25%; animation-duration: 10s; animation-direction: alternate-reverse; background: rgba(140,60,10,0.2); }
-.fogCloud4 { width: 65%; height: 12%; top: 62%; left: -5%;  animation-duration: 14s; }
-.fogCloud5 { width: 50%; height:  9%; top: 74%; left:  40%; animation-duration: 16s; animation-direction: alternate-reverse; background: rgba(100,50,10,0.18); }
+.fogCloud0 { width: 80%; height: 14%; top:  4%; left: -12%; animation-duration: 11s; }
+.fogCloud1 { width: 65%; height: 12%; top: 16%; left:  28%; animation-duration: 15s; animation-direction: alternate-reverse; background: rgba(210,215,240,0.38); }
+.fogCloud2 { width: 90%; height: 16%; top: 30%; left: -18%; animation-duration: 13s; background: rgba(185,190,220,0.35); }
+.fogCloud3 { width: 60%; height: 11%; top: 46%; left:  22%; animation-duration: 10s; animation-direction: alternate-reverse; background: rgba(195,200,225,0.30); }
+.fogCloud4 { width: 70%; height: 13%; top: 60%; left: -6%;  animation-duration: 14s; background: rgba(210,215,235,0.25); }
+.fogCloud5 { width: 55%; height: 10%; top: 74%; left:  38%; animation-duration: 16s; animation-direction: alternate-reverse; background: rgba(220,220,240,0.18); }
 
 @keyframes fogDrift {
-  from { transform: translateX(0)    translateY(0);   }
-  to   { transform: translateX(22px) translateY(8px); }
+  from { transform: translateX(0)    translateY(0);    }
+  to   { transform: translateX(28px) translateY(10px); }
 }
 
 /* ── Steam emitters ── */

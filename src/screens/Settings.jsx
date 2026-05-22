@@ -64,6 +64,8 @@ export default function Settings({ onBack, onSeason, musicOn, sfxOn, onToggleMus
 
       </div>
 
+      <div className={styles.versionTag}>v0.23</div>
+
       <BottomNav active="settings" {...navProps} />
     </div>
   )

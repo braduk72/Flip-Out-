@@ -29,14 +29,14 @@ function getUsed() {
 }
 
 const SEGMENTS = [
-  { label: '×30',   icon: '🪙', type: 'coins',   value: 30,   color: '#e8a838', weight: 8      },
-  { label: '×1',    icon: '❄️', type: 'freeze',               color: '#3ecfd4', weight: 22     },
-  { label: '×200',  icon: '🪙', type: 'coins',   value: 200,  color: '#e84b4b', weight: 3      },
-  { label: '×1',    icon: '👁️', type: 'peek',                 color: '#9b4fe8', weight: 20     },
-  { label: '×1000', icon: '🪙', type: 'coins',   value: 1000, color: '#26c25a', weight: 0.0001 },
-  { label: '×1',    icon: '🔀', type: 'shuffle',              color: '#3b82f6', weight: 18     },
-  { label: '×50',   icon: '🪙', type: 'coins',   value: 50,   color: '#f97316', weight: 5      },
-  { label: '×1',    icon: '❄️', type: 'freeze',               color: '#3ecfd4', weight: 24     },
+  { label: '10',   icon: '🪙', type: 'coins', value: 10,   color: '#b8721e', weight: 30 },
+  { label: '25',   icon: '🪙', type: 'coins', value: 25,   color: '#e8a838', weight: 25 },
+  { label: '50',   icon: '🪙', type: 'coins', value: 50,   color: '#f97316', weight: 18 },
+  { label: '100',  icon: '🪙', type: 'coins', value: 100,  color: '#e84b4b', weight: 12 },
+  { label: '150',  icon: '🪙', type: 'coins', value: 150,  color: '#26c25a', weight: 8  },
+  { label: '250',  icon: '🪙', type: 'coins', value: 250,  color: '#9b4fe8', weight: 4  },
+  { label: '500',  icon: '🪙', type: 'coins', value: 500,  color: '#3ecfd4', weight: 2  },
+  { label: '1000', icon: '🪙', type: 'coins', value: 1000, color: '#FFD700', weight: 1  },
 ]
 
 function weightedRandomSeg() {
@@ -73,7 +73,7 @@ function playTickSound(ctx) {
 }
 
 // ── Tick schedule: ease-out-cubic matches wheel deceleration ────────────────
-function getTickTimes(totalDeg, duration = 4200) {
+function getTickTimes(totalDeg, duration = 7000) {
   const count = Math.floor(totalDeg / SEG_DEG)
   const times = []
   for (let n = 1; n <= count; n++) {
@@ -133,7 +133,7 @@ export default function LuckySpin({ onBack, navProps }) {
 
     const targetSeg   = weightedRandomSeg()
     const targetAngle = (360 - (targetSeg * SEG_DEG + SEG_DEG / 2) + 360) % 360
-    const minSpin     = rotRef.current + 5 * 360
+    const minSpin     = rotRef.current + 9 * 360
     const n           = Math.ceil((minSpin - targetAngle) / 360)
     const finalRot    = n * 360 + targetAngle
     const totalDeg    = finalRot - rotRef.current
@@ -165,11 +165,9 @@ export default function LuckySpin({ onBack, navProps }) {
       const seg = SEGMENTS[targetSeg]
       setPrize(seg)
       setSpinning(false)
-      if (seg.type === 'coins') {
-        const cur = parseInt(localStorage.getItem('fo_coins') || '0')
-        localStorage.setItem('fo_coins', String(cur + seg.value))
-      }
-    }, 4300)
+      const cur = parseInt(localStorage.getItem('fo_coins') || '0')
+      localStorage.setItem('fo_coins', String(cur + seg.value))
+    }, 7100)
   }
 
   function handleFree() {
@@ -207,7 +205,7 @@ export default function LuckySpin({ onBack, navProps }) {
           className={styles.wheel}
           style={{
             transform: `rotate(${rotation}deg)`,
-            transition: spinning ? 'transform 4.2s cubic-bezier(0.17, 0.67, 0.08, 0.99)' : 'none',
+            transition: spinning ? 'transform 7s cubic-bezier(0.17, 0.67, 0.08, 0.99)' : 'none',
           }}
         />
       </div>
@@ -243,7 +241,7 @@ export default function LuckySpin({ onBack, navProps }) {
             <div className={styles.prizeEmoji}>{prize.icon}</div>
             <div className={styles.prizeWon}>You won!</div>
             <div className={styles.prizeLabel}>
-              {prize.label} {prize.type === 'coins' ? 'Coins' : prize.type.charAt(0).toUpperCase() + prize.type.slice(1)}
+              {prize.label} Coins 🪙
             </div>
             <button className={styles.collectBtn} onClick={() => setPrize(null)}>Collect!</button>
           </div>
