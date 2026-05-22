@@ -278,6 +278,7 @@ export default function App() {
         difficulty={mp.difficulty}
         prebuiltCards={mpCards}
         mpState={mp}
+        yourTurn={mp.getYourTurn()}
         onBack={handleMpGameBack}
         musicOn={musicOn}
         sfxOn={sfxOn}

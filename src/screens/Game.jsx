@@ -77,8 +77,8 @@ function generateSpecialSeed(specialType, index, cards, matched, consumed) {
   }
 }
 
-export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, gauntletStep }) {
-  const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, commitResolve, useJoker } = useGame(deck, difficulty, prebuiltCards)
+export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, yourTurn = true, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, gauntletStep }) {
+  const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, commitResolve, useJoker } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player')
   const [jokersRemaining, setJokersRemaining] = useState(() => getJokersRemaining())
   const stageRef   = useRef(randomStage())
   const aiContRef  = useRef(randomContestant(portrait))

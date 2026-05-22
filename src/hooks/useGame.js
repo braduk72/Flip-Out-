@@ -39,7 +39,7 @@ function buildBoard(deck, numPairs = 7, numSpecials = 2) {
 
 // ── Initial state ─────────────────────────────────────────────────────────────
 
-function makeInitial(deck, numPairs = 7, prebuiltCards = null) {
+function makeInitial(deck, numPairs = 7, prebuiltCards = null, initialTurn = 'player') {
   return {
     cards:          prebuiltCards ?? buildBoard(deck, numPairs),
     flipped:        [],      // up to 2 card indices currently revealed
@@ -48,7 +48,7 @@ function makeInitial(deck, numPairs = 7, prebuiltCards = null) {
     frozen:         [],      // card indices frozen by FREEZE
     playerScore:    0,
     aiScore:        0,
-    turn:           'player',
+    turn:           initialTurn,
     stunned:        null,    // 'player' | 'ai'
     playerShield:   false,
     aiShield:       false,
@@ -431,10 +431,10 @@ function applySpecial(state, index, whose, seed = {}) {
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
-export function useGame(deck, difficulty = 'Medium', prebuiltCards = null) {
+export function useGame(deck, difficulty = 'Medium', prebuiltCards = null, initialTurn = 'player') {
   const [state, dispatch] = useReducer(reducer, null, () => {
     const numPairs = DIFFICULTY_PAIRS[difficulty] ?? 7
-    return makeInitial(deck, numPairs, prebuiltCards)
+    return makeInitial(deck, numPairs, prebuiltCards, initialTurn)
   })
   const aiMemory = useRef({})    // { cardIndex: pairId } — what AI has seen
   const aiKnown  = DIFFICULTY_AI_KNOWN[difficulty] ?? 0.85
