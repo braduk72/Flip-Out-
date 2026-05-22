@@ -14,8 +14,8 @@ function shuffle(arr) {
 }
 
 const DIFFICULTY_PAIRS    = { Easy: 5, Medium: 7, Hard: 9,    Lethal: 9    }
-const DIFFICULTY_AI_KNOWN = { Easy: 0.40, Medium: 0.85, Hard: 0.97, Lethal: 1.00 }
-const DIFFICULTY_AI_MEM   = { Easy: 0.25, Medium: 0.75, Hard: 0.92, Lethal: 1.00 }
+const DIFFICULTY_AI_KNOWN = { Easy: 0.15, Medium: 0.50, Hard: 0.80, Lethal: 0.98 }
+const DIFFICULTY_AI_MEM   = { Easy: 0.08, Medium: 0.30, Hard: 0.65, Lethal: 0.95 }
 
 function buildBoard(deck, numPairs = 7, numSpecials = 2) {
   const images = getDeckImages(deck, numPairs)
@@ -119,6 +119,9 @@ function reducer(state, action) {
         state.gameOver
       ) return state
 
+      // Guard: player is stunned (bolt hit — skip this turn)
+      if (state.stunned === 'player') return state
+
       // Guard: not player's turn
       if (state.turn !== 'player') return state
 
@@ -172,7 +175,10 @@ function reducer(state, action) {
 
     case 'HIDE_FLIPPED': {
       const keepTurn = state.stopwatchEnd && Date.now() < state.stopwatchEnd
-      return { ...state, flipped: [], turn: keepTurn ? state.turn : otherTurn(state.turn) }
+      const newTurn  = keepTurn ? state.turn : otherTurn(state.turn)
+      // Clear stun for whoever just had their turn — bolt stuns for exactly 1 turn
+      const newStunned = state.stunned === state.turn ? null : state.stunned
+      return { ...state, flipped: [], turn: newTurn, stunned: newStunned }
     }
 
     case 'CLEAR_EFFECT':
@@ -240,7 +246,7 @@ function resolveFlip(state, flipped, whose) {
   const isMatch = cardA.pairId === cardB.pairId
 
   if (!isMatch) {
-    return { ...state, flipped, activeEffect: { type: 'no_match', data: { a, b } } }
+    return { ...state, flipped, activeEffect: { type: 'no_match', data: { a, b, whose } } }
   }
 
   // Match!

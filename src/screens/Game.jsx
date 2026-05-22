@@ -268,12 +268,20 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     return () => clearTimeout(t)
   }, [stopwatchEnd, endStopwatch])
 
+  // Auto-skip player's turn when stunned by a bolt
+  useEffect(() => {
+    if (turn !== 'player' || stunned !== 'player' || gameOver) return
+    const t = setTimeout(() => hideFlipped(), 1800)
+    return () => clearTimeout(t)
+  }, [turn, stunned, gameOver, hideFlipped])
+
   const stopwatchActive = stopwatchEnd && Date.now() < stopwatchEnd
 
-  // Resolve match/no-match — instant during stopwatch, fast in solo, normal in vs/mp
+  // Resolve match/no-match — instant during PLAYER stopwatch, fast in solo, normal in vs/mp
   useEffect(() => {
     if (!pendingResolve) return
-    const delay = stopwatchActive ? 50 : mode === 'solo' ? 300 : 950
+    const playerStopwatch = stopwatchActive && pendingResolve.whose === 'player'
+    const delay = playerStopwatch ? 50 : mode === 'solo' ? 300 : 950
     const t = setTimeout(() => commitResolve(pendingResolve.whose), delay)
     return () => clearTimeout(t)
   }, [pendingResolve, commitResolve]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -281,7 +289,8 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   // Handle no-match — hide cards after delay; solo is faster and skippable by tap
   useEffect(() => {
     if (activeEffect?.type === 'no_match') {
-      const delay = stopwatchActive ? 150 : mode === 'solo' ? 500 : 1800
+      const playerStopwatch = stopwatchActive && activeEffect.data?.whose === 'player'
+      const delay = playerStopwatch ? 150 : mode === 'solo' ? 500 : 1800
       const t = setTimeout(() => { hideFlipped(); clearEffect() }, delay)
       return () => clearTimeout(t)
     }
@@ -405,14 +414,14 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       return
     }
 
-    const delay1 = 900 + Math.random() * 500
+    const delay1 = 1200 + Math.random() * 800
     aiTimerRef.current = setTimeout(() => {
       const move1 = getAIMove(cards, flipped, matched, consumed, frozen)
       if (move1 === null) return
       aiFlip(move1)
 
       // Second flip — long enough for player to see the first card
-      const delay2 = 1200 + Math.random() * 600
+      const delay2 = 1500 + Math.random() * 800
       aiTimerRef.current = setTimeout(() => {
         const move2 = getAIMove(cards, [move1], matched, consumed, frozen)
         if (move2 === null) return
@@ -561,6 +570,8 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 : winner === 'player' ? '🏆 YOU WIN!'
                 : mode === 'mp' ? '😅 OPPONENT WINS!'
                 : '😅 AI WINS!')
+              : stunned === 'player' && turn === 'player' ? '⚡ STUNNED! Turn skipped…'
+              : stunned === 'ai'     && turn === 'ai'     ? '⚡ AI STUNNED! Skipping…'
               : mode === 'solo' ? 'SOLO MODE'
               : mode === 'mp' ? (turn === 'player' ? 'YOUR TURN' : "OPPONENT'S TURN")
               : turn === 'player' ? 'YOUR TURN' : "AI'S TURN"
@@ -668,7 +679,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
         {/* Portraits + scores */}
         <div className={styles.contestants}>
           <div className={styles.sidePanel}>
-            <div className={`${styles.portraitWrap} ${mode !== 'solo' && turn !== 'player' ? styles.inactive : ''} ${mode !== 'solo' && spinning ? styles.spinning : ''}`}>
+            <div className={`${styles.portraitWrap} ${mode !== 'solo' && turn !== 'player' ? styles.inactive : ''} ${mode !== 'solo' && spinning ? styles.spinning : ''} ${playerShield ? styles.shieldActive : ''}`}>
               <img src={`/images/a${portrait}.png`} alt="You" className={styles.portrait} />
             </div>
             <span className={styles.sideScore}>{playerScore}</span>
@@ -685,7 +696,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
             </div>
           ) : (
             <div className={styles.sidePanel}>
-              <div className={`${styles.portraitWrap} ${turn !== 'ai' ? styles.inactive : ''} ${spinning ? styles.spinning : ''} ${difficulty === 'Lethal' && turn === 'ai' ? styles.lethalAiActive : ''}`}>
+              <div className={`${styles.portraitWrap} ${turn !== 'ai' ? styles.inactive : ''} ${spinning ? styles.spinning : ''} ${difficulty === 'Lethal' && turn === 'ai' ? styles.lethalAiActive : ''} ${aiShield ? styles.shieldActive : ''}`}>
                 <img
                   src={mode === 'mp'
                     ? `/images/a${mpState?.opponentPortrait ?? 1}.png`

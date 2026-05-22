@@ -174,7 +174,7 @@ export default function App() {
       // Leaving seasonal screens — stop seasonal music, resume main
       if (seasonAudioRef.current) {
         seasonAudioRef.current.pause()
-        sessionAudioRef.current.currentTime = 0
+        seasonAudioRef.current.currentTime = 0
       }
       if (audioRef.current && musicOn) audioRef.current.play().catch(() => {})
     }

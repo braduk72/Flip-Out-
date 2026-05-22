@@ -83,6 +83,14 @@ export const SPECIAL_CARDS = {
     description: 'Flip this card plus 3 more this turn',
     color: '#FFD700',
   },
+  // Synthetic effect entries (not real cards — used for UI banners only)
+  bolt_blocked: {
+    id: 'bolt_blocked',
+    name: '🛡️ SHIELD BLOCKED IT!',
+    image: '/images/cards/special/shield.png',
+    description: 'The bolt was deflected — shield consumed',
+    color: '#4682B4',
+  },
   // Legacy specials (from original game)
   shuffle: {
     id: 'shuffle',

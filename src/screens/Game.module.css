@@ -258,6 +258,19 @@
   letter-spacing: -1px;
 }
 
+.shieldActive {
+  border-color: #4682B4 !important;
+  box-shadow:
+    0 0 0 4px rgba(70, 130, 180, 0.35),
+    0 0 22px rgba(70, 130, 180, 0.7) !important;
+  animation: shieldGlow 1.8s ease-in-out infinite;
+}
+
+@keyframes shieldGlow {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(70,130,180,0.35), 0 0 22px rgba(70,130,180,0.7); }
+  50%       { box-shadow: 0 0 0 6px rgba(70,130,180,0.55), 0 0 40px rgba(70,130,180,1); }
+}
+
 .lethalAiActive {
   border-color: #ff2200 !important;
   animation: lethalPortraitPulse 0.45s ease-in-out infinite;
