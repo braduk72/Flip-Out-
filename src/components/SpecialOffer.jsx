@@ -66,7 +66,9 @@ export default function SpecialOffer({ onClose, onBuy }) {
 
         <div className={styles.offBadge}>80%<br/>off</div>
 
-        <div className={styles.bannerArt}>🎁</div>
+        <div className={styles.bannerArt}>
+          <img src="/images/chest.png" alt="" className={styles.bannerChest} draggable="false" />
+        </div>
 
         <h2 className={styles.title}>Limited Time Offer!</h2>
         <p className={styles.subtitle}>One-time deal — never shown again!</p>

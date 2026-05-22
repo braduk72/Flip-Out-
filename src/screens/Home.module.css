@@ -48,6 +48,31 @@
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
+.profileCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.fbBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.fbBtn img {
+  width: 48px;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+}
+
+.fbBtn:hover { transform: scale(1.08); }
+.fbBtnUsed   { opacity: 0.4; }
+
 @keyframes avatarPulse {
   0%,  60%, 100% { transform: rotate(0deg);    box-shadow: 0 0 12px rgba(255,215,0,0.45); }
   65%            { transform: rotate(180deg);   box-shadow: 0 0 22px rgba(255,215,0,0.9); }
@@ -272,6 +297,13 @@
 }
 
 /* ── Play Online button ── */
+.onlineGlobe {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .onlineBtn {
   display: flex;
   align-items: center;

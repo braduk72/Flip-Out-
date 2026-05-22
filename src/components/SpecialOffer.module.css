@@ -125,9 +125,14 @@
 }
 
 .bannerArt {
-  font-size: 72px;
   line-height: 1;
-  filter: drop-shadow(0 4px 16px rgba(255,215,0,0.4));
+}
+
+.bannerChest {
+  width: 90px;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 4px 16px rgba(255,215,0,0.5));
 }
 
 .title {
