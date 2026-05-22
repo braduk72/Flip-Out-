@@ -74,8 +74,8 @@ export default function SpecialOffer({ onClose, onBuy }) {
         <div className={styles.itemsGrid}>
           {ITEMS.map(item => (
             <div key={item.label} className={styles.itemChip}>
-              <img src={item.image} alt="" className={styles.itemIcon} />
-              <span>{item.label}</span>
+              <img src={item.image} alt={item.label} className={styles.itemIcon} />
+              <span className={styles.itemQty}>{item.label.includes('×') ? item.label.split(' ')[1] : item.label}</span>
             </div>
           ))}
         </div>
