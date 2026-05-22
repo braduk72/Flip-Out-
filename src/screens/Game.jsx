@@ -91,7 +91,12 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const [showQuitModal, setShowQuitModal] = useState(false)
   const [showInterstitial, setShowInterstitial] = useState(false)
   const pendingAction = useRef(null)
-  const [tornadoCol, setTornadoCol] = useState(-1)
+  const soloFrozenReadyToClear = useRef(false)
+  const [xrayPeeked, setXrayPeeked] = useState([])
+  const [shuffleAnimating, setShuffleAnimating] = useState(false)
+  const [tornadoStep, setTornadoStep] = useState(-1)
+  const [rocketStep, setRocketStep] = useState(-1)
+  const snakeOrderRef = useRef([])
   const [diceDisplay, setDiceDisplay] = useState([1, 1])
   const [diceRevealed, setDiceRevealed] = useState(false)
 
@@ -265,23 +270,19 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
   const stopwatchActive = stopwatchEnd && Date.now() < stopwatchEnd
 
-  // Resolve match/no-match — instant during stopwatch, normal otherwise
+  // Resolve match/no-match — instant during stopwatch, fast in solo, normal in vs/mp
   useEffect(() => {
     if (!pendingResolve) return
-    const t = setTimeout(
-      () => commitResolve(pendingResolve.whose),
-      stopwatchActive ? 50 : 950
-    )
+    const delay = stopwatchActive ? 50 : mode === 'solo' ? 300 : 950
+    const t = setTimeout(() => commitResolve(pendingResolve.whose), delay)
     return () => clearTimeout(t)
   }, [pendingResolve, commitResolve]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Handle no-match — hide cards after delay (fast during stopwatch)
+  // Handle no-match — hide cards after delay; solo is faster and skippable by tap
   useEffect(() => {
     if (activeEffect?.type === 'no_match') {
-      const t = setTimeout(() => {
-        hideFlipped()
-        clearEffect()
-      }, stopwatchActive ? 150 : 1800)
+      const delay = stopwatchActive ? 150 : mode === 'solo' ? 500 : 1800
+      const t = setTimeout(() => { hideFlipped(); clearEffect() }, delay)
       return () => clearTimeout(t)
     }
   }, [activeEffect, hideFlipped, clearEffect]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -295,7 +296,8 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       activeEffect.type !== 'xray' &&
       activeEffect.type !== 'boom' &&
       activeEffect.type !== 'tornado' &&
-      activeEffect.type !== 'rocket'
+      activeEffect.type !== 'rocket' &&
+      activeEffect.type !== 'shuffle'
     ) {
       const t = setTimeout(clearEffect, 5000)
       return () => clearTimeout(t)
@@ -310,24 +312,37 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     }
   }, [activeEffect, clearEffect])
 
-  // Tornado — sweep left-to-right one column at a time, then clear
+  // Tornado — snake sweep one card at a time (row 0 L→R, row 1 R→L, etc.)
   useEffect(() => {
-    if (activeEffect?.type !== 'tornado') { setTornadoCol(-1); return }
-    const timers = []
-    for (let c = 0; c < 4; c++) {
-      timers.push(setTimeout(() => setTornadoCol(c), 100 + c * 200))
+    if (activeEffect?.type !== 'tornado') { setTornadoStep(-1); return }
+    const numRows = Math.ceil(cards.length / 4)
+    const snakeOrder = []
+    for (let r = 0; r < numRows; r++) {
+      const row = Array.from({ length: 4 }, (_, c) => r * 4 + c).filter(i => i < cards.length)
+      if (r % 2 === 1) row.reverse()
+      snakeOrder.push(...row)
     }
-    timers.push(setTimeout(() => { clearEffect(); setTornadoCol(-1) }, 100 + 4 * 200 + 700))
+    snakeOrderRef.current = snakeOrder
+    const timers = []
+    for (let s = 0; s < snakeOrder.length; s++) {
+      timers.push(setTimeout(() => setTornadoStep(s), 50 + s * 100))
+    }
+    const total = 50 + snakeOrder.length * 100
+    timers.push(setTimeout(() => { clearEffect(); setTornadoStep(-1) }, total + 500))
     return () => timers.forEach(clearTimeout)
   }, [activeEffect?.type, clearEffect]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Rocket — brief reveal then clear
+  // Rocket — step through line one card at a time as rocket flies past
   useEffect(() => {
-    if (activeEffect?.type === 'rocket') {
-      const t = setTimeout(clearEffect, 1400)
-      return () => clearTimeout(t)
+    if (activeEffect?.type !== 'rocket') { setRocketStep(-1); return }
+    const { line } = activeEffect.data
+    const timers = []
+    for (let s = 0; s < line.length; s++) {
+      timers.push(setTimeout(() => setRocketStep(s), s * 200))
     }
-  }, [activeEffect, clearEffect])
+    timers.push(setTimeout(() => { clearEffect(); setRocketStep(-1) }, line.length * 200 + 400))
+    return () => timers.forEach(clearTimeout)
+  }, [activeEffect?.type, clearEffect]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Dice — roll animation then reveal final values
   useEffect(() => {
@@ -356,13 +371,29 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     return () => { timers.forEach(clearTimeout); clearTimeout(revealTimer) }
   }, [activeEffect?.type]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Clear frozen when the turn comes BACK to the player; also clear the effect banner
+  // Clear frozen — vs/mp: immediately when turn returns to player
+  //              solo: let player experience one full turn with frozen cards, then clear when their turn ends
   useEffect(() => {
-    if (frozen.length > 0 && turn === 'player') {
-      const t = setTimeout(() => { clearFrozen(); clearEffect() }, 200)
-      return () => clearTimeout(t)
+    if (frozen.length === 0) { soloFrozenReadyToClear.current = false; return }
+    if (turn !== 'player') return
+    if (mode === 'solo' && !soloFrozenReadyToClear.current) {
+      // Player's turn just returned with frozen cards — flag to clear after they've played it
+      soloFrozenReadyToClear.current = true
+      return
     }
-  }, [turn, frozen, clearFrozen, clearEffect])
+    const t = setTimeout(() => { clearFrozen(); clearEffect(); soloFrozenReadyToClear.current = false }, 200)
+    return () => clearTimeout(t)
+  }, [turn, frozen, mode, clearFrozen, clearEffect])
+
+  // Solo: clear frozen when player's frozen turn ends (turn flips to AI)
+  useEffect(() => {
+    if (mode !== 'solo' || !soloFrozenReadyToClear.current || frozen.length === 0) return
+    if (turn === 'ai') {
+      soloFrozenReadyToClear.current = false
+      clearFrozen()
+      clearEffect()
+    }
+  }, [turn, mode, frozen, clearFrozen, clearEffect])
 
   // AI turn logic
   const doAITurn = useCallback(() => {
@@ -434,12 +465,22 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     return () => clearTimeout(t)
   }, [flipped, activeEffect]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // X-ray — close after 2 seconds
+  // X-ray — peek mode: player taps up to 2 cards to sneak a look, then takes their turn
   useEffect(() => {
-    if (activeEffect?.type === 'xray') {
-      const t = setTimeout(clearEffect, 2000)
-      return () => clearTimeout(t)
-    }
+    if (activeEffect?.type !== 'xray') { setXrayPeeked([]); return }
+    if (xrayPeeked.length === 0) return // waiting for player to tap
+    // Auto-close 1.5s after 2nd peek, or 4s if they only tapped 1
+    const delay = xrayPeeked.length >= 2 ? 1500 : 4000
+    const t = setTimeout(() => clearEffect(), delay)
+    return () => clearTimeout(t)
+  }, [activeEffect?.type, xrayPeeked.length, clearEffect])
+
+  // Shuffle — animate cards out/in, then clear
+  useEffect(() => {
+    if (activeEffect?.type !== 'shuffle') { setShuffleAnimating(false); return }
+    setShuffleAnimating(true)
+    const t = setTimeout(() => { setShuffleAnimating(false); clearEffect() }, 1000)
+    return () => clearTimeout(t)
   }, [activeEffect, clearEffect])
 
   function handleJoker() {
@@ -468,20 +509,21 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
   const totalPairs = cards.filter(c => c.type === 'regular').length / 2
   const progress = ((playerScore + aiScore) / totalPairs) * 100
+  const breatheDuration = Math.max(1.5, 8 - 6.5 * Math.pow(progress / 100, 1.5)).toFixed(2)
 
   const isCardFlipped = i => flipped.includes(i)
   const revealEffectType = i => {
-    if (activeEffect?.type === 'xray') return 'xray'
-    if (activeEffect?.type === 'boom'    && activeEffect.data.launched.includes(i)) return 'boom'
-    if (activeEffect?.type === 'rocket'  && activeEffect.data.line.includes(i))     return 'rocket'
-    if (activeEffect?.type === 'tornado' && tornadoCol >= 0 && (i % 4) <= tornadoCol && activeEffect.data.trail.includes(i)) return 'tornado'
+    if (activeEffect?.type === 'xray' && xrayPeeked.includes(i)) return 'xray'
+    if (activeEffect?.type === 'boom' && activeEffect.data.launched.includes(i)) return 'boom'
+    if (activeEffect?.type === 'rocket' && rocketStep >= 0 && activeEffect.data.line.indexOf(i) <= rocketStep) return 'rocket'
+    if (activeEffect?.type === 'tornado' && tornadoStep >= 0 && activeEffect.data.trail.includes(i) && snakeOrderRef.current.indexOf(i) <= tornadoStep) return 'tornado'
     return null
   }
-  const isRevealed    = i => {
-    if (activeEffect?.type === 'xray') return true
-    if (activeEffect?.type === 'boom')       return activeEffect.data.launched.includes(i)
-    if (activeEffect?.type === 'rocket')     return activeEffect.data.line.includes(i)
-    if (activeEffect?.type === 'tornado')    return tornadoCol >= 0 && (i % 4) <= tornadoCol && activeEffect.data.trail.includes(i)
+  const isRevealed = i => {
+    if (activeEffect?.type === 'xray') return xrayPeeked.includes(i)
+    if (activeEffect?.type === 'boom') return activeEffect.data.launched.includes(i)
+    if (activeEffect?.type === 'rocket') return rocketStep >= 0 && activeEffect.data.line.indexOf(i) <= rocketStep
+    if (activeEffect?.type === 'tornado') return tornadoStep >= 0 && activeEffect.data.trail.includes(i) && snakeOrderRef.current.indexOf(i) <= tornadoStep
     return false
   }
 
@@ -490,7 +532,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     : null
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} style={{ '--breathe-duration': `${breatheDuration}s` }}>
       {/* Gameshow stage background */}
       <div
         className={styles.stage}
@@ -549,9 +591,28 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 isFrozen={frozen.includes(i)}
                 isConsumed={consumed.includes(i)}
                 revealEffect={revealEffectType(i)}
+                isShuffling={shuffleAnimating && !matched.includes(i) && !consumed.includes(i)}
                 onClick={() => {
                   if (gameOver) return
-                  if (pendingResolve || pendingSpecial || flipped.length >= 2) return
+                  if (pendingSpecial) return
+                  // X-ray peek: tap up to 2 cards to sneak a look before taking the real turn
+                  if (activeEffect?.type === 'xray') {
+                    if (!flipped.includes(i) && !matched.includes(i) && !consumed.includes(i)
+                        && !xrayPeeked.includes(i) && xrayPeeked.length < 2) {
+                      setXrayPeeked(prev => [...prev, i])
+                    }
+                    return
+                  }
+                  // Solo: tap any unmatched card during no-match delay to skip it immediately
+                  if (mode === 'solo' && activeEffect?.type === 'no_match'
+                      && !matched.includes(i) && !consumed.includes(i)) {
+                    hideFlipped()  // turn: player → ai
+                    clearEffect()
+                    hideFlipped()  // turn: ai → player (simulates AI pass-back)
+                    flipCard(i)
+                    return
+                  }
+                  if (pendingResolve || flipped.length >= 2) return
                   if (mode === 'solo' || turn === 'player') {
                     flipCard(i)
                     if (mode === 'mp') mpState?.sendFlip(i)
@@ -561,32 +622,39 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 style={undefined}
               />
             ))}
+
+            {/* Tornado sweep overlay — inside .board so % positions map to card cells */}
+            {activeEffect?.type === 'tornado' && tornadoStep >= 0 && (() => {
+              const cardIdx = snakeOrderRef.current[tornadoStep]
+              if (cardIdx === undefined) return null
+              const numRows = Math.ceil(cards.length / 4)
+              return (
+                <div className={styles.sweepTrack} aria-hidden="true">
+                  <span className={styles.tornadoIcon} style={{
+                    left: `${(cardIdx % 4 + 0.5) * 25}%`,
+                    top:  `${(Math.floor(cardIdx / 4) + 0.5) / numRows * 100}%`,
+                  }}>🌪️</span>
+                </div>
+              )
+            })()}
+
+            {/* Rocket fly overlay — inside .board so % positions map to card cells */}
+            {activeEffect?.type === 'rocket' && rocketStep >= 0 && (() => {
+              const { line } = activeEffect.data
+              const cardIdx = line[Math.min(rocketStep, line.length - 1)]
+              if (cardIdx === undefined) return null
+              const numRows = Math.ceil(cards.length / 4)
+              return (
+                <div className={styles.sweepTrack} aria-hidden="true">
+                  <span className={styles.rocketIcon} style={{
+                    left: `${(cardIdx % 4 + 0.5) * 25}%`,
+                    top:  `${(Math.floor(cardIdx / 4) + 0.5) / numRows * 100}%`,
+                  }}>🚀</span>
+                </div>
+              )
+            })()}
           </div>
-
-          {/* Tornado sweep overlay */}
-          {tornadoCol >= 0 && (
-            <div className={styles.sweepTrack} aria-hidden="true">
-              <span className={styles.tornadoIcon} style={{ left: `${(tornadoCol + 0.5) * 25}%` }}>🌪️</span>
-            </div>
-          )}
-
-          {/* Rocket fly overlay */}
-          {activeEffect?.type === 'rocket' && (() => {
-            const { line } = activeEffect.data
-            const isRow = line.length >= 2 && Math.floor(line[0] / 4) === Math.floor(line[1] / 4)
-            const frac  = isRow
-              ? (Math.floor((line.find(x => x != null) ?? 0) / 4) + 0.5) / 4
-              : ((line.find(x => x != null) ?? 0) % 4 + 0.5) / 4
-            return (
-              <div className={styles.sweepTrack} aria-hidden="true">
-                <span
-                  className={isRow ? styles.rocketH : styles.rocketV}
-                  style={isRow ? { top: `${frac * 100}%` } : { left: `${frac * 100}%` }}
-                >🚀</span>
-              </div>
-            )
-          })()}
-        </div>
+        </div>{/* end boardWrap */}
 
         {/* Joker button — appears when player has flipped one card */}
         {turn === 'player' && flipped.length === 1 && !state.jokerUsed && jokersRemaining > 0 && !gameOver && (

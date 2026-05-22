@@ -19,9 +19,9 @@ const COIN_PACKS = [
 const JOKER_RELOAD_PRICE = 50
 
 const POWERUPS = [
-  { id: 'pu_peek',    label: 'Peek',        desc: 'Briefly reveal all cards', price: 50,  emoji: '👁️' },
-  { id: 'pu_freeze',  label: 'Freeze',      desc: 'Stop the timer for 5s',    price: 40,  emoji: '❄️' },
-  { id: 'pu_shuffle', label: 'Shuffle',     desc: 'Reshuffle unmatched cards', price: 30, emoji: '🔀' },
+  { id: 'pu_peek',    label: 'Peek',    desc: 'Briefly reveal all cards',   price: 50, qty: 3, emoji: '👁️' },
+  { id: 'pu_freeze',  label: 'Freeze',  desc: 'Stop the timer for 5s',      price: 50, qty: 3, emoji: '❄️' },
+  { id: 'pu_shuffle', label: 'Shuffle', desc: 'Reshuffle unmatched cards',   price: 50, qty: 3, emoji: '🔀' },
 ]
 
 const BUNDLES = [
@@ -142,7 +142,8 @@ export default function Shop({ onBack, navProps }) {
               <span className={styles.powerupDesc}>{pu.desc}</span>
               <div className={styles.powerupPrice}>
                 <img src="/images/coin.png" alt="" className={styles.powerupCoin} />
-                {''+pu.price}
+                {pu.price}
+                {pu.qty && <span className={styles.powerupQty}> ×{pu.qty}</span>}
               </div>
             </button>
           ))}

@@ -1,16 +1,17 @@
 import styles from './Card.module.css'
 
-export default function Card({ card, isFlipped, isMatched, isFrozen, isConsumed, revealEffect, onClick, backImage, style }) {
+export default function Card({ card, isFlipped, isMatched, isFrozen, isConsumed, revealEffect, isShuffling, onClick, backImage, style }) {
   const faceUp = isFlipped && !isMatched
 
   return (
     <div
       className={`
         ${styles.card}
-        ${faceUp    ? styles.faceUp   : ''}
-        ${isMatched ? styles.matched  : ''}
-        ${isFrozen  ? styles.frozen   : ''}
-        ${isConsumed? styles.consumed : ''}
+        ${faceUp      ? styles.faceUp    : ''}
+        ${isMatched   ? styles.matched   : ''}
+        ${isFrozen    ? styles.frozen    : ''}
+        ${isConsumed  ? styles.consumed  : ''}
+        ${isShuffling ? styles.shuffling : ''}
       `}
       onClick={onClick}
       role="button"

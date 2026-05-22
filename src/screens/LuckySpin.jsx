@@ -1,25 +1,31 @@
 import { useState, useRef } from 'react'
 import styles from './LuckySpin.module.css'
 import BottomNav from '../components/BottomNav'
+import Interstitial from '../components/Interstitial'
 
-const MAX_FREE = 2
-const DATE_KEY  = 'fo_spin_date'
-const COUNT_KEY = 'fo_spin_count'
+const MAX_FREE   = 1   // 1 free spin per day
+const MAX_AD     = 1   // 1 extra spin per day after watching an ad
+
+const DATE_KEY   = 'fo_spin_date'
+const FREE_KEY   = 'fo_spin_free'
+const AD_KEY     = 'fo_spin_ad'
 
 function todayKey() { return new Date().toISOString().slice(0, 10) }
 
-function getSpinsUsed() {
+function resetIfNewDay() {
   if (localStorage.getItem(DATE_KEY) !== todayKey()) {
-    localStorage.setItem(DATE_KEY, todayKey())
-    localStorage.setItem(COUNT_KEY, '0')
-    return 0
+    localStorage.setItem(DATE_KEY,  todayKey())
+    localStorage.setItem(FREE_KEY,  '0')
+    localStorage.setItem(AD_KEY,    '0')
   }
-  return parseInt(localStorage.getItem(COUNT_KEY) || '0')
 }
 
-function recordSpin() {
-  const n = getSpinsUsed() + 1
-  localStorage.setItem(COUNT_KEY, String(n))
+function getUsed() {
+  resetIfNewDay()
+  return {
+    free: parseInt(localStorage.getItem(FREE_KEY) || '0'),
+    ad:   parseInt(localStorage.getItem(AD_KEY)   || '0'),
+  }
 }
 
 const SEGMENTS = [
@@ -52,25 +58,38 @@ function labelPos(i) {
 }
 
 export default function LuckySpin({ onBack, navProps }) {
-  const [spinsUsed, setSpinsUsed] = useState(() => getSpinsUsed())
-  const [rotation, setRotation]   = useState(0)
-  const [spinning, setSpinning]   = useState(false)
-  const [prize, setPrize]         = useState(null)
+  const [used, setUsed]         = useState(() => getUsed())
+  const [rotation, setRotation] = useState(0)
+  const [spinning, setSpinning] = useState(false)
+  const [prize, setPrize]       = useState(null)
+  const [showAd, setShowAd]     = useState(false)
   const rotRef = useRef(0)
-  const freeLeft = Math.max(0, MAX_FREE - spinsUsed)
 
-  function doSpin() {
+  const freeLeft = Math.max(0, MAX_FREE - used.free)
+  const adLeft   = Math.max(0, MAX_AD   - used.ad)
+
+  function doSpin(isAd = false) {
     if (spinning || prize) return
-    const targetSeg = Math.floor(Math.random() * N)
+    const targetSeg   = Math.floor(Math.random() * N)
     const targetAngle = (360 - (targetSeg * SEG_DEG + SEG_DEG / 2) + 360) % 360
-    const minSpin = rotRef.current + 5 * 360
-    const n = Math.ceil((minSpin - targetAngle) / 360)
-    const finalRot = n * 360 + targetAngle
-    rotRef.current = finalRot
+    const minSpin     = rotRef.current + 5 * 360
+    const n           = Math.ceil((minSpin - targetAngle) / 360)
+    const finalRot    = n * 360 + targetAngle
+    rotRef.current    = finalRot
     setRotation(finalRot)
     setSpinning(true)
-    recordSpin()
-    setSpinsUsed(s => s + 1)
+
+    // Record spin
+    resetIfNewDay()
+    if (isAd) {
+      const next = parseInt(localStorage.getItem(AD_KEY) || '0') + 1
+      localStorage.setItem(AD_KEY, String(next))
+    } else {
+      const next = parseInt(localStorage.getItem(FREE_KEY) || '0') + 1
+      localStorage.setItem(FREE_KEY, String(next))
+    }
+    setUsed(getUsed())
+
     setTimeout(() => {
       const seg = SEGMENTS[targetSeg]
       setPrize(seg)
@@ -82,15 +101,25 @@ export default function LuckySpin({ onBack, navProps }) {
     }, 4300)
   }
 
-  function handleFree() { if (freeLeft > 0 && !spinning && !prize) doSpin() }
-  function handleAd()   { if (!spinning && !prize) doSpin() }  // real ad gate goes here
+  function handleFree() {
+    if (freeLeft > 0 && !spinning && !prize) doSpin(false)
+  }
+
+  function handleAdRequest() {
+    if (adLeft > 0 && !spinning && !prize) setShowAd(true)
+  }
+
+  function handleAdClose() {
+    setShowAd(false)
+    doSpin(true)
+  }
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onBack}>← Back</button>
         <h1 className={styles.title}>Lucky Spin</h1>
-        <div className={styles.spinsLeft}>{freeLeft}/{MAX_FREE}</div>
+        <div className={styles.spinsLeft}>{freeLeft + adLeft} left</div>
       </div>
 
       <div className={styles.wheelArea}>
@@ -103,7 +132,7 @@ export default function LuckySpin({ onBack, navProps }) {
             transition: spinning ? 'transform 4.2s cubic-bezier(0.17, 0.67, 0.08, 0.99)' : 'none',
           }}
         >
-          {/* Outer glow ring */}
+          {/* Outer glow dots */}
           {Array.from({ length: 16 }, (_, i) => {
             const a = -90 + i * 22.5, dotR = R + 13
             return <circle key={i} cx={CX + dotR * Math.cos(toRad(a))} cy={CY + dotR * Math.sin(toRad(a))} r="5" fill="#FFD700" />
@@ -131,18 +160,30 @@ export default function LuckySpin({ onBack, navProps }) {
       </div>
 
       <div className={styles.controls}>
-        {freeLeft > 0 ? (
-          <button className={styles.spinBtn} onClick={handleFree} disabled={spinning || !!prize}>
-            🎡 Spin  · {freeLeft} free left
-          </button>
-        ) : (
-          <button className={styles.adBtn} onClick={handleAd} disabled={spinning || !!prize}>
-            📺 AD  Spin
+        {/* Free spin button */}
+        <button
+          className={styles.spinBtn}
+          onClick={handleFree}
+          disabled={spinning || !!prize || freeLeft === 0}
+        >
+          🎡 {freeLeft > 0 ? `Spin Free  (${freeLeft} today)` : 'Free spin used'}
+        </button>
+
+        {/* Ad spin button — only shown if free spin is used and ad spin remains */}
+        {freeLeft === 0 && (
+          <button
+            className={styles.adBtn}
+            onClick={handleAdRequest}
+            disabled={spinning || !!prize || adLeft === 0}
+          >
+            {adLeft > 0 ? '📺  Watch Ad for Extra Spin' : '✓  Ad spin used today'}
           </button>
         )}
-        <div className={styles.dailyInfo}>Daily available: {freeLeft}/{MAX_FREE}</div>
+
+        <div className={styles.dailyInfo}>Resets at midnight · {freeLeft + adLeft} spin{freeLeft + adLeft !== 1 ? 's' : ''} remaining</div>
       </div>
 
+      {/* Prize overlay */}
       {prize && (
         <div className={styles.prizeOverlay}>
           <div className={styles.prizeCard}>
@@ -155,6 +196,9 @@ export default function LuckySpin({ onBack, navProps }) {
           </div>
         </div>
       )}
+
+      {/* Rewarded ad interstitial */}
+      {showAd && <Interstitial onClose={handleAdClose} />}
 
       <BottomNav active="shop" {...navProps} />
     </div>

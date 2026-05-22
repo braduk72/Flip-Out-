@@ -95,7 +95,7 @@ export const SPECIAL_CARDS = {
     id: 'xray',
     name: 'X-RAY!',
     image: '/images/cards/special/xray.png',
-    description: 'Briefly reveals all cards on the board',
+    description: 'Tap up to 2 cards to secretly peek at their faces — then take your turn',
     color: '#00FA9A',
   },
 }
