@@ -344,6 +344,31 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     }
   }, [turn, gameOver, activeEffect, doAITurn, mode, hideFlipped])
 
+  // Magnet: when active and 1 card is flipped, auto-reveal its pair
+  useEffect(() => {
+    if (activeEffect?.type !== 'magnet' || flipped.length !== 1) return
+    const idx = flipped[0]
+    const firstCard = cards[idx]
+    if (!firstCard || firstCard.type !== 'regular') return
+    const pairIdx = cards.findIndex((c, i) =>
+      c.type === 'regular' &&
+      c.pairId === firstCard.pairId &&
+      i !== idx &&
+      !matched.includes(i) &&
+      !consumed.includes(i)
+    )
+    if (pairIdx === -1) return
+    const t = setTimeout(() => {
+      if (turn === 'player') {
+        flipCard(pairIdx)
+        if (mode === 'mp') mpState?.sendFlip(pairIdx)
+      } else {
+        aiFlip(pairIdx)
+      }
+    }, 500)
+    return () => clearTimeout(t)
+  }, [flipped, activeEffect]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Flashlight effect — close after 3 seconds
   useEffect(() => {
     if (activeEffect?.type === 'flashlight') {
