@@ -457,7 +457,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 : winner === 'player' ? '🏆 YOU WIN!'
                 : mode === 'mp' ? '😅 OPPONENT WINS!'
                 : '😅 AI WINS!')
-              : mode === 'solo' ? `⏱ ${formatTime(elapsed)}`
+              : mode === 'solo' ? 'SOLO MODE'
               : mode === 'mp' ? (turn === 'player' ? 'YOUR TURN' : "OPPONENT'S TURN")
               : turn === 'player' ? 'YOUR TURN' : "AI'S TURN"
             }
@@ -516,7 +516,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
         {/* Portraits + scores */}
         <div className={styles.contestants}>
           <div className={styles.sidePanel}>
-            <div className={`${styles.portraitWrap} ${turn !== 'player' ? styles.inactive : ''} ${spinning ? styles.spinning : ''}`}>
+            <div className={`${styles.portraitWrap} ${mode !== 'solo' && turn !== 'player' ? styles.inactive : ''} ${mode !== 'solo' && spinning ? styles.spinning : ''}`}>
               <img src={`/images/a${portrait}.png`} alt="You" className={styles.portrait} />
             </div>
             <span className={styles.sideScore}>{playerScore}</span>
@@ -524,21 +524,30 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
               YOU{playerShield ? ' 🛡️' : ''}{crownHolder === 'player' ? ' 👑' : ''}
             </span>
           </div>
-          <div className={styles.sidePanel}>
-            <div className={`${styles.portraitWrap} ${turn !== 'ai' ? styles.inactive : ''} ${spinning ? styles.spinning : ''} ${difficulty === 'Lethal' && turn === 'ai' ? styles.lethalAiActive : ''}`}>
-              <img
-                src={mode === 'mp'
-                  ? `/images/a${mpState?.opponentPortrait ?? 1}.png`
-                  : opponentImage || `/images/a${aiContRef.current}.png`}
-                alt={mode === 'mp' ? 'Opponent' : 'AI'}
-                className={styles.portrait}
-              />
+          {mode === 'solo' ? (
+            <div className={styles.sidePanel}>
+              <div className={styles.soloClockWrap}>
+                <span className={styles.soloClockTime}>{formatTime(elapsed)}</span>
+              </div>
+              <span className={`${styles.contLabel} ${styles.timeLabel}`}>TIME</span>
             </div>
-            <span className={styles.sideScore}>{aiScore}</span>
-            <span className={`${styles.contLabel} ${styles.cpuLabel}`}>
-              {mode === 'mp' ? 'OPPONENT' : 'CPU'}{aiShield ? ' 🛡️' : ''}{crownHolder === 'ai' ? ' 👑' : ''}
-            </span>
-          </div>
+          ) : (
+            <div className={styles.sidePanel}>
+              <div className={`${styles.portraitWrap} ${turn !== 'ai' ? styles.inactive : ''} ${spinning ? styles.spinning : ''} ${difficulty === 'Lethal' && turn === 'ai' ? styles.lethalAiActive : ''}`}>
+                <img
+                  src={mode === 'mp'
+                    ? `/images/a${mpState?.opponentPortrait ?? 1}.png`
+                    : opponentImage || `/images/a${aiContRef.current}.png`}
+                  alt={mode === 'mp' ? 'Opponent' : 'AI'}
+                  className={styles.portrait}
+                />
+              </div>
+              <span className={styles.sideScore}>{aiScore}</span>
+              <span className={`${styles.contLabel} ${styles.cpuLabel}`}>
+                {mode === 'mp' ? 'OPPONENT' : 'CPU'}{aiShield ? ' 🛡️' : ''}{crownHolder === 'ai' ? ' 👑' : ''}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Effect overlay banner */}
