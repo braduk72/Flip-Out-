@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useGame } from '../hooks/useGame'
+import { useSfx } from '../hooks/useSfx'
 import Card from '../components/Card'
 import styles from './Game.module.css'
 import { SPECIAL_CARDS, SPECIAL_POOL } from '../data/specialCards'
@@ -116,6 +117,35 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     playerShield, aiShield, crownHolder,
     activeEffect, pendingSpecial, pendingResolve, stopwatchEnd, gameOver, winner,
   } = state
+
+  const { play } = useSfx(sfxOn)
+
+  // ── Sound effects ─────────────────────────────────────────────────────────
+  // Card flip — fires whenever a card is added to the flipped array
+  const prevFlippedLen = useRef(0)
+  useEffect(() => {
+    if (flipped.length > prevFlippedLen.current) play('flip')
+    prevFlippedLen.current = flipped.length
+  }, [flipped.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Match / no-match / special card sounds
+  const prevEffectType = useRef(null)
+  useEffect(() => {
+    if (!activeEffect || activeEffect.type === prevEffectType.current) return
+    prevEffectType.current = activeEffect.type
+    if (activeEffect.type === 'match')    play('match')
+    else if (activeEffect.type === 'no_match') play('nomatch')
+    else if (activeEffect.type !== 'dice') play('special')  // all other effect types are specials
+  }, [activeEffect]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Game over fanfare
+  const gameOverSoundFired = useRef(false)
+  useEffect(() => {
+    if (!gameOver || gameOverSoundFired.current) return
+    gameOverSoundFired.current = true
+    if (winner === 'player') play('win')
+    else if (winner === 'ai') play('lose')
+  }, [gameOver]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const prevTurnRef = useRef(turn)
 

@@ -320,7 +320,7 @@ export default function App() {
         deck={deck}
         portrait={portrait}
         mode="vs"
-        difficulty={opp.difficulty === 'SeasonBoss' ? 'Lethal' : 'Hard'}
+        difficulty={opp.isBoss ? 'Lethal' : (opp.difficulty ?? 'Hard')}
         opponentImage={opp.image}
         opponentName={opp.name}
         opponentModel={opp.model}

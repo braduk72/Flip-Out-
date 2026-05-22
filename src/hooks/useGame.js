@@ -42,10 +42,16 @@ function buildBoard(deck, numPairs = 7, numSpecials = 2) {
 function makeInitial(deck, numPairs = 7, prebuiltCards = null, initialTurn = 'player') {
   const devSpecials = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('specials')
   // Cap pairs to what the deck actually has — prevents malformed boards on small decks
-  const maxPairs      = deck?.cardCount ?? numPairs
-  const boardPairs    = devSpecials ? 1 : Math.min(numPairs, maxPairs)
+  const maxPairs   = deck?.cardCount ?? numPairs
+  const boardPairs = devSpecials ? 1 : Math.min(numPairs, maxPairs)
   // Scale specials with game size: 1 for small games, 2 for medium+
-  const boardSpecials = devSpecials ? SPECIAL_POOL.length : (boardPairs <= 5 ? 1 : 2)
+  // Then pad up so total cards (2*pairs + specials) is always divisible by 4 — no partial rows
+  let boardSpecials = devSpecials ? SPECIAL_POOL.length : (boardPairs <= 5 ? 1 : 2)
+  if (!devSpecials) {
+    const rem = (boardPairs * 2 + boardSpecials) % 4
+    if (rem !== 0) boardSpecials += (4 - rem)
+    boardSpecials = Math.min(boardSpecials, SPECIAL_POOL.length)
+  }
   return {
     cards:          prebuiltCards ?? buildBoard(deck, boardPairs, boardSpecials),
     flipped:        [],      // up to 2 card indices currently revealed
