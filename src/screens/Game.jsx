@@ -463,6 +463,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 isConsumed={consumed.includes(i)}
                 onClick={() => {
                   if (gameOver) return
+                  if (pendingResolve || pendingSpecial || flipped.length >= 2) return
                   if (mode === 'solo' || turn === 'player') {
                     flipCard(i)
                     if (mode === 'mp') mpState?.sendFlip(i)
