@@ -82,7 +82,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, endStopwatch, useJoker } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player')
   // Dev toolbar — only exists in Preview (dev branch) builds.
   // Set VITE_DEV_TOOLS=true in Vercel → Preview env vars; leave it unset for Production.
-  const devEnabled  = import.meta.env.VITE_DEV_TOOLS === 'true'
+  const devEnabled  = import.meta.env.DEV || import.meta.env.VITE_DEV_TOOLS === 'true'
   const devSpecials = devEnabled && new URLSearchParams(window.location.search).has('specials')
   const [devToolsOpen, setDevToolsOpen] = useState(() => devEnabled && (devSpecials || localStorage.getItem('fo_dev_toolbar') === 'on'))
   const [jokersRemaining, setJokersRemaining] = useState(() => getJokersRemaining())
