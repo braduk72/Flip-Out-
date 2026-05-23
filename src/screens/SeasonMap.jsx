@@ -3,6 +3,9 @@ import styles from './SeasonMap.module.css'
 import BottomNav from '../components/BottomNav'
 import { ACTIVE_SEASON } from '../data/seasonalOpponents'
 
+// Cache-bust version — bump this whenever sprite images are replaced
+const V = '?v=2'
+
 // Node positions as % of image (width × height).
 const NODE_POSITIONS = [
   { x: 50, y: 91 }, // N0 VEXOR   — large green start circle, bottom centre
@@ -20,9 +23,9 @@ const STEAM_EMITTERS = [
 
 // Electric storm clouds in the danger zone (each gets a real dark cloud + lightning)
 const CLOUD_POSITIONS = [
-  { x: 15, y: 14, src: '/images/cld_pd1.png' },
-  { x: 75, y: 10, src: '/images/cld_pd3.png' },
-  { x: 40, y: 20, src: '/images/cld_pd2.png' },
+  { x: 15, y: 14, src: `/images/cld_pd1.png${V}` },
+  { x: 75, y: 10, src: `/images/cld_pd3.png${V}` },
+  { x: 40, y: 20, src: `/images/cld_pd2.png${V}` },
 ]
 
 // Robomice — scattered across the map, heavier in the green zone
@@ -49,18 +52,18 @@ const TESLA_COILS = [
 // Fog cloud sprites — layered from bottom edge (wispy/light) to top (dark smoke)
 const FOG_CLOUDS = [
   // Bottom edge — flat white, slow drift
-  { src: '/images/cld_fw2.png', cls: 'fogD0' },
-  { src: '/images/cld_fw1.png', cls: 'fogD1' },
-  { src: '/images/cld_fw3.png', cls: 'fogD2' },
+  { src: `/images/cld_fw2.png${V}`, cls: 'fogD0' },
+  { src: `/images/cld_fw1.png${V}`, cls: 'fogD1' },
+  { src: `/images/cld_fw3.png${V}`, cls: 'fogD2' },
   // Mid fog — flat medium grey
-  { src: '/images/cld_fm2.png', cls: 'fogD3' },
-  { src: '/images/cld_pm2.png', cls: 'fogD4' },
+  { src: `/images/cld_fm2.png${V}`, cls: 'fogD3' },
+  { src: `/images/cld_pm2.png${V}`, cls: 'fogD4' },
   // Upper mid — dark puffs
-  { src: '/images/cld_pd2.png', cls: 'fogD5' },
-  { src: '/images/cld_fd2.png', cls: 'fogD6' },
+  { src: `/images/cld_pd2.png${V}`, cls: 'fogD5' },
+  { src: `/images/cld_fd2.png${V}`, cls: 'fogD6' },
   // Near top — heavy smoke
-  { src: '/images/cld_fs2.png', cls: 'fogD7' },
-  { src: '/images/cld_fs1.png', cls: 'fogD8' },
+  { src: `/images/cld_fs2.png${V}`, cls: 'fogD7' },
+  { src: `/images/cld_fs1.png${V}`, cls: 'fogD8' },
 ]
 
 // Animated sprite robomouse — cycles 4 frames at 6fps
@@ -73,7 +76,7 @@ function RoboMouse({ scale = 1, colour = 'g' }) {
   const size = Math.round(48 * scale)
   return (
     <img
-      src={`/images/m${colour}${frame}.png`}
+      src={`/images/m${colour}${frame}.png${V}`}
       alt=""
       draggable="false"
       className={styles.roboMouse}
@@ -93,7 +96,7 @@ function TeslaCoil({ colour = 'b', scale = 1 }) {
   const size = Math.round(72 * scale)
   return (
     <img
-      src={`/images/tc_${colour}${frame}.png`}
+      src={`/images/tc_${colour}${frame}.png${V}`}
       alt=""
       draggable="false"
       className={styles.teslaImg}
