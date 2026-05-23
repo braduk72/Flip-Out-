@@ -156,7 +156,7 @@ export default function SeasonMap({ seasonStep = 0, portrait = 1, onFight, onBac
           <span className={styles.seasonTag}>SEASON 1</span>
           <span className={styles.seasonName}>{ACTIVE_SEASON.theme}</span>
         </div>
-        <div className={styles.stepCounter}>{Math.min(seasonStep, ALL_NODES.length)}/{ALL_NODES.length}</div>
+        <div className={styles.stepCounter}>{Math.min(seasonStep + 1, STEPS_PER_STAGE)}/{STEPS_PER_STAGE}</div>
       </div>
 
       <div className={styles.mapScroll} ref={scrollRef}>
