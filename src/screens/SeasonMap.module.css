@@ -267,8 +267,6 @@
   position: absolute;
   pointer-events: none;
   transform-origin: center;
-  /* multiply removes white PNG backgrounds: white × map-colour = map-colour */
-  mix-blend-mode: multiply;
 }
 
 /* ── Twitchy mouse movement: freeze → burst → freeze like real mice ── */

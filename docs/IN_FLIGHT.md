@@ -3,7 +3,7 @@
 This file tracks who is working on what, right now.
 **Read this before starting any task. Claim your task here before touching code. Update when done.**
 
-_Last updated: 23 May 2026 (session 19)_
+_Last updated: 23 May 2026 (session 20)_
 
 ---
 
@@ -39,6 +39,7 @@ _(nothing currently claimed)_
 
 ## Recently completed (session 20 — 23 May 2026)
 
+- ✅ Cloud + mouse sprite replacement — 4 background-removed sheets split into 48 individual WebP sprites (12 mice mg/mo/mp, 12 tesla coils tc_b/y/p, 12 flat clouds fw/fm/fd/fs, 12 puffball clouds pw/pm/pd); `mix-blend-mode: multiply` removed from `.mouseWrap`; cache-bust bumped to `?v=4` — Claude Code
 - ✅ Boom card fix — `turn: otherTurn(whose)` changed to `turn: whose`; attacker now keeps their turn after boom so they can flip using the revealed neighbours — Claude Code
 
 ## Recently completed (session 19 — 23 May 2026)

@@ -4,7 +4,7 @@ import BottomNav from '../components/BottomNav'
 import { ACTIVE_SEASON } from '../data/seasonalOpponents'
 
 // Cache-bust version — bump this whenever sprite images are replaced
-const V = '?v=3'
+const V = '?v=4'
 
 // Node positions as % of image (width × height).
 const NODE_POSITIONS = [
