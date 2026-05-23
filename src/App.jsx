@@ -17,9 +17,39 @@ import { DECKS } from './data/decks'
 import { useMultiplayer } from './hooks/useMultiplayer'
 import { buildBoard } from './hooks/useGame'
 
-const SEASONAL_SCREENS = ['seasonmap', 'seasonroundstart', 'seasongame']
-const SEASONAL_MUSIC   = '/music/season1.mp3'
-const MAIN_MUSIC       = '/music/deal-the-tension.mp3'
+// ── Music pools ───────────────────────────────────────────────────────────────
+const MENU_TRACKS = [
+  '/music/menu_1.mp3',
+  '/music/menu_2.mp3',
+]
+const GAMEOVER_TRACKS = [
+  '/music/gameover_1.mp3',
+  '/music/gameover_2.mp3',
+  '/music/gameover_3.mp3',
+  '/music/gameover_4.mp3',
+]
+const INGAME_TRACKS = [
+  '/music/ingame_arcade_cabbage.mp3',
+  '/music/ingame_arcade_cabbage_short.mp3',
+  '/music/ingame_boss_checkout.mp3',
+  '/music/ingame_boss_checkout_2.mp3',
+  '/music/ingame_boss_gauntlet.mp3',
+  '/music/ingame_boss_gauntlet_2.mp3',
+  '/music/ingame_boss_keyfire.mp3',
+  '/music/ingame_boss_keyfire_fast.mp3',
+  '/music/ingame_cartridge_laughter.mp3',
+  '/music/ingame_cartridge_laughter_2.mp3',
+  '/music/ingame_checkpoint_thunder.mp3',
+  '/music/ingame_checkpoint_thunder_2.mp3',
+  '/music/ingame_gavel_lightning.mp3',
+  '/music/ingame_gavel_lightning_2.mp3',
+  '/music/ingame_pixel_meltdown.mp3',
+  '/music/ingame_tangerine_rumble.mp3',
+  '/music/ingame_tangerine_rumble_short.mp3',
+  '/music/ingame_tin_piano.mp3',
+]
+const MENU_SCREENS = new Set(['home','deckpicker','shop','avatarpicker','settings','leaderboard','luckyspin','mplobby','gauntlet','seasonmap'])
+const GAME_SCREENS = new Set(['game','mpgame','roundstart','seasongame','seasonroundstart'])
 
 function awardGoldCard() {
   if (!localStorage.getItem('fo_gold_card')) {
@@ -56,8 +86,10 @@ export default function App() {
   const [seasonActive, setSeasonActive] = useState(false)
 
   const audioRef       = useRef(null)
-  const seasonAudioRef = useRef(null)
-  const seasonMusicOk  = useRef(false) // true once we've confirmed season1.mp3 exists
+  const activePoolRef  = useRef(null)   // which pool array is currently playing
+  const lastSrcRef     = useRef(null)   // avoid back-to-back repeats
+  const musicOnRef     = useRef(musicOn)
+  useEffect(() => { musicOnRef.current = musicOn }, [musicOn])
 
   // ── Multiplayer board sync effects ──────────────────────────────────────────
   // When game_start fires, host generates the board; guest waits for fo:board
@@ -115,19 +147,26 @@ export default function App() {
     }
   }, [])
 
-  useEffect(() => {
-    const audio = new Audio('/music/deal-the-tension.mp3')
-    audio.loop   = true
+  // ── Music manager ─────────────────────────────────────────────────────────
+  // Stable ref to the play function so ended-listeners can call it without
+  // stale-closure issues.
+  const playNextRef = useRef(null)
+  playNextRef.current = function playNext(pool) {
+    const choices = pool.length > 1 ? pool.filter(t => t !== lastSrcRef.current) : pool
+    const src     = choices[Math.floor(Math.random() * choices.length)]
+    lastSrcRef.current = src
+
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = '' }
+    const audio = new Audio(src)
     audio.volume = 0.45
-    audio.addEventListener('ended', () => { audio.currentTime = 0; audio.play().catch(() => {}) })
+    audio.addEventListener('ended', () => {
+      if (activePoolRef.current === pool && musicOnRef.current) playNextRef.current(pool)
+    })
     audioRef.current = audio
-
-    const tryPlay = () => { if (musicOn) audio.play().catch(() => {}) }
-
-    if (musicOn) {
+    if (musicOnRef.current) {
       audio.play().catch(() => {
         const unlock = () => {
-          tryPlay()
+          if (audioRef.current === audio) audio.play().catch(() => {})
           document.removeEventListener('click',      unlock)
           document.removeEventListener('touchstart', unlock)
         }
@@ -135,57 +174,44 @@ export default function App() {
         document.addEventListener('touchstart', unlock)
       })
     }
+  }
 
-    return () => { audio.pause(); audio.src = '' }
-  }, [])
+  function switchToPool(pool) {
+    if (activePoolRef.current === pool) return
+    activePoolRef.current = pool
+    playNextRef.current(pool)
+  }
 
-  // ── Seasonal music crossfade ──────────────────────────────────────────────
+  // Switch pool when screen changes
   useEffect(() => {
     if (!musicOn) return
-    const isSeasonal = SEASONAL_SCREENS.includes(screen)
-
-    if (isSeasonal) {
-      // Fade main music out
-      if (audioRef.current) audioRef.current.pause()
-      // Start seasonal music (silently ignore 404 if file not added yet)
-      if (!seasonAudioRef.current) {
-        const a = new Audio(SEASONAL_MUSIC)
-        a.loop   = true
-        a.volume = 0
-        a.play().then(() => {
-          seasonMusicOk.current = true
-          // Fade in
-          let v = 0
-          const ramp = setInterval(() => {
-            v = Math.min(0.45, v + 0.03)
-            a.volume = v
-            if (v >= 0.45) clearInterval(ramp)
-          }, 80)
-        }).catch(() => {
-          // season1.mp3 not added yet — fall back to main
-          seasonMusicOk.current = false
-          if (audioRef.current) audioRef.current.play().catch(() => {})
-        })
-        seasonAudioRef.current = a
-      } else {
-        seasonAudioRef.current.play().catch(() => {})
-      }
-    } else {
-      // Leaving seasonal screens — stop seasonal music, resume main
-      if (seasonAudioRef.current) {
-        seasonAudioRef.current.pause()
-        seasonAudioRef.current.currentTime = 0
-      }
-      if (audioRef.current && musicOn) audioRef.current.play().catch(() => {})
-    }
+    switchToPool(GAME_SCREENS.has(screen) ? INGAME_TRACKS : MENU_TRACKS)
   }, [screen, musicOn]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => { if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = '' } }
+  }, [])
+
+  function handlePlayerLost() {
+    activePoolRef.current = null // force switch even if already on gameover
+    switchToPool(GAMEOVER_TRACKS)
+  }
 
   function toggleMusic() {
     const next = !musicOn
     setMusicOn(next)
+    musicOnRef.current = next
     localStorage.setItem('fo_music', next ? 'on' : 'off')
-    if (audioRef.current) {
-      next ? audioRef.current.play().catch(() => {}) : audioRef.current.pause()
+    if (!next) {
+      if (audioRef.current) audioRef.current.pause()
+    } else {
+      if (audioRef.current && !audioRef.current.ended) {
+        audioRef.current.play().catch(() => {})
+      } else {
+        activePoolRef.current = null
+        switchToPool(GAME_SCREENS.has(screen) ? INGAME_TRACKS : MENU_TRACKS)
+      }
     }
   }
 
@@ -327,6 +353,7 @@ export default function App() {
         opponentBio={opp.bio}
         onBack={() => { setDeck(null); setSeasonActive(false); setScreen('seasonmap') }}
         onResult={handleSeasonResult}
+        onPlayerLost={handlePlayerLost}
         musicOn={musicOn}
         sfxOn={sfxOn}
         onToggleMusic={toggleMusic}
@@ -390,6 +417,7 @@ export default function App() {
         gauntletStep={isGauntlet ? gauntletStep : undefined}
         onBack={handleBack}
         onResult={isGauntlet ? handleGauntletResult : undefined}
+        onPlayerLost={handlePlayerLost}
         musicOn={musicOn}
         sfxOn={sfxOn}
         onToggleMusic={toggleMusic}
@@ -415,6 +443,7 @@ export default function App() {
         mpState={mp}
         yourTurn={mp.getYourTurn()}
         onBack={handleMpGameBack}
+        onPlayerLost={handlePlayerLost}
         musicOn={musicOn}
         sfxOn={sfxOn}
         onToggleMusic={toggleMusic}
