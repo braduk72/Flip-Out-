@@ -732,12 +732,22 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
         {/* Portraits + scores */}
         <div className={styles.contestants}>
           <div className={styles.sidePanel}>
-            <div className={`${styles.portraitWrap} ${mode !== 'solo' && turn !== 'player' ? styles.inactive : ''} ${mode !== 'solo' && spinning ? styles.spinning : ''} ${playerShield ? styles.shieldActive : ''}`}>
-              <img src={`/images/a${portrait}.webp`} alt="You" className={styles.portrait} />
+            <div className={styles.portraitGroup}>
+              <div className={`${styles.portraitWrap} ${mode !== 'solo' && turn !== 'player' ? styles.inactive : ''} ${mode !== 'solo' && spinning ? styles.spinning : ''} ${playerShield ? styles.shieldActive : ''}`}>
+                <img src={`/images/a${portrait}.webp`} alt="You" className={styles.portrait} />
+              </div>
+              {playerShield && (
+                <img
+                  src="/images/cards/special/shield.webp"
+                  alt="Shield active"
+                  draggable="false"
+                  className={styles.shieldBadge}
+                />
+              )}
             </div>
             <span className={styles.sideScore}>{playerScore}</span>
             <span className={`${styles.contLabel} ${styles.youLabel}`}>
-              YOU{playerShield ? ' 🛡️' : ''}{crownHolder === 'player' ? ' 👑' : ''}
+              YOU{crownHolder === 'player' ? ' 👑' : ''}
             </span>
           </div>
           {mode === 'solo' ? (
@@ -749,18 +759,28 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
             </div>
           ) : (
             <div className={styles.sidePanel}>
-              <div className={`${styles.portraitWrap} ${turn !== 'ai' ? styles.inactive : ''} ${spinning ? styles.spinning : ''} ${difficulty === 'Lethal' && turn === 'ai' ? styles.lethalAiActive : ''} ${aiShield ? styles.shieldActive : ''}`}>
-                <img
-                  src={mode === 'mp'
-                    ? `/images/a${mpState?.opponentPortrait ?? 1}.webp`
-                    : opponentImage || `/images/a${aiContRef.current}.webp`}
-                  alt={mode === 'mp' ? 'Opponent' : 'AI'}
-                  className={styles.portrait}
-                />
+              <div className={styles.portraitGroup}>
+                <div className={`${styles.portraitWrap} ${turn !== 'ai' ? styles.inactive : ''} ${spinning ? styles.spinning : ''} ${difficulty === 'Lethal' && turn === 'ai' ? styles.lethalAiActive : ''} ${aiShield ? styles.shieldActive : ''}`}>
+                  <img
+                    src={mode === 'mp'
+                      ? `/images/a${mpState?.opponentPortrait ?? 1}.webp`
+                      : opponentImage || `/images/a${aiContRef.current}.webp`}
+                    alt={mode === 'mp' ? 'Opponent' : 'AI'}
+                    className={styles.portrait}
+                  />
+                </div>
+                {aiShield && (
+                  <img
+                    src="/images/cards/special/shield.webp"
+                    alt="Shield active"
+                    draggable="false"
+                    className={styles.shieldBadge}
+                  />
+                )}
               </div>
               <span className={styles.sideScore}>{aiScore}</span>
               <span className={`${styles.contLabel} ${styles.cpuLabel}`}>
-                {mode === 'mp' ? 'OPPONENT' : (opponentName || 'CPU').toUpperCase()}{aiShield ? ' 🛡️' : ''}{crownHolder === 'ai' ? ' 👑' : ''}
+                {mode === 'mp' ? 'OPPONENT' : (opponentName || 'CPU').toUpperCase()}{crownHolder === 'ai' ? ' 👑' : ''}
               </span>
             </div>
           )}
