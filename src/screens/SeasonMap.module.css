@@ -128,22 +128,28 @@
   height: auto;
 }
 
+/* Slow side-to-side drift animations — different speeds/directions per layer */
+@keyframes fogDriftL { 0%,100% { transform: translateX(0);    } 50% { transform: translateX(-8%);  } }
+@keyframes fogDriftR { 0%,100% { transform: translateX(0);    } 50% { transform: translateX( 8%);  } }
+@keyframes fogDriftLS{ 0%,100% { transform: translateX(0);    } 50% { transform: translateX(-5%);  } }
+@keyframes fogDriftRS{ 0%,100% { transform: translateX(0);    } 50% { transform: translateX( 5%);  } }
+
 /* Bottom edge — wispy, light */
-.fogD0 { width: 100%; left:  0; top: 80%; opacity: 0.48; }
-.fogD1 { width: 100%; left:  0; top: 87%; opacity: 0.38; }
-.fogD2 { width:  90%; left: 5%; top: 72%; opacity: 0.33; }
+.fogD0 { width: 110%; left: -5%; top: 80%; opacity: 0.48; animation: fogDriftL  28s ease-in-out infinite; }
+.fogD1 { width: 110%; left: -5%; top: 87%; opacity: 0.38; animation: fogDriftR  34s ease-in-out infinite; }
+.fogD2 { width: 100%; left:  0;  top: 72%; opacity: 0.33; animation: fogDriftLS 22s ease-in-out infinite; }
 
 /* Mid fog */
-.fogD3 { width: 100%; left:  0; top: 58%; opacity: 0.54; }
-.fogD4 { width:  85%; left: 8%; top: 65%; opacity: 0.46; }
+.fogD3 { width: 110%; left: -5%; top: 58%; opacity: 0.54; animation: fogDriftR  40s ease-in-out infinite; }
+.fogD4 { width:  95%; left:  3%; top: 65%; opacity: 0.46; animation: fogDriftL  31s ease-in-out infinite; }
 
 /* Upper mid — heavier */
-.fogD5 { width: 100%; left:  0; top: 38%; opacity: 0.70; }
-.fogD6 { width: 100%; left:  0; top: 46%; opacity: 0.62; }
+.fogD5 { width: 110%; left: -5%; top: 38%; opacity: 0.70; animation: fogDriftRS 44s ease-in-out infinite; }
+.fogD6 { width: 110%; left: -5%; top: 46%; opacity: 0.62; animation: fogDriftL  37s ease-in-out infinite; }
 
 /* Near top — dense */
-.fogD7 { width: 100%; left:  0; top: 10%; opacity: 0.80; }
-.fogD8 { width: 100%; left:  0; top:  3%; opacity: 0.74; }
+.fogD7 { width: 110%; left: -5%; top: 10%; opacity: 0.80; animation: fogDriftR  50s ease-in-out infinite; }
+.fogD8 { width: 110%; left: -5%; top:  3%; opacity: 0.74; animation: fogDriftLS 42s ease-in-out infinite; }
 
 /* ── Steam emitters ── */
 .steamEmitter {
