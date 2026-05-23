@@ -303,16 +303,19 @@ export default function App() {
 
   function handleSeasonResult(winner) {
     if (winner === 'player') {
-      const next = seasonStep + 1
-      setSeasonStep(next)
-      localStorage.setItem('fo_season1_step', String(next))
-      // Beat the seasonal boss — award season gold card
       if (seasonStep === SEASON_NODES.length - 1) {
+        // Beat the final boss — award season gold card + coins, then reset for replay
         const key = ACTIVE_SEASON.boss.rewardKey
         if (!localStorage.getItem(key)) {
           localStorage.setItem(key, new Date().toISOString().slice(0, 10))
         }
         addCoins(150)
+        setSeasonStep(0)
+        localStorage.setItem('fo_season1_step', '0')
+      } else {
+        const next = seasonStep + 1
+        setSeasonStep(next)
+        localStorage.setItem('fo_season1_step', String(next))
       }
     }
     setDeck(null)
@@ -427,6 +430,13 @@ export default function App() {
         gauntletStep={isGauntlet ? gauntletStep : undefined}
         onBack={handleBack}
         onResult={isGauntlet ? handleGauntletResult : undefined}
+        onQuit={isGauntlet ? (() => {
+          setGauntletStep(0)
+          localStorage.setItem('fo_gauntlet_step', '0')
+          setDeck(null)
+          setGauntletActive(false)
+          setScreen('home')
+        }) : undefined}
         onPlayerLost={handlePlayerLost}
         musicOn={musicOn}
         sfxOn={sfxOn}

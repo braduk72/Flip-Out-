@@ -357,6 +357,7 @@ function applySpecial(state, index, whose, seed = {}) {
     case 'bolt': {
       const shieldKey = opponent === 'player' ? 'playerShield' : 'aiShield'
       if (state[shieldKey]) {
+        // Shield absorbs the bolt — attacker loses their turn as penalty
         return {
           ...base,
           [shieldKey]: false,
@@ -364,10 +365,11 @@ function applySpecial(state, index, whose, seed = {}) {
           activeEffect: { type: 'bolt_blocked', data: { whose } },
         }
       }
+      // Bolt stuns the opponent for their NEXT turn; attacker keeps their current turn
       return {
         ...base,
         stunned: opponent,
-        turn: otherTurn(whose),
+        turn: whose,
         activeEffect: { type: 'bolt', data: { target: opponent } },
       }
     }
@@ -451,10 +453,12 @@ function applySpecial(state, index, whose, seed = {}) {
       const unmatched = state.cards
         .map((_, i) => i)
         .filter(i => !state.matched.includes(i) && !state.consumed.includes(i))
+      // Player keeps their turn so they can use the peek to inform their next flip.
+      // AI xray: keep AI's turn so it naturally continues; Game.jsx auto-closes after 2.5s.
       return {
         ...base,
-        turn: otherTurn(whose),
-        activeEffect: { type: 'xray', data: { revealed: unmatched } },
+        turn: whose,
+        activeEffect: { type: 'xray', data: { revealed: unmatched, playedBy: whose } },
       }
     }
 

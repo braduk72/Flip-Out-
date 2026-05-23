@@ -78,7 +78,7 @@ function generateSpecialSeed(specialType, index, cards, matched, consumed) {
   }
 }
 
-export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, yourTurn = true, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, onPlayerLost, gauntletStep }) {
+export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, yourTurn = true, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, onQuit, onPlayerLost, gauntletStep }) {
   const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, endStopwatch, useJoker } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player')
   const devSpecials = new URLSearchParams(window.location.search).has('specials')
   const [devToolsOpen, setDevToolsOpen] = useState(() => devSpecials || localStorage.getItem('fo_dev_toolbar') === 'on')
@@ -521,12 +521,20 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   // X-ray — peek mode: player taps up to 2 cards to sneak a look, then takes their turn
   useEffect(() => {
     if (activeEffect?.type !== 'xray') { setXrayPeeked([]); return }
+
+    // AI played xray — briefly reveal all cards to the player, then AI continues its turn
+    if (activeEffect.data?.playedBy === 'ai') {
+      const t = setTimeout(() => clearEffect(), 2500)
+      return () => clearTimeout(t)
+    }
+
+    // Player played xray — wait for taps
     if (xrayPeeked.length === 0) return // waiting for player to tap
     // Auto-close 1.5s after 2nd peek, or 4s if they only tapped 1
     const delay = xrayPeeked.length >= 2 ? 1500 : 4000
     const t = setTimeout(() => clearEffect(), delay)
     return () => clearTimeout(t)
-  }, [activeEffect?.type, xrayPeeked.length, clearEffect])
+  }, [activeEffect?.type, activeEffect?.data?.playedBy, xrayPeeked.length, clearEffect])
 
   // Shuffle — animate cards out/in, then clear
   useEffect(() => {
@@ -650,9 +658,10 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 onClick={() => {
                   if (gameOver) return
                   if (pendingSpecial) return
-                  // X-ray peek: tap up to 2 cards to sneak a look before taking the real turn
+                  // X-ray peek: player taps up to 2 cards to sneak a look before their real flip
                   if (activeEffect?.type === 'xray') {
-                    if (!flipped.includes(i) && !matched.includes(i) && !consumed.includes(i)
+                    if (activeEffect.data?.playedBy === 'player'
+                        && !flipped.includes(i) && !matched.includes(i) && !consumed.includes(i)
                         && !xrayPeeked.includes(i) && xrayPeeked.length < 2) {
                       setXrayPeeked(prev => [...prev, i])
                     }
@@ -1018,7 +1027,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
             <div className={styles.quitBody}>Leaving now counts as a loss — your gauntlet progress will reset to Round 1.</div>
             <div className={styles.quitBtns}>
               <button className={styles.quitStayBtn} onClick={() => setShowQuitModal(false)}>KEEP PLAYING</button>
-              <button className={styles.quitLeaveBtn} onClick={() => { setShowQuitModal(false); onResult('ai') }}>QUIT & LOSE</button>
+              <button className={styles.quitLeaveBtn} onClick={() => { setShowQuitModal(false); onQuit ? onQuit() : onResult?.('ai') }}>QUIT & LOSE</button>
             </div>
           </div>
         </div>
