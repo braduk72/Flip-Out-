@@ -265,7 +265,6 @@
   position: absolute;
   pointer-events: none;
   transform-origin: center;
-  mix-blend-mode: multiply;
 }
 
 /* ── Twitchy mouse movement: freeze → burst → freeze like real mice ── */
