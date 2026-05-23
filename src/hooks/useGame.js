@@ -329,9 +329,10 @@ function applySpecial(state, index, whose, seed = {}) {
       const nb = neighbours(index).filter(
         i => !state.matched.includes(i) && !state.consumed.includes(i)
       )
+      // Attacker keeps their turn — boom reveals neighbours so they can use the info to flip
       return {
         ...base,
-        turn: otherTurn(whose),
+        turn: whose,
         activeEffect: { type: 'boom', data: { index, launched: nb } },
       }
     }
