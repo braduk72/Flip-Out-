@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import styles from './Settings.module.css'
 import BottomNav from '../components/BottomNav'
+import { restorePurchases } from '../utils/foShop.js'
 
 const DIFFICULTIES = [
   { id: 'Easy',   label: '🟢  Easy',   bg: '#1a6e2e', color: '#afffb8' },
@@ -8,6 +10,20 @@ const DIFFICULTIES = [
 ]
 
 export default function Settings({ onBack, onSeason, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty, onDifficulty, onDevWin, seasonStep, navProps }) {
+  const [restoreEmail,  setRestoreEmail]  = useState('')
+  const [restoreState,  setRestoreState]  = useState('idle') // 'idle' | 'loading' | 'done' | 'notfound' | 'error'
+  const [restoreResult, setRestoreResult] = useState(null)
+
+  async function handleRestore() {
+    if (!restoreEmail.trim() || restoreState === 'loading') return
+    setRestoreState('loading')
+    try {
+      const result = await restorePurchases(restoreEmail.trim())
+      if (result.found) { setRestoreResult(result); setRestoreState('done') }
+      else setRestoreState('notfound')
+    } catch { setRestoreState('error') }
+  }
+
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -62,6 +78,34 @@ export default function Settings({ onBack, onSeason, musicOn, sfxOn, onToggleMus
           </button>
         </div>
 
+      </div>
+
+      {/* ── Restore Purchases ── */}
+      <div className={styles.restoreSection}>
+        <div className={styles.restoreLabel}>RESTORE PURCHASES</div>
+        {restoreState === 'done' ? (
+          <div className={styles.restoreDone}>
+            ✓ Purchases restored!
+            {restoreResult?.coins > 0 && <span> +{restoreResult.coins} coins</span>}
+            {restoreResult?.decks?.length > 0 && <span> · {restoreResult.decks.length} deck{restoreResult.decks.length > 1 ? 's' : ''} unlocked</span>}
+          </div>
+        ) : (
+          <>
+            <input
+              className={styles.restoreInput}
+              type="email"
+              placeholder="Enter email address to enable cross-platform play"
+              value={restoreEmail}
+              onChange={e => { setRestoreEmail(e.target.value); setRestoreState('idle') }}
+              onKeyDown={e => e.key === 'Enter' && handleRestore()}
+            />
+            <button className={styles.restoreBtn} onClick={handleRestore} disabled={restoreState === 'loading'}>
+              {restoreState === 'loading' ? 'Restoring…' : 'Restore'}
+            </button>
+            {restoreState === 'notfound' && <div className={styles.restoreMsg}>No purchases found for that email.</div>}
+            {restoreState === 'error'    && <div className={styles.restoreMsg}>Something went wrong — try again.</div>}
+          </>
+        )}
       </div>
 
       {/* ── Dev tools ── */}

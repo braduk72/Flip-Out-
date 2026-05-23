@@ -4,6 +4,7 @@ import styles from './Shop.module.css'
 import BottomNav from '../components/BottomNav'
 import AdBanner from '../components/AdBanner'
 import RemoveAdsModal from '../components/RemoveAdsModal'
+import { startCheckout } from '../utils/foShop.js'
 
 function getOwnedPaidCount() {
   const owned = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
@@ -34,6 +35,14 @@ export default function Shop({ onBack, navProps }) {
   const [jokerHovered, setJokerHovered] = useState(false)
   const [noAds, setNoAds] = useState(() => !!localStorage.getItem('fo_no_ads'))
   const [showRemoveAdsModal, setShowRemoveAdsModal] = useState(false)
+  const [buying, setBuying] = useState(null)
+
+  async function buy(productId) {
+    if (buying) return
+    setBuying(productId)
+    try { await startCheckout(productId) }
+    catch { setBuying(null) }
+  }
   return (
     <div className={styles.page}>
       <div className={styles.scroll}>
@@ -47,10 +56,10 @@ export default function Shop({ onBack, navProps }) {
         <h2 className={styles.sectionTitle}>🪙 Coins</h2>
         <div className={styles.coinGrid}>
           {COIN_PACKS.map(pack => (
-            <button key={pack.id} className={`${styles.coinCard} ${pack.highlight ? styles.highlighted : ''}`}>
+            <button key={pack.id} className={`${styles.coinCard} ${pack.highlight ? styles.highlighted : ''}`} onClick={() => buy(pack.id)} disabled={!!buying}>
               <img src="/images/coin.webp" alt="" className={styles.coinCardImg} />
               <span className={styles.coinCardLabel}>{pack.label}</span>
-              <span className={styles.coinCardPrice}>{pack.price}</span>
+              <span className={styles.coinCardPrice}>{buying === pack.id ? '…' : pack.price}</span>
               {pack.highlight && <span className={styles.bestValue}>BEST VALUE</span>}
             </button>
           ))}
@@ -89,8 +98,8 @@ export default function Shop({ onBack, navProps }) {
         <h2 className={styles.sectionTitle}>🚫 Remove Ads</h2>
         <button
           className={`${styles.removeAdsCard} ${noAds ? styles.lockedItem : ''}`}
-          onClick={() => !noAds && setShowRemoveAdsModal(true)}
-          disabled={noAds}
+          onClick={() => { if (!noAds) buy('remove_ads') }}
+          disabled={noAds || !!buying}
         >
           <div className={styles.removeAdsText}>
             <span className={styles.removeAdsTitle}>{noAds ? '✓ Ad-Free Active' : 'Remove Forced Ads'}</span>
@@ -111,7 +120,7 @@ export default function Shop({ onBack, navProps }) {
 
         {/* Loot Box */}
         <h2 className={styles.sectionTitle}>📦 Treasure Chest</h2>
-        <button className={`${styles.removeAdsCard} ${styles.chestCard}`}>
+        <button className={`${styles.removeAdsCard} ${styles.chestCard}`} onClick={() => buy('chest')} disabled={!!buying}>
           <div className={styles.chestEmoji}>
             <img src="/images/chest.webp" alt="Chest" className={styles.chestImg} draggable="false" />
           </div>
@@ -154,12 +163,12 @@ export default function Shop({ onBack, navProps }) {
         <h2 className={styles.sectionTitle}>🎁 Bundles</h2>
         <div className={styles.bundleList}>
           {BUNDLES.map(b => (
-            <button key={b.id} className={`${styles.bundleCard} ${b.highlight ? styles.highlighted : ''}`}>
+            <button key={b.id} className={`${styles.bundleCard} ${b.highlight ? styles.highlighted : ''}`} onClick={() => buy(b.id)} disabled={!!buying}>
               <div className={styles.bundleText}>
                 <span className={styles.bundleLabel}>{b.label}</span>
                 <span className={styles.bundleDesc}>{b.desc}</span>
               </div>
-              <span className={styles.bundlePrice}>{b.price}</span>
+              <span className={styles.bundlePrice}>{buying === b.id ? '…' : b.price}</span>
               {b.highlight && <span className={styles.bestValue}>BEST VALUE</span>}
             </button>
           ))}

@@ -16,6 +16,8 @@ import { ACTIVE_SEASON, STEPS_PER_STAGE, BOSS_STEP, GENERIC_OPPONENT } from './d
 import { DECKS } from './data/decks'
 import { useMultiplayer } from './hooks/useMultiplayer'
 import { buildBoard } from './hooks/useGame'
+import { verifySession, applyPurchase } from './utils/foShop.js'
+import { getDeviceUuid } from './utils/deviceId.js'
 
 // ── Music pools ───────────────────────────────────────────────────────────────
 const MENU_TRACKS = [
@@ -73,6 +75,8 @@ export default function App() {
   const [musicOn,    setMusicOn]    = useState(() => localStorage.getItem('fo_music')               !== 'off')
   const [sfxOn,      setSfxOn]      = useState(() => localStorage.getItem('fo_sfx')                 !== 'off')
   const [mode,       setMode]       = useState('vs')
+  const [purchaseStatus, setPurchaseStatus] = useState(null) // null | 'verifying' | 'success' | 'error'
+  const [purchaseResult, setPurchaseResult] = useState(null)
 
   // Multiplayer
   const mp = useMultiplayer()
@@ -150,6 +154,21 @@ export default function App() {
     }
     if (params.has('testprize')) {
       setScreen('luckyspin')
+    }
+
+    // ── Post-Stripe redirect: verify purchase and credit to localStorage ──────
+    const foSession = params.get('fo_session')
+    const foDevice  = params.get('fo_device')
+    if (foSession && foDevice) {
+      window.history.replaceState({}, '', window.location.pathname)
+      setPurchaseStatus('verifying')
+      verifySession(foSession, foDevice)
+        .then(result => {
+          applyPurchase(result)
+          setPurchaseResult(result)
+          setPurchaseStatus('success')
+        })
+        .catch(() => setPurchaseStatus('error'))
     }
   }, [])
 
@@ -480,6 +499,49 @@ export default function App() {
       />
     )
   }
+  // ── Purchase overlay (shown after Stripe redirect) ─────────────────────────
+  if (purchaseStatus === 'verifying') {
+    return (
+      <div style={{ position:'fixed', inset:0, background:'#0d0030', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:16, color:'#fff', fontFamily:'Arial' }}>
+        <div style={{ fontSize:48 }}>⌛</div>
+        <div style={{ fontSize:20, fontWeight:700 }}>Claiming your purchase…</div>
+      </div>
+    )
+  }
+  if (purchaseStatus === 'success' && purchaseResult) {
+    const { product_type, coins, decks, extras } = purchaseResult
+    return (
+      <div style={{ position:'fixed', inset:0, background:'#0d0030', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12, color:'#fff', fontFamily:'Arial', padding:24, textAlign:'center' }}>
+        <div style={{ fontSize:64 }}>🎉</div>
+        <div style={{ fontSize:24, fontWeight:900, color:'#FFD700' }}>Purchase complete!</div>
+        {coins > 0 && <div style={{ fontSize:16 }}>+{coins} coins added 🪙</div>}
+        {decks?.length > 0 && <div style={{ fontSize:16 }}>New deck{decks.length > 1 ? 's' : ''} unlocked! 🃏</div>}
+        {product_type === 'remove_ads' && <div style={{ fontSize:16 }}>Ads removed 🚫</div>}
+        {extras && Object.entries(extras).map(([k, v]) => (
+          <div key={k} style={{ fontSize:16 }}>{v}× {k} power-up added ⚡</div>
+        ))}
+        <button
+          onClick={() => { setPurchaseStatus(null); setPurchaseResult(null) }}
+          style={{ marginTop:16, padding:'14px 40px', borderRadius:50, border:'none', background:'linear-gradient(180deg,#32d96a,#1a9e48)', color:'#fff', fontSize:18, fontWeight:900, cursor:'pointer' }}
+        >
+          Let's play!
+        </button>
+      </div>
+    )
+  }
+  if (purchaseStatus === 'error') {
+    return (
+      <div style={{ position:'fixed', inset:0, background:'#0d0030', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:16, color:'#fff', fontFamily:'Arial', padding:24, textAlign:'center' }}>
+        <div style={{ fontSize:48 }}>⚠️</div>
+        <div style={{ fontSize:20, fontWeight:700 }}>Something went wrong</div>
+        <div style={{ fontSize:14, opacity:0.7 }}>Your payment went through — tap Restore Purchases in Settings to claim your items.</div>
+        <button onClick={() => setPurchaseStatus(null)} style={{ marginTop:8, padding:'12px 32px', borderRadius:50, border:'1px solid rgba(255,255,255,0.3)', background:'transparent', color:'#fff', fontSize:16, cursor:'pointer' }}>
+          OK
+        </button>
+      </div>
+    )
+  }
+
   return (
     <Home
       onPlay={handlePlay}
