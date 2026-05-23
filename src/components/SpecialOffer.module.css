@@ -173,8 +173,8 @@
 }
 
 .itemChip {
-  background: #2a0060;
-  border: 1.5px solid rgba(255,215,0,0.35);
+  background: linear-gradient(160deg, #5a0099 0%, #380070 100%);
+  border: 1.5px solid rgba(255,215,0,0.45);
   border-radius: 14px;
   padding: 10px 8px;
   display: flex;
@@ -192,6 +192,9 @@
   height: 56px;
   object-fit: contain;
   border-radius: 8px;
+  filter:
+    drop-shadow(0 0 5px rgba(255,255,255,0.7))
+    drop-shadow(0 2px 6px rgba(0,0,0,0.6));
 }
 
 .itemQty {
