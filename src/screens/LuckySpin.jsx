@@ -29,14 +29,14 @@ function getUsed() {
 }
 
 const SEGMENTS = [
-  { label: '10',   icon: '🪙', type: 'coins', value: 10,   color: '#b8721e', weight: 30 },
-  { label: '25',   icon: '🪙', type: 'coins', value: 25,   color: '#e8a838', weight: 25 },
-  { label: '50',   icon: '🪙', type: 'coins', value: 50,   color: '#f97316', weight: 18 },
-  { label: '100',  icon: '🪙', type: 'coins', value: 100,  color: '#e84b4b', weight: 12 },
-  { label: '150',  icon: '🪙', type: 'coins', value: 150,  color: '#26c25a', weight: 8  },
-  { label: '250',  icon: '🪙', type: 'coins', value: 250,  color: '#9b4fe8', weight: 4  },
-  { label: '500',  icon: '🪙', type: 'coins', value: 500,  color: '#3ecfd4', weight: 2  },
-  { label: '1000', icon: '🪙', type: 'coins', value: 1000, color: '#FFD700', weight: 1  },
+  { label: '10',   icon: '🪙', img: 'coin_mult_x1.webp',   type: 'coins', value: 10,   color: '#b8721e', weight: 30 },
+  { label: '25',   icon: '🪙', img: 'coin_mult_x5.webp',   type: 'coins', value: 25,   color: '#e8a838', weight: 25 },
+  { label: '50',   icon: '🪙', img: 'coin_mult_x10.webp',  type: 'coins', value: 50,   color: '#f97316', weight: 18 },
+  { label: '100',  icon: '🪙', img: 'coin_mult_x15.webp',  type: 'coins', value: 100,  color: '#e84b4b', weight: 12 },
+  { label: '150',  icon: '🪙', img: 'coin_mult_x20.webp',  type: 'coins', value: 150,  color: '#26c25a', weight: 8  },
+  { label: '250',  icon: '🪙', img: 'coin_mult_x25.webp',  type: 'coins', value: 250,  color: '#9b4fe8', weight: 4  },
+  { label: '500',  icon: '🪙', img: 'coin_mult_x50.webp',  type: 'coins', value: 500,  color: '#3ecfd4', weight: 2  },
+  { label: '1000', icon: '🪙', img: 'coin_mult_x100.webp', type: 'coins', value: 1000, color: '#FFD700', weight: 1  },
 ]
 
 function weightedRandomSeg() {
@@ -199,15 +199,35 @@ export default function LuckySpin({ onBack, navProps }) {
           className={styles.pointer}
           onAnimationEnd={() => pointerRef.current?.classList.remove(styles.pointerTick)}
         />
-        <img
-          src="/images/wheel2.webp"
-          alt="Spin wheel"
-          className={styles.wheel}
+        <div
+          className={styles.wheelWrap}
           style={{
             transform: `rotate(${rotation}deg)`,
             transition: spinning ? 'transform 7s cubic-bezier(0.17, 0.67, 0.08, 0.99)' : 'none',
           }}
-        />
+        >
+          <img src="/images/wheel2.webp" alt="Spin wheel" className={styles.wheelBg} draggable="false" />
+          {SEGMENTS.map((seg, i) => {
+            const midDeg = -90 + i * (360 / N) + (360 / N) / 2
+            const rad    = midDeg * Math.PI / 180
+            const x      = 50 + 27 * Math.cos(rad)
+            const y      = 50 + 27 * Math.sin(rad)
+            return (
+              <img
+                key={i}
+                src={`/images/${seg.img}`}
+                alt={seg.label}
+                draggable="false"
+                className={styles.segImg}
+                style={{
+                  left:      `${x}%`,
+                  top:       `${y}%`,
+                  transform: `translate(-50%, -50%) rotate(${midDeg + 90}deg)`,
+                }}
+              />
+            )
+          })}
+        </div>
       </div>
 
       <div className={styles.controls}>
