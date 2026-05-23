@@ -82,6 +82,8 @@
 .mapCanvas {
   position: relative;
   width: 100%;
+  /* forces software compositing so mix-blend-mode works inside animated children */
+  filter: brightness(1);
 }
 
 /* ── Map background image ── */
@@ -119,40 +121,29 @@
   );
 }
 
-/* ── Drifting real cloud sprite layers ── */
+/* ── Static fog cloud sprite layers — fog of war, no movement ── */
 .fogDrift {
   position: absolute;
   pointer-events: none;
-  will-change: transform;
   height: auto;
 }
 
-@keyframes driftLeft {
-  from { transform: translateX(110vw); }
-  to   { transform: translateX(-110vw); }
-}
+/* Bottom edge — wispy, light */
+.fogD0 { width: 100%; left:  0; top: 80%; opacity: 0.48; }
+.fogD1 { width: 100%; left:  0; top: 87%; opacity: 0.38; }
+.fogD2 { width:  90%; left: 5%; top: 72%; opacity: 0.33; }
 
-@keyframes driftRight {
-  from { transform: translateX(-110vw); }
-  to   { transform: translateX(110vw); }
-}
+/* Mid fog */
+.fogD3 { width: 100%; left:  0; top: 58%; opacity: 0.54; }
+.fogD4 { width:  85%; left: 8%; top: 65%; opacity: 0.46; }
 
-/* Bottom edge — flat white/wispy, slow */
-.fogD0 { width: 65%; top: 82%; opacity: 0.52; animation: driftLeft  23s linear infinite; animation-delay: -7s; }
-.fogD1 { width: 52%; top: 89%; opacity: 0.42; animation: driftRight 28s linear infinite; animation-delay: -14s; }
-.fogD2 { width: 48%; top: 75%; opacity: 0.38; animation: driftLeft  32s linear infinite; animation-delay: -22s; }
+/* Upper mid — heavier */
+.fogD5 { width: 100%; left:  0; top: 38%; opacity: 0.70; }
+.fogD6 { width: 100%; left:  0; top: 46%; opacity: 0.62; }
 
-/* Mid fog — medium grey */
-.fogD3 { width: 52%; top: 60%; opacity: 0.58; animation: driftRight 20s linear infinite; animation-delay: -5s; }
-.fogD4 { width: 36%; top: 67%; opacity: 0.50; animation: driftLeft  25s linear infinite; animation-delay: -18s; }
-
-/* Upper mid — dark puffs */
-.fogD5 { width: 44%; top: 38%; opacity: 0.72; animation: driftRight 17s linear infinite; animation-delay: -9s; }
-.fogD6 { width: 50%; top: 46%; opacity: 0.66; animation: driftLeft  19s linear infinite; animation-delay: -2s; }
-
-/* Near top — heavy smoke */
-.fogD7 { width: 58%; top: 12%; opacity: 0.82; animation: driftRight 14s linear infinite; animation-delay: -6s; }
-.fogD8 { width: 46%; top:  5%; opacity: 0.76; animation: driftLeft  16s linear infinite; animation-delay: -11s; }
+/* Near top — dense */
+.fogD7 { width: 100%; left:  0; top: 10%; opacity: 0.80; }
+.fogD8 { width: 100%; left:  0; top:  3%; opacity: 0.74; }
 
 /* ── Steam emitters ── */
 .steamEmitter {
@@ -246,7 +237,7 @@
 }
 
 .teslaFloat {
-  animation: teslaFloat 3.5s ease-in-out infinite;
+  /* bob removed — coil sprites need proper frames before animating */
 }
 
 .teslaImg {
