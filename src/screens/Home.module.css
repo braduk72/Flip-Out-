@@ -20,17 +20,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
-  animation: avatarPulse 3s ease-in-out infinite;
 }
 
-.playerAvatar img {
-  width: 52px;
-  height: 52px;
+/* Avatar image — only this element animates, not the label */
+.avatarImg {
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
   border: 2.5px solid rgba(255, 215, 0, 0.8);
   box-shadow: 0 0 12px rgba(255, 215, 0, 0.45);
@@ -38,14 +38,37 @@
   display: block;
 }
 
+/* Random spin — full 360° rotation */
+.avatar_spin {
+  animation: avatarSpin 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes avatarSpin {
+  0%   { transform: rotate(0deg);   box-shadow: 0 0 12px rgba(255,215,0,0.45); }
+  40%  { transform: rotate(200deg); box-shadow: 0 0 30px rgba(255,215,0,1);   }
+  100% { transform: rotate(360deg); box-shadow: 0 0 12px rgba(255,215,0,0.45); }
+}
+
+/* Random flip — 3D coin-flip on Y axis */
+.avatar_flip {
+  animation: avatarFlip 0.9s ease-in-out forwards;
+}
+
+@keyframes avatarFlip {
+  0%   { transform: perspective(140px) rotateY(0deg);   box-shadow: 0 0 12px rgba(255,215,0,0.45); }
+  30%  { box-shadow: 0 0 28px rgba(255,215,0,0.9); }
+  50%  { transform: perspective(140px) rotateY(180deg); }
+  100% { transform: perspective(140px) rotateY(360deg); box-shadow: 0 0 12px rgba(255,215,0,0.45); }
+}
+
 .playerAvatarLabel {
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 900;
   letter-spacing: 1.5px;
-  color: rgba(255, 215, 0, 0.85);
+  color: rgba(255, 215, 0, 0.9);
   font-family: Arial, sans-serif;
   text-transform: uppercase;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
 }
 
 .profileCol {
@@ -73,12 +96,6 @@
 .fbBtn:hover { transform: scale(1.08); }
 .fbBtnUsed   { opacity: 0.4; }
 
-@keyframes avatarPulse {
-  0%,  60%, 100% { transform: rotate(0deg);    box-shadow: 0 0 12px rgba(255,215,0,0.45); }
-  65%            { transform: rotate(180deg);   box-shadow: 0 0 22px rgba(255,215,0,0.9); }
-  70%            { transform: rotate(360deg);   box-shadow: 0 0 28px rgba(255,215,0,1);   }
-  80%            { transform: rotate(360deg);   box-shadow: 0 0 12px rgba(255,215,0,0.45); }
-}
 
 
 .audioIcon {

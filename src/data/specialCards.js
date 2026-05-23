@@ -83,6 +83,14 @@ export const SPECIAL_CARDS = {
     description: 'Flip this card plus 3 more this turn',
     color: '#FFD700',
   },
+  // Synthetic effect entries (not real cards — used for UI banners only)
+  bolt_blocked: {
+    id: 'bolt_blocked',
+    name: '🛡️ SHIELD BLOCKED IT!',
+    image: '/images/cards/special/shield.png',
+    description: 'The bolt was deflected — shield consumed',
+    color: '#4682B4',
+  },
   // Legacy specials (from original game)
   shuffle: {
     id: 'shuffle',
@@ -100,11 +108,13 @@ export const SPECIAL_CARDS = {
   },
 }
 
-// Pool used when randomly selecting specials for a game
+// Pool used when randomly selecting specials for a game.
+// 'shuffle' is intentionally excluded — it wipes all card memory and is
+// too disruptive as a common random draw. It can still appear via dev tools.
 export const SPECIAL_POOL = [
   'freeze', 'boom', 'tornado', 'magnet', 'bolt',
   'rocket', 'dice', 'shield', 'stopwatch', 'crown',
-  'random', 'shuffle', 'xray',
+  'random', 'xray',
 ]
 
 export function pickRandomSpecials(count) {

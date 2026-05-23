@@ -174,7 +174,7 @@ export default function App() {
       // Leaving seasonal screens — stop seasonal music, resume main
       if (seasonAudioRef.current) {
         seasonAudioRef.current.pause()
-        sessionAudioRef.current.currentTime = 0
+        seasonAudioRef.current.currentTime = 0
       }
       if (audioRef.current && musicOn) audioRef.current.play().catch(() => {})
     }
@@ -320,7 +320,7 @@ export default function App() {
         deck={deck}
         portrait={portrait}
         mode="vs"
-        difficulty={opp.difficulty === 'SeasonBoss' ? 'Lethal' : 'Hard'}
+        difficulty={opp.isBoss ? 'Lethal' : (opp.difficulty ?? 'Hard')}
         opponentImage={opp.image}
         opponentName={opp.name}
         opponentModel={opp.model}

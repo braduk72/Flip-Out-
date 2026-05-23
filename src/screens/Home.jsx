@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import styles from './Home.module.css'
 import BottomNav from '../components/BottomNav'
 import AdBanner from '../components/AdBanner'
@@ -7,8 +7,24 @@ import SpecialOffer, { shouldShowOffer, markOfferSeen } from '../components/Spec
 export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, onSettings, onSeason, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, gauntletStep, seasonStep = 0, mode = 'vs', onMode }) {
   const hasGoldCard = !!localStorage.getItem('fo_gold_card')
   const coins = parseInt(localStorage.getItem('fo_coins') || '0')
-  const [showOffer, setShowOffer] = useState(false)
+  const [showOffer, setShowOffer]   = useState(false)
   const [fbRewarded, setFbRewarded] = useState(!!localStorage.getItem('fo_fb_reward'))
+  const [avatarAnim, setAvatarAnim] = useState('idle')
+  const avatarTimer = useRef(null)
+
+  // Random idle → spin or flip, with 6–14 second gaps
+  useEffect(() => {
+    function scheduleNext() {
+      const delay = 6000 + Math.random() * 8000
+      avatarTimer.current = setTimeout(() => {
+        const anim = Math.random() < 0.55 ? 'spin' : 'flip'
+        setAvatarAnim(anim)
+        setTimeout(() => { setAvatarAnim('idle'); scheduleNext() }, 900)
+      }, delay)
+    }
+    scheduleNext()
+    return () => clearTimeout(avatarTimer.current)
+  }, [])
 
   function handleFbReward() {
     if (!fbRewarded) {
@@ -33,7 +49,12 @@ export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, o
       <div className={styles.topBar}>
         <div className={styles.profileCol}>
           <button className={styles.playerAvatar} onClick={onAvatar} aria-label="Change player">
-            <img src="/images/profile.png" alt="" draggable="false" />
+            <img
+              src="/images/profile.png"
+              alt=""
+              draggable="false"
+              className={`${styles.avatarImg} ${styles[`avatar_${avatarAnim}`]}`}
+            />
             <span className={styles.playerAvatarLabel}>Profile</span>
           </button>
           <button

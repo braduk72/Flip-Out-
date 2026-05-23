@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { useGame } from '../hooks/useGame'
+import { useSfx } from '../hooks/useSfx'
 import Card from '../components/Card'
 import styles from './Game.module.css'
 import { SPECIAL_CARDS, SPECIAL_POOL } from '../data/specialCards'
@@ -116,6 +117,35 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     playerShield, aiShield, crownHolder,
     activeEffect, pendingSpecial, pendingResolve, stopwatchEnd, gameOver, winner,
   } = state
+
+  const { play } = useSfx(sfxOn)
+
+  // ── Sound effects ─────────────────────────────────────────────────────────
+  // Card flip — fires whenever a card is added to the flipped array
+  const prevFlippedLen = useRef(0)
+  useEffect(() => {
+    if (flipped.length > prevFlippedLen.current) play('flip')
+    prevFlippedLen.current = flipped.length
+  }, [flipped.length]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Match / no-match / special card sounds
+  const prevEffectType = useRef(null)
+  useEffect(() => {
+    if (!activeEffect || activeEffect.type === prevEffectType.current) return
+    prevEffectType.current = activeEffect.type
+    if (activeEffect.type === 'match')    play('match')
+    else if (activeEffect.type === 'no_match') play('nomatch')
+    else if (activeEffect.type !== 'dice') play('special')  // all other effect types are specials
+  }, [activeEffect]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Game over fanfare
+  const gameOverSoundFired = useRef(false)
+  useEffect(() => {
+    if (!gameOver || gameOverSoundFired.current) return
+    gameOverSoundFired.current = true
+    if (winner === 'player') play('win')
+    else if (winner === 'ai') play('lose')
+  }, [gameOver]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const prevTurnRef = useRef(turn)
 
@@ -268,12 +298,20 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     return () => clearTimeout(t)
   }, [stopwatchEnd, endStopwatch])
 
+  // Auto-skip player's turn when stunned by a bolt
+  useEffect(() => {
+    if (turn !== 'player' || stunned !== 'player' || gameOver) return
+    const t = setTimeout(() => hideFlipped(), 1800)
+    return () => clearTimeout(t)
+  }, [turn, stunned, gameOver, hideFlipped])
+
   const stopwatchActive = stopwatchEnd && Date.now() < stopwatchEnd
 
-  // Resolve match/no-match — instant during stopwatch, fast in solo, normal in vs/mp
+  // Resolve match/no-match — instant during PLAYER stopwatch, fast in solo, normal in vs/mp
   useEffect(() => {
     if (!pendingResolve) return
-    const delay = stopwatchActive ? 50 : mode === 'solo' ? 300 : 950
+    const playerStopwatch = stopwatchActive && pendingResolve.whose === 'player'
+    const delay = playerStopwatch ? 50 : mode === 'solo' ? 300 : 950
     const t = setTimeout(() => commitResolve(pendingResolve.whose), delay)
     return () => clearTimeout(t)
   }, [pendingResolve, commitResolve]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -281,7 +319,8 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   // Handle no-match — hide cards after delay; solo is faster and skippable by tap
   useEffect(() => {
     if (activeEffect?.type === 'no_match') {
-      const delay = stopwatchActive ? 150 : mode === 'solo' ? 500 : 1800
+      const playerStopwatch = stopwatchActive && activeEffect.data?.whose === 'player'
+      const delay = playerStopwatch ? 150 : mode === 'solo' ? 500 : 1800
       const t = setTimeout(() => { hideFlipped(); clearEffect() }, delay)
       return () => clearTimeout(t)
     }
@@ -395,9 +434,18 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     }
   }, [turn, mode, frozen, clearFrozen, clearEffect])
 
-  // AI turn logic
+  // AI turn logic — kept in a ref so the trigger effect below doesn't re-fire
+  // mid-turn when state (flipped, cards, etc.) changes between move1 and move2.
+  const aiTurnStateRef = useRef({ state, cards, flipped, matched, consumed, frozen })
+  useEffect(() => {
+    aiTurnStateRef.current = { state, cards, flipped, matched, consumed, frozen }
+  })
+
   const doAITurn = useCallback(() => {
+    const { state, cards, flipped, matched, consumed, frozen } = aiTurnStateRef.current
     if (state.turn !== 'ai' || state.gameOver) return
+    // Guard: if cards are already mid-flip, don't start a new sequence
+    if (flipped.length > 0) return
 
     // If AI is stunned, skip turn
     if (state.stunned === 'ai') {
@@ -405,21 +453,26 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       return
     }
 
-    const delay1 = 900 + Math.random() * 500
+    const delay1 = 1200 + Math.random() * 800
     aiTimerRef.current = setTimeout(() => {
+      const { cards, flipped, matched, consumed, frozen } = aiTurnStateRef.current
       const move1 = getAIMove(cards, flipped, matched, consumed, frozen)
       if (move1 === null) return
       aiFlip(move1)
 
       // Second flip — long enough for player to see the first card
-      const delay2 = 1200 + Math.random() * 600
+      const delay2 = 1500 + Math.random() * 800
       aiTimerRef.current = setTimeout(() => {
+        const { cards, matched, consumed, frozen } = aiTurnStateRef.current
         const move2 = getAIMove(cards, [move1], matched, consumed, frozen)
         if (move2 === null) return
         aiFlip(move2)
       }, delay2)
     }, delay1)
-  }, [state, cards, flipped, matched, consumed, frozen, aiFlip, hideFlipped, getAIMove])
+  }, [aiFlip, hideFlipped, getAIMove]) // stable deps only — reads live state via ref
+
+  const doAITurnRef = useRef(doAITurn)
+  useEffect(() => { doAITurnRef.current = doAITurn }, [doAITurn])
 
   useEffect(() => {
     // In solo, also pass the turn back during freeze so cards don't lock up for 5s
@@ -433,12 +486,12 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
         // Opponent controls their own turn — do nothing locally
         return
       }
-      doAITurn()
+      doAITurnRef.current()
     }
     return () => {
       if (aiTimerRef.current) clearTimeout(aiTimerRef.current)
     }
-  }, [turn, gameOver, activeEffect, doAITurn, mode, hideFlipped])
+  }, [turn, gameOver, activeEffect, mode, hideFlipped]) // doAITurn removed — prevents mid-turn re-fires
 
   // Magnet: when active and 1 card is flipped, auto-reveal its pair
   useEffect(() => {
@@ -561,9 +614,11 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 : winner === 'player' ? '🏆 YOU WIN!'
                 : mode === 'mp' ? '😅 OPPONENT WINS!'
                 : '😅 AI WINS!')
+              : stunned === 'player' && turn === 'player' ? '⚡ STUNNED! Turn skipped…'
+              : stunned === 'ai'     && turn === 'ai'     ? `⚡ ${(opponentName || 'AI').toUpperCase()} STUNNED! Skipping…`
               : mode === 'solo' ? 'SOLO MODE'
               : mode === 'mp' ? (turn === 'player' ? 'YOUR TURN' : "OPPONENT'S TURN")
-              : turn === 'player' ? 'YOUR TURN' : "AI'S TURN"
+              : turn === 'player' ? 'YOUR TURN' : `${(opponentName || 'AI').toUpperCase()}'S TURN`
             }
           </div>
           {mode !== 'solo' && <span className={`${styles.turnDot} ${turn === 'ai' ? styles.active : ''} ${difficulty === 'Lethal' && turn === 'ai' ? styles.lethalDot : ''}`} />}
@@ -668,7 +723,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
         {/* Portraits + scores */}
         <div className={styles.contestants}>
           <div className={styles.sidePanel}>
-            <div className={`${styles.portraitWrap} ${mode !== 'solo' && turn !== 'player' ? styles.inactive : ''} ${mode !== 'solo' && spinning ? styles.spinning : ''}`}>
+            <div className={`${styles.portraitWrap} ${mode !== 'solo' && turn !== 'player' ? styles.inactive : ''} ${mode !== 'solo' && spinning ? styles.spinning : ''} ${playerShield ? styles.shieldActive : ''}`}>
               <img src={`/images/a${portrait}.png`} alt="You" className={styles.portrait} />
             </div>
             <span className={styles.sideScore}>{playerScore}</span>
@@ -685,7 +740,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
             </div>
           ) : (
             <div className={styles.sidePanel}>
-              <div className={`${styles.portraitWrap} ${turn !== 'ai' ? styles.inactive : ''} ${spinning ? styles.spinning : ''} ${difficulty === 'Lethal' && turn === 'ai' ? styles.lethalAiActive : ''}`}>
+              <div className={`${styles.portraitWrap} ${turn !== 'ai' ? styles.inactive : ''} ${spinning ? styles.spinning : ''} ${difficulty === 'Lethal' && turn === 'ai' ? styles.lethalAiActive : ''} ${aiShield ? styles.shieldActive : ''}`}>
                 <img
                   src={mode === 'mp'
                     ? `/images/a${mpState?.opponentPortrait ?? 1}.png`
@@ -696,7 +751,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
               </div>
               <span className={styles.sideScore}>{aiScore}</span>
               <span className={`${styles.contLabel} ${styles.cpuLabel}`}>
-                {mode === 'mp' ? 'OPPONENT' : 'CPU'}{aiShield ? ' 🛡️' : ''}{crownHolder === 'ai' ? ' 👑' : ''}
+                {mode === 'mp' ? 'OPPONENT' : (opponentName || 'CPU').toUpperCase()}{aiShield ? ' 🛡️' : ''}{crownHolder === 'ai' ? ' 👑' : ''}
               </span>
             </div>
           )}

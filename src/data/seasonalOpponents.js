@@ -12,7 +12,7 @@ export const SEASON_1 = {
     {
       id: 's1_c1',
       image: '/images/c1.png',
-      difficulty: 'Seasonal',
+      difficulty: 'Easy',
       tier: 'Seasonal',
       label: 'ROUND 1',
       name: 'VEXOR',
@@ -22,7 +22,7 @@ export const SEASON_1 = {
     {
       id: 's1_c2',
       image: '/images/c2.png',
-      difficulty: 'Seasonal',
+      difficulty: 'Medium',
       tier: 'Seasonal',
       label: 'ROUND 2',
       name: 'DREAD',
@@ -32,7 +32,7 @@ export const SEASON_1 = {
     {
       id: 's1_c3',
       image: '/images/c3.png',
-      difficulty: 'Seasonal',
+      difficulty: 'Medium',
       tier: 'Seasonal',
       label: 'ROUND 3',
       name: 'MALIX',
@@ -42,7 +42,7 @@ export const SEASON_1 = {
     {
       id: 's1_c4',
       image: '/images/c4.png',
-      difficulty: 'Seasonal',
+      difficulty: 'Hard',
       tier: 'Seasonal',
       label: 'ROUND 4',
       name: 'OBLIQUE',
@@ -55,7 +55,7 @@ export const SEASON_1 = {
   boss: {
     id: 's1_boss',
     image: '/images/Opponants/l1.png',   // placeholder — swap for a dedicated seasonal boss image
-    difficulty: 'Seasonal Boss',
+    difficulty: 'Lethal',
     tier: 'SeasonBoss',
     label: 'SEASONAL BOSS',
     name: 'THE ARCHITECT',

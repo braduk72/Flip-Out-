@@ -198,3 +198,15 @@
 .toggleOn .toggleThumb {
   transform: translateX(22px);
 }
+
+.versionTag {
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0.22);
+  font-family: Arial, sans-serif;
+  letter-spacing: 1.5px;
+  padding: 6px 0 10px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}

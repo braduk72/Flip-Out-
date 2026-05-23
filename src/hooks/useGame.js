@@ -14,8 +14,8 @@ function shuffle(arr) {
 }
 
 const DIFFICULTY_PAIRS    = { Easy: 5, Medium: 7, Hard: 9,    Lethal: 9    }
-const DIFFICULTY_AI_KNOWN = { Easy: 0.40, Medium: 0.85, Hard: 0.97, Lethal: 1.00 }
-const DIFFICULTY_AI_MEM   = { Easy: 0.25, Medium: 0.75, Hard: 0.92, Lethal: 1.00 }
+const DIFFICULTY_AI_KNOWN = { Easy: 0.15, Medium: 0.50, Hard: 0.80, Lethal: 0.98 }
+const DIFFICULTY_AI_MEM   = { Easy: 0.08, Medium: 0.30, Hard: 0.65, Lethal: 0.95 }
 
 function buildBoard(deck, numPairs = 7, numSpecials = 2) {
   const images = getDeckImages(deck, numPairs)
@@ -41,8 +41,17 @@ function buildBoard(deck, numPairs = 7, numSpecials = 2) {
 
 function makeInitial(deck, numPairs = 7, prebuiltCards = null, initialTurn = 'player') {
   const devSpecials = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('specials')
-  const boardPairs    = devSpecials ? 1 : numPairs
-  const boardSpecials = devSpecials ? SPECIAL_POOL.length : 2
+  // Cap pairs to what the deck actually has — prevents malformed boards on small decks
+  const maxPairs   = deck?.cardCount ?? numPairs
+  const boardPairs = devSpecials ? 1 : Math.min(numPairs, maxPairs)
+  // Scale specials with game size: 1 for small games, 2 for medium+
+  // Then pad up so total cards (2*pairs + specials) is always divisible by 4 — no partial rows
+  let boardSpecials = devSpecials ? SPECIAL_POOL.length : (boardPairs <= 5 ? 1 : 2)
+  if (!devSpecials) {
+    const rem = (boardPairs * 2 + boardSpecials) % 4
+    if (rem !== 0) boardSpecials += (4 - rem)
+    boardSpecials = Math.min(boardSpecials, SPECIAL_POOL.length)
+  }
   return {
     cards:          prebuiltCards ?? buildBoard(deck, boardPairs, boardSpecials),
     flipped:        [],      // up to 2 card indices currently revealed
@@ -119,6 +128,9 @@ function reducer(state, action) {
         state.gameOver
       ) return state
 
+      // Guard: player is stunned (bolt hit — skip this turn)
+      if (state.stunned === 'player') return state
+
       // Guard: not player's turn
       if (state.turn !== 'player') return state
 
@@ -172,7 +184,20 @@ function reducer(state, action) {
 
     case 'HIDE_FLIPPED': {
       const keepTurn = state.stopwatchEnd && Date.now() < state.stopwatchEnd
-      return { ...state, flipped: [], turn: keepTurn ? state.turn : otherTurn(state.turn) }
+      const newTurn  = keepTurn ? state.turn : otherTurn(state.turn)
+      // Clear stun for whoever just had their turn — bolt stuns for exactly 1 turn
+      const newStunned = state.stunned === state.turn ? null : state.stunned
+      const next = { ...state, flipped: [], turn: newTurn, stunned: newStunned }
+      // Safety net: catch any game over the resolveFlip path may have missed
+      if (!next.gameOver && checkGameOver(next)) {
+        return {
+          ...next,
+          gameOver: true,
+          winner: next.playerScore > next.aiScore ? 'player'
+            : next.aiScore > next.playerScore ? 'ai' : 'draw',
+        }
+      }
+      return next
     }
 
     case 'CLEAR_EFFECT':
@@ -237,10 +262,12 @@ function resolveFlip(state, flipped, whose) {
   const [a, b] = flipped
   const cardA = state.cards[a]
   const cardB = state.cards[b]
+  // Guard: stale timer fired after flipped was cleared (e.g. solo tap-to-skip)
+  if (!cardA || !cardB) return state
   const isMatch = cardA.pairId === cardB.pairId
 
   if (!isMatch) {
-    return { ...state, flipped, activeEffect: { type: 'no_match', data: { a, b } } }
+    return { ...state, flipped, activeEffect: { type: 'no_match', data: { a, b, whose } } }
   }
 
   // Match!
@@ -395,7 +422,8 @@ function applySpecial(state, index, whose, seed = {}) {
       }
 
     case 'random': {
-      const options = ['freeze','boom','tornado','magnet','bolt','rocket','dice','shield','stopwatch','crown','shuffle','xray']
+      // 'shuffle' excluded — too disruptive to appear via random
+      const options = ['freeze','boom','tornado','magnet','bolt','rocket','dice','shield','stopwatch','crown','xray']
       const chosen = seed.chosen ?? options[Math.floor(Math.random() * options.length)]
       const fakeCard = { ...card, specialType: chosen }
       const fakeCards = [...state.cards]
