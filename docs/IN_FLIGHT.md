@@ -37,6 +37,10 @@ _(nothing currently claimed)_
 
 ---
 
+## Recently completed (session 20 — 23 May 2026)
+
+- ✅ Boom card fix — `turn: otherTurn(whose)` changed to `turn: whose`; attacker now keeps their turn after boom so they can flip using the revealed neighbours — Claude Code
+
 ## Recently completed (session 19 — 23 May 2026)
 
 - ✅ Season auto-reset — after beating the final boss `seasonStep` resets to 0 so the season is immediately replayable; gold card + 150 coins still awarded — Claude Code
