@@ -25,7 +25,7 @@ A card-matching game with special power-ups, season mode, gauntlet mode, and mul
 ### 🚨 MUST DO BEFORE SHOP WORKS — two things outstanding
 
 **1. DATABASE_URL** — production PostgreSQL URL not yet set in Vercel for Flip Out project.
-- Log into [railway.app](https://railway.app) → CAL project → Postgres service → Variables tab → copy `DATABASE_URL`
+- Log into [railway.com](https://railway.com) → CAL project → Postgres service → Variables tab → copy `DATABASE_URL`
 - Tell Claude: "Here's the DATABASE_URL: xxx" and Claude will add it to Vercel via CLI + run the migration
 
 **2. Stripe webhook** — `STRIPE_FO_WEBHOOK_SECRET` not yet set.
