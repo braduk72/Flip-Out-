@@ -78,7 +78,7 @@ function generateSpecialSeed(specialType, index, cards, matched, consumed) {
   }
 }
 
-export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, yourTurn = true, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, gauntletStep }) {
+export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, yourTurn = true, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, onPlayerLost, gauntletStep }) {
   const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, endStopwatch, useJoker } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player')
   const devSpecials = new URLSearchParams(window.location.search).has('specials')
   const [devToolsOpen, setDevToolsOpen] = useState(() => devSpecials || localStorage.getItem('fo_dev_toolbar') === 'on')
@@ -144,7 +144,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     if (!gameOver || gameOverSoundFired.current) return
     gameOverSoundFired.current = true
     if (winner === 'player') play('win')
-    else if (winner === 'ai') play('lose')
+    else if (winner === 'ai') { play('lose'); onPlayerLost?.() }
   }, [gameOver]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const prevTurnRef = useRef(turn)
