@@ -1034,6 +1034,16 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 <span style={{ color:'#fff', fontSize:'8px', fontFamily:'Arial', textTransform:'uppercase' }}>{type}</span>
               </button>
             ))}
+            {onResult && (
+              <button
+                title="Force win"
+                onClick={() => onResult('player')}
+                style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'2px', background:'rgba(255,215,0,0.12)', border:'1px solid rgba(255,215,0,0.45)', borderRadius:'8px', padding:'4px 6px', cursor:'pointer' }}
+              >
+                <span style={{ fontSize:'26px', lineHeight:'32px', display:'block', width:'32px', textAlign:'center' }}>🏆</span>
+                <span style={{ color:'#FFD700', fontSize:'8px', fontFamily:'Arial', textTransform:'uppercase', fontWeight:700 }}>WIN</span>
+              </button>
+            )}
           </div>
         )}
       </div>

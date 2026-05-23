@@ -531,37 +531,6 @@
   pointer-events: none;
 }
 
-/* ── Dev bar ── */
-.devBar {
-  display: flex;
-  justify-content: center;
-  padding: 4px 16px;
-  background: rgba(10, 0, 32, 0.97);
-  border-top: 1px dashed rgba(255, 80, 80, 0.3);
-  flex-shrink: 0;
-}
-
-.devWinBtn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 20px;
-  background: rgba(255, 50, 50, 0.12);
-  border: 1.5px solid rgba(255, 80, 80, 0.35);
-  border-radius: 50px;
-  color: rgba(255, 160, 160, 0.9);
-  font-size: 12px;
-  font-weight: 700;
-  font-family: Arial, sans-serif;
-  cursor: pointer;
-  letter-spacing: 1px;
-}
-
-.devStep {
-  font-size: 10px;
-  color: rgba(255, 100, 100, 0.6);
-}
-
 /* ── Bottom CTA bar ── */
 .ctaBar {
   display: flex;
