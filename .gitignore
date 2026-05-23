@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Raw sprite sheet downloads — large originals, not needed in repo
+public/images/downloads/
+
+# Executables that ended up in the wrong folder
+*.exe
