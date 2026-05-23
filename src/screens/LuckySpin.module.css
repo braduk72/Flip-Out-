@@ -81,13 +81,12 @@
   position: relative;
   width: 100%;
   max-width: 300px;
-  aspect-ratio: 1;
   filter: drop-shadow(0 8px 24px rgba(0,0,0,0.6));
 }
 
 .wheelBg {
   width: 100%;
-  height: 100%;
+  height: auto;   /* lets the image drive the container height */
   display: block;
   user-select: none;
   pointer-events: none;
