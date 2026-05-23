@@ -39,15 +39,22 @@ function buildBoard(deck, numPairs = 7, numSpecials = 2) {
 
 // ── Initial state ─────────────────────────────────────────────────────────────
 
-function makeInitial(deck, numPairs = 7, prebuiltCards = null, initialTurn = 'player') {
+function makeInitial(deck, numPairs = 7, prebuiltCards = null, initialTurn = 'player', isSolo = false) {
   const devSpecials = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('specials')
   // Cap pairs to what the deck actually has — prevents malformed boards on small decks
   const maxPairs   = deck?.cardCount ?? numPairs
-  const boardPairs = devSpecials ? 1 : Math.min(numPairs, maxPairs)
-  // Scale specials with game size: 1 for small games, 2 for medium+
-  // Then pad up so total cards (2*pairs + specials) is always divisible by 4 — no partial rows
-  let boardSpecials = devSpecials ? SPECIAL_POOL.length : (boardPairs <= 5 ? 1 : 2)
-  if (!devSpecials) {
+  let boardPairs   = devSpecials ? 1 : Math.min(numPairs, maxPairs)
+  // Solo time trial: no special cards — pure memory game.
+  // Round pairs up to the next even number so total cards (pairs*2) fills 4-column grid cleanly.
+  // vs / gauntlet / mp: scale specials with game size; pad to keep grid divisible by 4.
+  let boardSpecials
+  if (devSpecials) {
+    boardSpecials = SPECIAL_POOL.length
+  } else if (isSolo) {
+    boardSpecials = 0
+    if (boardPairs % 2 !== 0) boardPairs = Math.min(boardPairs + 1, maxPairs)
+  } else {
+    boardSpecials = boardPairs <= 5 ? 1 : 2
     const rem = (boardPairs * 2 + boardSpecials) % 4
     if (rem !== 0) boardSpecials += (4 - rem)
     boardSpecials = Math.min(boardSpecials, SPECIAL_POOL.length)
@@ -470,10 +477,10 @@ function applySpecial(state, index, whose, seed = {}) {
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
-export function useGame(deck, difficulty = 'Medium', prebuiltCards = null, initialTurn = 'player') {
+export function useGame(deck, difficulty = 'Medium', prebuiltCards = null, initialTurn = 'player', isSolo = false) {
   const [state, dispatch] = useReducer(reducer, null, () => {
     const numPairs = DIFFICULTY_PAIRS[difficulty] ?? 7
-    return makeInitial(deck, numPairs, prebuiltCards, initialTurn)
+    return makeInitial(deck, numPairs, prebuiltCards, initialTurn, isSolo)
   })
   const aiMemory = useRef({})    // { cardIndex: pairId } — what AI has seen
   const aiKnown  = DIFFICULTY_AI_KNOWN[difficulty] ?? 0.85
