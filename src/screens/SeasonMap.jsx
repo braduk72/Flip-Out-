@@ -64,21 +64,24 @@ const TESLA_COILS = [
   { x: 76, y: 14, colour: 'b', scale: 0.80, delay: 3.2 },
 ]
 
-// Fog cloud sprites — layered from bottom edge (wispy/light) to top (dark smoke)
-const FOG_CLOUDS = [
-  // Bottom edge — flat white, slow drift
-  { src: `/images/cld_fw2.webp${V}`, cls: 'fogD0' },
-  { src: `/images/cld_fw1.webp${V}`, cls: 'fogD1' },
-  { src: `/images/cld_fw3.webp${V}`, cls: 'fogD2' },
-  // Mid fog — flat medium grey
-  { src: `/images/cld_fm2.webp${V}`, cls: 'fogD3' },
-  { src: `/images/cld_pm2.webp${V}`, cls: 'fogD4' },
-  // Upper mid — dark puffs
-  { src: `/images/cld_pd2.webp${V}`, cls: 'fogD5' },
-  { src: `/images/cld_fd2.webp${V}`, cls: 'fogD6' },
-  // Near top — heavy smoke
-  { src: `/images/cld_fs2.webp${V}`, cls: 'fogD7' },
-  { src: `/images/cld_fs1.webp${V}`, cls: 'fogD8' },
+// Fog cloud strips — each scrolls continuously left or right (marquee pattern).
+// Two images side-by-side in a 200%-wide strip; animating translateX(-50%) gives a seamless loop.
+// Different cloud types, heights, speeds and directions → full coverage, no gaps.
+const FOG_STRIPS = [
+  // Top — dense smoke / heavy dark puffs
+  { top:  0, dir: 'R', dur: 65, a: 'cld_fs1', b: 'cld_fs2' },
+  { top: 10, dir: 'L', dur: 52, a: 'cld_fd2', b: 'cld_pd3' },
+  // Upper-mid — dark puffs
+  { top: 21, dir: 'R', dur: 43, a: 'cld_pd1', b: 'cld_fd2' },
+  { top: 32, dir: 'L', dur: 71, a: 'cld_pd2', b: 'cld_pd1' },
+  // Mid — puff + medium grey mix
+  { top: 44, dir: 'R', dur: 57, a: 'cld_pm2', b: 'cld_pd3' },
+  { top: 55, dir: 'L', dur: 38, a: 'cld_fm2', b: 'cld_pm2' },
+  // Lower-mid — lighter grey
+  { top: 66, dir: 'R', dur: 60, a: 'cld_fw3', b: 'cld_fm2' },
+  // Bottom — wispy white, fastest (nearest the reveal edge)
+  { top: 76, dir: 'L', dur: 45, a: 'cld_fw1', b: 'cld_fw3' },
+  { top: 85, dir: 'R', dur: 33, a: 'cld_fw2', b: 'cld_fw1' },
 ]
 
 // Animated sprite robomouse — cycles 4 frames at 6fps
@@ -165,12 +168,18 @@ export default function SeasonMap({ seasonStep = 0, portrait = 1, onFight, onBac
           {/* Map image — natural dimensions drive the canvas height */}
           <img ref={imgRef} src="/images/season1map.webp" className={styles.mapBgImg} alt="" draggable="false" />
 
-          {/* ── Fog of war — real cloud sprites drifting in layers ── */}
+          {/* ── Fog of war — cloud strips scrolling continuously L or R ── */}
           <div className={styles.fogZone} style={{ height: `${fogHeight}%` }}>
             <div className={styles.fogBody} />
-            {FOG_CLOUDS.map((c, i) => (
-              <img key={i} src={c.src} alt="" draggable="false"
-                className={`${styles.fogDrift} ${styles[c.cls]}`} />
+            {FOG_STRIPS.map((s, i) => (
+              <div
+                key={i}
+                className={`${styles.fogStrip} ${s.dir === 'L' ? styles.fogScrollL : styles.fogScrollR}`}
+                style={{ top: `${s.top}%`, animationDuration: `${s.dur}s` }}
+              >
+                <img src={`/images/${s.a}.webp${V}`} alt="" draggable="false" />
+                <img src={`/images/${s.b}.webp${V}`} alt="" draggable="false" />
+              </div>
             ))}
           </div>
 

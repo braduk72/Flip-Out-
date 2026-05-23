@@ -121,35 +121,40 @@
   );
 }
 
-/* ── Static fog cloud sprite layers — fog of war, no movement ── */
-.fogDrift {
+/* ── Fog cloud strips — continuous marquee scroll, no gaps ── */
+/* Each strip is 200% wide (2 cloud images side-by-side). Scrolling by -50%  */
+/* moves the second copy into view, then loops seamlessly back to the first.  */
+
+.fogStrip {
   position: absolute;
+  left: 0;
+  width: 200%;
+  height: 15vh;          /* fixed height so strips overlap regardless of fogZone size */
+  min-height: 64px;      /* floor on very small screens */
+  display: flex;
   pointer-events: none;
-  height: auto;
 }
 
-/* Slow side-to-side drift animations — different speeds/directions per layer */
-@keyframes fogDriftL { 0%,100% { transform: translateX(0);    } 50% { transform: translateX(-8%);  } }
-@keyframes fogDriftR { 0%,100% { transform: translateX(0);    } 50% { transform: translateX( 8%);  } }
-@keyframes fogDriftLS{ 0%,100% { transform: translateX(0);    } 50% { transform: translateX(-5%);  } }
-@keyframes fogDriftRS{ 0%,100% { transform: translateX(0);    } 50% { transform: translateX( 5%);  } }
+.fogStrip img {
+  display: block;
+  width: 50%;            /* each = 100% of visible fogZone width */
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
 
-/* Bottom edge — wispy, light */
-.fogD0 { width: 110%; left: -5%; top: 80%; opacity: 0.48; animation: fogDriftL  28s ease-in-out infinite; }
-.fogD1 { width: 110%; left: -5%; top: 87%; opacity: 0.38; animation: fogDriftR  34s ease-in-out infinite; }
-.fogD2 { width: 100%; left:  0;  top: 72%; opacity: 0.33; animation: fogDriftLS 22s ease-in-out infinite; }
+@keyframes fogScrollL {
+  from { transform: translateX(0%);   }
+  to   { transform: translateX(-50%); }
+}
 
-/* Mid fog */
-.fogD3 { width: 110%; left: -5%; top: 58%; opacity: 0.54; animation: fogDriftR  40s ease-in-out infinite; }
-.fogD4 { width:  95%; left:  3%; top: 65%; opacity: 0.46; animation: fogDriftL  31s ease-in-out infinite; }
+@keyframes fogScrollR {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0%);   }
+}
 
-/* Upper mid — heavier */
-.fogD5 { width: 110%; left: -5%; top: 38%; opacity: 0.70; animation: fogDriftRS 44s ease-in-out infinite; }
-.fogD6 { width: 110%; left: -5%; top: 46%; opacity: 0.62; animation: fogDriftL  37s ease-in-out infinite; }
-
-/* Near top — dense */
-.fogD7 { width: 110%; left: -5%; top: 10%; opacity: 0.80; animation: fogDriftR  50s ease-in-out infinite; }
-.fogD8 { width: 110%; left: -5%; top:  3%; opacity: 0.74; animation: fogDriftLS 42s ease-in-out infinite; }
+.fogScrollL { animation: fogScrollL linear infinite; }
+.fogScrollR { animation: fogScrollR linear infinite; }
 
 /* ── Steam emitters ── */
 .steamEmitter {
