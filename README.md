@@ -8,28 +8,41 @@ A card-matching game with special power-ups, season mode, gauntlet mode, and mul
 
 ---
 
-## 🔴 PICK UP HERE — Session 21 handover (23 May 2026)
+## 🔴 PICK UP HERE — Session 22 handover (24 May 2026)
 
 ### What was done this session
-- **Lucky Spin — coin multiplier images** — 8 PNGs (x1/x5/x10/x15/x20/x25/x50/x100) converted to WebP; wheel restructured from single `<img>` to rotating `<div>` with base image + 8 absolutely-positioned badge overlays; segment order shuffled (not ascending)
-- **Fog redesign** — 9 continuous-scroll marquee strips replace the old oscillating drift; 200%-wide strips, two cloud images each, `translateX(-50%)` linear infinite; full gap-free coverage
-- **Win/lose overlay** — `'😅 AI WINS!'` → `'😢 YOU LOST!'` across all three overlay paths
-- **Mouse rotation** — sprite faces NORTH at 0°; all 4 keyframe animations had 90° subtracted from every `rotate()` value so mice travel nose-first
-- **Dev toolbar WIN button** — 🏆 tile in in-game DEV toolbar; only shown when `onResult` is wired (season/gauntlet); calls `onResult('player')` to skip to win
-- **Dev toolbar gating** — `import.meta.env.DEV || import.meta.env.VITE_DEV_TOOLS === 'true'`; zero dev code in Production build
-- **SpecialOffer icon visibility** — chip backgrounds lightened; `brightness(1.9) saturate(1.2)` + strong white glow on `.itemIcon` so all 4 items are clearly visible
-- **Cache fix** — `vercel.json` updated with `no-store, no-cache, must-revalidate` for `/` and `*.html`; Cloudflare will no longer serve a stale JS bundle after a deploy
-- **Dev test URL params** — `?testoffer` opens SpecialOffer popup immediately; `?testprize` navigates to Lucky Spin with prize overlay open
+- **Solo mode — specials removed** — `useGame` now accepts `isSolo` flag; solo boards have 0 special cards; pair count rounded up to next even number so 4-column grid stays full
+- **DNS fixed permanently** — `dev.gizmogames.uk` now points to Vercel dev branch (A record `76.76.21.21`, proxy off); SSL cert issued; auto-updates on every push. No more APOLLO stale build
+- **`gizmogames.uk` root fixed** — was pointing to old Cloudflare Pages build; now A record → Vercel production; AdSense can find it; SSL cert issued
+- **Stripe shop built** — full payment backend: `api/fo-checkout.js`, `api/fo-webhook.js`, `api/fo-verify.js`, `api/fo-restore.js`; product catalog in `api/_products.js`
+- **Silent device UUID** — `src/utils/deviceId.js`; generated on first visit, invisible to player, ties purchases to device
+- **Post-payment flow** — after Stripe redirect back, `?fo_session` + `?fo_device` params detected; purchase verified server-side; coins/decks/extras applied to localStorage; success overlay shown
+- **Restore Purchases** — Settings screen has email input: "Enter email address to enable cross-platform play"; calls `/api/fo-restore`; applies all prior purchases to new device
+- **Shop buttons wired** — coin packs, bundles, chest, remove ads all call `startCheckout(productId)`; loading state shows `…` on price
+- **DB migration** — `CAL/server/migrations/073_flipout_shop.sql` — tables `fo_players` and `fo_purchases` added (not yet run on production — needs DATABASE_URL)
+- **Vercel env vars set** — `STRIPE_SECRET_KEY` (production + dev), `FO_URL` (production + dev), `VITE_DEV_TOOLS=true` (dev)
 
-### Unresolved / check first next session
-- **SpecialOffer icons** — verify they are clearly visible at `https://dev.gizmogames.uk?testoffer` after the cache fix takes effect
-- **Season map fog** — session 21 screenshot showed old cached JS (VEXOR/ROUND 1 era); fog should be correct once fresh JS loads. Verify the top portion of the map is covered by dark fog at step 0
-- **Cloudflare cache** — `no-store` header deployed this session. If hard-refresh still shows old content, purge the Cloudflare cache manually in the dashboard (Caching → Purge Everything for `dev.gizmogames.uk`)
+### 🚨 MUST DO BEFORE SHOP WORKS — two things outstanding
+
+**1. DATABASE_URL** — production PostgreSQL URL not yet set in Vercel for Flip Out project.
+- Log into [railway.app](https://railway.app) → CAL project → Postgres service → Variables tab → copy `DATABASE_URL`
+- Tell Claude: "Here's the DATABASE_URL: xxx" and Claude will add it to Vercel via CLI + run the migration
+
+**2. Stripe webhook** — `STRIPE_FO_WEBHOOK_SECRET` not yet set.
+- Log into [dashboard.stripe.com](https://dashboard.stripe.com) → Developers → Webhooks → Add endpoint
+- URL: `https://flipout.gizmogames.uk/api/fo-webhook`
+- Events: `checkout.session.completed`
+- Copy the signing secret → tell Claude → it'll add to Vercel
+
+### Dev URLs
+- **Dev (latest push):** https://dev.gizmogames.uk or https://flip-out-git-dev-chattocal.vercel.app
+- **Production:** https://flipout.gizmogames.uk / https://gizmogames.uk
 
 ### Brad action items
-1. Hard-refresh `https://dev.gizmogames.uk?testoffer` — confirm icons visible and season map correct
-2. Approve dev → main merge when happy with everything
-3. Set `VITE_DEV_TOOLS=true` in Vercel → Project Settings → Environment Variables → **Preview only** (if not already done)
+1. Provide Railway DATABASE_URL (see above)
+2. Create Stripe webhook and provide signing secret (see above)
+3. Continue with graphics / deck backgrounds — shop backend is ready, just needs the DB connected
+4. Approve dev → main merge when ready to go live
 
 ---
 
