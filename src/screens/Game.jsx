@@ -615,10 +615,10 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 : mode === 'mp' ? '😅 OPPONENT WINS!'
                 : '😅 AI WINS!')
               : stunned === 'player' && turn === 'player' ? '⚡ STUNNED! Turn skipped…'
-              : stunned === 'ai'     && turn === 'ai'     ? '⚡ AI STUNNED! Skipping…'
+              : stunned === 'ai'     && turn === 'ai'     ? `⚡ ${(opponentName || 'AI').toUpperCase()} STUNNED! Skipping…`
               : mode === 'solo' ? 'SOLO MODE'
               : mode === 'mp' ? (turn === 'player' ? 'YOUR TURN' : "OPPONENT'S TURN")
-              : turn === 'player' ? 'YOUR TURN' : "AI'S TURN"
+              : turn === 'player' ? 'YOUR TURN' : `${(opponentName || 'AI').toUpperCase()}'S TURN`
             }
           </div>
           {mode !== 'solo' && <span className={`${styles.turnDot} ${turn === 'ai' ? styles.active : ''} ${difficulty === 'Lethal' && turn === 'ai' ? styles.lethalDot : ''}`} />}
@@ -751,7 +751,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
               </div>
               <span className={styles.sideScore}>{aiScore}</span>
               <span className={`${styles.contLabel} ${styles.cpuLabel}`}>
-                {mode === 'mp' ? 'OPPONENT' : 'CPU'}{aiShield ? ' 🛡️' : ''}{crownHolder === 'ai' ? ' 👑' : ''}
+                {mode === 'mp' ? 'OPPONENT' : (opponentName || 'CPU').toUpperCase()}{aiShield ? ' 🛡️' : ''}{crownHolder === 'ai' ? ' 👑' : ''}
               </span>
             </div>
           )}
