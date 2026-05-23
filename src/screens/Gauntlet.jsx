@@ -64,7 +64,7 @@ export default function Gauntlet({ step, onFight, onBack, onReset, navProps }) {
               <div className={styles.goldCardShimmer} />
               <div className={styles.goldCardHeader}>✦ GOLD COLLECTOR CARD ✦</div>
               <div className={styles.goldCardPortraitWrap}>
-                <img src="/images/Opponants/l1.png" alt="Professor Claw" className={styles.goldCardPortrait} />
+                <img src="/images/Opponants/l1.webp" alt="Professor Claw" className={styles.goldCardPortrait} />
               </div>
               <div className={styles.goldCardName}>PROFESSOR CLAW</div>
               <div className={styles.goldCardRarity}>GAUNTLET CHAMPION · UNIQUE</div>

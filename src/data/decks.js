@@ -1,4 +1,4 @@
-// cardStart: first numbered card image (1 if back is back.png, 2 if back is 1.png)
+// cardStart: first numbered card image (1 if back is back.webp, 2 if back is 1.webp)
 // cardCount: number of actual card face images
 export const DECKS = [
   {
@@ -57,7 +57,7 @@ export const DECKS = [
     emoji: '🦅',
     cardCount: 24,
     cardStart: 1,
-    backFile: 'back.png',
+    backFile: 'back.webp',
     path: '/images/cards/birdsOfPrey',
     borderColor: '#8B4513',
     free: false,
@@ -88,7 +88,7 @@ export const DECKS = [
     emoji: '👑',
     cardCount: 19,
     cardStart: 1,
-    backFile: 'back.png',
+    backFile: 'back.webp',
     path: '/images/cards/KingsandQueens',
     borderColor: '#B8860B',
     free: false,
@@ -105,7 +105,7 @@ export const DECKS = [
     emoji: '🗺️',
     cardCount: 24,
     cardStart: 1,
-    backFile: 'back.png',
+    backFile: 'back.webp',
     path: '/images/cards/WorldLandmarks',
     borderColor: '#1E90FF',
     free: false,
@@ -115,7 +115,7 @@ export const DECKS = [
 export function getDeckBackImage(deck) {
   return deck.backFile
     ? `${deck.path}/${deck.backFile}`
-    : `${deck.path}/1.png`
+    : `${deck.path}/1.webp`
 }
 
 export function getDeckImages(deck, count) {
@@ -123,7 +123,7 @@ export function getDeckImages(deck, count) {
   const indices = Array.from({ length: deck.cardCount }, (_, i) => i + start)
   const shuffled = indices.sort(() => Math.random() - 0.5)
   return shuffled.slice(0, count).map(i => ({
-    image: `${deck.path}/${i}.png`,
+    image: `${deck.path}/${i}.webp`,
     name: deck.cardNames ? deck.cardNames[i - start] : null,
   }))
 }

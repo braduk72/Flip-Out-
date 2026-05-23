@@ -589,7 +589,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       {/* Gameshow stage background */}
       <div
         className={styles.stage}
-        style={{ backgroundImage: `url(/images/gameshowStages/${stageRef.current}.png)` }}
+        style={{ backgroundImage: `url(/images/gameshowStages/${stageRef.current}.webp)` }}
       />
 
       {/* All game UI in a centred phone-width column; stage bleeds full-screen behind */}
@@ -714,7 +714,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
         {/* Joker button — appears when player has flipped one card */}
         {turn === 'player' && flipped.length === 1 && !state.jokerUsed && jokersRemaining > 0 && !gameOver && (
           <button className={styles.jokerBtn} onClick={handleJoker}>
-            <img src="/images/jokers/1.png" alt="Joker" className={styles.jokerImg} />
+            <img src="/images/jokers/1.webp" alt="Joker" className={styles.jokerImg} />
             <span className={styles.jokerLabel}>USE JOKER</span>
             <span className={styles.jokerCount}>{jokersRemaining} left today</span>
           </button>
@@ -724,7 +724,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
         <div className={styles.contestants}>
           <div className={styles.sidePanel}>
             <div className={`${styles.portraitWrap} ${mode !== 'solo' && turn !== 'player' ? styles.inactive : ''} ${mode !== 'solo' && spinning ? styles.spinning : ''} ${playerShield ? styles.shieldActive : ''}`}>
-              <img src={`/images/a${portrait}.png`} alt="You" className={styles.portrait} />
+              <img src={`/images/a${portrait}.webp`} alt="You" className={styles.portrait} />
             </div>
             <span className={styles.sideScore}>{playerScore}</span>
             <span className={`${styles.contLabel} ${styles.youLabel}`}>
@@ -743,8 +743,8 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
               <div className={`${styles.portraitWrap} ${turn !== 'ai' ? styles.inactive : ''} ${spinning ? styles.spinning : ''} ${difficulty === 'Lethal' && turn === 'ai' ? styles.lethalAiActive : ''} ${aiShield ? styles.shieldActive : ''}`}>
                 <img
                   src={mode === 'mp'
-                    ? `/images/a${mpState?.opponentPortrait ?? 1}.png`
-                    : opponentImage || `/images/a${aiContRef.current}.png`}
+                    ? `/images/a${mpState?.opponentPortrait ?? 1}.webp`
+                    : opponentImage || `/images/a${aiContRef.current}.webp`}
                   alt={mode === 'mp' ? 'Opponent' : 'AI'}
                   className={styles.portrait}
                 />
@@ -1001,7 +1001,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 onClick={() => triggerDevSpecial(type, generateSpecialSeed(type, 0, cards, matched, consumed))}
                 style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'2px', background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:'8px', padding:'4px 6px', cursor:'pointer' }}
               >
-                <img src={`/images/cards/special/${type}.png`} alt={type} style={{ width:'32px', height:'32px', objectFit:'contain', display:'block' }} />
+                <img src={`/images/cards/special/${type}.webp`} alt={type} style={{ width:'32px', height:'32px', objectFit:'contain', display:'block' }} />
                 <span style={{ color:'#fff', fontSize:'8px', fontFamily:'Arial', textTransform:'uppercase' }}>{type}</span>
               </button>
             ))}

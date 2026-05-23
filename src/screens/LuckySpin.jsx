@@ -187,20 +187,20 @@ export default function LuckySpin({ onBack, navProps }) {
     <div className={styles.page}>
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onBack}>← Back</button>
-        <img src="/images/luckySpinBanner.png" alt="Lucky Spin" className={styles.bannerImg} />
+        <img src="/images/luckySpinBanner.webp" alt="Lucky Spin" className={styles.bannerImg} />
         <div className={styles.spinsLeft}>{freeLeft + adLeft} left</div>
       </div>
 
       <div className={styles.wheelArea}>
         <img
           ref={pointerRef}
-          src="/images/pointer.png"
+          src="/images/pointer.webp"
           alt=""
           className={styles.pointer}
           onAnimationEnd={() => pointerRef.current?.classList.remove(styles.pointerTick)}
         />
         <img
-          src="/images/wheel2.png"
+          src="/images/wheel2.webp"
           alt="Spin wheel"
           className={styles.wheel}
           style={{

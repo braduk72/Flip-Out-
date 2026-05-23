@@ -30,7 +30,7 @@ function buildBoard(deck, numPairs = 7, numSpecials = 2) {
     id: numPairs * 2 + i,
     type: 'special',
     pairId: null,
-    image: `/images/cards/special/${type}.png`,
+    image: `/images/cards/special/${type}.webp`,
     specialType: type,
   }))
 

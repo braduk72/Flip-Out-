@@ -4,7 +4,7 @@ import styles from './DeckPicker.module.css'
 
 function randomCard(deck) {
   const n = deck.cardStart + Math.floor(Math.random() * deck.cardCount)
-  return `${deck.path}/${n}.png`
+  return `${deck.path}/${n}.webp`
 }
 
 const FREE_INDICES = DECKS.map((d, i) => d.free ? i : null).filter(i => i !== null)
@@ -85,7 +85,7 @@ export default function DeckPicker({ onSelect, onBack }) {
           >
             <div className={styles.deckPreview}>
               <img key={previews[i]} src={previews[i]} alt={deck.name} className={styles.previewImg} />
-              {!deck.free && !ownedDecks.includes(deck.id) && <div className={styles.lockBadge}><img src="/images/padlock.png" alt="Locked" /></div>}
+              {!deck.free && !ownedDecks.includes(deck.id) && <div className={styles.lockBadge}><img src="/images/padlock.webp" alt="Locked" /></div>}
             </div>
             <div className={styles.deckName}>{deck.name}</div>
           </button>
@@ -95,12 +95,12 @@ export default function DeckPicker({ onSelect, onBack }) {
 
       {buyDeck && (
         <div className={styles.modalOverlay} onClick={() => setBuyDeck(null)}>
-          <div className={styles.modal} onClick={e => e.stopPropagation()} style={{ backgroundImage: `url(${buyDeck.path}/${buyDeck.cardStart}.png)` }}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()} style={{ backgroundImage: `url(${buyDeck.path}/${buyDeck.cardStart}.webp)` }}>
             <p className={styles.modalDeckName}>{buyDeck.name}</p>
             <p className={styles.modalPrice}>
-              <img src="/images/coin.png" alt="coins" className={styles.modalCoinImg} />
+              <img src="/images/coin.webp" alt="coins" className={styles.modalCoinImg} />
               {'200'.split('').map((d, i) => (
-                <img key={i} src={`/images/${d}.png`} alt={d} className={styles.modalDigitImg} />
+                <img key={i} src={`/images/${d}.webp`} alt={d} className={styles.modalDigitImg} />
               ))}
             </p>
             <div className={styles.modalBtns}>

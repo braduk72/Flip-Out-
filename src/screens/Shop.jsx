@@ -19,9 +19,9 @@ const COIN_PACKS = [
 const JOKER_RELOAD_PRICE = 50
 
 const POWERUPS = [
-  { id: 'pu_xray',    label: 'X-Ray',   desc: 'Peek at 2 cards before your turn', price: 50, qty: 3, image: '/images/cards/special/xray.png'    },
-  { id: 'pu_freeze',  label: 'Freeze',  desc: 'Freeze surrounding cards for a turn',   price: 50, qty: 3, image: '/images/cards/special/freeze.png'  },
-  { id: 'pu_shuffle', label: 'Shuffle', desc: 'Reshuffle all unmatched cards',   price: 50, qty: 3, image: '/images/cards/special/shuffle.png' },
+  { id: 'pu_xray',    label: 'X-Ray',   desc: 'Peek at 2 cards before your turn', price: 50, qty: 3, image: '/images/cards/special/xray.webp'    },
+  { id: 'pu_freeze',  label: 'Freeze',  desc: 'Freeze surrounding cards for a turn',   price: 50, qty: 3, image: '/images/cards/special/freeze.webp'  },
+  { id: 'pu_shuffle', label: 'Shuffle', desc: 'Reshuffle all unmatched cards',   price: 50, qty: 3, image: '/images/cards/special/shuffle.webp' },
 ]
 
 const BUNDLES = [
@@ -48,7 +48,7 @@ export default function Shop({ onBack, navProps }) {
         <div className={styles.coinGrid}>
           {COIN_PACKS.map(pack => (
             <button key={pack.id} className={`${styles.coinCard} ${pack.highlight ? styles.highlighted : ''}`}>
-              <img src="/images/coin.png" alt="" className={styles.coinCardImg} />
+              <img src="/images/coin.webp" alt="" className={styles.coinCardImg} />
               <span className={styles.coinCardLabel}>{pack.label}</span>
               <span className={styles.coinCardPrice}>{pack.price}</span>
               {pack.highlight && <span className={styles.bestValue}>BEST VALUE</span>}
@@ -76,9 +76,9 @@ export default function Shop({ onBack, navProps }) {
           </div>
           {ownedPaidCount > 0
             ? <div className={styles.coinPrice}>
-                <img src="/images/coin.png" alt="" className={styles.coinPriceImg} />
+                <img src="/images/coin.webp" alt="" className={styles.coinPriceImg} />
                 {String(JOKER_RELOAD_PRICE).split('').map((d, i) => (
-                  <img key={i} src={`/images/${d}.png`} alt={d} className={styles.coinPriceDigit} />
+                  <img key={i} src={`/images/${d}.webp`} alt={d} className={styles.coinPriceDigit} />
                 ))}
               </div>
             : <span className={styles.lockedLabel}>🔒</span>
@@ -121,7 +121,7 @@ export default function Shop({ onBack, navProps }) {
         </button>
         <div className={styles.chestTiers}>
           <div className={styles.chestTierLocked}>
-            <span className={styles.chestTierReward}><img src="/images/coin.png" alt="coins" className={styles.chestTierCoin} /> ×150</span>
+            <span className={styles.chestTierReward}><img src="/images/coin.webp" alt="coins" className={styles.chestTierCoin} /> ×150</span>
             <span className={styles.chestTierLabel}>Free</span>
             <span className={styles.chestTierLock}>🔒</span>
           </div>
@@ -143,7 +143,7 @@ export default function Shop({ onBack, navProps }) {
               </span>
               <span className={styles.powerupDesc}>{pu.desc}</span>
               <div className={styles.powerupPrice}>
-                <img src="/images/coin.png" alt="" className={styles.powerupCoin} />
+                <img src="/images/coin.webp" alt="" className={styles.powerupCoin} />
                 {pu.price}
               </div>
             </button>

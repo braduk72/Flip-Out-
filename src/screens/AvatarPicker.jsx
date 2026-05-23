@@ -26,7 +26,7 @@ export default function AvatarPicker({ portrait, onPortrait, onBack, navProps })
             onClick={() => pick(i)}
             aria-label={`Select player ${i}`}
           >
-            <img src={`/images/a${i}.png`} alt={`Player ${i}`} draggable="false" />
+            <img src={`/images/a${i}.webp`} alt={`Player ${i}`} draggable="false" />
             {portrait === i && <span className={styles.checkmark}>✓</span>}
           </button>
         ))}

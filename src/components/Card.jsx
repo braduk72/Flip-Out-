@@ -57,7 +57,7 @@ export default function Card({ card, isFlipped, isMatched, isFrozen, isConsumed,
       )}
       {revealEffect && (
         <div className={styles.revealBadge}>
-          <img src={`/images/cards/special/${revealEffect}.png`} alt={revealEffect} />
+          <img src={`/images/cards/special/${revealEffect}.webp`} alt={revealEffect} />
         </div>
       )}
     </div>

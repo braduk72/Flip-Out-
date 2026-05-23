@@ -50,7 +50,7 @@ export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, o
         <div className={styles.profileCol}>
           <button className={styles.playerAvatar} onClick={onAvatar} aria-label="Change player">
             <img
-              src="/images/profile.png"
+              src="/images/profile.webp"
               alt=""
               draggable="false"
               className={`${styles.avatarImg} ${styles[`avatar_${avatarAnim}`]}`}
@@ -62,14 +62,14 @@ export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, o
             onClick={handleFbReward}
             aria-label="Follow on Facebook for 10 coins"
           >
-            <img src="/images/face10.png" alt="Follow on Facebook" draggable="false" />
+            <img src="/images/face10.webp" alt="Follow on Facebook" draggable="false" />
           </button>
         </div>
         <div className={styles.coinDisplay}>
-          <img src="/images/coin.png" alt="" className={styles.coinIcon} draggable="false" />
+          <img src="/images/coin.webp" alt="" className={styles.coinIcon} draggable="false" />
           <div className={styles.coinDigits}>
             {String(coins).split('').map((d, i) => (
-              <img key={i} src={`/images/${d}.png`} alt={d} className={styles.digitImg} draggable="false" />
+              <img key={i} src={`/images/${d}.webp`} alt={d} className={styles.digitImg} draggable="false" />
             ))}
           </div>
         </div>
@@ -77,7 +77,7 @@ export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, o
 
       {/* Mascot */}
       <div className={styles.mascotWrap}>
-        <img src="/images/mascot3b.png" alt="" className={styles.mascot} draggable="false" />
+        <img src="/images/mascot3b.webp" alt="" className={styles.mascot} draggable="false" />
       </div>
 
       {/* Bottom panel */}
@@ -89,16 +89,16 @@ export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, o
             onClick={() => onMode(mode === 'solo' ? 'vs' : 'solo')}
             aria-label={mode === 'solo' ? '1 player' : '2 players'}
           >
-            <img src={mode === 'solo' ? '/images/1up.png' : '/images/2up.png'} alt="" draggable="false" />
+            <img src={mode === 'solo' ? '/images/1up.webp' : '/images/2up.webp'} alt="" draggable="false" />
           </button>
           <button className={styles.playBtn} onClick={onPlay} aria-label="Play">
-            <img src="/images/play.png" alt="PLAY" draggable="false" />
+            <img src="/images/play.webp" alt="PLAY" draggable="false" />
           </button>
         </div>
 
         {/* Play Online */}
         <button className={styles.onlineBtn} onClick={onOnline} aria-label="Play Online">
-          <img src="/images/globe2.png" alt="" className={styles.onlineGlobe} draggable="false" />
+          <img src="/images/globe2.webp" alt="" className={styles.onlineGlobe} draggable="false" />
           <div className={styles.knockoutText}>
             <span className={styles.knockoutTitle}>PLAY ONLINE</span>
             <span className={styles.knockoutProgress}>Quick Match · Create · Join Room</span>

@@ -72,7 +72,7 @@ export default function Leaderboard({ portrait = 1, onBack, navProps }) {
         {/* 2nd place */}
         <div className={`${styles.podiumSlot} ${styles.second}`}>
           <div className={`${styles.podiumAvatar} ${podium[1]?.isMe ? styles.meAvatar : ''}`}>
-            <img src={`/images/a${podium[1]?.portrait ?? 1}.png`} alt="" />
+            <img src={`/images/a${podium[1]?.portrait ?? 1}.webp`} alt="" />
           </div>
           <div className={styles.podiumMedal}>{MEDAL[1]}</div>
           <div className={styles.podiumName}>{podium[1]?.name ?? '—'}</div>
@@ -83,7 +83,7 @@ export default function Leaderboard({ portrait = 1, onBack, navProps }) {
         {/* 1st place */}
         <div className={`${styles.podiumSlot} ${styles.first}`}>
           <div className={`${styles.podiumAvatar} ${styles.firstAvatar} ${podium[0]?.isMe ? styles.meAvatar : ''}`}>
-            <img src={`/images/a${podium[0]?.portrait ?? 1}.png`} alt="" />
+            <img src={`/images/a${podium[0]?.portrait ?? 1}.webp`} alt="" />
           </div>
           <div className={styles.podiumMedal}>{MEDAL[0]}</div>
           <div className={styles.podiumName}>{podium[0]?.name ?? '—'}</div>
@@ -94,7 +94,7 @@ export default function Leaderboard({ portrait = 1, onBack, navProps }) {
         {/* 3rd place */}
         <div className={`${styles.podiumSlot} ${styles.third}`}>
           <div className={`${styles.podiumAvatar} ${podium[2]?.isMe ? styles.meAvatar : ''}`}>
-            <img src={`/images/a${podium[2]?.portrait ?? 1}.png`} alt="" />
+            <img src={`/images/a${podium[2]?.portrait ?? 1}.webp`} alt="" />
           </div>
           <div className={styles.podiumMedal}>{MEDAL[2]}</div>
           <div className={styles.podiumName}>{podium[2]?.name ?? '—'}</div>
@@ -109,7 +109,7 @@ export default function Leaderboard({ portrait = 1, onBack, navProps }) {
           <div key={player.name + i} className={`${styles.row} ${player.isMe ? styles.meRow : ''}`}>
             <span className={styles.rank}>{i + 4}</span>
             <div className={styles.rowAvatar}>
-              <img src={`/images/a${player.portrait}.png`} alt="" />
+              <img src={`/images/a${player.portrait}.webp`} alt="" />
             </div>
             <span className={styles.rowName}>{player.isMe ? 'You' : player.name}</span>
             <span className={styles.rowScore}>🏆 {player.trophies}</span>
@@ -121,7 +121,7 @@ export default function Leaderboard({ portrait = 1, onBack, navProps }) {
       <div className={styles.myRankBar}>
         <span className={styles.myRankNum}>{myRank === -1 ? '-' : myRank}</span>
         <div className={styles.myRankAvatar}>
-          <img src={`/images/a${portrait}.png`} alt="" />
+          <img src={`/images/a${portrait}.webp`} alt="" />
         </div>
         <span className={styles.myRankName}>You</span>
         <span className={styles.myRankScore}>🏆 {myEntry?.trophies ?? 0}</span>

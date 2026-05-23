@@ -11,7 +11,7 @@ export const SEASON_1 = {
   opponents: [
     {
       id: 's1_c1',
-      image: '/images/c1.png',
+      image: '/images/c1.webp',
       difficulty: 'Easy',
       tier: 'Seasonal',
       label: 'ROUND 1',
@@ -21,7 +21,7 @@ export const SEASON_1 = {
     },
     {
       id: 's1_c2',
-      image: '/images/c2.png',
+      image: '/images/c2.webp',
       difficulty: 'Medium',
       tier: 'Seasonal',
       label: 'ROUND 2',
@@ -31,7 +31,7 @@ export const SEASON_1 = {
     },
     {
       id: 's1_c3',
-      image: '/images/c3.png',
+      image: '/images/c3.webp',
       difficulty: 'Medium',
       tier: 'Seasonal',
       label: 'ROUND 3',
@@ -41,7 +41,7 @@ export const SEASON_1 = {
     },
     {
       id: 's1_c4',
-      image: '/images/c4.png',
+      image: '/images/c4.webp',
       difficulty: 'Hard',
       tier: 'Seasonal',
       label: 'ROUND 4',
@@ -54,7 +54,7 @@ export const SEASON_1 = {
   // Seasonal boss — swap image + details each season
   boss: {
     id: 's1_boss',
-    image: '/images/Opponants/l1.png',   // placeholder — swap for a dedicated seasonal boss image
+    image: '/images/Opponants/l1.webp',   // placeholder — swap for a dedicated seasonal boss image
     difficulty: 'Lethal',
     tier: 'SeasonBoss',
     label: 'SEASONAL BOSS',
