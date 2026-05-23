@@ -173,8 +173,8 @@
 }
 
 .itemChip {
-  background: linear-gradient(160deg, #5a0099 0%, #380070 100%);
-  border: 1.5px solid rgba(255,215,0,0.45);
+  background: linear-gradient(160deg, #9400e0 0%, #6200aa 100%);
+  border: 1.5px solid rgba(255,215,0,0.6);
   border-radius: 14px;
   padding: 10px 8px;
   display: flex;
@@ -193,8 +193,10 @@
   object-fit: contain;
   border-radius: 8px;
   filter:
-    drop-shadow(0 0 5px rgba(255,255,255,0.7))
-    drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+    brightness(1.9)
+    saturate(1.2)
+    drop-shadow(0 0 10px rgba(255,255,255,1))
+    drop-shadow(0 0 4px rgba(255,200,255,0.9));
 }
 
 .itemQty {
