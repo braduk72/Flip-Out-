@@ -263,8 +263,8 @@
 }
 
 .chestTierCoin {
-  width: 16px;
-  height: 16px;
+  width: auto;
+  height: 20px;
   object-fit: contain;
   vertical-align: middle;
   margin-right: 1px;
@@ -349,6 +349,14 @@
 .chestEmoji {
   font-size: 32px;
   margin-right: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.chestImg {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }
 
 .chestTiers {

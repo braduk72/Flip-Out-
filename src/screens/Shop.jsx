@@ -112,23 +112,23 @@ export default function Shop({ onBack, navProps }) {
         {/* Loot Box */}
         <h2 className={styles.sectionTitle}>📦 Treasure Chest</h2>
         <button className={`${styles.removeAdsCard} ${styles.chestCard}`}>
-          <div className={styles.chestEmoji}>🎁</div>
+          <div className={styles.chestEmoji}>
+            <img src="/images/chest.webp" alt="Chest" className={styles.chestImg} draggable="false" />
+          </div>
           <div className={styles.removeAdsText}>
-            <span className={styles.removeAdsTitle}>Mystery Chest</span>
-            <span className={styles.removeAdsDesc}>Random coins + power-ups + bonus rewards</span>
+            <span className={styles.removeAdsTitle}>Bonus Chest</span>
+            <span className={styles.removeAdsDesc}>400 coins + power-ups + bonus rewards</span>
           </div>
           <span className={styles.removeAdsPrice}>£3.99</span>
         </button>
         <div className={styles.chestTiers}>
           <div className={styles.chestTierLocked}>
-            <span className={styles.chestTierReward}><img src="/images/coin.webp" alt="coins" className={styles.chestTierCoin} /> ×150</span>
-            <span className={styles.chestTierLabel}>Free</span>
-            <span className={styles.chestTierLock}>🔒</span>
+            <span className={styles.chestTierReward}><img src="/images/coin.webp" alt="coins" className={styles.chestTierCoin} /> ×400</span>
+            <span className={styles.chestTierLabel}>BONUS!</span>
           </div>
           <div className={styles.chestTierLocked}>
-            <span className={styles.chestTierReward}>❄️ ×1</span>
-            <span className={styles.chestTierLabel}>Free</span>
-            <span className={styles.chestTierLock}>🔒</span>
+            <span className={styles.chestTierReward}><img src="/images/cards/special/freeze.webp" alt="Freeze" className={styles.chestTierCoin} /> ×1</span>
+            <span className={styles.chestTierLabel}>BONUS!</span>
           </div>
         </div>
 
