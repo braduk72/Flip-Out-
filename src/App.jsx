@@ -148,6 +148,9 @@ export default function App() {
       localStorage.removeItem('fo_gold_card')
       window.history.replaceState({}, '', window.location.pathname)
     }
+    if (params.has('testprize')) {
+      setScreen('luckyspin')
+    }
   }, [])
 
   // ── Music manager ─────────────────────────────────────────────────────────

@@ -7,7 +7,7 @@ import SpecialOffer, { shouldShowOffer, markOfferSeen } from '../components/Spec
 export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, onSettings, onSeason, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, gauntletStep, seasonStep = 0, mode = 'vs', onMode }) {
   const hasGoldCard = !!localStorage.getItem('fo_gold_card')
   const coins = parseInt(localStorage.getItem('fo_coins') || '0')
-  const [showOffer, setShowOffer]   = useState(false)
+  const [showOffer, setShowOffer]   = useState(() => new URLSearchParams(window.location.search).has('testoffer'))
   const [fbRewarded, setFbRewarded] = useState(!!localStorage.getItem('fo_fb_reward'))
   const [avatarAnim, setAvatarAnim] = useState('idle')
   const avatarTimer = useRef(null)

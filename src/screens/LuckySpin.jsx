@@ -102,7 +102,9 @@ export default function LuckySpin({ onBack, navProps }) {
   const [used, setUsed]         = useState(() => getUsed())
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
-  const [prize, setPrize]       = useState(null)
+  const [prize, setPrize]       = useState(() =>
+    new URLSearchParams(window.location.search).has('testprize') ? SEGMENTS[0] : null
+  )
   const [showAd, setShowAd]     = useState(false)
   const rotRef       = useRef(0)
   const pointerRef   = useRef(null)
