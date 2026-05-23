@@ -434,9 +434,18 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     }
   }, [turn, mode, frozen, clearFrozen, clearEffect])
 
-  // AI turn logic
+  // AI turn logic — kept in a ref so the trigger effect below doesn't re-fire
+  // mid-turn when state (flipped, cards, etc.) changes between move1 and move2.
+  const aiTurnStateRef = useRef({ state, cards, flipped, matched, consumed, frozen })
+  useEffect(() => {
+    aiTurnStateRef.current = { state, cards, flipped, matched, consumed, frozen }
+  })
+
   const doAITurn = useCallback(() => {
+    const { state, cards, flipped, matched, consumed, frozen } = aiTurnStateRef.current
     if (state.turn !== 'ai' || state.gameOver) return
+    // Guard: if cards are already mid-flip, don't start a new sequence
+    if (flipped.length > 0) return
 
     // If AI is stunned, skip turn
     if (state.stunned === 'ai') {
@@ -446,6 +455,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
     const delay1 = 1200 + Math.random() * 800
     aiTimerRef.current = setTimeout(() => {
+      const { cards, flipped, matched, consumed, frozen } = aiTurnStateRef.current
       const move1 = getAIMove(cards, flipped, matched, consumed, frozen)
       if (move1 === null) return
       aiFlip(move1)
@@ -453,12 +463,16 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       // Second flip — long enough for player to see the first card
       const delay2 = 1500 + Math.random() * 800
       aiTimerRef.current = setTimeout(() => {
+        const { cards, matched, consumed, frozen } = aiTurnStateRef.current
         const move2 = getAIMove(cards, [move1], matched, consumed, frozen)
         if (move2 === null) return
         aiFlip(move2)
       }, delay2)
     }, delay1)
-  }, [state, cards, flipped, matched, consumed, frozen, aiFlip, hideFlipped, getAIMove])
+  }, [aiFlip, hideFlipped, getAIMove]) // stable deps only — reads live state via ref
+
+  const doAITurnRef = useRef(doAITurn)
+  useEffect(() => { doAITurnRef.current = doAITurn }, [doAITurn])
 
   useEffect(() => {
     // In solo, also pass the turn back during freeze so cards don't lock up for 5s
@@ -472,12 +486,12 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
         // Opponent controls their own turn — do nothing locally
         return
       }
-      doAITurn()
+      doAITurnRef.current()
     }
     return () => {
       if (aiTimerRef.current) clearTimeout(aiTimerRef.current)
     }
-  }, [turn, gameOver, activeEffect, doAITurn, mode, hideFlipped])
+  }, [turn, gameOver, activeEffect, mode, hideFlipped]) // doAITurn removed — prevents mid-turn re-fires
 
   // Magnet: when active and 1 card is flipped, auto-reveal its pair
   useEffect(() => {
