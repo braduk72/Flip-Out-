@@ -1,7 +1,18 @@
 import Jimp from 'jimp'
 
 const FILES = [
-  './public/images/globe1.png',
+  './public/images/tc_b1.png',
+  './public/images/tc_b2.png',
+  './public/images/tc_b3.png',
+  './public/images/tc_b4.png',
+  './public/images/tc_y1.png',
+  './public/images/tc_y2.png',
+  './public/images/tc_y3.png',
+  './public/images/tc_y4.png',
+  './public/images/tc_p1.png',
+  './public/images/tc_p2.png',
+  './public/images/tc_p3.png',
+  './public/images/tc_p4.png',
 ]
 
 const THRESHOLD = 40  // per-channel tolerance — same as used for 6.png
