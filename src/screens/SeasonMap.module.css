@@ -82,6 +82,8 @@
 .mapCanvas {
   position: relative;
   width: 100%;
+  /* dark background prevents transparent areas of the map PNG showing as checkerboard */
+  background: #0d0818;
   /* forces software compositing so mix-blend-mode works inside animated children */
   filter: brightness(1);
 }
