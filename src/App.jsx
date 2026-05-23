@@ -28,6 +28,9 @@ const GAMEOVER_TRACKS = [
   '/music/gameover_3.mp3',
   '/music/gameover_4.mp3',
 ]
+const BOSS_TRACKS = [
+  '/music/ingame_boss_final.mp3',
+]
 const INGAME_TRACKS = [
   '/music/ingame_arcade_cabbage.mp3',
   '/music/ingame_arcade_cabbage_short.mp3',
@@ -185,8 +188,15 @@ export default function App() {
   // Switch pool when screen changes
   useEffect(() => {
     if (!musicOn) return
-    switchToPool(GAME_SCREENS.has(screen) ? INGAME_TRACKS : MENU_TRACKS)
-  }, [screen, musicOn]) // eslint-disable-line react-hooks/exhaustive-deps
+    // Boss fight gets its own dedicated track
+    if (screen === 'seasongame' && seasonStep >= SEASON_NODES.length - 1) {
+      switchToPool(BOSS_TRACKS)
+    } else if (GAME_SCREENS.has(screen)) {
+      switchToPool(INGAME_TRACKS)
+    } else {
+      switchToPool(MENU_TRACKS)
+    }
+  }, [screen, musicOn, seasonStep]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cleanup on unmount
   useEffect(() => {
