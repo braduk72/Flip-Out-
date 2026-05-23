@@ -73,6 +73,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 2;
 }
 
 .timerBadge,
@@ -81,8 +82,7 @@
 .title,
 .subtitle,
 .itemsGrid,
-.buyBtn,
-.closeBtn {
+.buyBtn {
   position: relative;
   z-index: 1;
 }
