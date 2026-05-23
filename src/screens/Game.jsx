@@ -620,8 +620,8 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 : mpState?.opponentLeft ? '🏆 OPPONENT LEFT!'
                 : winner === 'draw' ? '🤝 DRAW!'
                 : winner === 'player' ? '🏆 YOU WIN!'
-                : mode === 'mp' ? '😅 OPPONENT WINS!'
-                : '😅 AI WINS!')
+                : mode === 'mp' ? '😢 OPPONENT WINS!'
+                : '😢 YOU LOST!')
               : stunned === 'player' && turn === 'player' ? '⚡ STUNNED! Turn skipped…'
               : stunned === 'ai'     && turn === 'ai'     ? `⚡ ${(opponentName || 'AI').toUpperCase()} STUNNED! Skipping…`
               : mode === 'solo' ? 'SOLO MODE'
@@ -931,13 +931,13 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                   <div className={styles.resultEmoji}>
                     {mpState?.opponentLeft ? '🚪'
                       : winner === 'player' ? '🏆'
-                      : winner === 'ai' ? '😅'
+                      : winner === 'ai' ? '😢'
                       : '🤝'}
                   </div>
                   <div className={styles.resultTitle}>
                     {mpState?.opponentLeft ? 'Opponent Left'
                       : winner === 'player' ? 'You Win!'
-                      : winner === 'ai' ? 'Opponent Wins!'
+                      : winner === 'ai' ? 'You Lost!'
                       : "It's a Draw!"}
                   </div>
                   <div className={styles.finalScores}>
@@ -952,11 +952,11 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
               <div className={styles.gameOverlay}>
                 <div className={styles.gameOverCard}>
                   <div className={styles.resultEmoji}>
-                    {winner === 'player' ? '🏆' : winner === 'ai' ? '😅' : '🤝'}
+                    {winner === 'player' ? '🏆' : winner === 'ai' ? '😢' : '🤝'}
                   </div>
                   <div className={styles.resultTitle}>
                     {winner === 'player' ? 'You Win!'
-                      : winner === 'ai' ? 'AI Wins!'
+                      : winner === 'ai' ? 'You Lost!'
                       : "It's a Draw!"}
                   </div>
                   <div className={styles.finalScores}>

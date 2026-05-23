@@ -353,6 +353,7 @@ export default function App() {
         portrait={portrait}
         onFight={handleSeasonFight}
         onBack={() => setScreen('home')}
+        onDevWin={handleDevSeasonWin}
         navProps={navProps}
       />
     )

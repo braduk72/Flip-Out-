@@ -123,7 +123,7 @@ function TeslaCoil({ colour = 'b', scale = 1 }) {
   )
 }
 
-export default function SeasonMap({ seasonStep = 0, portrait = 1, onFight, onBack, navProps }) {
+export default function SeasonMap({ seasonStep = 0, portrait = 1, onFight, onBack, onDevWin, navProps }) {
   const scrollRef  = useRef(null)
   const imgRef     = useRef(null)
   const playerPos  = getMapPos(seasonStep)
@@ -318,6 +318,15 @@ export default function SeasonMap({ seasonStep = 0, portrait = 1, onFight, onBac
             <span className={styles.ctaRound}>SEASON COMPLETE</span>
             <span className={styles.ctaName}>Gold card earned ✦</span>
           </div>
+        </div>
+      )}
+
+      {/* ── Dev bar ── */}
+      {onDevWin && (
+        <div className={styles.devBar}>
+          <button className={styles.devWinBtn} onClick={onDevWin}>
+            ⚡ WIN  <span className={styles.devStep}>{Math.min(seasonStep + 1, STEPS_PER_STAGE)}/{STEPS_PER_STAGE}</span>
+          </button>
         </div>
       )}
 
