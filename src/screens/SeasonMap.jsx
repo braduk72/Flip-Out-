@@ -1,19 +1,34 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import styles from './SeasonMap.module.css'
 import BottomNav from '../components/BottomNav'
-import { ACTIVE_SEASON } from '../data/seasonalOpponents'
+import { ACTIVE_SEASON, STEPS_PER_STAGE, BOSS_STEP } from '../data/seasonalOpponents'
 
 // Cache-bust version — bump this whenever sprite images are replaced
 const V = '?v=4'
 
-// Node positions as % of image (width × height).
+// Path waypoints as % of image (width × height) — player avatar interpolates along these
 const NODE_POSITIONS = [
-  { x: 50, y: 91 }, // N0 VEXOR   — large green start circle, bottom centre
-  { x: 66, y: 75 }, // N1 DREAD   — lower-right winding path section
-  { x: 44, y: 57 }, // N2 MALIX   — white/teal robocat platform, mid green zone
-  { x: 50, y: 32 }, // N3 OBLIQUE — gold robocat platform, industrial zone
-  { x: 48, y:  5 }, // N4 BOSS    — red boss robocat, danger zone top
+  { x: 50, y: 91 }, // N0 — start, bottom centre
+  { x: 66, y: 75 }, // N1 — lower-right
+  { x: 44, y: 57 }, // N2 — mid
+  { x: 50, y: 32 }, // N3 — industrial zone
+  { x: 48, y:  5 }, // N4 — boss, danger zone top
 ]
+
+// Checkpoint steps along the path (at each waypoint) — shown as ✓ when passed
+const CHECKPOINT_STEPS = [0, 7, 15, 22, BOSS_STEP]
+
+// Interpolate player position along the waypoint path (0 = start, 1 = boss)
+function getMapPos(step) {
+  const t        = Math.min(step / BOSS_STEP, 1)
+  const segments = NODE_POSITIONS.length - 1
+  const segF     = t * segments
+  const segIdx   = Math.min(Math.floor(segF), segments - 1)
+  const segT     = segF - segIdx
+  const a        = NODE_POSITIONS[segIdx]
+  const b        = NODE_POSITIONS[segIdx + 1]
+  return { x: a.x + segT * (b.x - a.x), y: a.y + segT * (b.y - a.y) }
+}
 
 // Steam emitter positions (x%, y%) — pipe/chimney spots in the industrial zone
 const STEAM_EMITTERS = [
@@ -105,32 +120,26 @@ function TeslaCoil({ colour = 'b', scale = 1 }) {
   )
 }
 
-const ALL_NODES = [
-  ...ACTIVE_SEASON.opponents,
-  ACTIVE_SEASON.boss,
-]
-
-export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps }) {
+export default function SeasonMap({ seasonStep = 0, portrait = 1, onFight, onBack, navProps }) {
   const scrollRef  = useRef(null)
   const imgRef     = useRef(null)
-  const currentIdx = Math.min(seasonStep, ALL_NODES.length - 1)
+  const playerPos  = getMapPos(seasonStep)
+  const isBoss     = seasonStep === BOSS_STEP
+  const isComplete = seasonStep > BOSS_STEP
 
-  const fogHeight = seasonStep >= ALL_NODES.length
-    ? 0
-    : Math.max(0, NODE_POSITIONS[currentIdx].y - 38)
+  const fogHeight = isComplete ? 0 : Math.max(0, playerPos.y - 38)
 
   const doScroll = useCallback(() => {
     const el  = scrollRef.current
     const img = imgRef.current
     if (!el || !img) return
-    const pos         = NODE_POSITIONS[currentIdx]
     const imgH        = img.offsetHeight
-    const scrollTarget = (pos.y / 100) * imgH - el.clientHeight * 0.42
+    const scrollTarget = (playerPos.y / 100) * imgH - el.clientHeight * 0.42
     el.scrollTo({ top: 0, behavior: 'instant' })
     setTimeout(() => {
       el.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' })
     }, 650)
-  }, [currentIdx])
+  }, [playerPos.y])
 
   useEffect(() => {
     const img = imgRef.current
@@ -211,64 +220,90 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
             </div>
           ))}
 
-          {/* ── Opponent nodes ── */}
-          {ALL_NODES.map((opp, i) => {
-            const pos    = NODE_POSITIONS[i]
-            const status = i < seasonStep ? 'done' : i === seasonStep ? 'current' : 'locked'
-            const isBoss = !!opp.isBoss
-
+          {/* ── Checkpoint markers along the path ── */}
+          {CHECKPOINT_STEPS.map((chkStep, i) => {
+            if (chkStep === BOSS_STEP) return null  // boss handled separately
+            const pos  = NODE_POSITIONS[i]
+            const done = seasonStep > chkStep
             return (
               <div
-                key={opp.id}
-                className={`${styles.node} ${styles[status]} ${isBoss ? styles.nodeBoss : ''}`}
+                key={`chk-${i}`}
+                className={`${styles.checkpoint} ${done ? styles.checkpointDone : ''}`}
                 style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-                onClick={status === 'current' ? onFight : undefined}
-                role={status === 'current' ? 'button' : undefined}
-                aria-label={status === 'current' ? `Fight ${opp.name}` : opp.name}
               >
-                {status === 'done' ? (
-                  <>
-                    <img src={opp.image} alt={opp.name} className={styles.nodeImg} draggable="false" />
-                    <div className={styles.nodeDoneOverlay}>✓</div>
-                  </>
-                ) : status === 'current' ? (
-                  <>
-                    <img src={opp.image} alt={opp.name} className={styles.nodeImg} draggable="false" />
-                    <div className={styles.nodePulse} />
-                    {isBoss && <div className={styles.bossFlame}>💀</div>}
-                  </>
-                ) : (
-                  <div className={styles.nodeLocked}>
-                    {isBoss ? '💀' : '🔒'}
-                  </div>
-                )}
-                <div className={styles.nodeLabel}>
-                  {status === 'locked' ? '???' : opp.name}
-                </div>
+                {done ? '✓' : ''}
               </div>
             )
           })}
 
+          {/* ── Boss node — always visible at top ── */}
+          {(() => {
+            const boss   = ACTIVE_SEASON.boss
+            const pos    = NODE_POSITIONS[NODE_POSITIONS.length - 1]
+            const done   = seasonStep > BOSS_STEP
+            const active = isBoss
+            return (
+              <div
+                className={`${styles.node} ${styles.nodeBoss} ${done ? styles.done : active ? styles.current : styles.locked}`}
+                style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+              >
+                {done ? (
+                  <>
+                    <img src={boss.image} alt={boss.name} className={styles.nodeImg} draggable="false" />
+                    <div className={styles.nodeDoneOverlay}>✓</div>
+                  </>
+                ) : active ? (
+                  <>
+                    <img src={boss.image} alt={boss.name} className={styles.nodeImg} draggable="false" />
+                    <div className={styles.nodePulse} />
+                    <div className={styles.bossFlame}>💀</div>
+                  </>
+                ) : (
+                  <div className={styles.nodeLocked}>💀</div>
+                )}
+                <div className={styles.nodeLabel}>{done || active ? boss.name : '???'}</div>
+              </div>
+            )
+          })()}
+
+          {/* ── Player avatar — moves along path with each step ── */}
+          <div
+            className={styles.playerMarker}
+            style={{ left: `${playerPos.x}%`, top: `${playerPos.y}%` }}
+          >
+            <img
+              src={`/images/a${portrait}.webp`}
+              alt="You"
+              draggable="false"
+              className={styles.playerAvatar}
+            />
+            <div className={styles.playerPulse} />
+          </div>
+
         </div>
       </div>
 
-      {/* Fight CTA — only shown when not complete */}
-      {seasonStep < ALL_NODES.length && (
+      {/* Fight CTA */}
+      {!isComplete && (
         <div className={styles.ctaBar}>
           <div className={styles.ctaInfo}>
-            <span className={styles.ctaRound}>{ALL_NODES[currentIdx].label}</span>
-            <span className={styles.ctaName}>{ALL_NODES[currentIdx].name}</span>
+            <span className={styles.ctaRound}>
+              {isBoss ? 'SEASONAL BOSS' : `STEP ${seasonStep + 1} / ${STEPS_PER_STAGE}`}
+            </span>
+            <span className={styles.ctaName}>
+              {isBoss ? ACTIVE_SEASON.boss.name : 'CHALLENGER'}
+            </span>
           </div>
           <button
-            className={`${styles.ctaBtn} ${ALL_NODES[currentIdx].isBoss ? styles.ctaBoss : ''}`}
+            className={`${styles.ctaBtn} ${isBoss ? styles.ctaBoss : ''}`}
             onClick={onFight}
           >
-            {ALL_NODES[currentIdx].isBoss ? '⚡ FACE THE BOSS' : 'FIGHT!'}
+            {isBoss ? '⚡ FACE THE BOSS' : 'FIGHT!'}
           </button>
         </div>
       )}
 
-      {seasonStep >= ALL_NODES.length && (
+      {isComplete && (
         <div className={styles.ctaBar}>
           <div className={styles.ctaInfo}>
             <span className={styles.ctaRound}>SEASON COMPLETE</span>

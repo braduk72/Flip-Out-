@@ -1,6 +1,17 @@
 // Seasonal bad guys — one season at a time.
-// Beat all four to face the Seasonal Boss and earn the gold collector card.
+// Each stage is 30 steps. Steps 0–28 = generic challenger. Step 29 = boss.
 // Swap this file each season; archive the old one.
+
+export const STEPS_PER_STAGE = 30
+export const BOSS_STEP       = 29   // 0-indexed; the 30th and final step
+
+// Generic challenger for non-boss steps — Brad will supply real image/name
+export const GENERIC_OPPONENT = {
+  id:         'generic',
+  name:       'CHALLENGER',
+  image:      null,   // no character card shown
+  isBoss:     false,
+}
 
 export const SEASON_1 = {
   id:    'season_1',

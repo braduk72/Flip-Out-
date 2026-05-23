@@ -12,7 +12,7 @@ import LuckySpin from './screens/LuckySpin'
 import Leaderboard from './screens/Leaderboard'
 import SeasonMap from './screens/SeasonMap'
 import { KNOCKOUT_OPPONENTS } from './data/opponents'
-import { ACTIVE_SEASON } from './data/seasonalOpponents'
+import { ACTIVE_SEASON, STEPS_PER_STAGE, BOSS_STEP, GENERIC_OPPONENT } from './data/seasonalOpponents'
 import { DECKS } from './data/decks'
 import { useMultiplayer } from './hooks/useMultiplayer'
 import { buildBoard } from './hooks/useGame'
@@ -83,10 +83,10 @@ export default function App() {
   const [gauntletStep,    setGauntletStep]    = useState(() => parseInt(localStorage.getItem('fo_gauntlet_step') || '0'))
   const [gauntletActive,  setGauntletActive]  = useState(false)
 
-  // Season state
-  const SEASON_NODES = [...ACTIVE_SEASON.opponents, ACTIVE_SEASON.boss]
+  // Season state — seasonStep 0..BOSS_STEP (0-indexed, 30 steps total)
   const [seasonStep,   setSeasonStep]   = useState(() => parseInt(localStorage.getItem('fo_season1_step') || '0'))
   const [seasonActive, setSeasonActive] = useState(false)
+  const isBossStep = seasonStep === BOSS_STEP
 
   const audioRef       = useRef(null)
   const activePoolRef  = useRef(null)   // which pool array is currently playing
@@ -189,7 +189,7 @@ export default function App() {
   useEffect(() => {
     if (!musicOn) return
     // Boss fight gets its own dedicated track
-    if (screen === 'seasongame' && seasonStep >= SEASON_NODES.length - 1) {
+    if (screen === 'seasongame' && isBossStep) {
       switchToPool(BOSS_TRACKS)
     } else if (GAME_SCREENS.has(screen)) {
       switchToPool(INGAME_TRACKS)
@@ -303,7 +303,7 @@ export default function App() {
 
   function handleSeasonResult(winner) {
     if (winner === 'player') {
-      if (seasonStep === SEASON_NODES.length - 1) {
+      if (seasonStep === BOSS_STEP) {
         // Beat the final boss — award season gold card + coins, then reset for replay
         const key = ACTIVE_SEASON.boss.rewardKey
         if (!localStorage.getItem(key)) {
@@ -321,6 +321,11 @@ export default function App() {
     setDeck(null)
     setSeasonActive(false)
     setScreen('seasonmap')
+  }
+
+  // Dev helper — advance one season step (for testing levels)
+  function handleDevSeasonWin() {
+    handleSeasonResult('player')
   }
 
   // ── Misc ──────────────────────────────────────────────────────────────────
@@ -345,6 +350,7 @@ export default function App() {
     return (
       <SeasonMap
         seasonStep={seasonStep}
+        portrait={portrait}
         onFight={handleSeasonFight}
         onBack={() => setScreen('home')}
         navProps={navProps}
@@ -352,18 +358,18 @@ export default function App() {
     )
   }
   if (screen === 'seasongame' && deck) {
-    const opp = SEASON_NODES[Math.min(seasonStep, SEASON_NODES.length - 1)]
+    const opp = isBossStep ? ACTIVE_SEASON.boss : GENERIC_OPPONENT
     return (
       <Game
         key={`season-${seasonStep}-${deck.id}`}
         deck={deck}
         portrait={portrait}
         mode="vs"
-        difficulty={opp.isBoss ? 'Lethal' : (opp.difficulty ?? 'Hard')}
-        opponentImage={opp.image}
+        difficulty={isBossStep ? 'Lethal' : difficulty}
+        opponentImage={opp.image ?? undefined}
         opponentName={opp.name}
-        opponentModel={opp.model}
-        opponentBio={opp.bio}
+        opponentModel={opp.model ?? undefined}
+        opponentBio={opp.bio ?? undefined}
         onBack={() => { setDeck(null); setSeasonActive(false); setScreen('seasonmap') }}
         onResult={handleSeasonResult}
         onPlayerLost={handlePlayerLost}
@@ -387,7 +393,7 @@ export default function App() {
     return <AvatarPicker portrait={portrait} onPortrait={handlePortrait} onBack={() => setScreen('home')} navProps={navProps} />
   }
   if (screen === 'settings') {
-    return <Settings onBack={() => setScreen('home')} onSeason={handleSeasonMap} musicOn={musicOn} sfxOn={sfxOn} onToggleMusic={toggleMusic} onToggleSfx={toggleSfx} difficulty={difficulty} onDifficulty={handleDifficulty} navProps={navProps} />
+    return <Settings onBack={() => setScreen('home')} onSeason={handleSeasonMap} musicOn={musicOn} sfxOn={sfxOn} onToggleMusic={toggleMusic} onToggleSfx={toggleSfx} difficulty={difficulty} onDifficulty={handleDifficulty} onDevWin={handleDevSeasonWin} seasonStep={seasonStep} navProps={navProps} />
   }
   if (screen === 'gauntlet') {
     return (

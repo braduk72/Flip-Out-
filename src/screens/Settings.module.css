@@ -199,6 +199,47 @@
   transform: translateX(22px);
 }
 
+/* ── Dev tools ── */
+.devSection {
+  margin: 0 20px 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.devLabel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: rgba(255,100,100,0.7);
+  text-transform: uppercase;
+  font-family: Arial, sans-serif;
+  margin-bottom: 6px;
+  padding-left: 4px;
+}
+
+.devBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(255,60,60,0.12);
+  border: 1.5px solid rgba(255,80,80,0.35);
+  border-radius: 12px;
+  color: rgba(255,160,160,0.9);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  text-align: left;
+}
+
+.devStepBadge {
+  font-size: 11px;
+  color: rgba(255,100,100,0.7);
+  font-weight: 600;
+}
+
 .versionTag {
   text-align: center;
   font-size: 11px;

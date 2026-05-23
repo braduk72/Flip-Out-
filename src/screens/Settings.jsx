@@ -7,7 +7,7 @@ const DIFFICULTIES = [
   { id: 'Hard',   label: '🔴  Hard',   bg: '#7a1500', color: '#ffaaaa' },
 ]
 
-export default function Settings({ onBack, onSeason, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty, onDifficulty, navProps }) {
+export default function Settings({ onBack, onSeason, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty, onDifficulty, onDevWin, seasonStep, navProps }) {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
@@ -62,6 +62,15 @@ export default function Settings({ onBack, onSeason, musicOn, sfxOn, onToggleMus
           </button>
         </div>
 
+      </div>
+
+      {/* ── Dev tools ── */}
+      <div className={styles.devSection}>
+        <div className={styles.devLabel}>DEV TOOLS</div>
+        <button className={styles.devBtn} onClick={onDevWin}>
+          ⚡ WIN — advance season step
+          <span className={styles.devStepBadge}>Step {(seasonStep ?? 0) + 1} / 30</span>
+        </button>
       </div>
 
       <div className={styles.versionTag}>v0.25</div>
