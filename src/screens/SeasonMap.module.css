@@ -230,12 +230,12 @@
   stroke-width: 1;
 }
 
-/* ── Tesla coils ── */
+/* ── Tesla coils — z-index 3 so fog clouds (z-index 4) render on top ── */
 .teslaWrap {
   position: absolute;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  z-index: 5;
+  z-index: 3;
 }
 
 .teslaFloat {
