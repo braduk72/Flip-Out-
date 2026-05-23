@@ -83,6 +83,7 @@ function RoboMouse({ scale = 1, colour = 'g' }) {
 }
 
 // Animated tesla coil — cycles 4 frames at ~4.5fps
+const TESLA_GLOW = { b: 'rgba(100,200,255,1)', y: 'rgba(255,220,80,1)', p: 'rgba(255,100,220,1)' }
 function TeslaCoil({ colour = 'b', scale = 1 }) {
   const [frame, setFrame] = useState(1)
   useEffect(() => {
@@ -96,7 +97,7 @@ function TeslaCoil({ colour = 'b', scale = 1 }) {
       alt=""
       draggable="false"
       className={styles.teslaImg}
-      style={{ width: size, height: size }}
+      style={{ width: size, height: size, '--glow': TESLA_GLOW[colour] ?? TESLA_GLOW.b }}
     />
   )
 }
