@@ -11,7 +11,7 @@ import MultiplayerLobby from './screens/MultiplayerLobby'
 import LuckySpin from './screens/LuckySpin'
 import Leaderboard from './screens/Leaderboard'
 import SeasonMap from './screens/SeasonMap'
-import { KNOCKOUT_OPPONENTS } from './data/opponents'
+import { KNOCKOUT_OPPONENTS, STANDARD_OPPONENTS } from './data/opponents'
 import { ACTIVE_SEASON, STEPS_PER_STAGE, BOSS_STEP, GENERIC_OPPONENT } from './data/seasonalOpponents'
 import { DECKS } from './data/decks'
 import { useMultiplayer } from './hooks/useMultiplayer'
@@ -82,6 +82,11 @@ export default function App() {
   const mp = useMultiplayer()
   const [mpDeck,  setMpDeck]  = useState(null)
   const [mpCards, setMpCards] = useState(null)
+
+  // Standard vs-AI opponent — picked once per game session
+  const [stdOpponent,    setStdOpponent]    = useState(() => STANDARD_OPPONENTS[Math.floor(Math.random() * STANDARD_OPPONENTS.length)])
+  const [retryKey,       setRetryKey]       = useState(0)
+  const [tryAgainUsed,   setTryAgainUsed]   = useState(false)
 
   // Gauntlet state
   const [gauntletStep,    setGauntletStep]    = useState(() => parseInt(localStorage.getItem('fo_gauntlet_step') || '0'))
@@ -262,11 +267,16 @@ export default function App() {
   function handlePlay()         { setScreen('deckpicker') }
   function handleSelectDeck(d) {
     setDeck(d)
+    setStdOpponent(STANDARD_OPPONENTS[Math.floor(Math.random() * STANDARD_OPPONENTS.length)])
+    setRetryKey(0)
+    setTryAgainUsed(false)
     setScreen('game')
   }
   function handleBack() {
     setScreen('home')
     setDeck(null)
+    setRetryKey(0)
+    setTryAgainUsed(false)
     setGauntletActive(false)
   }
 
@@ -394,6 +404,7 @@ export default function App() {
         mode="vs"
         difficulty={isBossStep ? 'Lethal' : difficulty}
         opponentImage={opp.image ?? undefined}
+        opponentDefeatedImage={opp.defeatedImage ?? stdOpponent.defeatedImage}
         opponentName={opp.name}
         opponentModel={opp.model ?? undefined}
         opponentBio={opp.bio ?? undefined}
@@ -450,18 +461,20 @@ export default function App() {
     const isGauntlet = !!gauntletOpponent
     return (
       <Game
-        key={deck.id + Date.now()}
+        key={deck.id + retryKey}
         deck={deck}
         portrait={portrait}
         mode={isGauntlet ? 'vs' : mode}
         difficulty={isGauntlet ? gauntletOpponent.difficulty : difficulty}
-        opponentImage={isGauntlet ? gauntletOpponent.image : undefined}
-        opponentDefeatedImage={isGauntlet ? gauntletOpponent.defeatedImage : undefined}
+        opponentImage={isGauntlet ? gauntletOpponent.image : stdOpponent.image}
+        opponentDefeatedImage={isGauntlet ? gauntletOpponent.defeatedImage : stdOpponent.defeatedImage}
         opponentName={isGauntlet ? gauntletOpponent.name : undefined}
         opponentModel={isGauntlet ? gauntletOpponent.model : undefined}
         opponentBio={isGauntlet ? gauntletOpponent.bio : undefined}
         gauntletStep={isGauntlet ? gauntletStep : undefined}
+        canRetry={!isGauntlet && !tryAgainUsed}
         onBack={handleBack}
+        onRetry={!isGauntlet ? () => { setTryAgainUsed(true); setRetryKey(k => k + 1) } : undefined}
         onResult={isGauntlet ? handleGauntletResult : undefined}
         onQuit={isGauntlet ? (() => {
           setGauntletStep(0)

@@ -557,6 +557,73 @@
 .playAgainBtn:hover  { transform: translateY(-2px); }
 .playAgainBtn:active { transform: translateY(1px); }
 
+/* ── Standard defeat / victory screens ────────────────────────────────────── */
+.stdDefeatCard,
+.stdVictoryCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 16px 20px;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: min(320px, 90vw);
+}
+
+.stdDefeatAvatar {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.stdBanner {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  object-fit: contain;
+}
+
+.stdDefeatBtns {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+  justify-content: center;
+}
+
+.stdImgBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.12s;
+}
+
+.stdImgBtn:hover  { transform: scale(1.06); }
+.stdImgBtn:active { transform: scale(0.95); }
+
+.stdBtnImg {
+  height: 60px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.stdBtnDim { opacity: 0.5; }
+
+.watchingAdLabel {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  font-family: Arial, sans-serif;
+  letter-spacing: 1px;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1; }
+}
+
 .soloTime {
   font-size: 48px;
   font-weight: 900;

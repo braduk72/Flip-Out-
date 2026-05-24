@@ -1,3 +1,10 @@
+export const STANDARD_OPPONENTS = [
+  { id: 'c1', image: '/images/c1.webp', defeatedImage: '/images/c1d.webp' },
+  { id: 'c2', image: '/images/c2.webp', defeatedImage: '/images/c2d.webp' },
+  { id: 'c3', image: '/images/c3.webp', defeatedImage: '/images/c3d.webp' },
+  { id: 'c4', image: '/images/c4.webp', defeatedImage: '/images/c4d.webp' },
+]
+
 // Knockout Gauntlet opponent roster — in fight order.
 // e = Easy tier, m = Medium tier, h = Hard tier, l = Lethal (boss only)
 export const KNOCKOUT_OPPONENTS = [

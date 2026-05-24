@@ -78,7 +78,7 @@ function generateSpecialSeed(specialType, index, cards, matched, consumed) {
   }
 }
 
-export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, yourTurn = true, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, onQuit, onPlayerLost, gauntletStep }) {
+export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, yourTurn = true, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, onQuit, onPlayerLost, onRetry, canRetry = false, gauntletStep }) {
   const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, endStopwatch, useJoker, forceGameOver } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player', mode === 'solo')
   // Dev toolbar — only exists in Preview (dev branch) builds.
   // Set VITE_DEV_TOOLS=true in Vercel → Preview env vars; leave it unset for Production.
@@ -103,6 +103,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const snakeOrderRef = useRef([])
   const [diceDisplay, setDiceDisplay] = useState([1, 1])
   const [diceRevealed, setDiceRevealed] = useState(false)
+  const [watchingAd, setWatchingAd] = useState(false)
 
   // Solo mode timer
   const [elapsed, setElapsed] = useState(0)
@@ -584,9 +585,24 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   }
 
   function withInterstitial(cb) {
-    if (localStorage.getItem('fo_no_ads')) { cb(); return }
-    pendingAction.current = cb
-    setShowInterstitial(true)
+    cb()
+  }
+
+  function triggerRewardedAd(onRewarded) {
+    setWatchingAd(true)
+    if (typeof window.adBreak === 'function') {
+      window.adBreak({
+        type: 'reward',
+        name: 'retry',
+        beforeReward: (showAd) => showAd(),
+        adViewed:    () => { setWatchingAd(false); onRewarded() },
+        adDismissed: () => { setWatchingAd(false) },
+      })
+    } else {
+      // No ad provider yet — grant reward immediately
+      setWatchingAd(false)
+      onRewarded()
+    }
   }
 
   function handleInterstitialClose() {
@@ -974,34 +990,72 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                   <button className={styles.playAgainBtn} onClick={() => withInterstitial(onBack)}>BACK TO MENU</button>
                 </div>
               </div>
+            ) : winner === 'ai' ? (
+              /* ── Standard YOU LOST screen ── */
+              <div className={styles.gameOverlay}>
+                <div className={styles.stdDefeatCard}>
+                  <img
+                    src={`/images/a${portrait}d.webp`}
+                    alt="Defeated"
+                    className={styles.stdDefeatAvatar}
+                  />
+                  <img src="/images/defeated_banner.webp" alt="Defeated" className={styles.stdBanner} />
+                  <div className={styles.finalScores}>
+                    <span>You: {playerScore}</span>
+                    <span>Opponent: {aiScore}</span>
+                  </div>
+                  <div className={styles.stdDefeatBtns}>
+                    {canRetry && (
+                      <button
+                        className={styles.stdImgBtn}
+                        disabled={watchingAd}
+                        onClick={() => triggerRewardedAd(() => { addTrophies(1); onRetry?.() })}
+                      >
+                        <img src="/images/btn_tryagain.webp" alt="Try Again" className={`${styles.stdBtnImg} ${watchingAd ? styles.stdBtnDim : ''}`} />
+                      </button>
+                    )}
+                    <button
+                      className={styles.stdImgBtn}
+                      disabled={watchingAd}
+                      onClick={() => { addTrophies(1); onBack() }}
+                    >
+                      <img src="/images/btn_giveup.webp" alt="Give Up" className={`${styles.stdBtnImg} ${watchingAd ? styles.stdBtnDim : ''}`} />
+                    </button>
+                  </div>
+                  {watchingAd && <div className={styles.watchingAdLabel}>Loading ad…</div>}
+                </div>
+              </div>
+            ) : winner === 'player' ? (
+              /* ── Standard VICTORY screen ── */
+              <div className={styles.gameOverlay}>
+                <div className={styles.stdVictoryCard}>
+                  <img src="/images/victory_banner.webp" alt="Victory!" className={styles.stdBanner} />
+                  {opponentDefeatedImage && (
+                    <img src={opponentDefeatedImage} alt="Defeated opponent" className={styles.stdDefeatAvatar} />
+                  )}
+                  <div className={styles.finalScores}>
+                    <span>You: {playerScore}</span>
+                    <span>Opponent: {aiScore}</span>
+                  </div>
+                  <button
+                    className={styles.stdImgBtn}
+                    onClick={() => withInterstitial(() => { addTrophies(5); onBack() })}
+                  >
+                    <img src="/images/btn_continue.webp" alt="Continue" className={styles.stdBtnImg} />
+                  </button>
+                </div>
+              </div>
             ) : (
-              /* ── Standard game over card (loss / draw / non-gauntlet) ── */
+              /* ── Draw ── */
               <div className={styles.gameOverlay}>
                 <div className={styles.gameOverCard}>
-                  <div className={styles.resultEmoji}>
-                    {winner === 'player' ? '🏆' : winner === 'ai' ? '😢' : '🤝'}
-                  </div>
-                  <div className={styles.resultTitle}>
-                    {winner === 'player' ? 'You Win!'
-                      : winner === 'ai' ? 'You Lost!'
-                      : "It's a Draw!"}
-                  </div>
+                  <div className={styles.resultEmoji}>🤝</div>
+                  <div className={styles.resultTitle}>It's a Draw!</div>
                   <div className={styles.finalScores}>
                     <span>You: {playerScore}</span>
                     <span>AI: {aiScore}</span>
                   </div>
-                  <button
-                    className={styles.playAgainBtn}
-                    onClick={() => withInterstitial(() => {
-                      if (winner === 'player') addTrophies(onResult ? 10 : 5)
-                      else addTrophies(1)
-                      if (onResult) onResult(winner); else onBack()
-                    })}
-                  >
-                    {onResult
-                      ? winner === 'player' ? 'NEXT →' : 'GAME OVER! Try again?'
-                      : 'Play Again'}
-                  </button>
+                  <button className={styles.playAgainBtn} onClick={() => withInterstitial(onBack)}>Play Again</button>
                 </div>
               </div>
             )}
