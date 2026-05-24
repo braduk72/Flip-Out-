@@ -108,14 +108,16 @@ export default function Settings({ onBack, onSeason, musicOn, sfxOn, onToggleMus
         )}
       </div>
 
-      {/* ── Dev tools ── */}
-      <div className={styles.devSection}>
-        <div className={styles.devLabel}>DEV TOOLS</div>
-        <button className={styles.devBtn} onClick={onDevWin}>
-          ⚡ WIN — advance season step
-          <span className={styles.devStepBadge}>Step {(seasonStep ?? 0) + 1} / 30</span>
-        </button>
-      </div>
+      {/* ── Dev tools — Preview only ── */}
+      {(import.meta.env.DEV || import.meta.env.VITE_DEV_TOOLS === 'true') && (
+        <div className={styles.devSection}>
+          <div className={styles.devLabel}>DEV TOOLS</div>
+          <button className={styles.devBtn} onClick={onDevWin}>
+            ⚡ WIN — advance season step
+            <span className={styles.devStepBadge}>Step {(seasonStep ?? 0) + 1} / 30</span>
+          </button>
+        </div>
+      )}
 
       <div className={styles.versionTag}>v0.25</div>
 
