@@ -189,11 +189,11 @@ export default function LuckySpin({ onBack, navProps }) {
     <div className={styles.page}>
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onBack}>← Back</button>
-        <img src="/images/luckySpinBanner.webp" alt="Lucky Spin" className={styles.bannerImg} />
         <div className={styles.spinsLeft}>{freeLeft + adLeft} left</div>
       </div>
 
       <div className={styles.wheelArea}>
+        <img src="/images/luckySpinBanner.webp" alt="Lucky Spin" className={styles.bigBanner} />
         <img
           ref={pointerRef}
           src="/images/pointer.webp"

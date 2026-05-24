@@ -27,13 +27,6 @@
   cursor: pointer;
 }
 
-.bannerImg {
-  height: 36px;
-  width: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 0 12px rgba(255,215,0,0.5));
-}
-
 .spinsLeft {
   background: rgba(255,215,0,0.15);
   border: 1.5px solid rgba(255,215,0,0.5);
@@ -46,6 +39,16 @@
 }
 
 /* ── Wheel ── */
+.bigBanner {
+  width: 88%;
+  max-width: 340px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 20px rgba(255,215,0,0.6));
+  margin-bottom: 2px;
+  flex-shrink: 0;
+}
+
 .wheelArea {
   flex: 1;
   display: flex;

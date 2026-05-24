@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { DECKS, getDeckBackImage } from '../data/decks'
 import styles from './DeckPicker.module.css'
+import { startCheckout } from '../utils/foShop'
 
 function randomCard(deck) {
   const n = deck.cardStart + Math.floor(Math.random() * deck.cardCount)
@@ -23,6 +24,7 @@ function buyDeckById(id) {
 export default function DeckPicker({ onSelect, onBack }) {
   const [selected, setSelected] = useState(null)
   const [buyDeck, setBuyDeck] = useState(null)
+  const [buyLoading, setBuyLoading] = useState(false)
   const [ownedDecks, setOwnedDecks] = useState(getOwnedDecks)
   const [previews, setPreviews] = useState(() =>
     DECKS.map(deck => deck.free ? randomCard(deck) : getDeckBackImage(deck))
@@ -104,11 +106,15 @@ export default function DeckPicker({ onSelect, onBack }) {
               ))}
             </p>
             <div className={styles.modalBtns}>
-              <button className={styles.buyBtn} onClick={() => {
-                buyDeckById(buyDeck.id)
-                setOwnedDecks(getOwnedDecks())
-                setBuyDeck(null)
-              }}>BUY</button>
+              <button className={styles.buyBtn} disabled={buyLoading} onClick={async () => {
+                setBuyLoading(true)
+                try {
+                  await startCheckout(`deck_${buyDeck.id}`)
+                } catch (err) {
+                  console.error('[DeckPicker]', err)
+                  setBuyLoading(false)
+                }
+              }}>{buyLoading ? '…' : 'BUY £1.99'}</button>
               <button className={styles.cancelBtn} onClick={() => setBuyDeck(null)}>CANCEL</button>
             </div>
           </div>

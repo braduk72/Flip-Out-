@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import styles from './SpecialOffer.module.css'
+import { startCheckout } from '../utils/foShop'
 
 const OFFER_KEY    = 'fo_offer_seen'
 const EXPIRES_KEY  = 'fo_offer_expires'
@@ -48,13 +49,16 @@ const ITEMS = [
 export default function SpecialOffer({ onClose, onBuy }) {
   const expiresTs = parseInt(localStorage.getItem(EXPIRES_KEY) || String(Date.now() + OFFER_HOURS * 3600 * 1000))
   const countdown = useCountdown(expiresTs)
+  const [loading, setLoading] = useState(false)
 
-  function handleBuy() {
-    localStorage.setItem('fo_offer_bought', '1')
-    const cur = parseInt(localStorage.getItem('fo_coins') || '0')
-    localStorage.setItem('fo_coins', String(cur + 200))
-    onBuy?.()
-    onClose()
+  async function handleBuy() {
+    setLoading(true)
+    try {
+      await startCheckout('offer_launch')
+    } catch (err) {
+      console.error('[SpecialOffer]', err)
+      setLoading(false)
+    }
   }
 
   return (
@@ -82,7 +86,7 @@ export default function SpecialOffer({ onClose, onBuy }) {
           ))}
         </div>
 
-        <button className={styles.buyBtn} onClick={handleBuy}>
+        <button className={styles.buyBtn} onClick={handleBuy} disabled={loading}>
           <span className={styles.buyBtnPrice}>
             <img src="/images/pound.webp" alt="£" className={styles.poundImg} />
             {'1.99'.split('').map((ch, i) =>
@@ -90,7 +94,7 @@ export default function SpecialOffer({ onClose, onBuy }) {
                          : <img key={i} src={`/images/${ch}.webp`} alt={ch} className={styles.priceDigit} />
             )}
           </span>
-          <span className={styles.buyBtnSub}>Tap to unlock</span>
+          <span className={styles.buyBtnSub}>{loading ? '…' : 'Tap to unlock'}</span>
         </button>
       </div>
     </div>
