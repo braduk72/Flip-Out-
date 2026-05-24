@@ -209,6 +209,11 @@
   flex-shrink: 0;
 }
 
+.spinCard {
+  justify-content: center;
+  gap: 16px;
+}
+
 .spinWheelImg {
   width: 64px;
   height: 64px;

@@ -117,7 +117,7 @@ export default function Shop({ onBack, navProps }) {
 
         {/* Lucky Spin entry */}
         <h2 className={styles.sectionTitle}>🎡 Lucky Spin</h2>
-        <button className={styles.removeAdsCard} onClick={navProps?.onSpin}>
+        <button className={`${styles.removeAdsCard} ${styles.spinCard}`} onClick={navProps?.onSpin}>
           <img src="/images/wheel.webp" alt="Lucky Spin" className={styles.spinWheelImg} />
           <div className={styles.removeAdsText}>
             <span className={styles.removeAdsTitle}>FREE DAILY SPIN</span>
