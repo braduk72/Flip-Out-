@@ -9,7 +9,7 @@ export const DECKS = [
     cardStart: 2,
     path: '/images/cards/babyAnimals',
     borderColor: '#FF8C00',
-    free: true,
+    free: false,
   },
   {
     id: 'animalsOfAustralia',
@@ -19,7 +19,7 @@ export const DECKS = [
     cardStart: 2,
     path: '/images/cards/animalsOfAustralia',
     borderColor: '#2E8B57',
-    free: true,
+    free: false,
   },
   {
     id: 'fruits',
@@ -29,7 +29,7 @@ export const DECKS = [
     cardStart: 2,
     path: '/images/cards/fruits',
     borderColor: '#DAA520',
-    free: true,
+    free: false,
   },
   {
     id: 'flowers',
@@ -39,7 +39,7 @@ export const DECKS = [
     cardStart: 2,
     path: '/images/cards/flowers',
     borderColor: '#FF69B4',
-    free: true,
+    free: false,
   },
   {
     id: 'sportscars',
@@ -49,7 +49,7 @@ export const DECKS = [
     cardStart: 2,
     path: '/images/cards/sportscars',
     borderColor: '#DC143C',
-    free: false,
+    free: true,
   },
   {
     id: 'birdsOfPrey',
@@ -108,7 +108,7 @@ export const DECKS = [
     backFile: 'back.webp',
     path: '/images/cards/WorldLandmarks',
     borderColor: '#1E90FF',
-    free: false,
+    free: true,
   },
 ]
 

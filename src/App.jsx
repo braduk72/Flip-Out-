@@ -104,11 +104,12 @@ export default function App() {
     if (mp.status !== 'starting') return
     const deckObj = DECKS.find(d => d.id === mp.deckId)
     if (!deckObj) return
-    const numPairs = { Easy: 5, Medium: 7, Hard: 9, Lethal: 9 }[mp.difficulty] ?? 7
+    const numPairs    = { Easy: 6, Medium: 6, Hard: 8, Lethal: 8 }[mp.difficulty] ?? 6
+    const numSpecials = { Easy: 1, Medium: 2, Hard: 3, Lethal: 3 }[mp.difficulty] ?? 2
     setMpDeck(deckObj)
     if (mp.isHost) {
       const devSpecials = new URLSearchParams(window.location.search).has('specials')
-      const cards = buildBoard(deckObj, devSpecials ? 1 : numPairs, devSpecials ? 14 : 2)
+      const cards = buildBoard(deckObj, devSpecials ? 1 : numPairs, devSpecials ? 14 : numSpecials)
       setMpCards(cards)
       mp.sendBoard(cards)
     }
