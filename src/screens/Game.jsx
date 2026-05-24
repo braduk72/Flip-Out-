@@ -105,7 +105,9 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const [diceRevealed, setDiceRevealed] = useState(false)
   const [watchingAd, setWatchingAd] = useState(false)
   const [showEasyWin, setShowEasyWin] = useState(false)
+  const [showEasyLose, setShowEasyLose] = useState(false)
   const easyWinShown = useRef(false)
+  const easyLoseShown = useRef(false)
 
   // Solo mode timer
   const [elapsed, setElapsed] = useState(0)
@@ -574,13 +576,18 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     return () => clearTimeout(t)
   }, [activeEffect, clearEffect])
 
-  // Fire once when the player's lead makes it mathematically impossible for the opponent to win
+  // Fire once when the result is mathematically certain
   useEffect(() => {
-    if (gameOver || mode === 'solo' || mode === 'mp' || easyWinShown.current) return
+    if (gameOver || mode === 'solo' || mode === 'mp') return
     const remaining = totalPairs - playerScore - aiScore
-    if (remaining > 0 && playerScore > aiScore + remaining) {
+    if (remaining <= 0) return
+    if (!easyWinShown.current && playerScore > aiScore + remaining) {
       easyWinShown.current = true
       setShowEasyWin(true)
+    }
+    if (!easyLoseShown.current && aiScore > playerScore + remaining) {
+      easyLoseShown.current = true
+      setShowEasyLose(true)
     }
   }, [playerScore, aiScore, gameOver]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -1151,6 +1158,21 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
             <div className={styles.quitBtns}>
               <button className={styles.quitStayBtn} onClick={() => setShowEasyWin(false)}>KEEP PLAYING</button>
               <button className={styles.quitLeaveBtn} onClick={() => { setShowEasyWin(false); forceGameOver('player') }}>MOVE ON</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cannot-win modal */}
+      {showEasyLose && (
+        <div className={styles.quitOverlay}>
+          <div className={styles.quitModal}>
+            <div className={styles.quitIcon}>😔</div>
+            <div className={styles.quitTitle}>THAT'S TOUGH!</div>
+            <div className={styles.quitBody}>You cannot catch your opponent up. Keep trying or give up?</div>
+            <div className={styles.quitBtns}>
+              <button className={styles.quitStayBtn} onClick={() => setShowEasyLose(false)}>KEEP TRYING</button>
+              <button className={styles.quitLeaveBtn} onClick={() => { setShowEasyLose(false); withInterstitial(() => { addTrophies(1); onBack() }) }}>GIVE UP</button>
             </div>
           </div>
         </div>
