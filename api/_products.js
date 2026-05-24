@@ -18,7 +18,7 @@ export const PRODUCTS = {
   chest:               { type: 'chest',      name: 'Bonus Chest',            pence: 399, coins: 400, extras: { freeze: 1 } },
   // ── Bundles ───────────────────────────────────────────────────────────────
   bundle_starter:      { type: 'bundle',     name: 'Starter Bundle',         pence: 299, coins: 500,  extras: { xray: 3 } },
-  bundle_mega:         { type: 'bundle',     name: 'Mega Bundle',            pence: 999, coins: 1500, extras: { xray: 5, freeze: 5, shuffle: 5 } },
+  bundle_mega:         { type: 'bundle',     name: 'Mega Bundle',            pence: 999, coins: 1500, extras: { xray: 1, freeze: 1, bolt: 1, shield: 2 } },
   // ── Special launch offer (one-time popup) ─────────────────────────────────
   offer_launch:        { type: 'offer',      name: 'Special Launch Offer',   pence: 199, coins: 200, extras: { xray: 1, freeze: 1, shuffle: 1 } },
 }
