@@ -202,6 +202,13 @@
   flex-shrink: 0;
 }
 
+.spinWheelImg {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .coinPrice {
   display: flex;
   align-items: center;
