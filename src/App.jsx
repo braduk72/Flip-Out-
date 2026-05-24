@@ -155,6 +155,10 @@ export default function App() {
     if (params.has('testprize')) {
       setScreen('luckyspin')
     }
+    if (params.has('gameover')) {
+      const freeDeck = DECKS.find(d => d.free)
+      if (freeDeck) { setDeck(freeDeck); setScreen('game') }
+    }
 
     // ── Post-Stripe redirect: verify purchase and credit to localStorage ──────
     const foSession = params.get('fo_session')

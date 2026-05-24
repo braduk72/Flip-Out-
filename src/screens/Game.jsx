@@ -503,6 +503,20 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     }
   }, [turn, gameOver, activeEffect, mode, hideFlipped]) // doAITurn removed — prevents mid-turn re-fires
 
+  // Magnet + AI: when magnet fires on AI's turn, flip one card so the pair-reveal effect can run.
+  // The main AI turn effect doesn't fire while an activeEffect is set, and its cleanup would have
+  // already cancelled the queued second-flip timer, so we handle this case separately.
+  useEffect(() => {
+    if (activeEffect?.type !== 'magnet' || turn !== 'ai' || flipped.length !== 0 || gameOver) return
+    if (mode === 'mp') return
+    const t = setTimeout(() => {
+      const { cards, matched, consumed, frozen } = aiTurnStateRef.current
+      const move = getAIMove(cards, [], matched, consumed, frozen)
+      if (move !== null) aiFlip(move)
+    }, 1200)
+    return () => clearTimeout(t)
+  }, [activeEffect, turn, flipped.length, gameOver]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Magnet: when active and 1 card is flipped, auto-reveal its pair
   useEffect(() => {
     if (activeEffect?.type !== 'magnet' || flipped.length !== 1) return
