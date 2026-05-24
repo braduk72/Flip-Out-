@@ -27,7 +27,15 @@ const POWERUPS = [
 
 const BUNDLES = [
   { id: 'bundle_starter', label: 'Starter Bundle', desc: '500 coins + Shield × 3', price: '£2.99', highlight: false },
-  { id: 'bundle_mega',    label: 'Mega Bundle',    desc: '1500 coins + all power-ups × 5', price: '£9.99', highlight: true },
+  { id: 'bundle_mega',    label: 'Mega Bundle',    desc: '1500 coins + 1× X-Ray, 1× Freeze, 1× Bolt, 2× Shield', price: '£9.99', highlight: true,
+    cards: [
+      '/images/cards/special/xray.webp',
+      '/images/cards/special/freeze.webp',
+      '/images/cards/special/bolt.webp',
+      '/images/cards/special/shield.webp',
+      '/images/cards/special/shield.webp',
+    ]
+  },
 ]
 
 export default function Shop({ onBack, navProps }) {
@@ -163,6 +171,21 @@ export default function Shop({ onBack, navProps }) {
         <div className={styles.bundleList}>
           {BUNDLES.map(b => (
             <button key={b.id} className={`${styles.bundleCard} ${b.highlight ? styles.highlighted : ''}`} onClick={() => buy(b.id)} disabled={!!buying}>
+              {b.id === 'bundle_mega' && (
+                <div className={styles.starterVisual}>
+                  <div className={styles.shieldStack}>
+                    {b.cards.map((src, i) => (
+                      <img key={i} src={src} alt="" className={styles.shieldStackImg} style={{ zIndex: i, transform: `translateX(${i * 14}px)` }} />
+                    ))}
+                  </div>
+                  <div className={styles.starterCoins}>
+                    <img src="/images/coin.webp" alt="coins" className={styles.starterCoinImg} />
+                    {'1500'.split('').map((d, i) => (
+                      <img key={i} src={`/images/${d}.webp`} alt={d} className={styles.starterDigit} />
+                    ))}
+                  </div>
+                </div>
+              )}
               {b.id === 'bundle_starter' && (
                 <div className={styles.starterVisual}>
                   <div className={styles.shieldStack}>
