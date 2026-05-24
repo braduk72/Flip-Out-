@@ -79,7 +79,7 @@ function generateSpecialSeed(specialType, index, cards, matched, consumed) {
 }
 
 export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, yourTurn = true, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, onQuit, onPlayerLost, gauntletStep }) {
-  const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, endStopwatch, useJoker } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player', mode === 'solo')
+  const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, endStopwatch, useJoker, forceGameOver } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player', mode === 'solo')
   // Dev toolbar — only exists in Preview (dev branch) builds.
   // Set VITE_DEV_TOOLS=true in Vercel → Preview env vars; leave it unset for Production.
   const devEnabled  = import.meta.env.DEV || import.meta.env.VITE_DEV_TOOLS === 'true'
@@ -122,6 +122,13 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   } = state
 
   const { play } = useSfx(sfxOn)
+
+  // Dev: ?gameover=1 instantly triggers the game-over screen
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('gameover')) {
+      forceGameOver('player')
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Sound effects ─────────────────────────────────────────────────────────
   // Card flip — fires whenever a card is added to the flipped array

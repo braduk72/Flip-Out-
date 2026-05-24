@@ -260,6 +260,9 @@ function reducer(state, action) {
       return { ...result, cards: state.cards, consumed: result.consumed.filter(i => i !== 0) }
     }
 
+    case 'FORCE_GAME_OVER':
+      return { ...state, gameOver: true, winner: action.winner ?? 'player' }
+
     default:
       return state
   }
@@ -582,7 +585,11 @@ export function useGame(deck, difficulty = 'Medium', prebuiltCards = null, initi
     return available[Math.floor(Math.random() * available.length)].i
   }, [])
 
-  return { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, endStopwatch, useJoker }
+  const forceGameOver = useCallback(winner => {
+    dispatch({ type: 'FORCE_GAME_OVER', winner })
+  }, [])
+
+  return { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, endStopwatch, useJoker, forceGameOver }
 }
 
 export { buildBoard }
