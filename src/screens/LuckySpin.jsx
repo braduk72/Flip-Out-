@@ -12,6 +12,26 @@ const AD_KEY     = 'fo_spin_ad'
 
 function todayKey() { return new Date().toISOString().slice(0, 10) }
 
+function useMidnightCountdown() {
+  const [display, setDisplay] = useState('')
+  useEffect(() => {
+    function update() {
+      const now = new Date()
+      const midnight = new Date(now)
+      midnight.setHours(24, 0, 0, 0)
+      const diff = Math.max(0, midnight - now)
+      const h = Math.floor(diff / 3600000)
+      const m = Math.floor((diff % 3600000) / 60000)
+      const s = Math.floor((diff % 60000) / 1000)
+      setDisplay(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`)
+    }
+    update()
+    const t = setInterval(update, 1000)
+    return () => clearInterval(t)
+  }, [])
+  return display
+}
+
 function resetIfNewDay() {
   if (localStorage.getItem(DATE_KEY) !== todayKey()) {
     localStorage.setItem(DATE_KEY,  todayKey())
@@ -122,8 +142,9 @@ export default function LuckySpin({ onBack, navProps }) {
     el.classList.add(styles.pointerTick)
   }
 
-  const freeLeft = Math.max(0, MAX_FREE - used.free)
-  const adLeft   = Math.max(0, MAX_AD   - used.ad)
+  const freeLeft     = Math.max(0, MAX_FREE - used.free)
+  const adLeft       = Math.max(0, MAX_AD   - used.ad)
+  const midnightTimer = useMidnightCountdown()
 
   function doSpin(isAd = false) {
     if (spinning || prize) return
@@ -189,7 +210,7 @@ export default function LuckySpin({ onBack, navProps }) {
     <div className={styles.page}>
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onBack}>← Back</button>
-        <div className={styles.spinsLeft}>{freeLeft + adLeft} left</div>
+        <div className={styles.spinsLeft}>🕛 {midnightTimer}</div>
       </div>
 
       <div className={styles.wheelArea}>
@@ -256,7 +277,7 @@ export default function LuckySpin({ onBack, navProps }) {
           </button>
         )}
 
-        <div className={styles.dailyInfo}>Resets at midnight · {freeLeft + adLeft} spin{freeLeft + adLeft !== 1 ? 's' : ''} remaining</div>
+        <div className={styles.dailyInfo}>Resets at midnight</div>
       </div>
 
       {/* Prize overlay */}

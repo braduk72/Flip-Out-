@@ -40,8 +40,8 @@
 
 /* ── Wheel ── */
 .bigBanner {
-  width: 88%;
-  max-width: 340px;
+  width: 100%;
+  max-width: 380px;
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 0 20px rgba(255,215,0,0.6));
