@@ -53,7 +53,8 @@ export const DECKS = [
     cardStart: 2,
     path: '/images/cards/sportscars',
     borderColor: '#DC143C',
-    free: true,
+    free: false,
+    coinPrice: 200,
   },
   {
     id: 'birdsOfPrey',
@@ -64,7 +65,7 @@ export const DECKS = [
     backFile: 'back.webp',
     path: '/images/cards/birdsOfPrey',
     borderColor: '#8B4513',
-    free: false,
+    free: true,
   },
   {
     id: 'dogs',
