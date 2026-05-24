@@ -29,14 +29,14 @@ function getUsed() {
 }
 
 const SEGMENTS = [
-  { label: '50',   icon: '🪙', img: 'coin_mult_x10.webp',  type: 'coins', value: 50,   color: '#f97316', weight: 18 },
-  { label: '1000', icon: '🪙', img: 'coin_mult_x100.webp', type: 'coins', value: 1000, color: '#FFD700', weight: 1  },
-  { label: '25',   icon: '🪙', img: 'coin_mult_x5.webp',   type: 'coins', value: 25,   color: '#e8a838', weight: 25 },
-  { label: '500',  icon: '🪙', img: 'coin_mult_x50.webp',  type: 'coins', value: 500,  color: '#3ecfd4', weight: 2  },
-  { label: '10',   icon: '🪙', img: 'coin_mult_x1.webp',   type: 'coins', value: 10,   color: '#b8721e', weight: 30 },
-  { label: '250',  icon: '🪙', img: 'coin_mult_x25.webp',  type: 'coins', value: 250,  color: '#9b4fe8', weight: 4  },
-  { label: '100',  icon: '🪙', img: 'coin_mult_x15.webp',  type: 'coins', value: 100,  color: '#e84b4b', weight: 12 },
-  { label: '150',  icon: '🪙', img: 'coin_mult_x20.webp',  type: 'coins', value: 150,  color: '#26c25a', weight: 8  },
+  { label: '10',  icon: '🪙', img: 'coin_mult_x10.webp',  type: 'coins', value: 10,  color: '#f97316', weight: 18 },
+  { label: '100', icon: '🪙', img: 'coin_mult_x100.webp', type: 'coins', value: 100, color: '#FFD700', weight: 1  },
+  { label: '5',   icon: '🪙', img: 'coin_mult_x5.webp',   type: 'coins', value: 5,   color: '#e8a838', weight: 25 },
+  { label: '50',  icon: '🪙', img: 'coin_mult_x50.webp',  type: 'coins', value: 50,  color: '#3ecfd4', weight: 2  },
+  { label: '1',   icon: '🪙', img: 'coin_mult_x1.webp',   type: 'coins', value: 1,   color: '#b8721e', weight: 30 },
+  { label: '25',  icon: '🪙', img: 'coin_mult_x25.webp',  type: 'coins', value: 25,  color: '#9b4fe8', weight: 4  },
+  { label: '15',  icon: '🪙', img: 'coin_mult_x15.webp',  type: 'coins', value: 15,  color: '#e84b4b', weight: 12 },
+  { label: '20',  icon: '🪙', img: 'coin_mult_x20.webp',  type: 'coins', value: 20,  color: '#26c25a', weight: 8  },
 ]
 
 function weightedRandomSeg() {
