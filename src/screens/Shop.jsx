@@ -71,6 +71,7 @@ export default function Shop({ onBack, navProps }) {
           onMouseLeave={() => setJokerHovered(false)}
           onClick={() => { if (ownedPaidCount === 0) setJokerHovered(true) }}
         >
+          <img src="/images/jokers/1.webp" alt="Joker" className={styles.jokerImg} />
           <div className={styles.removeAdsText}>
             <span className={styles.removeAdsTitle}>
               {ownedPaidCount === 0 && jokerHovered ? 'You have no jokers — Buy a deck!' : 'Reload a Joker'}
