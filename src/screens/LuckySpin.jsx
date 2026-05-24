@@ -73,6 +73,26 @@ const N = SEGMENTS.length
 const SEG_DEG = 360 / N
 const CX = 150, CY = 150, R = 128
 
+// ── Web Audio tada fanfare ───────────────────────────────────────────────────
+function playTadaSound(ctx) {
+  try {
+    const notes = [523, 659, 784, 1047] // C5 E5 G5 C6
+    notes.forEach((freq, i) => {
+      const osc  = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.value = freq
+      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.12)
+      gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + i * 0.12 + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.35)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start(ctx.currentTime + i * 0.12)
+      osc.stop(ctx.currentTime + i * 0.12 + 0.35)
+    })
+  } catch (_) {}
+}
+
 // ── Web Audio tick ──────────────────────────────────────────────────────────
 function playTickSound(ctx) {
   try {
@@ -188,6 +208,7 @@ export default function LuckySpin({ onBack, navProps }) {
       const seg = SEGMENTS[targetSeg]
       setPrize(seg)
       setSpinning(false)
+      if (audioCtxRef.current) playTadaSound(audioCtxRef.current)
       const cur = parseInt(localStorage.getItem('fo_coins') || '0')
       localStorage.setItem('fo_coins', String(cur + seg.value))
     }, 7100)
@@ -290,7 +311,7 @@ export default function LuckySpin({ onBack, navProps }) {
       {prize && (
         <div className={styles.prizeOverlay}>
           <div className={styles.prizeCard}>
-            <img src="/images/coin.webp" alt="Coins" className={styles.prizeCoinImg} />
+            <img src={`/images/${prize.img}`} alt={prize.label} className={styles.prizeCoinImg} />
             <div className={styles.prizeWon}>You won!</div>
             <div className={styles.prizeLabel}>{prize.label} Coins</div>
             <button className={styles.collectBtn} onClick={() => setPrize(null)}>Collect!</button>
