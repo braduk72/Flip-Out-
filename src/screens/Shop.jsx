@@ -12,9 +12,9 @@ function getOwnedPaidCount() {
 }
 
 const COIN_PACKS = [
-  { id: 'coins_100',  label: '100 Coins',  price: '£0.99',  coins: 100,  highlight: false },
-  { id: 'coins_500',  label: '500 Coins',  price: '£3.99',  coins: 500,  highlight: false },
-  { id: 'coins_1000', label: '1000 Coins', price: '£6.99',  coins: 1000, highlight: true  },
+  { id: 'coins_100',  label: '100 Coins',  price: '£0.99',  coins: 100,  highlight: false, img: '/images/x100.webp'  },
+  { id: 'coins_500',  label: '500 Coins',  price: '£3.99',  coins: 500,  highlight: false, img: '/images/x500.webp'  },
+  { id: 'coins_1000', label: '1000 Coins', price: '£6.99',  coins: 1000, highlight: true,  img: '/images/x1000.webp' },
 ]
 
 const JOKER_RELOAD_PRICE = 50
@@ -36,6 +36,7 @@ export default function Shop({ onBack, navProps }) {
   const [noAds, setNoAds] = useState(() => !!localStorage.getItem('fo_no_ads'))
   const [showRemoveAdsModal, setShowRemoveAdsModal] = useState(false)
   const [buying, setBuying] = useState(null)
+  const [coinModal, setCoinModal] = useState(null)
 
   async function buy(productId) {
     if (buying) return
@@ -56,11 +57,8 @@ export default function Shop({ onBack, navProps }) {
         <h2 className={styles.sectionTitle}>🪙 Coins</h2>
         <div className={styles.coinGrid}>
           {COIN_PACKS.map(pack => (
-            <button key={pack.id} className={`${styles.coinCard} ${pack.highlight ? styles.highlighted : ''}`} onClick={() => buy(pack.id)} disabled={!!buying}>
-              <img src="/images/coin.webp" alt="" className={styles.coinCardImg} />
-              <span className={styles.coinCardLabel}>{pack.label}</span>
-              <span className={styles.coinCardPrice}>{buying === pack.id ? '…' : pack.price}</span>
-              {pack.highlight && <span className={styles.bestValue}>BEST VALUE</span>}
+            <button key={pack.id} className={styles.coinPackCard} onClick={() => setCoinModal(pack)} disabled={!!buying}>
+              <img src={pack.img} alt={pack.label} className={styles.coinPackImg} />
             </button>
           ))}
         </div>
@@ -184,6 +182,22 @@ export default function Shop({ onBack, navProps }) {
           onClose={() => setShowRemoveAdsModal(false)}
           onBuy={() => setNoAds(true)}
         />
+      )}
+
+      {coinModal && (
+        <div className={styles.coinModalOverlay} onClick={() => setCoinModal(null)}>
+          <div className={styles.coinModal} onClick={e => e.stopPropagation()}>
+            <img src={coinModal.img} alt={coinModal.label} className={styles.coinModalImg} />
+            <div className={styles.coinModalBtns}>
+              <button className={styles.coinModalBtn} onClick={() => { setCoinModal(null); buy(coinModal.id) }} disabled={!!buying}>
+                <img src="/images/a13.webp" alt="Buy" className={styles.coinModalBtnImg} />
+              </button>
+              <button className={styles.coinModalBtn} onClick={() => setCoinModal(null)}>
+                <img src="/images/a14.webp" alt="Cancel" className={styles.coinModalBtnImg} />
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

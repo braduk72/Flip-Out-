@@ -82,45 +82,67 @@
   padding: 0 16px;
 }
 
-.coinCard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  background: #5C1228;
-  border: 1.5px solid rgba(255,200,200,0.25);
-  border-radius: 16px;
-  padding: 14px 8px;
+.coinPackCard {
+  background: none;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-  position: relative;
+  transition: transform 0.15s;
 }
 
-.coinCard:hover { transform: translateY(-3px); }
+.coinPackCard:hover:not(:disabled) { transform: translateY(-3px) scale(1.03); }
+.coinPackCard:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.coinCard.highlighted {
-  border-color: #FFD700;
-  box-shadow: 0 0 16px rgba(255,215,0,0.4);
-}
-
-.coinCardImg {
-  width: 40px;
-  height: 40px;
+.coinPackImg {
+  width: 100%;
+  height: auto;
+  display: block;
   object-fit: contain;
 }
 
-.coinCardLabel {
-  font-size: 12px;
-  font-weight: 900;
-  color: #fff;
-  text-align: center;
+/* ── Coin purchase modal ── */
+.coinModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
 }
 
-.coinCardPrice {
-  font-size: 15px;
-  font-weight: 900;
-  color: #FFD700;
-  font-family: 'Arial Black', Arial, sans-serif;
+.coinModal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+}
+
+.coinModalImg {
+  width: min(260px, 70vw);
+  height: auto;
+}
+
+.coinModalBtns {
+  display: flex;
+  gap: 16px;
+}
+
+.coinModalBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.coinModalBtn:hover:not(:disabled) { transform: scale(1.06); }
+.coinModalBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.coinModalBtnImg {
+  width: 120px;
+  height: auto;
 }
 
 /* ── Remove Ads ── */
