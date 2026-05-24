@@ -233,23 +233,26 @@ export default function LuckySpin({ onBack, navProps }) {
       </div>
 
       <div className={styles.controls}>
-        {/* Free spin button */}
-        <button
-          className={styles.spinBtn}
-          onClick={handleFree}
-          disabled={spinning || !!prize || freeLeft === 0}
-        >
-          🎡 {freeLeft > 0 ? `Spin Free  (${freeLeft} today)` : 'Free spin used'}
-        </button>
+        {/* Free spin button — hidden once used */}
+        {freeLeft > 0 && (
+          <button
+            className={styles.spinBtn}
+            onClick={handleFree}
+            disabled={spinning || !!prize}
+          >
+            🎡 Spin Free ({freeLeft} today)
+          </button>
+        )}
 
-        {/* Ad spin button — only shown if free spin is used and ad spin remains */}
+        {/* Ad spin button — shown once free spin is used */}
         {freeLeft === 0 && (
           <button
             className={styles.adBtn}
             onClick={handleAdRequest}
             disabled={spinning || !!prize || adLeft === 0}
           >
-            {adLeft > 0 ? '📺  Watch Ad for Extra Spin' : '✓  Ad spin used today'}
+            <img src="/images/video3.webp" alt="" className={styles.adBtnIcon} />
+            {adLeft > 0 ? 'Watch Ad for Extra Spin' : 'Ad spin used today'}
           </button>
         )}
 
