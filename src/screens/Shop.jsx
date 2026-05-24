@@ -88,7 +88,7 @@ export default function Shop({ onBack, navProps }) {
                   <img key={i} src={`/images/${d}.webp`} alt={d} className={styles.coinPriceDigit} />
                 ))}
               </div>
-            : <span className={styles.lockedLabel}>🔒</span>
+            : <img src="/images/padlock.webp" alt="Locked" className={styles.jokerPadlock} />
           }
         </button>
 

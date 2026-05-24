@@ -196,6 +196,12 @@
   font-size: 20px;
 }
 
+.jokerPadlock {
+  width: 64px;
+  height: auto;
+  flex-shrink: 0;
+}
+
 .coinPrice {
   display: flex;
   align-items: center;
