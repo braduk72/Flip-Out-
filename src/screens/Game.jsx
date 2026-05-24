@@ -104,6 +104,8 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const [diceDisplay, setDiceDisplay] = useState([1, 1])
   const [diceRevealed, setDiceRevealed] = useState(false)
   const [watchingAd, setWatchingAd] = useState(false)
+  const [showEasyWin, setShowEasyWin] = useState(false)
+  const easyWinShown = useRef(false)
 
   // Solo mode timer
   const [elapsed, setElapsed] = useState(0)
@@ -571,6 +573,16 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     const t = setTimeout(() => { setShuffleAnimating(false); clearEffect() }, 1000)
     return () => clearTimeout(t)
   }, [activeEffect, clearEffect])
+
+  // Fire once when the player's lead makes it mathematically impossible for the opponent to win
+  useEffect(() => {
+    if (gameOver || mode === 'solo' || mode === 'mp' || easyWinShown.current) return
+    const remaining = totalPairs - playerScore - aiScore
+    if (remaining > 0 && playerScore > aiScore + remaining) {
+      easyWinShown.current = true
+      setShowEasyWin(true)
+    }
+  }, [playerScore, aiScore, gameOver]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleJoker() {
     if (jokersRemaining <= 0 || state.jokerUsed || flipped.length !== 1) return
@@ -1128,6 +1140,21 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
           </div>
         )}
       </div>}
+
+      {/* Easy-win modal — player's lead is unassailable */}
+      {showEasyWin && (
+        <div className={styles.quitOverlay}>
+          <div className={styles.quitModal}>
+            <div className={styles.quitIcon}>🏆</div>
+            <div className={styles.quitTitle}>YOU'VE GOT THIS!</div>
+            <div className={styles.quitBody}>Your opponent cannot catch you up. Keep playing or move on?</div>
+            <div className={styles.quitBtns}>
+              <button className={styles.quitStayBtn} onClick={() => setShowEasyWin(false)}>KEEP PLAYING</button>
+              <button className={styles.quitLeaveBtn} onClick={() => { setShowEasyWin(false); forceGameOver('player') }}>MOVE ON</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Quit confirmation modal — gauntlet only */}
       {showQuitModal && (
