@@ -112,7 +112,7 @@ export default function Shop({ onBack, navProps }) {
           <img src="/images/wheel.webp" alt="Lucky Spin" className={styles.spinWheelImg} />
           <div className={styles.removeAdsText}>
             <span className={styles.removeAdsTitle}>FREE DAILY SPIN</span>
-            <span className={styles.removeAdsDesc}>Spin for coins and power-ups · up to 2 spins daily</span>
+            <span className={styles.removeAdsDesc}>Spin it to win it!</span>
           </div>
         </button>
 
