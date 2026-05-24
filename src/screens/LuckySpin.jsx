@@ -257,11 +257,11 @@ export default function LuckySpin({ onBack, navProps }) {
         {/* Free spin button — hidden once used */}
         {freeLeft > 0 && (
           <button
-            className={styles.spinBtn}
+            className={styles.spinImgBtn}
             onClick={handleFree}
             disabled={spinning || !!prize}
           >
-            🎡 Spin Free ({freeLeft} today)
+            <img src="/images/spin1.webp" alt="Spin" className={styles.spinImgBtnImg} />
           </button>
         )}
 
@@ -276,8 +276,6 @@ export default function LuckySpin({ onBack, navProps }) {
             {adLeft > 0 ? 'Watch Ad for Extra Spin' : 'Ad spin used today'}
           </button>
         )}
-
-        <div className={styles.dailyInfo}>Resets at midnight</div>
       </div>
 
       {/* Prize overlay */}

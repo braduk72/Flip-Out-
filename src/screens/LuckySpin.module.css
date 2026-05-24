@@ -113,25 +113,24 @@
   flex-shrink: 0;
 }
 
-.spinBtn {
-  width: 100%;
-  max-width: 360px;
-  padding: 16px 0;
-  border-radius: 50px;
+.spinImgBtn {
+  background: none;
   border: none;
-  background: linear-gradient(135deg, #26c25a 0%, #1a9e48 100%);
-  color: #fff;
-  font-size: 18px;
-  font-weight: 900;
-  font-family: 'Arial Black', Arial, sans-serif;
+  padding: 0;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(38,194,90,0.45);
   transition: transform 0.1s, filter 0.1s;
 }
 
-.spinBtn:hover:not(:disabled) { transform: translateY(-2px); }
-.spinBtn:active:not(:disabled) { transform: translateY(1px); }
-.spinBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.spinImgBtn:hover:not(:disabled) { transform: translateY(-2px); }
+.spinImgBtn:active:not(:disabled) { transform: translateY(2px); filter: brightness(0.9); }
+.spinImgBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.spinImgBtnImg {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+  display: block;
+}
 
 .adBtn {
   width: 100%;
