@@ -211,6 +211,14 @@ export default function LuckySpin({ onBack, navProps }) {
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onBack}>← Back</button>
         <div className={styles.spinsLeft}>🕛 {midnightTimer}</div>
+        {import.meta.env.VITE_DEV_TOOLS === 'true' && (
+          <button className={styles.devReset} title="Reset daily spins" onClick={() => {
+            localStorage.removeItem(DATE_KEY)
+            localStorage.removeItem(FREE_KEY)
+            localStorage.removeItem(AD_KEY)
+            setUsed(getUsed())
+          }}>🔄</button>
+        )}
       </div>
 
       <div className={styles.wheelArea}>

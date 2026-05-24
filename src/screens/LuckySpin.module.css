@@ -27,6 +27,15 @@
   cursor: pointer;
 }
 
+.devReset {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0.5;
+  padding: 4px;
+}
+
 .spinsLeft {
   background: rgba(255,215,0,0.15);
   border: 1.5px solid rgba(255,215,0,0.5);
