@@ -282,11 +282,9 @@ export default function LuckySpin({ onBack, navProps }) {
       {prize && (
         <div className={styles.prizeOverlay}>
           <div className={styles.prizeCard}>
-            <div className={styles.prizeEmoji}>{prize.icon}</div>
+            <img src="/images/coin.webp" alt="Coins" className={styles.prizeCoinImg} />
             <div className={styles.prizeWon}>You won!</div>
-            <div className={styles.prizeLabel}>
-              {prize.label} Coins 🪙
-            </div>
+            <div className={styles.prizeLabel}>{prize.label} Coins</div>
             <button className={styles.collectBtn} onClick={() => setPrize(null)}>Collect!</button>
           </div>
         </div>

@@ -200,7 +200,11 @@
   to   { transform: scale(1);   opacity: 1; }
 }
 
-.prizeEmoji { font-size: 56px; }
+.prizeCoinImg {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
 
 .prizeWon {
   font-size: 14px;
