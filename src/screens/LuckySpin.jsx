@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import styles from './LuckySpin.module.css'
 import BottomNav from '../components/BottomNav'
 import Interstitial from '../components/Interstitial'
+import confetti from 'canvas-confetti'
 
 const MAX_FREE   = 1   // 1 free spin per day
 const MAX_AD     = 1   // 1 extra spin per day after watching an ad
@@ -209,6 +210,7 @@ export default function LuckySpin({ onBack, navProps }) {
       setPrize(seg)
       setSpinning(false)
       if (audioCtxRef.current) playTadaSound(audioCtxRef.current)
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.55 }, zIndex: 200 })
       const cur = parseInt(localStorage.getItem('fo_coins') || '0')
       localStorage.setItem('fo_coins', String(cur + seg.value))
     }, 7100)
