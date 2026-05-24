@@ -292,19 +292,18 @@ export default function LuckySpin({ onBack, navProps }) {
             onClick={handleFree}
             disabled={spinning || !!prize}
           >
-            <img src="/images/spin1.webp" alt="Spin" className={styles.spinImgBtnImg} />
+            <img src="/images/play.webp" alt="Spin" className={styles.spinImgBtnImg} />
           </button>
         )}
 
         {/* Ad spin button — shown once free spin is used */}
         {freeLeft === 0 && (
           <button
-            className={styles.adBtn}
+            className={styles.spinImgBtn}
             onClick={handleAdRequest}
             disabled={spinning || !!prize || adLeft === 0}
           >
-            <img src="/images/video3.webp" alt="" className={styles.adBtnIcon} />
-            {adLeft > 0 ? 'Watch Ad for Extra Spin' : 'Ad spin used today'}
+            <img src="/images/spin1.webp" alt="Watch Ad for Extra Spin" className={`${styles.spinImgBtnImg} ${adLeft === 0 ? styles.spinImgBtnUsed : ''}`} />
           </button>
         )}
       </div>
