@@ -359,6 +359,46 @@
   color: rgba(255,255,255,0.6);
 }
 
+.starterVisual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.shieldStack {
+  display: flex;
+  position: relative;
+  height: 48px;
+  width: 80px;
+}
+
+.shieldStackImg {
+  position: absolute;
+  width: 40px;
+  height: auto;
+  top: 0;
+}
+
+.starterCoins {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.starterCoinImg {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.starterDigit {
+  height: 18px;
+  width: auto;
+}
+
 .bundlePrice {
   font-size: 18px;
   font-weight: 900;

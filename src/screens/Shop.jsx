@@ -26,7 +26,7 @@ const POWERUPS = [
 ]
 
 const BUNDLES = [
-  { id: 'bundle_starter', label: 'Starter Bundle', desc: '500 coins + Peek × 3', price: '£2.99', highlight: false },
+  { id: 'bundle_starter', label: 'Starter Bundle', desc: '500 coins + Shield × 3', price: '£2.99', highlight: false },
   { id: 'bundle_mega',    label: 'Mega Bundle',    desc: '1500 coins + all power-ups × 5', price: '£9.99', highlight: true },
 ]
 
@@ -163,6 +163,21 @@ export default function Shop({ onBack, navProps }) {
         <div className={styles.bundleList}>
           {BUNDLES.map(b => (
             <button key={b.id} className={`${styles.bundleCard} ${b.highlight ? styles.highlighted : ''}`} onClick={() => buy(b.id)} disabled={!!buying}>
+              {b.id === 'bundle_starter' && (
+                <div className={styles.starterVisual}>
+                  <div className={styles.shieldStack}>
+                    {[0,1,2].map(i => (
+                      <img key={i} src="/images/cards/special/shield.webp" alt="Shield" className={styles.shieldStackImg} style={{ zIndex: i, transform: `translateX(${i * 14}px)` }} />
+                    ))}
+                  </div>
+                  <div className={styles.starterCoins}>
+                    <img src="/images/coin.webp" alt="coins" className={styles.starterCoinImg} />
+                    {'500'.split('').map((d, i) => (
+                      <img key={i} src={`/images/${d}.webp`} alt={d} className={styles.starterDigit} />
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className={styles.bundleText}>
                 <span className={styles.bundleLabel}>{b.label}</span>
                 <span className={styles.bundleDesc}>{b.desc}</span>
