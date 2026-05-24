@@ -80,7 +80,7 @@
 .wheelWrap {
   position: relative;
   width: 100%;
-  max-width: 300px;
+  max-width: 360px;
   filter: drop-shadow(0 8px 24px rgba(0,0,0,0.6));
 }
 
@@ -112,7 +112,7 @@
 
 .spinBtn {
   width: 100%;
-  max-width: 300px;
+  max-width: 360px;
   padding: 16px 0;
   border-radius: 50px;
   border: none;
@@ -132,7 +132,7 @@
 
 .adBtn {
   width: 100%;
-  max-width: 300px;
+  max-width: 360px;
   padding: 16px 0;
   border-radius: 50px;
   border: none;
