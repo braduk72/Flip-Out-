@@ -487,7 +487,10 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   useEffect(() => {
     // In solo, also pass the turn back during freeze so cards don't lock up for 5s
     const soloFreeze = mode === 'solo' && turn === 'ai' && !gameOver && activeEffect?.type === 'freeze'
-    if ((turn === 'ai' && !gameOver && !activeEffect) || soloFreeze) {
+    // Stopwatch: excluded from the general 5s clearEffect, so needs its own trigger.
+    // When AI plays stopwatch, keep calling doAITurn so it actually benefits from the window.
+    const stopwatchAI = turn === 'ai' && !gameOver && activeEffect?.type === 'stopwatch'
+    if ((turn === 'ai' && !gameOver && !activeEffect) || soloFreeze || stopwatchAI) {
       if (mode === 'solo') {
         const t = setTimeout(() => hideFlipped(), soloFreeze ? 1200 : 500)
         return () => clearTimeout(t)
