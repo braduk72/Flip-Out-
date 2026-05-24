@@ -212,8 +212,8 @@ export default function LuckySpin({ onBack, navProps }) {
           {SEGMENTS.map((seg, i) => {
             const midDeg = -90 + i * (360 / N) + (360 / N) / 2
             const rad    = midDeg * Math.PI / 180
-            const x      = 50 + 27 * Math.cos(rad)
-            const y      = 50 + 27 * Math.sin(rad)
+            const x      = 50 + 34 * Math.cos(rad)
+            const y      = 50 + 34 * Math.sin(rad)
             return (
               <img
                 key={i}
