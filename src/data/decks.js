@@ -10,6 +10,7 @@ export const DECKS = [
     path: '/images/cards/babyAnimals',
     borderColor: '#FF8C00',
     free: false,
+    coinPrice: 200,
   },
   {
     id: 'animalsOfAustralia',
@@ -20,6 +21,7 @@ export const DECKS = [
     path: '/images/cards/animalsOfAustralia',
     borderColor: '#2E8B57',
     free: false,
+    coinPrice: 200,
   },
   {
     id: 'fruits',
@@ -30,6 +32,7 @@ export const DECKS = [
     path: '/images/cards/fruits',
     borderColor: '#DAA520',
     free: false,
+    coinPrice: 200,
   },
   {
     id: 'flowers',
@@ -40,6 +43,7 @@ export const DECKS = [
     path: '/images/cards/flowers',
     borderColor: '#FF69B4',
     free: false,
+    coinPrice: 200,
   },
   {
     id: 'sportscars',

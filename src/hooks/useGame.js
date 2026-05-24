@@ -52,7 +52,11 @@ function makeInitial(deck, numPairs = 6, numSpecials = 2, prebuiltCards = null, 
     boardSpecials = 0
     if (boardPairs % 2 !== 0) boardPairs = Math.min(boardPairs + 1, maxPairs)
   } else {
-    boardSpecials = Math.min(numSpecials, SPECIAL_POOL.length)
+    // Start from the difficulty's minimum, then pad up so total cards fill complete rows of 4.
+    boardSpecials = numSpecials
+    const rem = (boardPairs * 2 + boardSpecials) % 4
+    if (rem !== 0) boardSpecials += (4 - rem)
+    boardSpecials = Math.min(boardSpecials, SPECIAL_POOL.length)
   }
   return {
     cards:          prebuiltCards ?? buildBoard(deck, boardPairs, boardSpecials),

@@ -263,6 +263,16 @@
   display: block;
 }
 
+.notEnough {
+  font-size: 12px;
+  color: #FF6B6B;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
 .modalBtns {
   display: flex;
   gap: 12px;

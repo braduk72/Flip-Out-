@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react'
 import { DECKS, getDeckBackImage } from '../data/decks'
 import styles from './DeckPicker.module.css'
-import { startCheckout } from '../utils/foShop'
+
+const FREE_INDICES = DECKS.map((d, i) => d.free ? i : null).filter(i => i !== null)
 
 function randomCard(deck) {
   const n = deck.cardStart + Math.floor(Math.random() * deck.cardCount)
   return `${deck.path}/${n}.webp`
 }
 
-const FREE_INDICES = DECKS.map((d, i) => d.free ? i : null).filter(i => i !== null)
-
 function getOwnedDecks() {
   return JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
+}
+
+function getCoins() {
+  return parseInt(localStorage.getItem('fo_coins') || '0')
 }
 
 function buyDeckById(id) {
@@ -22,11 +25,12 @@ function buyDeckById(id) {
 }
 
 export default function DeckPicker({ onSelect, onBack }) {
-  const [selected, setSelected] = useState(null)
-  const [buyDeck, setBuyDeck] = useState(null)
-  const [buyLoading, setBuyLoading] = useState(false)
+  const [selected, setSelected]     = useState(null)
+  const [buyDeck, setBuyDeck]       = useState(null)
+  const [notEnough, setNotEnough]   = useState(false)
   const [ownedDecks, setOwnedDecks] = useState(getOwnedDecks)
-  const [previews, setPreviews] = useState(() =>
+  const [coins, setCoins]           = useState(getCoins)
+  const [previews, setPreviews]     = useState(() =>
     DECKS.map(deck => deck.free ? randomCard(deck) : getDeckBackImage(deck))
   )
 
@@ -51,15 +55,31 @@ export default function DeckPicker({ onSelect, onBack }) {
 
   function handleCard(deck) {
     if (!deck.free && !ownedDecks.includes(deck.id)) {
+      setNotEnough(false)
       setBuyDeck(deck)
       return
     }
     onSelect(deck)
   }
 
+  function handleBuyWithCoins() {
+    const price = buyDeck.coinPrice ?? 200
+    const current = getCoins()
+    if (current < price) {
+      setNotEnough(true)
+      return
+    }
+    localStorage.setItem('fo_coins', String(current - price))
+    buyDeckById(buyDeck.id)
+    setOwnedDecks(getOwnedDecks())
+    setCoins(current - price)
+    setBuyDeck(null)
+  }
+
   function surpriseMe() {
-    const pick = DECKS[Math.floor(Math.random() * DECKS.length)]
-    onSelect(pick)
+    const available = DECKS.filter(d => d.free || ownedDecks.includes(d.id))
+    const pool = available.length > 0 ? available : DECKS
+    onSelect(pool[Math.floor(Math.random() * pool.length)])
   }
 
   return (
@@ -101,20 +121,20 @@ export default function DeckPicker({ onSelect, onBack }) {
             <p className={styles.modalDeckName}>{buyDeck.name}</p>
             <p className={styles.modalPrice}>
               <img src="/images/coin.webp" alt="coins" className={styles.modalCoinImg} />
-              {'200'.split('').map((d, i) => (
+              {String(buyDeck.coinPrice ?? 200).split('').map((d, i) => (
                 <img key={i} src={`/images/${d}.webp`} alt={d} className={styles.modalDigitImg} />
               ))}
             </p>
+            {notEnough && (
+              <p className={styles.notEnough}>Not enough coins! Visit the Shop to get more.</p>
+            )}
             <div className={styles.modalBtns}>
-              <button className={styles.buyBtn} disabled={buyLoading} onClick={async () => {
-                setBuyLoading(true)
-                try {
-                  await startCheckout(`deck_${buyDeck.id}`)
-                } catch (err) {
-                  console.error('[DeckPicker]', err)
-                  setBuyLoading(false)
-                }
-              }}>{buyLoading ? '…' : 'BUY £1.99'}</button>
+              <button
+                className={styles.buyBtn}
+                onClick={handleBuyWithCoins}
+              >
+                {notEnough ? `Need ${(buyDeck.coinPrice ?? 200) - coins} more` : 'BUY'}
+              </button>
               <button className={styles.cancelBtn} onClick={() => setBuyDeck(null)}>CANCEL</button>
             </div>
           </div>
