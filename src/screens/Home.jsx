@@ -1,18 +1,17 @@
 import { useState, useEffect, useRef } from 'react'
 import styles from './Home.module.css'
 import BottomNav from '../components/BottomNav'
-import AdBanner from '../components/AdBanner'
 import SpecialOffer, { shouldShowOffer, markOfferSeen } from '../components/SpecialOffer'
+import DailyBonus, { checkDailyBonus } from '../components/DailyBonus'
 
-export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, onSettings, onSeason, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, gauntletStep, seasonStep = 0, mode = 'vs', onMode }) {
-  const hasGoldCard = !!localStorage.getItem('fo_gold_card')
+export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop, onAvatar, onSettings, onSeason, onReveal, onRanks, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, gauntletStep, seasonStep = 0, mode = 'vs', onMode, onHomeMusic }) {
   const coins = parseInt(localStorage.getItem('fo_coins') || '0')
-  const [showOffer, setShowOffer]   = useState(() => new URLSearchParams(window.location.search).has('testoffer'))
-  const [fbRewarded, setFbRewarded] = useState(!!localStorage.getItem('fo_fb_reward'))
+  const [showOffer, setShowOffer] = useState(() => new URLSearchParams(window.location.search).has('testoffer'))
+  const [showBugModal, setShowBugModal] = useState(false)
+  const [dailyBonus, setDailyBonus] = useState(null)
   const [avatarAnim, setAvatarAnim] = useState('idle')
   const avatarTimer = useRef(null)
 
-  // Random idle → spin or flip, with 6–14 second gaps
   useEffect(() => {
     function scheduleNext() {
       const delay = 6000 + Math.random() * 8000
@@ -26,15 +25,10 @@ export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, o
     return () => clearTimeout(avatarTimer.current)
   }, [])
 
-  function handleFbReward() {
-    if (!fbRewarded) {
-      const cur = parseInt(localStorage.getItem('fo_coins') || '0')
-      localStorage.setItem('fo_coins', String(cur + 10))
-      localStorage.setItem('fo_fb_reward', '1')
-      setFbRewarded(true)
-    }
-    window.open('https://www.facebook.com/gizmogamesuk', '_blank')
-  }
+  useEffect(() => {
+    const bonus = checkDailyBonus()
+    if (bonus) setDailyBonus(bonus)
+  }, [])
 
   useEffect(() => {
     if (shouldShowOffer()) {
@@ -42,110 +36,148 @@ export default function Home({ onPlay, onKnockout, onOnline, onShop, onAvatar, o
       return () => clearTimeout(t)
     }
   }, [])
+
   return (
     <div className={styles.page}>
 
-      {/* Top bar */}
-      <div className={styles.topBar}>
-        <div className={styles.profileCol}>
-          <button className={styles.playerAvatar} onClick={onAvatar} aria-label="Change player">
-            <img
-              src="/images/profile.webp"
-              alt=""
-              draggable="false"
-              className={`${styles.avatarImg} ${styles[`avatar_${avatarAnim}`]}`}
-            />
-            <span className={styles.playerAvatarLabel}>Profile</span>
+
+      {/* Main grid: left icons | mascot | right icons */}
+      <div className={styles.mainGrid}>
+
+        <div className={styles.sideCol}>
+          <button className={`${styles.iconBtn} ${styles.iconBtnNoShadow}`} onClick={onAvatar} aria-label="Profile">
+            <img src="/images/profile_badge_transparent.webp" alt="" draggable="false" className={styles.iconBtnImg} />
           </button>
-          <button
-            className={`${styles.fbBtn} ${fbRewarded ? styles.fbBtnUsed : ''}`}
-            onClick={handleFbReward}
-            aria-label="Follow on Facebook for 10 coins"
-          >
-            <img src="/images/face10.webp" alt="Follow on Facebook" draggable="false" />
+          <button className={styles.iconBtn} onClick={onSeason} aria-label="Season">
+            <img src="/images/season.webp" alt="Season" draggable="false" className={styles.iconBtnImg} />
+          </button>
+          <button className={styles.iconBtn} onClick={onKnockout} aria-label="Gauntlet">
+            <img src="/images/gauntlet.webp" alt="Gauntlet" draggable="false" className={styles.iconBtnImg} />
+          </button>
+          <button className={styles.passPlayBtn} onClick={onReveal} aria-label="Reveal">
+            <img src="/images/peep_oh_v2.webp" alt="Peep-Oh!" draggable="false" className={styles.passPlayImg} />
           </button>
         </div>
-        <div className={styles.coinDisplay}>
+
+        <div className={styles.mascotCol}>
+          <img src="/images/mascot3b.webp" alt="" draggable="false" className={styles.mascot} />
+        </div>
+
+        <div className={styles.sideCol}>
+          <button className={styles.iconBtn} onClick={() => { onMode('vs'); onPlay(false) }} aria-label="VS">
+            <img src="/images/new_vs.webp" alt="VS" draggable="false" className={styles.iconBtnImg} />
+          </button>
+          <button className={styles.iconBtn} onClick={() => { onMode('solo'); onPlay(false) }} aria-label="Time Challenge">
+            <img src="/images/timechallenge.webp" alt="Time Challenge" draggable="false" className={styles.iconBtnImg} />
+          </button>
+          <button className={styles.iconBtn} onClick={onOnline} aria-label="Online">
+            <img src="/images/online.webp" alt="Online" draggable="false" className={styles.iconBtnImg} />
+          </button>
+          <button className={styles.passPlayBtn} onClick={onLocalPlay} aria-label="Pass and Play">
+            <img src="/images/pass_and_play_v2.webp" alt="Pass & Play" draggable="false" className={styles.passPlayImg} />
+          </button>
+        </div>
+
+      </div>
+
+      {/* Play button + coin display */}
+      <div className={styles.playRow}>
+        <div className={styles.coinBarWrap}>
           <img src="/images/coin.webp" alt="" className={styles.coinIcon} draggable="false" />
-          <div className={styles.coinDigits}>
-            {String(coins).split('').map((d, i) => (
-              <img key={i} src={`/images/${d}.webp`} alt={d} className={styles.digitImg} draggable="false" />
-            ))}
-          </div>
+          <span className={styles.coinBarAmount}>{coins.toLocaleString()}</span>
         </div>
+        <button className={styles.playBtn} onClick={() => { onMode('vs'); onPlay() }} aria-label="Play">
+          <img src="/images/play_btn_home.webp" alt="Play" draggable="false" className={styles.playBtnImg} />
+        </button>
       </div>
 
-      {/* Mascot */}
-      <div className={styles.mascotWrap}>
-        <img src="/images/mascot3b.webp" alt="" className={styles.mascot} draggable="false" />
-      </div>
-
-      {/* Bottom panel */}
-      <div className={styles.bottomPanel}>
-
-        <div className={styles.actionRow}>
-          <button
-            className={styles.diffBtn}
-            onClick={() => onMode(mode === 'solo' ? 'vs' : 'solo')}
-            aria-label={mode === 'solo' ? '1 player' : '2 players'}
-          >
-            <img src={mode === 'solo' ? '/images/1up.webp' : '/images/2up.webp'} alt="" draggable="false" />
-          </button>
-          <button className={styles.playBtn} onClick={onPlay} aria-label="Play">
-            <img src="/images/play.webp" alt="PLAY" draggable="false" />
-          </button>
-        </div>
-
-        {/* Play Online */}
-        <button className={styles.onlineBtn} onClick={onOnline} aria-label="Play Online">
-          <img src="/images/globe2.webp" alt="" className={styles.onlineGlobe} draggable="false" />
-          <div className={styles.knockoutText}>
-            <span className={styles.knockoutTitle}>PLAY ONLINE</span>
-            <span className={styles.knockoutProgress}>Quick Match · Create · Join Room</span>
-          </div>
-          <span className={styles.knockoutArrow}>›</span>
-        </button>
-
-        {/* Season map entry */}
-        <button className={styles.seasonBtn} onClick={onSeason} aria-label="Season map">
-          <span className={styles.knockoutIcon}>🗺️</span>
-          <div className={styles.knockoutText}>
-            <span className={styles.knockoutTitle}>
-              SEASON 1 · THE RECKONING
-            </span>
-            {seasonStep >= 5
-              ? <span className={styles.knockoutProgress}>✦ Season complete — gold card earned!</span>
-              : seasonStep > 0
-              ? <span className={styles.knockoutProgress}>{seasonStep}/5 defeated · keep going!</span>
-              : <span className={styles.knockoutProgress}>Limited time · exclusive rewards</span>
-            }
-          </div>
-          <span className={styles.knockoutArrow}>›</span>
-        </button>
-
-        {/* Knockout Gauntlet entry */}
-        <button className={styles.knockoutBtn} onClick={onKnockout} aria-label="Knockout Gauntlet">
-          <span className={styles.knockoutIcon}>🏆</span>
-          <div className={styles.knockoutText}>
-            <span className={styles.knockoutTitle}>
-              KNOCKOUT GAUNTLET{hasGoldCard ? ' ✦' : ''}
-            </span>
-            {gauntletStep > 0 && gauntletStep < 10
-              ? <span className={styles.knockoutProgress}>{gauntletStep}/10 defeated · keep going!</span>
-              : gauntletStep >= 10
-              ? <span className={styles.knockoutProgress}>✓ Champion — play again?</span>
-              : <span className={styles.knockoutProgress}>Face all 9 opponents — then Professor Claw</span>
-            }
-          </div>
-          <span className={styles.knockoutArrow}>›</span>
-        </button>
-
-      </div>
-
-      <AdBanner />
-      <BottomNav active="home" onShop={onShop} onHome={() => {}} onSettings={onSettings} />
+      <BottomNav active="home" onShop={onShop} onHome={onHomeMusic} onSettings={onSettings} onRanks={onRanks} />
+      {dailyBonus && <DailyBonus day={dailyBonus.day} coins={dailyBonus.coins} onClose={() => setDailyBonus(null)} />}
       {showOffer && <SpecialOffer onClose={() => setShowOffer(false)} />}
+      {showBugModal && <BugReportModal onClose={() => setShowBugModal(false)} />}
 
+    </div>
+  )
+}
+
+// ── Bug report modal ──────────────────────────────────────────────────────────
+function BugReportModal({ onClose }) {
+  const [desc,    setDesc]    = useState('')
+  const [email,   setEmail]   = useState('')
+  const [status,  setStatus]  = useState('idle') // idle | sending | done | error
+
+  async function submit() {
+    if (!desc.trim() || status === 'sending') return
+    setStatus('sending')
+    try {
+      const res = await fetch('/api/fo-bug-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: desc.trim(),
+          userEmail:   email.trim() || null,
+          userAgent:   navigator.userAgent,
+          version:     APP_VERSION,
+        }),
+      })
+      const data = await res.json()
+      setStatus(data.ok ? 'done' : 'error')
+    } catch {
+      setStatus('error')
+    }
+  }
+
+  return (
+    <div className={styles.bugOverlay} onClick={onClose}>
+      <div className={styles.bugModal} onClick={e => e.stopPropagation()}>
+        <button className={styles.bugClose} onClick={onClose} aria-label="Close">✕</button>
+
+        {status === 'done' ? (
+          <>
+            <div className={styles.bugThanks}>✓</div>
+            <p className={styles.bugThanksText}>Thanks! We'll look into it.</p>
+            <button className={styles.bugSubmitBtn} onClick={onClose}>Close</button>
+          </>
+        ) : (
+          <>
+            <h2 className={styles.bugTitle}>🐛 Submit a Bug</h2>
+            <p className={styles.bugSubtitle}>What went wrong?</p>
+            <textarea
+              className={styles.bugTextarea}
+              placeholder="Describe what happened…"
+              value={desc}
+              onChange={e => setDesc(e.target.value)}
+              rows={5}
+              maxLength={1000}
+              autoFocus
+            />
+            <input
+              className={styles.bugEmailInput}
+              type="email"
+              placeholder="Your email (optional, for follow-up)"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              maxLength={100}
+            />
+            {status === 'error' && (
+              <p className={styles.bugError}>Something went wrong — please try again.</p>
+            )}
+            <div className={styles.bugBtns}>
+              <button
+                className={styles.bugSubmitBtn}
+                onClick={submit}
+                disabled={!desc.trim() || status === 'sending'}
+              >
+                {status === 'sending' ? 'Sending…' : 'Send Report'}
+              </button>
+              <button className={styles.bugCancelBtn} onClick={onClose}>Cancel</button>
+            </div>
+            <div className={styles.bugReward}>
+              We pay <img src="/images/coin.webp" alt="coins" className={styles.bugRewardCoin} /> 50 for any new bugs found!
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }
