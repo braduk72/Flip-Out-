@@ -4,6 +4,9 @@ import DeckPicker from './screens/DeckPicker'
 import Shop from './screens/Shop'
 import AvatarPicker from './screens/AvatarPicker'
 import Settings from './screens/Settings'
+import AboutUs from './screens/AboutUs'
+import PrivacyPolicy from './screens/PrivacyPolicy'
+import PatchNotes from './screens/PatchNotes'
 import Game from './screens/Game'
 import Gauntlet from './screens/Gauntlet'
 import RoundStart from './screens/RoundStart'
@@ -11,49 +14,59 @@ import MultiplayerLobby from './screens/MultiplayerLobby'
 import LuckySpin from './screens/LuckySpin'
 import Leaderboard from './screens/Leaderboard'
 import SeasonMap from './screens/SeasonMap'
-import { KNOCKOUT_OPPONENTS, STANDARD_OPPONENTS } from './data/opponents'
-import { ACTIVE_SEASON, STEPS_PER_STAGE, BOSS_STEP, GENERIC_OPPONENT } from './data/seasonalOpponents'
+import RevealGame from './screens/RevealGame'
+import { KNOCKOUT_OPPONENTS, STANDARD_OPPONENTS, pickStdOpponent } from './data/opponents'
+import { ACTIVE_SEASON, STEPS_PER_STAGE, BOSS_STEP, GENERIC_OPPONENT, ROB_OPPONENTS, getRobNames } from './data/seasonalOpponents'
 import { DECKS } from './data/decks'
 import { useMultiplayer } from './hooks/useMultiplayer'
 import { buildBoard } from './hooks/useGame'
-import { verifySession, applyPurchase } from './utils/foShop.js'
+import { verifySession, applyPurchase, syncStats } from './utils/foShop.js'
 import { getDeviceUuid } from './utils/deviceId.js'
+import { setSfxVol } from './hooks/useSfx'
+import { snapshotToCookie } from './utils/gameStorage.js'
+import CookieBanner, { consentAnswered, hasConsent } from './components/CookieBanner.jsx'
 
 // ── Music pools ───────────────────────────────────────────────────────────────
-const MENU_TRACKS = [
-  '/music/menu_1.mp3',
-  '/music/menu_2.mp3',
+const HOME_TRACKS = [
+  '/music/home_1.mp3',
+  '/music/home_2.mp3',
 ]
+const MENU_TRACKS     = []
 const GAMEOVER_TRACKS = [
-  '/music/gameover_1.mp3',
-  '/music/gameover_2.mp3',
-  '/music/gameover_3.mp3',
-  '/music/gameover_4.mp3',
+  '/music/tryagain_1.mp3',
+  '/music/tryagain_2.mp3',
 ]
-const BOSS_TRACKS = [
-  '/music/ingame_boss_final.mp3',
+const WIN_TRACKS      = [
+  '/music/victory_1.mp3',
+  '/music/victory_2.mp3',
 ]
-const INGAME_TRACKS = [
-  '/music/ingame_arcade_cabbage.mp3',
-  '/music/ingame_arcade_cabbage_short.mp3',
-  '/music/ingame_boss_checkout.mp3',
-  '/music/ingame_boss_checkout_2.mp3',
-  '/music/ingame_boss_gauntlet.mp3',
-  '/music/ingame_boss_gauntlet_2.mp3',
-  '/music/ingame_boss_keyfire.mp3',
-  '/music/ingame_boss_keyfire_fast.mp3',
-  '/music/ingame_cartridge_laughter.mp3',
-  '/music/ingame_cartridge_laughter_2.mp3',
-  '/music/ingame_checkpoint_thunder.mp3',
-  '/music/ingame_checkpoint_thunder_2.mp3',
-  '/music/ingame_gavel_lightning.mp3',
-  '/music/ingame_gavel_lightning_2.mp3',
-  '/music/ingame_pixel_meltdown.mp3',
-  '/music/ingame_tangerine_rumble.mp3',
-  '/music/ingame_tangerine_rumble_short.mp3',
-  '/music/ingame_tin_piano.mp3',
+const RANKS_TRACKS    = [
+  '/music/victory_1.mp3',
 ]
-const MENU_SCREENS = new Set(['home','deckpicker','shop','avatarpicker','settings','leaderboard','luckyspin','mplobby','gauntlet','seasonmap'])
+const SHOP_TRACKS     = [
+  '/music/victory_2.mp3',
+]
+const BOSS_TRACKS     = [
+  '/music/gauntlet_1.mp3',
+  '/music/gauntlet_2.mp3',
+]
+const INGAME_TRACKS   = [
+  '/music/game_1.mp3',
+  '/music/game_1b.mp3',
+  '/music/game_2a.mp3',
+  '/music/game_3.mp3',
+  '/music/game_3b.mp3',
+  '/music/game_4.mp3',
+  '/music/game_4b.mp3',
+  '/music/game_4b2.mp3',
+]
+const SEASON_TRACKS   = []
+const ABOUT_TRACKS    = []
+const SPIN_TRACKS     = [
+  '/music/spin_1.mp3',
+  '/music/spin_2.mp3',
+]
+const MENU_SCREENS = new Set(['home','deckpicker','shop','avatarpicker','settings','leaderboard','luckyspin','mplobby','gauntlet'])
 const GAME_SCREENS = new Set(['game','mpgame','roundstart','seasongame','seasonroundstart'])
 
 function awardGoldCard() {
@@ -69,24 +82,37 @@ function addCoins(amount) {
 
 export default function App() {
   const [screen,     setScreen]     = useState('home')
+  const [cookieBannerDone, setCookieBannerDone] = useState(consentAnswered)
   const [deck,       setDeck]       = useState(null)
   const [portrait,   setPortrait]   = useState(() => parseInt(localStorage.getItem('fo_portrait')   || '1'))
   const [difficulty, setDifficulty] = useState(() => localStorage.getItem('fo_difficulty')          || 'Medium')
   const [musicOn,    setMusicOn]    = useState(() => localStorage.getItem('fo_music')               !== 'off')
   const [sfxOn,      setSfxOn]      = useState(() => localStorage.getItem('fo_sfx')                 !== 'off')
+  const [musicVol,   setMusicVol]   = useState(() => parseFloat(localStorage.getItem('fo_music_vol') ?? '0.45'))
+  const [sfxVol,     setSfxVolState]= useState(() => parseFloat(localStorage.getItem('fo_sfx_vol')   ?? '0.7'))
   const [mode,       setMode]       = useState('vs')
   const [purchaseStatus, setPurchaseStatus] = useState(null) // null | 'verifying' | 'success' | 'error'
   const [purchaseResult, setPurchaseResult] = useState(null)
 
   // Multiplayer
   const mp = useMultiplayer()
-  const [mpDeck,  setMpDeck]  = useState(null)
-  const [mpCards, setMpCards] = useState(null)
+  const [mpDeck,          setMpDeck]          = useState(null)
+  const [mpCards,         setMpCards]         = useState(null)
+  const [mpUnlockPrompt,  setMpUnlockPrompt]  = useState(null) // deck to offer after MP game
+  const mpResultRef = useRef(null) // 'player' | 'ai' | 'draw' — set by onResult before handleMpGameBack fires
 
   // Standard vs-AI opponent — picked once per game session
-  const [stdOpponent,    setStdOpponent]    = useState(() => STANDARD_OPPONENTS[Math.floor(Math.random() * STANDARD_OPPONENTS.length)])
+  const [stdOpponent,    setStdOpponent]    = useState(() => pickStdOpponent())
   const [retryKey,       setRetryKey]       = useState(0)
   const [tryAgainUsed,   setTryAgainUsed]   = useState(false)
+  const [seasonRetryKey, setSeasonRetryKey] = useState(0)
+
+  // Streak mode state
+  const [showStreakIntro,    setShowStreakIntro]    = useState(false)
+  const [streakActive,       setStreakActive]       = useState(false)
+  const [streakCurrent,      setStreakCurrent]      = useState(() => parseInt(localStorage.getItem('fo_streak')      || '0'))
+  const [streakBest,         setStreakBest]         = useState(() => parseInt(localStorage.getItem('fo_streak_best') || '0'))
+  const [streakContinueUsed, setStreakContinueUsed] = useState(false)
 
   // Gauntlet state
   const [gauntletStep,    setGauntletStep]    = useState(() => parseInt(localStorage.getItem('fo_gauntlet_step') || '0'))
@@ -95,11 +121,16 @@ export default function App() {
   // Season state — seasonStep 0..BOSS_STEP (0-indexed, 30 steps total)
   const [seasonStep,   setSeasonStep]   = useState(() => parseInt(localStorage.getItem('fo_season1_step') || '0'))
   const [seasonActive, setSeasonActive] = useState(false)
-  const isBossStep = seasonStep === BOSS_STEP
+  const isBossStep  = seasonStep === BOSS_STEP
+  const [robNames]  = useState(getRobNames)
+  const isRobStep   = seasonStep < ROB_OPPONENTS.length && !isBossStep
+  // e-type checkpoint opponents at rounds 6,11,16,21,26,31 (steps 5,10,15,20,25,30)
+  const E_STEP_MAP  = { 5: 0, 10: 1, 15: 2, 20: 0, 25: 1, 30: 2 }
 
   const audioRef       = useRef(null)
   const activePoolRef  = useRef(null)   // which pool array is currently playing
   const lastSrcRef     = useRef(null)   // avoid back-to-back repeats
+  const prevScreenRef  = useRef(null)   // detect game-screen entries
   const musicOnRef     = useRef(musicOn)
   useEffect(() => { musicOnRef.current = musicOn }, [musicOn])
 
@@ -185,7 +216,15 @@ export default function App() {
   // ── Music manager ─────────────────────────────────────────────────────────
   // Stable ref to the play function so ended-listeners can call it without
   // stale-closure issues.
-  const playNextRef = useRef(null)
+  const playNextRef   = useRef(null)
+  const unlockClickRef = useRef(null)
+  const unlockTouchRef = useRef(null)
+
+  function clearUnlockListeners() {
+    if (unlockClickRef.current) { document.removeEventListener('click',      unlockClickRef.current); unlockClickRef.current = null }
+    if (unlockTouchRef.current) { document.removeEventListener('touchstart', unlockTouchRef.current); unlockTouchRef.current = null }
+  }
+
   playNextRef.current = function playNext(pool) {
     const choices = pool.length > 1 ? pool.filter(t => t !== lastSrcRef.current) : pool
     const src     = choices[Math.floor(Math.random() * choices.length)]
@@ -193,18 +232,20 @@ export default function App() {
 
     if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = '' }
     const audio = new Audio(src)
-    audio.volume = 0.45
+    audio.volume = musicVol
     audio.addEventListener('ended', () => {
       if (activePoolRef.current === pool && musicOnRef.current) playNextRef.current(pool)
     })
     audioRef.current = audio
     if (musicOnRef.current) {
       audio.play().catch(() => {
+        clearUnlockListeners()
         const unlock = () => {
           if (audioRef.current === audio) audio.play().catch(() => {})
-          document.removeEventListener('click',      unlock)
-          document.removeEventListener('touchstart', unlock)
+          clearUnlockListeners()
         }
+        unlockClickRef.current = unlock
+        unlockTouchRef.current = unlock
         document.addEventListener('click',      unlock)
         document.addEventListener('touchstart', unlock)
       })
@@ -212,21 +253,59 @@ export default function App() {
   }
 
   function switchToPool(pool) {
+    if (!pool || pool.length === 0) return
     if (activePoolRef.current === pool) return
     activePoolRef.current = pool
     playNextRef.current(pool)
   }
 
-  // Switch pool when screen changes
+  function forceNewHomeTrack() {
+    if (!musicOn) return
+    activePoolRef.current = null
+    switchToPool(HOME_TRACKS)
+  }
+
+  // Snapshot progress to cookie on every screen change (only if user consented)
+  useEffect(() => { if (hasConsent()) snapshotToCookie() }, [screen]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Stop any playing track immediately on screen change; clear any orphaned unlock listeners
+  useEffect(() => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current = null }
+    activePoolRef.current = null
+    clearUnlockListeners()
+  }, [screen]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Switch to the correct music pool for the new screen
   useEffect(() => {
     if (!musicOn) return
-    // Boss fight gets its own dedicated track
+    prevScreenRef.current = screen
+    const isGame = GAME_SCREENS.has(screen)
+
     if (screen === 'seasongame' && isBossStep) {
       switchToPool(BOSS_TRACKS)
-    } else if (GAME_SCREENS.has(screen)) {
+    } else if (isGame) {
       switchToPool(INGAME_TRACKS)
+    } else if (screen === 'seasonmap') {
+      switchToPool(SEASON_TRACKS)
+    } else if (screen === 'home') {
+      switchToPool(HOME_TRACKS)
+    } else if (screen === 'gauntlet' || screen === 'roundstart') {
+      switchToPool(BOSS_TRACKS)
+    } else if (screen === 'leaderboard') {
+      switchToPool(RANKS_TRACKS)
+    } else if (screen === 'shop') {
+      switchToPool(SHOP_TRACKS)
+    } else if (screen === 'about') {
+      switchToPool(ABOUT_TRACKS)
+    } else if (screen === 'luckyspin') {
+      switchToPool(SPIN_TRACKS)
+    } else if (screen === 'reveal') {
+      // RevealGame manages its own audio — stop app music, start nothing
+      if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current = null }
+      activePoolRef.current = null
     } else {
-      switchToPool(MENU_TRACKS)
+      // Use home tracks as fallback for all menu screens (settings, shop, etc.)
+      switchToPool(HOME_TRACKS)
     }
   }, [screen, musicOn, seasonStep]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -235,9 +314,36 @@ export default function App() {
     return () => { if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = '' } }
   }, [])
 
+  // Sync sfxVol module var on mount and whenever it changes
+  useEffect(() => { setSfxVol(sfxVol) }, [sfxVol]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Kick off music on very first user interaction (browsers block autoplay until a gesture)
+  useEffect(() => {
+    if (!musicOn) return
+    const unlock = () => {
+      if (!audioRef.current || audioRef.current.paused) {
+        activePoolRef.current = null
+        switchToPool(screen === 'home' ? HOME_TRACKS : INGAME_TRACKS)
+      }
+      document.removeEventListener('click',      unlock)
+      document.removeEventListener('touchstart', unlock)
+    }
+    document.addEventListener('click',      unlock, { once: true })
+    document.addEventListener('touchstart', unlock, { once: true, passive: true })
+    return () => {
+      document.removeEventListener('click',      unlock)
+      document.removeEventListener('touchstart', unlock)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   function handlePlayerLost() {
     activePoolRef.current = null // force switch even if already on gameover
     switchToPool(GAMEOVER_TRACKS)
+  }
+
+  function handlePlayerWon() {
+    activePoolRef.current = null
+    switchToPool(WIN_TRACKS)
   }
 
   function toggleMusic() {
@@ -252,7 +358,7 @@ export default function App() {
         audioRef.current.play().catch(() => {})
       } else {
         activePoolRef.current = null
-        switchToPool(GAME_SCREENS.has(screen) ? INGAME_TRACKS : MENU_TRACKS)
+        switchToPool(GAME_SCREENS.has(screen) ? INGAME_TRACKS : screen === 'home' ? HOME_TRACKS : MENU_TRACKS)
       }
     }
   }
@@ -263,27 +369,154 @@ export default function App() {
     localStorage.setItem('fo_sfx', next ? 'on' : 'off')
   }
 
+  function handleMusicVol(v) {
+    const val = parseFloat(v)
+    setMusicVol(val)
+    localStorage.setItem('fo_music_vol', String(val))
+    if (audioRef.current) audioRef.current.volume = val
+  }
+
+  function handleSfxVol(v) {
+    const val = parseFloat(v)
+    setSfxVolState(val)
+    setSfxVol(val)
+    localStorage.setItem('fo_sfx_vol', String(val))
+  }
+
   // ── Normal game flow ───────────────────────────────────────────────────────
-  function handlePlay()         { setScreen('deckpicker') }
+  function handlePlay(showIntro = true) {
+    if (showIntro) {
+      setShowStreakIntro(true)
+    } else {
+      setStreakActive(true)
+      setStreakContinueUsed(false)
+      setScreen('deckpicker')
+    }
+  }
+  function handleStreakIntroDismiss() {
+    setShowStreakIntro(false)
+    setStreakActive(true)
+    setStreakContinueUsed(false)
+    setScreen('deckpicker')
+  }
   function handleSelectDeck(d) {
     setDeck(d)
-    setStdOpponent(STANDARD_OPPONENTS[Math.floor(Math.random() * STANDARD_OPPONENTS.length)])
+    setStdOpponent(pickStdOpponent())
     setRetryKey(0)
     setTryAgainUsed(false)
     setScreen('game')
   }
   function handleBack() {
+    if (streakActive) {
+      if (streakCurrent > streakBest) {
+        setStreakBest(streakCurrent)
+        localStorage.setItem('fo_streak_best', String(streakCurrent))
+        syncStats(streakCurrent, parseInt(localStorage.getItem('fo_pvp_wins') || '0'))
+      }
+      setStreakCurrent(0)
+      localStorage.setItem('fo_streak', '0')
+    }
     setScreen('home')
     setDeck(null)
     setRetryKey(0)
     setTryAgainUsed(false)
     setGauntletActive(false)
+    setStreakActive(false)
+    setMode('vs')
+  }
+
+  // ── Local (pass-and-play) flow ─────────────────────────────────────────────
+  function handleLocalPlay() {
+    setMode('local')
+    setStreakActive(false)
+    setTryAgainUsed(false)
+    setRetryKey(0)
+    setScreen('deckpicker')
+  }
+
+  // ── Streak handlers ────────────────────────────────────────────────────────
+  function handleStreakWin() {
+    const next = streakCurrent + 1
+    setStreakCurrent(next)
+    localStorage.setItem('fo_streak', String(next))
+    if (next > streakBest) {
+      setStreakBest(next)
+      localStorage.setItem('fo_streak_best', String(next))
+      syncStats(next, parseInt(localStorage.getItem('fo_pvp_wins') || '0'))
+    }
+    // Auto-pick a new random deck for the next round
+    const ownedIds = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
+    const available = DECKS.filter(d => d.free || ownedIds.includes(d.id))
+    const nextDeck = available[Math.floor(Math.random() * available.length)]
+    setDeck(nextDeck)
+    setStdOpponent(pickStdOpponent())
+    setStreakContinueUsed(false)
+    setRetryKey(k => k + 1)
+  }
+
+  function handleStreakContinue() {
+    const cur = parseInt(localStorage.getItem('fo_coins') || '0')
+    if (cur < 25) return
+    localStorage.setItem('fo_coins', String(cur - 25))
+    setStreakContinueUsed(true)
+    setRetryKey(k => k + 1)
+  }
+
+  function handleStreakGiveUp() {
+    if (streakCurrent > streakBest) {
+      setStreakBest(streakCurrent)
+      localStorage.setItem('fo_streak_best', String(streakCurrent))
+      syncStats(streakCurrent, parseInt(localStorage.getItem('fo_pvp_wins') || '0'))
+    }
+    setStreakCurrent(0)
+    localStorage.setItem('fo_streak', '0')
+    setStreakActive(false)
+    setDeck(null)
+    setRetryKey(0)
+    setScreen('home')
   }
 
   // ── Multiplayer flow ───────────────────────────────────────────────────────
   function handleOnline()    { setScreen('mplobby') }
-  function handleMpBack()    { mp.disconnect(); setMpDeck(null); setMpCards(null); setScreen('home') }
-  function handleMpGameBack() { mp.disconnect(); setMpDeck(null); setMpCards(null); setScreen('home') }
+  function handleMpBack() { mp.disconnect(); setMpDeck(null); setMpCards(null); setScreen('home') }
+  function handleMpGameBack() {
+    const playedDeck = mpDeck
+    const wasGuest   = !mp.isHost
+    // Increment PVP win counter if the player won
+    if (mpResultRef.current === 'player') {
+      const cur = parseInt(localStorage.getItem('fo_pvp_wins') || '0')
+      const next = cur + 1
+      localStorage.setItem('fo_pvp_wins', String(next))
+      syncStats(parseInt(localStorage.getItem('fo_streak_best') || '0'), next)
+    }
+    mpResultRef.current = null
+    mp.disconnect()
+    setMpDeck(null)
+    setMpCards(null)
+    setScreen('home')
+    // If the guest played with a paid deck they don't own, offer to unlock it
+    if (wasGuest && playedDeck && !playedDeck.free) {
+      const ownedIds = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
+      if (!ownedIds.includes(playedDeck.id)) setMpUnlockPrompt(playedDeck)
+    }
+  }
+
+  // No opponent found after 30s — drop into a normal VS CPU game
+  function handleMpFallbackCPU({ deckId, difficulty: fallbackDiff }) {
+    mp.disconnect()
+    setMpDeck(null)
+    setMpCards(null)
+    const ownedIds   = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
+    const available  = DECKS.filter(d => d.free || ownedIds.includes(d.id))
+    const fallbackDeck = available.find(d => d.id === deckId) ?? available[0] ?? DECKS[0]
+    setDeck(fallbackDeck)
+    setDifficulty(fallbackDiff)
+    setStdOpponent(pickStdOpponent())
+    setRetryKey(0)
+    setTryAgainUsed(false)
+    setMode('vs')
+    setScreen('game')
+  }
 
   // ── Gauntlet flow ──────────────────────────────────────────────────────────
   function handleKnockout() {
@@ -335,6 +568,7 @@ export default function App() {
     const d         = available[Math.floor(Math.random() * available.length)]
     setDeck(d)
     setSeasonActive(true)
+    setSeasonRetryKey(0)
     setScreen('seasongame')
   }
 
@@ -347,8 +581,9 @@ export default function App() {
           localStorage.setItem(key, new Date().toISOString().slice(0, 10))
         }
         addCoins(150)
-        setSeasonStep(0)
-        localStorage.setItem('fo_season1_step', '0')
+        const completeStep = BOSS_STEP + 1
+        setSeasonStep(completeStep)
+        localStorage.setItem('fo_season1_step', String(completeStep))
       } else {
         const next = seasonStep + 1
         setSeasonStep(next)
@@ -371,7 +606,7 @@ export default function App() {
 
   const navProps = {
     onShop:     () => setScreen('shop'),
-    onHome:     () => setScreen('home'),
+    onHome:     () => { if (screen === 'home') playNextRef.current(HOME_TRACKS); else setScreen('home') },
     onSettings: () => setScreen('settings'),
     onRanks:    () => setScreen('leaderboard'),
     onSpin:     () => setScreen('luckyspin'),
@@ -395,22 +630,27 @@ export default function App() {
     )
   }
   if (screen === 'seasongame' && deck) {
-    const opp = isBossStep ? ACTIVE_SEASON.boss : GENERIC_OPPONENT
+    const robOpp = isRobStep ? { ...ROB_OPPONENTS[seasonStep], name: robNames[seasonStep] } : null
+    const eIdx   = E_STEP_MAP[seasonStep]
+    const eOpp   = eIdx !== undefined ? KNOCKOUT_OPPONENTS[eIdx] : null
+    const opp = isBossStep ? ACTIVE_SEASON.boss : eOpp ?? robOpp ?? GENERIC_OPPONENT
     return (
       <Game
-        key={`season-${seasonStep}-${deck.id}`}
+        key={`season-${seasonStep}-${deck.id}-${seasonRetryKey}`}
         deck={deck}
         portrait={portrait}
         mode="vs"
-        difficulty={isBossStep ? 'Lethal' : difficulty}
+        difficulty={isBossStep ? 'Lethal' : opp.difficulty ?? difficulty}
         opponentImage={opp.image ?? undefined}
-        opponentDefeatedImage={opp.defeatedImage ?? stdOpponent.defeatedImage}
+        opponentDefeatedImage={opp.defeatedImage ?? undefined}
         opponentName={opp.name}
         opponentModel={opp.model ?? undefined}
         opponentBio={opp.bio ?? undefined}
         onBack={() => { setDeck(null); setSeasonActive(false); setScreen('seasonmap') }}
         onResult={handleSeasonResult}
+        onRetry={() => setSeasonRetryKey(k => k + 1)}
         onPlayerLost={handlePlayerLost}
+        onPlayerWon={handlePlayerWon}
         musicOn={musicOn}
         sfxOn={sfxOn}
         onToggleMusic={toggleMusic}
@@ -431,7 +671,19 @@ export default function App() {
     return <AvatarPicker portrait={portrait} onPortrait={handlePortrait} onBack={() => setScreen('home')} navProps={navProps} />
   }
   if (screen === 'settings') {
-    return <Settings onBack={() => setScreen('home')} onSeason={handleSeasonMap} musicOn={musicOn} sfxOn={sfxOn} onToggleMusic={toggleMusic} onToggleSfx={toggleSfx} difficulty={difficulty} onDifficulty={handleDifficulty} onDevWin={handleDevSeasonWin} seasonStep={seasonStep} navProps={navProps} />
+    return <Settings onBack={() => setScreen('home')} onSeason={handleSeasonMap} onAbout={() => setScreen('about')} onPrivacy={() => setScreen('privacy')} onPatchNotes={() => setScreen('patchnotes')} musicOn={musicOn} sfxOn={sfxOn} onToggleMusic={toggleMusic} onToggleSfx={toggleSfx} musicVol={musicVol} sfxVol={sfxVol} onMusicVol={handleMusicVol} onSfxVol={handleSfxVol} difficulty={difficulty} onDifficulty={handleDifficulty} onDevWin={handleDevSeasonWin} seasonStep={seasonStep} navProps={navProps} />
+  }
+  if (screen === 'about') {
+    return <AboutUs onBack={() => setScreen('settings')} navProps={navProps} />
+  }
+  if (screen === 'privacy') {
+    return <PrivacyPolicy onBack={() => setScreen('settings')} navProps={navProps} />
+  }
+  if (screen === 'patchnotes') {
+    return <PatchNotes onBack={() => setScreen('settings')} />
+  }
+  if (screen === 'reveal') {
+    return <RevealGame onBack={() => setScreen('home')} sfxOn={sfxOn} />
   }
   if (screen === 'gauntlet') {
     return (
@@ -468,14 +720,21 @@ export default function App() {
         difficulty={isGauntlet ? gauntletOpponent.difficulty : difficulty}
         opponentImage={isGauntlet ? gauntletOpponent.image : stdOpponent.image}
         opponentDefeatedImage={isGauntlet ? gauntletOpponent.defeatedImage : stdOpponent.defeatedImage}
-        opponentName={isGauntlet ? gauntletOpponent.name : undefined}
+        opponentName={isGauntlet ? gauntletOpponent.name : stdOpponent.name}
         opponentModel={isGauntlet ? gauntletOpponent.model : undefined}
         opponentBio={isGauntlet ? gauntletOpponent.bio : undefined}
         gauntletStep={isGauntlet ? gauntletStep : undefined}
-        canRetry={!isGauntlet && !tryAgainUsed}
+        canRetry={!isGauntlet && !tryAgainUsed && !streakActive}
         onBack={handleBack}
-        onRetry={!isGauntlet ? () => { setTryAgainUsed(true); setRetryKey(k => k + 1) } : undefined}
+        onRetry={isGauntlet ? () => setRetryKey(k => k + 1) : (!tryAgainUsed ? () => { setTryAgainUsed(true); setRetryKey(k => k + 1) } : undefined)}
         onResult={isGauntlet ? handleGauntletResult : undefined}
+        streakMode={streakActive && !isGauntlet}
+        currentStreak={streakCurrent}
+        bestStreak={streakBest}
+        onStreakWin={streakActive && !isGauntlet ? handleStreakWin : undefined}
+        onStreakContinue={streakActive && !isGauntlet ? handleStreakContinue : undefined}
+        onStreakGiveUp={streakActive && !isGauntlet ? handleStreakGiveUp : undefined}
+        streakContinueUsed={streakContinueUsed}
         onQuit={isGauntlet ? (() => {
           setGauntletStep(0)
           localStorage.setItem('fo_gauntlet_step', '0')
@@ -484,6 +743,7 @@ export default function App() {
           setScreen('home')
         }) : undefined}
         onPlayerLost={handlePlayerLost}
+        onPlayerWon={handlePlayerWon}
         musicOn={musicOn}
         sfxOn={sfxOn}
         onToggleMusic={toggleMusic}
@@ -495,7 +755,7 @@ export default function App() {
     return <DeckPicker onSelect={handleSelectDeck} onBack={handleBack} />
   }
   if (screen === 'mplobby') {
-    return <MultiplayerLobby mp={mp} portrait={portrait} onBack={handleMpBack} />
+    return <MultiplayerLobby mp={mp} portrait={portrait} onBack={handleMpBack} onFallbackCPU={handleMpFallbackCPU} />
   }
   if (screen === 'mpgame' && mpDeck && mpCards) {
     return (
@@ -509,7 +769,9 @@ export default function App() {
         mpState={mp}
         yourTurn={mp.getYourTurn()}
         onBack={handleMpGameBack}
+        onResult={(w) => { mpResultRef.current = w }}
         onPlayerLost={handlePlayerLost}
+        onPlayerWon={handlePlayerWon}
         musicOn={musicOn}
         sfxOn={sfxOn}
         onToggleMusic={toggleMusic}
@@ -561,14 +823,61 @@ export default function App() {
   }
 
   return (
+    <>
+    {/* Online deck unlock prompt — shown after guest plays a deck they don't own */}
+    {mpUnlockPrompt && (
+      <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.85)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div style={{ background:'#1a0040', border:'2px solid rgba(255,215,0,0.5)', borderRadius:20, padding:'28px 24px', margin:'0 24px', maxWidth:320, width:'100%', display:'flex', flexDirection:'column', alignItems:'center', gap:12, textAlign:'center', boxShadow:'0 0 40px rgba(0,0,0,0.6)' }}>
+          <div style={{ fontSize:36 }}>🃏</div>
+          <div style={{ fontSize:18, fontWeight:900, letterSpacing:1, color:'#FFD700', fontFamily:"'Arial Black', Arial, sans-serif" }}>LIKED THAT DECK?</div>
+          <div style={{ fontSize:14, color:'rgba(255,255,255,0.8)', fontFamily:'Arial, sans-serif', lineHeight:1.5 }}>
+            You just played with <strong style={{ color:'#FFD700' }}>{mpUnlockPrompt.name}</strong>. Unlock it in the Shop to play it any time!
+          </div>
+          <button
+            onClick={() => { setMpUnlockPrompt(null); setScreen('shop') }}
+            style={{ width:'100%', padding:14, background:'#FFD700', color:'#1a0040', fontSize:15, fontWeight:900, letterSpacing:2, borderRadius:12, border:'none', cursor:'pointer', fontFamily:"'Arial Black', Arial, sans-serif" }}
+          >
+            VISIT SHOP
+          </button>
+          <button
+            onClick={() => setMpUnlockPrompt(null)}
+            style={{ background:'none', border:'none', color:'rgba(255,255,255,0.45)', fontSize:13, cursor:'pointer', fontFamily:'Arial, sans-serif' }}
+          >
+            Maybe later
+          </button>
+        </div>
+      </div>
+    )}
+    {showStreakIntro && (
+      <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.8)', display:'flex', alignItems:'center', justifyContent:'center', animation:'fadeIn 0.2s ease' }}>
+        <div style={{ position:'relative', background:'#1a0040', border:'2px solid rgba(255,215,0,0.5)', borderRadius:20, padding:'28px 24px', margin:'0 24px', display:'flex', flexDirection:'column', alignItems:'center', gap:12, textAlign:'center', boxShadow:'0 0 40px rgba(0,0,0,0.6)' }}>
+          <button className="modal-close-x" onClick={handleStreakIntroDismiss} aria-label="Close">✕</button>
+          <div style={{ fontSize:40 }}>🔥</div>
+          <div style={{ fontSize:20, fontWeight:900, letterSpacing:2, color:'#FFD700', fontFamily:"'Arial Black', Arial, sans-serif" }}>STREAK MODE</div>
+          <div style={{ fontSize:14, color:'rgba(255,255,255,0.7)', fontFamily:'Arial, sans-serif', lineHeight:1.5 }}>
+            {streakBest > 0
+              ? <><span>Your best streak is </span><strong style={{ color:'#FFD700' }}>{streakBest}</strong><span>. Can you beat it?</span></>
+              : <span>You haven't set a streak yet. Time to change that!</span>
+            }
+          </div>
+          <div style={{ fontSize:18, fontWeight:900, color:'#FFD700', letterSpacing:2, fontFamily:"'Arial Black', Arial, sans-serif" }}>GOOD LUCK!</div>
+          <button onClick={handleStreakIntroDismiss} style={{ marginTop:4, width:'100%', padding:14, background:'#FFD700', color:'#1a0040', fontSize:15, fontWeight:900, letterSpacing:2, borderRadius:12, border:'none', cursor:'pointer', fontFamily:"'Arial Black', Arial, sans-serif" }}>
+            LET'S GO!
+          </button>
+        </div>
+      </div>
+    )}
     <Home
       onPlay={handlePlay}
       onKnockout={handleKnockout}
       onOnline={handleOnline}
+      onLocalPlay={handleLocalPlay}
       onSeason={handleSeasonMap}
+      onReveal={() => setScreen('reveal')}
       onShop={() => setScreen('shop')}
       onAvatar={() => setScreen('avatarpicker')}
       onSettings={() => setScreen('settings')}
+      onRanks={() => setScreen('leaderboard')}
       portrait={portrait}
       onPortrait={handlePortrait}
       gauntletStep={gauntletStep}
@@ -579,6 +888,14 @@ export default function App() {
       sfxOn={sfxOn}
       onToggleMusic={toggleMusic}
       onToggleSfx={toggleSfx}
+      onHomeMusic={forceNewHomeTrack}
     />
+    {!cookieBannerDone && (
+      <CookieBanner
+        onAccept={() => { setCookieBannerDone(true); snapshotToCookie() }}
+        onDecline={() => setCookieBannerDone(true)}
+      />
+    )}
+    </>
   )
 }

@@ -16,15 +16,19 @@
 }
 
 .backBtn {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #fff;
-  padding: 8px 16px;
-  border-radius: 50px;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: Arial, sans-serif;
+  background: none;
+  border: none;
+  padding: 0;
   cursor: pointer;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+  transition: transform 0.1s;
+}
+.backBtn:hover { transform: scale(1.05); }
+.backBtn:active { transform: scale(0.95); }
+.backBtnImg {
+  height: clamp(36px, 10vw, 44px);
+  width: auto;
+  display: block;
 }
 
 .devReset {
@@ -117,8 +121,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 16px 20px 12px;
+  gap: 6px;
+  padding: 8px 20px 8px;
   flex-shrink: 0;
 }
 
@@ -128,6 +132,8 @@
   padding: 0;
   cursor: pointer;
   transition: transform 0.1s, filter 0.1s;
+  width: 100%;
+  max-width: 240px;
 }
 
 .spinImgBtn:hover:not(:disabled) { transform: translateY(-2px); }
@@ -138,7 +144,7 @@
 
 .spinImgBtnImg {
   width: 100%;
-  max-width: 360px;
+  max-width: 240px;
   height: auto;
   display: block;
 }
@@ -248,3 +254,46 @@
 }
 
 .collectBtn:hover { transform: scale(1.05); }
+
+/* ── Bonus spin button ── */
+.bonusSpinBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 240px;
+  padding: 11px 20px;
+  border-radius: 50px;
+  border: 2px solid rgba(255,215,0,0.6);
+  background: linear-gradient(135deg, #7a3b00 0%, #3d1a00 100%);
+  box-shadow: 0 4px 16px rgba(255,215,0,0.2);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.bonusSpinBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255,215,0,0.35);
+}
+
+.bonusSpinBtn:active:not(:disabled) { transform: translateY(1px); }
+.bonusSpinBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.bonusSpinIcon { font-size: 20px; }
+
+.bonusSpinLabel {
+  font-size: 16px;
+  font-weight: 900;
+  color: #FFD700;
+  font-family: 'Arial Black', Arial, sans-serif;
+  letter-spacing: 1px;
+}
+
+.bonusSpinCount {
+  font-size: 14px;
+  font-weight: 900;
+  color: rgba(255,215,0,0.7);
+  font-family: 'Arial Black', Arial, sans-serif;
+  letter-spacing: 0.5px;
+}

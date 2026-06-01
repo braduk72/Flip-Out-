@@ -18,6 +18,9 @@ html, body {
   height: 100%;
   width: 100%;
   background: #080010;
+  overflow: hidden;
+  overscroll-behavior: none;   /* kills rubber-band / pull-to-refresh */
+  touch-action: pan-y;         /* allow vertical scroll in containers; block horizontal drag */
 }
 
 body {
@@ -25,7 +28,6 @@ body {
   font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -33,7 +35,8 @@ body {
 
 #root {
   width: min(390px, 100vw);
-  height: min(844px, 100dvh);
+  height: min(844px, calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
+  margin-top: env(safe-area-inset-top);
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -55,3 +58,29 @@ button {
   outline: none;
 }
 button:disabled { opacity: 0.5; cursor: default; }
+
+/* ── Global red X close button — use className="modal-close-x" on any modal ── */
+.modal-close-x {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #ff4444, #cc0000);
+  border: 2px solid rgba(255,100,100,0.6);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.1s, filter 0.1s;
+  line-height: 1;
+  padding: 0;
+  z-index: 10;
+}
+.modal-close-x:hover  { transform: scale(1.1); filter: brightness(1.2); }
+.modal-close-x:active { transform: scale(0.9); }

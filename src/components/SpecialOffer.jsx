@@ -64,7 +64,7 @@ export default function SpecialOffer({ onClose, onBuy }) {
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.card} onClick={e => e.stopPropagation()}>
-        <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        <button className="modal-close-x" onClick={onClose} aria-label="Close">✕</button>
 
         <div className={styles.timerBadge}>⏱ {countdown}</div>
 

@@ -47,15 +47,19 @@
 }
 
 .backBtn {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: var(--white);
-  padding: 8px 16px;
-  border-radius: 50px;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: Arial, sans-serif;
+  background: none;
+  border: none;
+  padding: 0;
   cursor: pointer;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+  transition: transform 0.1s;
+}
+.backBtn:hover { transform: scale(1.05); }
+.backBtn:active { transform: scale(0.95); }
+.backBtnImg {
+  height: clamp(36px, 10vw, 44px);
+  width: auto;
+  display: block;
 }
 
 .title {
@@ -64,29 +68,6 @@
   color: var(--yellow);
   text-shadow: 2px 2px 0 #8B0000;
   margin: 0;
-}
-
-.surpriseBtn {
-  margin: 4px 16px 0;
-  width: calc(100% - 32px);
-  padding: 12px;
-  background: rgba(255,215,0,0.12);
-  border: 1.5px solid rgba(255,215,0,0.4);
-  border-radius: 14px;
-  color: var(--yellow);
-  font-family: 'Arial Black', Arial, sans-serif;
-  font-size: 15px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: background 0.15s;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
-}
-
-.surpriseBtn:hover {
-  background: rgba(255,215,0,0.2);
 }
 
 .hint {
@@ -298,6 +279,48 @@
 
 .buyBtn:active { transform: translateY(2px); box-shadow: 0 2px 0 #7A4400; }
 
+.freeUnlockBadge {
+  font-size: 11px;
+  font-weight: 900;
+  color: #4ade80;
+  letter-spacing: 1px;
+  text-align: center;
+  text-shadow: 0 0 12px rgba(74,222,128,0.7);
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.freeUnlockBtn {
+  flex: 1;
+  padding: 12px 0;
+  background: linear-gradient(180deg, #6effa0 0%, #22c55e 40%, #15803d 100%);
+  color: #fff;
+  font-family: 'Arial Black', Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 900;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #14532d, 0 0 20px rgba(34,197,94,0.5);
+  letter-spacing: 1px;
+}
+.freeUnlockBtn:active { transform: translateY(2px); box-shadow: 0 2px 0 #14532d; }
+
+.buyWithCoinsSmall {
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  text-decoration: underline;
+  position: relative;
+  z-index: 1;
+  padding: 0;
+}
+.buyWithCoinsSmall:hover { color: rgba(255,255,255,0.7); }
+
 .cancelBtn {
   flex: 1;
   padding: 12px 0;
@@ -324,8 +347,8 @@
 
 .freeBadge {
   position: absolute;
-  top: -8px;
-  right: -4px;
+  top: 6px;
+  right: 6px;
   background: #22c55e;
   color: #fff;
   font-size: 9px;
@@ -334,4 +357,83 @@
   border-radius: 50px;
   letter-spacing: 1px;
   z-index: 2;
+}
+
+.mediumBadge {
+  position: absolute;
+  top: -8px;
+  left: -4px;
+  background: #d97706;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 50px;
+  letter-spacing: 1px;
+  z-index: 2;
+  font-family: 'Arial Black', Arial, sans-serif;
+}
+
+.hardBadge {
+  position: absolute;
+  top: -8px;
+  left: -4px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 50px;
+  letter-spacing: 1px;
+  z-index: 2;
+  font-family: 'Arial Black', Arial, sans-serif;
+}
+
+.playFreeBtn {
+  flex: 1;
+  padding: 12px 0;
+  background: linear-gradient(180deg, #6effa0 0%, #22c55e 40%, #15803d 100%);
+  color: #fff;
+  font-family: 'Arial Black', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 900;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #14532d;
+  letter-spacing: 1px;
+  position: relative;
+  z-index: 1;
+}
+.playFreeBtn:active { transform: translateY(2px); box-shadow: 0 2px 0 #14532d; }
+
+.freeTagline {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4ade80;
+  margin: 0;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(74,222,128,0.6);
+  position: relative;
+  z-index: 1;
+}
+
+.fullDeckPerks {
+  font-size: 10px;
+  font-weight: 700;
+  color: #FFD700;
+  margin: 0;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(255,215,0,0.5);
+  position: relative;
+  z-index: 1;
+  line-height: 1.4;
+}
+
+.modalPriceLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.55);
+  margin-left: 4px;
+  font-family: Arial, sans-serif;
 }

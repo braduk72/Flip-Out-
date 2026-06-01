@@ -83,6 +83,13 @@ export const SPECIAL_CARDS = {
     description: 'Flip this card plus 3 more this turn',
     color: '#FFD700',
   },
+  tiebreaker: {
+    id: 'tiebreaker',
+    name: 'TIE BREAKER!',
+    image: '/images/cards/special/tiebreaker.webp',
+    description: 'A Tie Breaker card added to your collection — use it to win any draw!',
+    color: '#FFD700',
+  },
   // Synthetic effect entries (not real cards — used for UI banners only)
   bolt_blocked: {
     id: 'bolt_blocked',
@@ -117,7 +124,16 @@ export const SPECIAL_POOL = [
   'random', 'xray',
 ]
 
+// Rare drops — injected with low probability to replace one normal special slot
+const RARE_POOL    = ['tiebreaker']
+const RARE_CHANCE  = 0.12   // 12% chance per game — roughly 1 in 8 games
+
 export function pickRandomSpecials(count) {
-  const shuffled = [...SPECIAL_POOL].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, count)
+  const normals = [...SPECIAL_POOL].sort(() => Math.random() - 0.5).slice(0, count)
+  if (count > 0 && Math.random() < RARE_CHANCE) {
+    const rare = RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)]
+    const slot = Math.floor(Math.random() * count)
+    normals[slot] = rare
+  }
+  return normals
 }

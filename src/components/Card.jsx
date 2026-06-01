@@ -1,17 +1,22 @@
 import styles from './Card.module.css'
 
-export default function Card({ card, isFlipped, isMatched, isFrozen, isConsumed, revealEffect, isShuffling, onClick, backImage, style }) {
-  const faceUp = isFlipped && !isMatched
+export default function Card({ card, isFlipped, isMatched, isFrozen, isConsumed, revealEffect, isShuffling, onClick, backImage, style, keepVisible }) {
+  // Easy/Medium (keepVisible): matched cards flip back face-down and show a green tick
+  // Hard/Lethal (!keepVisible): matched cards collapse (matched class shrinks them to 0)
+  const faceUp        = isFlipped && !isMatched
+  const hideMatched   = isMatched && !keepVisible
+  const isMatchedBack = isMatched && keepVisible
 
   return (
     <div
       className={`
         ${styles.card}
-        ${faceUp      ? styles.faceUp    : ''}
-        ${isMatched   ? styles.matched   : ''}
-        ${isFrozen    ? styles.frozen    : ''}
-        ${isConsumed  ? styles.consumed  : ''}
-        ${isShuffling ? styles.shuffling : ''}
+        ${faceUp         ? styles.faceUp         : ''}
+        ${hideMatched    ? styles.matched         : ''}
+        ${isMatchedBack  ? styles.matchedBack     : ''}
+        ${isFrozen       ? styles.frozen          : ''}
+        ${isConsumed     ? styles.consumed        : ''}
+        ${isShuffling    ? styles.shuffling       : ''}
       `}
       onClick={onClick}
       role="button"
@@ -20,7 +25,7 @@ export default function Card({ card, isFlipped, isMatched, isFrozen, isConsumed,
     >
       <div className={styles.inner}>
         <div className={styles.back}>
-          {backImage && !isMatched
+          {backImage && (!isMatched || keepVisible)
             ? <img src={backImage} alt="" draggable="false" className={styles.backImg} />
             : <><div className={styles.backPattern} /><span className={styles.backLogo}>F!</span></>
           }
@@ -53,6 +58,11 @@ export default function Card({ card, isFlipped, isMatched, isFrozen, isConsumed,
             <circle cx="24" cy="24" r="4" fill="rgba(220,245,255,0.6)" stroke="rgba(200,240,255,0.95)" strokeWidth="1.5"/>
           </svg>
           <span className={styles.frozenLabel}>FROZEN</span>
+        </div>
+      )}
+      {isMatchedBack && (
+        <div className={styles.matchedTick}>
+          <div className={styles.matchedTickInner}>✓</div>
         </div>
       )}
       {revealEffect && (

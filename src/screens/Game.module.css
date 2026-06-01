@@ -115,24 +115,34 @@
 /* ── Board ── */
 .boardWrap {
   flex: 1;
-  overflow-y: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  padding: 10px 10px 6px;
+  overflow: hidden;
+  padding: 4px 4px 4px;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.boardWrap::-webkit-scrollbar { display: none; }
-
 .board {
-  display: flex;
-  flex-wrap: wrap;
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-content: start;
   width: 100%;
   transition: filter 0.3s;
   position: relative;
 }
 
 .board.aiTurn    { pointer-events: none; }
+
+/* ── Boom explosion: cards burst outward from the bomb, spin, then settle back ── */
+@keyframes boomExplode {
+  0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
+  20%  { transform: translate(calc(var(--boom-dx, 1) * 30px),  calc(var(--boom-dy, 0) * 30px))  rotate(calc(var(--boom-spin, 1) * 60deg))  scale(1.1); }
+  45%  { transform: translate(calc(var(--boom-dx, 1) * 90px),  calc(var(--boom-dy, 0) * 90px))  rotate(calc(var(--boom-spin, 1) * 200deg)) scale(1.28); }
+  65%  { transform: translate(calc(var(--boom-dx, 1) * 55px),  calc(var(--boom-dy, 0) * 55px))  rotate(calc(var(--boom-spin, 1) * 310deg)) scale(1.1); }
+  85%  { transform: translate(calc(var(--boom-dx, 1) * 12px),  calc(var(--boom-dy, 0) * 12px))  rotate(calc(var(--boom-spin, 1) * 345deg)) scale(1.02); }
+  100% { transform: translate(0, 0) rotate(calc(var(--boom-spin, 1) * 360deg)) scale(1); }
+}
 
 /* Tornado / Rocket sweep overlays */
 .sweepTrack {
@@ -374,6 +384,62 @@
   50%       { box-shadow: 0 0 28px rgba(255,215,0,0.8); }
 }
 
+/* ── Turn timer countdown zoom (red / urgent) ── */
+.turnOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 3;
+  perspective: 600px;
+}
+
+.turnNum {
+  font-size: clamp(120px, 38vw, 220px);
+  font-weight: 900;
+  color: #ff4444;
+  line-height: 1;
+  text-shadow:
+    0 0 30px rgba(255, 50, 0, 0.9),
+    0 0 70px rgba(255, 0, 0, 0.6),
+    3px 3px 0 rgba(0, 0, 0, 0.6);
+  animation: swZoom 0.92s cubic-bezier(0.12, 0.8, 0.4, 1) both;
+  transform-origin: center center;
+}
+
+/* ── Stopwatch countdown zoom ── */
+.swOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 3;
+  perspective: 600px;
+}
+
+.swNum {
+  font-size: clamp(120px, 38vw, 220px);
+  font-weight: 900;
+  color: #FFD700;
+  line-height: 1;
+  text-shadow:
+    0 0 30px rgba(255, 200, 0, 0.9),
+    0 0 70px rgba(255, 140, 0, 0.6),
+    3px 3px 0 rgba(0, 0, 0, 0.6);
+  animation: swZoom 0.92s cubic-bezier(0.12, 0.8, 0.4, 1) both;
+  transform-origin: center center;
+}
+
+@keyframes swZoom {
+  0%   { transform: scale(0.04); opacity: 1;   }
+  55%  { transform: scale(1.05); opacity: 0.95; }
+  100% { transform: scale(1.9);  opacity: 0;   }
+}
+
 /* ── Dice roll overlay ── */
 .diceOverlay {
   position: absolute;
@@ -576,6 +642,25 @@
   border-radius: 50%;
 }
 
+.stdDefeatAvatarWrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+
+.stdDefeatX {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 110px;
+  font-weight: 900;
+  color: #ff1a1a;
+  text-shadow: 0 0 30px rgba(255, 0, 0, 0.9), 4px 4px 0 rgba(0, 0, 0, 0.7);
+  animation: xStamp 0.18s cubic-bezier(0.34, 1.5, 0.64, 1) 0.3s both;
+}
+
 .stdBanner {
   width: 100%;
   max-width: 280px;
@@ -610,6 +695,127 @@
 }
 
 .stdBtnDim { opacity: 0.5; }
+
+/* ── Streak mode UI ── */
+.streakInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 4px 0;
+}
+
+.streakNumber {
+  font-size: 52px;
+  font-weight: 900;
+  color: #FFD700;
+  font-family: 'Arial Black', Arial, sans-serif;
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(255,215,0,0.6), 0 3px 0 rgba(0,0,0,0.5);
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.streakLabel {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: rgba(255,215,0,0.75);
+  font-family: 'Arial Black', Arial, sans-serif;
+  text-transform: uppercase;
+}
+
+.streakBest {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  font-family: Arial, sans-serif;
+  margin-top: 2px;
+}
+
+.streakNextBtn {
+  margin-top: 6px;
+  padding: 14px 32px;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, #FFE566 0%, #FFD700 40%, #CC8800 100%);
+  color: #3A0060;
+  font-size: 17px;
+  font-weight: 900;
+  font-family: 'Arial Black', Arial, sans-serif;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #7A4400, 0 6px 20px rgba(255,215,0,0.35);
+  transition: transform 0.1s;
+}
+.streakNextBtn:hover  { transform: translateY(-2px); }
+.streakNextBtn:active { transform: translateY(2px); box-shadow: 0 2px 0 #7A4400; }
+
+.streakQuitBtn {
+  margin-top: 2px;
+  padding: 8px 20px;
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.streakQuitBtn:hover { color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.5); }
+
+.streakDefeatBtns {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.streakContinueBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 24px;
+  border-radius: 50px;
+  border: none;
+  background: linear-gradient(135deg, #FFE566 0%, #FFD700 40%, #CC8800 100%);
+  color: #3A0060;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #7A4400;
+  transition: transform 0.1s;
+}
+.streakContinueBtn:hover  { transform: translateY(-2px); }
+.streakContinueBtn:active { transform: translateY(2px); box-shadow: 0 2px 0 #7A4400; }
+
+.streakContinueLabel {
+  font-size: 14px;
+  font-weight: 900;
+  font-family: 'Arial Black', Arial, sans-serif;
+  letter-spacing: 1px;
+}
+
+.streakContinueCost {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: Arial, sans-serif;
+  opacity: 0.85;
+}
+
+.streakGiveUpBtn {
+  padding: 12px 24px;
+  border-radius: 50px;
+  border: 1.5px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  font-family: 'Arial Black', Arial, sans-serif;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.streakGiveUpBtn:hover { background: rgba(255,255,255,0.15); }
 
 .watchingAdLabel {
   font-size: 12px;
@@ -1147,14 +1353,252 @@
   top: 10px;
   right: 12px;
   z-index: 30;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: var(--white);
-  width: 32px;
-  height: 32px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+  transition: transform 0.1s;
+}
+.backBtn:hover { transform: scale(1.1); }
+.backBtn:active { transform: scale(0.9); }
+.closeX {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  font-size: 14px;
+  background: #cc0000;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+
+/* ── Pass device overlay — local pass-and-play mode ── */
+.passOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.93);
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
+.passCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 36px 32px;
+  background: linear-gradient(145deg, #1a0050, #0d0030);
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  border-radius: 24px;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+  max-width: 280px;
+  width: 80%;
+  text-align: center;
+}
+
+.passEmoji {
+  font-size: 52px;
+  line-height: 1;
+}
+
+.passTitle {
+  font-size: 22px;
+  font-weight: 900;
+  color: #FFD700;
+  font-family: 'Arial Black', Arial, sans-serif;
+  letter-spacing: 2px;
+}
+
+.passSub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  font-family: Arial, sans-serif;
+  line-height: 1.4;
+}
+
+.passReadyBtn {
+  margin-top: 8px;
+  padding: 14px 32px;
+  background: linear-gradient(180deg, #32d96a, #1a9e48);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-family: 'Arial Black', Arial, sans-serif;
+  box-shadow: 0 4px 20px rgba(50, 217, 106, 0.4);
+  transition: transform 0.1s;
+}
+
+/* ── Tie Break modal ──────────────────────────────────────────────────────── */
+.tieBreakCard {
+  background: linear-gradient(180deg, #1e004a 0%, #0d0020 100%);
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  border-radius: 20px;
+  padding: 20px 20px 24px;
+  width: min(340px, 90vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 40px rgba(255,215,0,0.15);
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tieBreakEmoji {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.tieBreakTitle {
+  font-size: 26px;
+  font-weight: 900;
+  color: #FFD700;
+  text-shadow: 2px 2px 0 #8B0000;
+  font-family: 'Arial Black', Arial, sans-serif;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.tieBreakBtns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.tieBreakBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: Arial, sans-serif;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.15s, border-color 0.15s;
+}
+.tieBreakBtn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.13);
+  border-color: rgba(255,215,0,0.5);
+}
+
+.tieBreakBtnSub {
+  font-size: 10px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.2px;
+  margin-top: 2px;
+}
+
+.tieBreakBtnCard {
+  border-color: rgba(255,215,0,0.4);
+  background: rgba(255,215,0,0.06);
+}
+
+.tieBreakBtnGiveUp {
+  border-color: rgba(255,80,80,0.3);
+  color: rgba(255,150,150,0.9);
+}
+
+.tieBreakBtnDisabled {
+  opacity: 0.4;
+  cursor: default !important;
+}
+
+/* ── Coin flip ────────────────────────────────────────────────────────────── */
+.coinFlipSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 0 4px;
+  width: 100%;
+}
+
+.coinWrap {
+  width: 110px;
+  height: 110px;
+  perspective: 500px;
+}
+
+.coinInner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  border-radius: 50%;
+}
+
+.coinSpinHeads {
+  animation: coinFlipHeads 2.2s cubic-bezier(0.15, 0.05, 0.0, 1.0) forwards;
+}
+
+.coinSpinTails {
+  animation: coinFlipTails 2.2s cubic-bezier(0.15, 0.05, 0.0, 1.0) forwards;
+}
+
+@keyframes coinFlipHeads {
+  from { transform: rotateY(0deg); }
+  to   { transform: rotateY(1800deg); }
+}
+
+@keyframes coinFlipTails {
+  from { transform: rotateY(0deg); }
+  to   { transform: rotateY(1980deg); }
+}
+
+.coinFace {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  backface-visibility: hidden;
+  overflow: hidden;
+  border: 3px solid #FFD700;
+  box-shadow: 0 0 20px rgba(255,215,0,0.45), inset 0 0 12px rgba(255,215,0,0.1);
+}
+
+.coinTails {
+  transform: rotateY(180deg);
+}
+
+.coinImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.coinResult {
+  font-size: 17px;
+  font-weight: 900;
+  font-family: 'Arial Black', Arial, sans-serif;
+  letter-spacing: 0.5px;
+  text-align: center;
+  animation: resultPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.coinWin  { color: #22C55E; text-shadow: 0 0 16px rgba(34,197,94,0.8); }
+.coinLose { color: #EF4444; text-shadow: 0 0 16px rgba(239,68,68,0.8); }
+
+@keyframes resultPop {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+.passReadyBtn:active { transform: scale(0.95); }

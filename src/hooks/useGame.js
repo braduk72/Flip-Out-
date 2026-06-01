@@ -72,6 +72,7 @@ function makeInitial(deck, numPairs = 6, numSpecials = 2, prebuiltCards = null, 
     aiShield:       false,
     crownHolder:    null,    // 'player' | 'ai' — next opponent pair goes to them
     stopwatchEnd:   null,    // Date.now() + 10000 when active
+    bonusTurn:      null,    // 'player' | 'ai' — dice double grants one extra turn after current
     activeEffect:   null,    // { type, data } drives animation overlay
     pendingSpecial:  null,   // { index, whose } — special flipped, awaiting effect
     pendingResolve:  null,   // { whose } — both cards face-up, awaiting match check
@@ -140,17 +141,31 @@ function reducer(state, action) {
       // Guard: not player's turn
       if (state.turn !== 'player') return state
 
-      // Special card — flip face-up first, fire effect after animation
+      // Special card — same behaviour stopwatch or not
       if (card.type === 'special') {
         return { ...state, flipped: [index], pendingSpecial: { index, whose: 'player' } }
       }
 
-      const newFlipped = [...state.flipped, index]
-
-      if (newFlipped.length === 1) {
+      // ── Stopwatch mode: cards stay revealed, unlimited flips, match any pair ──
+      const swActive = state.stopwatchEnd && Date.now() < state.stopwatchEnd
+      if (swActive) {
+        const matchIdx = state.flipped.find(i =>
+          state.cards[i].type === 'regular' && state.cards[i].pairId === card.pairId
+        )
+        const newFlipped = [...state.flipped, index]
+        if (matchIdx !== undefined) {
+          // Found a match with an already-revealed card — queue the specific pair for resolve
+          return { ...state, flipped: newFlipped, pendingResolve: { whose: 'player', swPair: [matchIdx, index] } }
+        }
+        // No match yet — card stays face-up, player keeps going
         return { ...state, flipped: newFlipped }
       }
 
+      // ── Normal 2-flip mode ────────────────────────────────────────────────────
+      const newFlipped = [...state.flipped, index]
+      if (newFlipped.length === 1) {
+        return { ...state, flipped: newFlipped }
+      }
       // Second flip — show both face-up, resolve after zoom animation
       return { ...state, flipped: newFlipped, pendingResolve: { whose: 'player' } }
     }
@@ -180,6 +195,11 @@ function reducer(state, action) {
 
     case 'RESOLVE_FLIP': {
       const { whose } = action
+      const swPair = state.pendingResolve?.swPair
+      if (swPair) {
+        // Stopwatch match: resolve only the specific pair, keep other revealed cards face-up
+        return resolveStopwatchPair({ ...state, pendingResolve: null }, swPair[0], swPair[1], whose)
+      }
       return resolveFlip({ ...state, pendingResolve: null }, state.flipped, whose)
     }
 
@@ -189,11 +209,12 @@ function reducer(state, action) {
     }
 
     case 'HIDE_FLIPPED': {
-      const keepTurn = state.stopwatchEnd && Date.now() < state.stopwatchEnd
+      const keepTurn = (state.stopwatchEnd && Date.now() < state.stopwatchEnd)
+                    || state.bonusTurn === state.turn
       const newTurn  = keepTurn ? state.turn : otherTurn(state.turn)
       // Clear stun for whoever just had their turn — bolt stuns for exactly 1 turn
       const newStunned = state.stunned === state.turn ? null : state.stunned
-      const next = { ...state, flipped: [], turn: newTurn, stunned: newStunned }
+      const next = { ...state, flipped: [], turn: newTurn, stunned: newStunned, bonusTurn: null }
       // Safety net: catch any game over the resolveFlip path may have missed
       if (!next.gameOver && checkGameOver(next)) {
         return {
@@ -213,7 +234,8 @@ function reducer(state, action) {
       return { ...state, frozen: [] }
 
     case 'STOPWATCH_END':
-      return { ...state, stopwatchEnd: null, turn: otherTurn(state.turn) }
+      // Time up — flip all still-revealed unmatched cards back over, then pass turn
+      return { ...state, stopwatchEnd: null, flipped: [], turn: otherTurn(state.turn) }
 
     case 'USE_JOKER': {
       if (state.jokerUsed || state.flipped.length !== 1 || state.turn !== 'player') return state
@@ -242,7 +264,8 @@ function reducer(state, action) {
       return {
         ...state,
         activeEffect: { type: 'dice', data: { die1, die2, isDouble } },
-        turn: isDouble ? state.turn : otherTurn(state.turn),
+        turn: state.turn,                           // player finishes their 2-flip turn first
+        bonusTurn: isDouble ? state.turn : null,    // double: extra turn after the 2 flips
       }
     }
 
@@ -294,7 +317,52 @@ function resolveFlip(state, flipped, whose) {
 
   const newState = {
     ...state,
+    turn: whose,   // explicitly keep turn with whoever matched (guards against crown confusion)
     flipped: [],
+    matched: newMatched,
+    playerScore,
+    aiScore,
+    crownHolder: null,
+    activeEffect: { type: 'match', data: { a, b, whose } },
+  }
+
+  if (checkGameOver(newState)) {
+    return {
+      ...newState,
+      gameOver: true,
+      winner: newState.playerScore > newState.aiScore ? 'player'
+        : newState.aiScore > newState.playerScore ? 'ai' : 'draw',
+    }
+  }
+
+  return newState
+}
+
+// Resolves a matched pair during stopwatch mode: scores the pair and removes only those
+// two cards from `flipped`, leaving all other revealed cards still face-up.
+function resolveStopwatchPair(state, a, b, whose) {
+  const cardA = state.cards[a]
+  const cardB = state.cards[b]
+  if (!cardA || !cardB) return state
+
+  const newMatched = [...state.matched, a, b]
+  let { playerScore, aiScore } = state
+
+  if (state.crownHolder && state.crownHolder !== whose) {
+    if (whose === 'player') aiScore += 1
+    else playerScore += 1
+  } else {
+    if (whose === 'player') playerScore += 1
+    else aiScore += 1
+  }
+
+  // Remove only the matched pair — every other revealed card stays face-up
+  const newFlipped = state.flipped.filter(i => i !== a && i !== b)
+
+  const newState = {
+    ...state,
+    turn: whose,   // stopwatch keeps turn with whoever matched
+    flipped: newFlipped,
     matched: newMatched,
     playerScore,
     aiScore,
@@ -319,17 +387,23 @@ function applySpecial(state, index, whose, seed = {}) {
   const opponent = otherTurn(whose)
   const consumed = [...state.consumed, index]
   const base = { ...state, consumed, flipped: [], activeEffect: null }
+  const swActive = state.stopwatchEnd && Date.now() < state.stopwatchEnd
+  const keepOrSwitch = (turn) => swActive ? whose : turn
 
   switch (card.specialType) {
 
     case 'freeze': {
-      const nb = neighbours(index).filter(
+      // Count remaining regular pairs — never freeze if only one pair is left (would deadlock)
+      const remainingPairs = state.cards.filter(
+        (c, i) => c.type === 'regular' && !state.matched.includes(i) && !state.consumed.includes(i)
+      ).length / 2
+      const nb = remainingPairs <= 1 ? [] : neighbours(index).filter(
         i => !state.matched.includes(i) && !state.consumed.includes(i)
       )
       return {
         ...base,
         frozen: nb,
-        turn: otherTurn(whose),
+        turn: keepOrSwitch(otherTurn(whose)),
         activeEffect: { type: 'freeze', data: { index, frozen: nb } },
       }
     }
@@ -352,7 +426,7 @@ function applySpecial(state, index, whose, seed = {}) {
         .filter(i => !state.matched.includes(i) && !state.consumed.includes(i) && i !== index)
       return {
         ...base,
-        turn: otherTurn(whose),
+        turn: keepOrSwitch(otherTurn(whose)),
         activeEffect: { type: 'tornado', data: { trail: unmatched } },
       }
     }
@@ -393,7 +467,7 @@ function applySpecial(state, index, whose, seed = {}) {
       const line = rawLine.filter(i => !state.matched.includes(i) && !state.consumed.includes(i) && i !== index)
       return {
         ...base,
-        turn: otherTurn(whose),
+        turn: whose,  // player keeps turn — they revealed the line, let them use the info
         activeEffect: { type: 'rocket', data: { line, index } },
       }
     }
@@ -404,7 +478,8 @@ function applySpecial(state, index, whose, seed = {}) {
       const isDouble = die1 === die2
       return {
         ...base,
-        turn: isDouble ? whose : otherTurn(whose),
+        turn: whose,                          // always: finish current 2-flip turn first
+        bonusTurn: isDouble ? whose : null,   // double: extra turn granted after those 2 flips
         activeEffect: { type: 'dice', data: { die1, die2, isDouble } },
       }
     }
@@ -413,7 +488,6 @@ function applySpecial(state, index, whose, seed = {}) {
       return {
         ...base,
         [whose === 'player' ? 'playerShield' : 'aiShield']: true,
-        turn: otherTurn(whose),
         activeEffect: { type: 'shield', data: { whose } },
       }
 
@@ -426,10 +500,11 @@ function applySpecial(state, index, whose, seed = {}) {
       }
 
     case 'crown':
+      // Crown fires its effect but the player keeps their turn — they still have 2 flips left
       return {
         ...base,
         crownHolder: whose,
-        turn: otherTurn(whose),
+        turn: whose,
         activeEffect: { type: 'crown', data: { whose } },
       }
 
@@ -454,7 +529,7 @@ function applySpecial(state, index, whose, seed = {}) {
       return {
         ...base,
         cards: shuffledCards,
-        turn: otherTurn(whose),
+        turn: keepOrSwitch(otherTurn(whose)),
         activeEffect: { type: 'shuffle', data: {} },
       }
     }
@@ -472,8 +547,21 @@ function applySpecial(state, index, whose, seed = {}) {
       }
     }
 
+    case 'tiebreaker': {
+      // Award the card to inventory — only useful to the player (AI can't collect it)
+      if (whose === 'player') {
+        const cur = parseInt(localStorage.getItem('fo_tiebreakers') || '0')
+        localStorage.setItem('fo_tiebreakers', String(cur + 1))
+      }
+      return {
+        ...base,
+        turn: whose,   // player keeps their turn — reward for finding it
+        activeEffect: { type: 'tiebreaker', data: { whose } },
+      }
+    }
+
     default:
-      return { ...base, turn: otherTurn(whose) }
+      return { ...base, turn: keepOrSwitch(otherTurn(whose)) }
   }
 }
 
@@ -559,7 +647,8 @@ export function useGame(deck, difficulty = 'Medium', prebuiltCards = null, initi
             pairId === firstCard.pairId &&
             parseInt(idx) !== flipped[0] &&
             !matched.includes(parseInt(idx)) &&
-            !consumed.includes(parseInt(idx))
+            !consumed.includes(parseInt(idx)) &&
+            !frozen.includes(parseInt(idx))
         )
         if (knownMatch && Math.random() < aiKnown) {
           return parseInt(knownMatch[0])

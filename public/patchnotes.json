@@ -1,0 +1,118 @@
+[
+  {
+    "version": "0.30",
+    "date": "28 May 2026",
+    "features": [
+      "UI tweaks"
+    ],
+    "bugfixes": [],
+    "known": [],
+    "soon": []
+  },
+  {
+    "version": "0.29",
+    "date": "27 May 2026",
+    "features": [
+      "Masters of the Lost World — 70-card prehistoric creatures deck",
+      "Super Cars expanded to 70 cards (gold collector card included)",
+      "Police Vehicles expanded to 70 cards with all-new premium artwork",
+      "Deck picker trial badge — locked decks now show TRIAL instead of '8 FREE'"
+    ],
+    "bugfixes": [
+      "Deck picker was showing wrong card images in deck slots — fixed",
+      "Freeze card now correctly carries over to your turn when the opponent plays it"
+    ],
+    "known": [],
+    "soon": []
+  },
+  {
+    "version": "0.28",
+    "date": "26 May 2026",
+    "features": [
+      "Conquest of Space deck — 71 cards",
+      "Ocean Liners deck — 60 cards",
+      "Fighter Jets deck — 60 cards",
+      "Police Vehicles deck — first 10 cards"
+    ],
+    "bugfixes": [
+      "Online play — if your target card is frozen and you don't pick another, your turn now auto-passes after 15 seconds (with a 5-second warning countdown)"
+    ],
+    "known": [],
+    "soon": []
+  },
+  {
+    "version": "0.27",
+    "date": "26 May 2026",
+    "features": [
+      "Online play — deck is now chosen randomly from your unlocked collection, no deck picker in the lobby",
+      "Online play — if you played a deck you don't own, a prompt appears after the game to unlock it in the Shop"
+    ],
+    "bugfixes": [
+      "Matched pairs (Easy/Medium) now stay face-up showing the card image instead of flipping back to the card back",
+      "Freeze card in VS mode now holds for the full turn instead of disappearing instantly"
+    ],
+    "known": [],
+    "soon": []
+  },
+  {
+    "version": "0.26",
+    "date": "26 May 2026",
+    "features": [
+      "Streak intro modal — shows your best streak and Good Luck before you pick a deck",
+      "What's New screen — accessible from Settings",
+      "Baby Animals deck fully refreshed — 61 brand new cards with card back"
+    ],
+    "bugfixes": [
+      "Turn timer countdown cancels as soon as you flip your first card",
+      "Seasonal draw — Try Again button now works correctly",
+      "Streak intro no longer appears when pressing VS or Time Challenge",
+      "Close button now visible in the game screen (red circle, white ✕)",
+      "Home button now picks a fresh music track"
+    ],
+    "known": [],
+    "soon": []
+  },
+  {
+    "version": "0.25",
+    "date": "25 May 2026",
+    "features": [
+      "Dedicated home screen music track",
+      "10-second turn timer in VS and Online modes",
+      "About Us and Privacy Policy pages"
+    ],
+    "bugfixes": [
+      "Ranks button on home screen now works"
+    ],
+    "known": [],
+    "soon": []
+  },
+  {
+    "version": "0.24",
+    "date": "23 May 2026",
+    "features": [
+      "3-pool music system — menu, in-game (18 tracks), and game-over music",
+      "Animated RoboMice and Tesla Coils on the season map",
+      "Cloud fog of war on the season map",
+      "Bonus Chest in the Shop"
+    ],
+    "bugfixes": [
+      "Shuffle card spam fixed",
+      "Game-over stale timer crash fixed",
+      "Special card labels now show correctly"
+    ],
+    "known": [],
+    "soon": []
+  },
+  {
+    "version": "0.23",
+    "date": "22 May 2026",
+    "features": [
+      "Real-time multiplayer — Quick Match, Create Room, Join Room",
+      "Solo / Time Challenge mode with personal bests",
+      "Freeze card animations"
+    ],
+    "bugfixes": [],
+    "known": [],
+    "soon": []
+  }
+]

@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DECKS } from '../data/decks'
+import { PROMO_CODES } from '../data/promoCodes'
 import styles from './Shop.module.css'
 import BottomNav from '../components/BottomNav'
-import AdBanner from '../components/AdBanner'
 import RemoveAdsModal from '../components/RemoveAdsModal'
-import { startCheckout } from '../utils/foShop.js'
+import { startCheckout, restorePurchases } from '../utils/foShop.js'
 
 function getOwnedPaidCount() {
   const owned = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
@@ -38,13 +38,77 @@ const BUNDLES = [
   },
 ]
 
+const STAGE_BKGS = [1, 2, 3, 4].map(n => `/images/gameshowStages/${n}.webp`)
+
 export default function Shop({ onBack, navProps }) {
   const ownedPaidCount = getOwnedPaidCount()
+  const [bgIdx, setBgIdx] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => setBgIdx(i => (i + 1) % STAGE_BKGS.length), 8000)
+    return () => clearInterval(t)
+  }, [])
   const [jokerHovered, setJokerHovered] = useState(false)
   const [noAds, setNoAds] = useState(() => !!localStorage.getItem('fo_no_ads'))
   const [showRemoveAdsModal, setShowRemoveAdsModal] = useState(false)
   const [buying, setBuying] = useState(null)
+  const [restoreState, setRestoreState] = useState('idle') // idle | loading | done | notfound | error
+
+  async function handleRestore() {
+    if (restoreState === 'loading') return
+    setRestoreState('loading')
+    try {
+      const result = await restorePurchases()
+      if (result.found) setRestoreState('done')
+      else setRestoreState('notfound')
+    } catch { setRestoreState('error') }
+  }
   const [coinModal, setCoinModal] = useState(null)
+  const [codeInput, setCodeInput] = useState('')
+  const [codeResult, setCodeResult] = useState(null) // null | { loading } | { ok: true, ... } | { ok: false, msg }
+
+  function applyCodeRewards({ coins, spins, unlocks, avatar }) {
+    if (coins)   { const c = parseInt(localStorage.getItem('fo_coins')       || '0', 10); localStorage.setItem('fo_coins',        String(c + coins))   }
+    if (spins)   { const c = parseInt(localStorage.getItem('fo_spin_bonus')  || '0', 10); localStorage.setItem('fo_spin_bonus',   String(c + spins))   }
+    if (unlocks) { const c = parseInt(localStorage.getItem('fo_free_unlocks')|| '0', 10); localStorage.setItem('fo_free_unlocks', String(c + unlocks)) }
+    if (avatar)  { const a = JSON.parse(localStorage.getItem('fo_unlocked_avatars') || '[]'); if (!a.includes(avatar)) localStorage.setItem('fo_unlocked_avatars', JSON.stringify([...a, avatar])) }
+  }
+
+  async function redeemCode() {
+    const code = codeInput.trim().toUpperCase()
+    if (!code) return
+
+    // Fast local check to avoid an obvious round-trip
+    const used = JSON.parse(localStorage.getItem('fo_used_codes') || '[]')
+    if (used.includes(code)) { setCodeResult({ ok: false, msg: '✗ Code already redeemed' }); return }
+
+    setCodeResult({ loading: true })
+
+    try {
+      const { getDeviceUuid } = await import('../utils/deviceId.js')
+      const res  = await fetch('/api/fo-redeem-code', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ code, deviceUuid: getDeviceUuid() }),
+      })
+      const data = await res.json()
+
+      if (!data.ok) { setCodeResult({ ok: false, msg: `✗ ${data.msg || 'Invalid code'}` }); return }
+
+      applyCodeRewards(data)
+      localStorage.setItem('fo_used_codes', JSON.stringify([...used, code]))
+      setCodeResult({ ok: true, coins: data.coins, spins: data.spins, unlocks: data.unlocks, avatar: data.avatar })
+      setCodeInput('')
+
+    } catch {
+      // Network failure — fall back to client-side validation so the player isn't blocked offline
+      const promo = PROMO_CODES[code]
+      if (!promo) { setCodeResult({ ok: false, msg: '✗ Invalid code' }); return }
+      applyCodeRewards({ coins: promo.coins || 0, spins: promo.spins || 0, unlocks: promo.unlocks || 0, avatar: promo.avatar || null })
+      localStorage.setItem('fo_used_codes', JSON.stringify([...used, code]))
+      setCodeResult({ ok: true, coins: promo.coins || 0, spins: promo.spins || 0, unlocks: promo.unlocks || 0, avatar: promo.avatar || null })
+      setCodeInput('')
+    }
+  }
 
   async function buy(productId) {
     if (buying) return
@@ -54,11 +118,66 @@ export default function Shop({ onBack, navProps }) {
   }
   return (
     <div className={styles.page}>
+      {STAGE_BKGS.map((src, i) => (
+        <img
+          key={src}
+          src={src}
+          aria-hidden="true"
+          draggable="false"
+          className={`${styles.stageBg} ${i === bgIdx ? styles.stageBgActive : ''}`}
+        />
+      ))}
+      <div className={styles.stageBgOverlay} />
       <div className={styles.scroll}>
 
         <div className={styles.header}>
-          <button className={styles.backBtn} onClick={onBack}>← Back</button>
+          <button className={styles.backBtn} onClick={onBack} aria-label="Back">
+            <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+          </button>
           <h1 className={styles.title}>Shop</h1>
+        </div>
+
+        {/* Lucky Spin entry */}
+        <h2 className={styles.sectionTitle}>🎡 Lucky Spin</h2>
+        <button className={`${styles.removeAdsCard} ${styles.spinCard}`} onClick={navProps?.onSpin}>
+          <img src="/images/wheel.webp" alt="Lucky Spin" className={styles.spinWheelImg} />
+          <div className={styles.removeAdsText}>
+            <span className={styles.removeAdsTitle}>FREE DAILY SPIN</span>
+            <span className={styles.removeAdsDesc}>Spin it to win it!</span>
+          </div>
+        </button>
+
+        {/* Promo code */}
+        <h2 className={styles.sectionTitle}>🎟️ Enter a Code</h2>
+        <div className={styles.promoCard}>
+          <input
+            className={styles.promoInput}
+            type="text"
+            placeholder="Enter your code…"
+            value={codeInput}
+            onChange={e => { setCodeInput(e.target.value.toUpperCase()); setCodeResult(null) }}
+            onKeyDown={e => e.key === 'Enter' && codeInput.trim() && redeemCode()}
+            maxLength={20}
+            autoCapitalize="characters"
+            autoCorrect="off"
+            spellCheck={false}
+          />
+          <button className={styles.promoBtn} onClick={redeemCode} disabled={!codeInput.trim() || !!codeResult?.loading}>
+            {codeResult?.loading ? 'Checking…' : 'Redeem'}
+          </button>
+          {codeResult?.ok && (
+            <p className={`${styles.codeMsg} ${styles.codeMsgOk}`}>
+              ✓ {[
+                codeResult.coins   && `${codeResult.coins} coins`,
+                codeResult.spins   && `${codeResult.spins} bonus spins`,
+                codeResult.unlocks && `${codeResult.unlocks} free deck unlock`,
+                codeResult.avatar  && `exclusive avatar unlocked`,
+              ].filter(Boolean).join(' + ')} added!
+            </p>
+          )}
+          {codeResult && !codeResult.ok && (
+            <p className={`${styles.codeMsg} ${styles.codeMsgErr}`}>{codeResult.msg}</p>
+          )}
         </div>
 
         {/* Coins */}
@@ -71,59 +190,9 @@ export default function Shop({ onBack, navProps }) {
           ))}
         </div>
 
-        {/* Joker reload */}
-        <h2 className={styles.sectionTitle}>🃏 Joker</h2>
-        <button
-          className={`${styles.removeAdsCard} ${ownedPaidCount === 0 ? styles.lockedItem : ''}`}
-          onMouseEnter={() => ownedPaidCount === 0 && setJokerHovered(true)}
-          onMouseLeave={() => setJokerHovered(false)}
-          onClick={() => { if (ownedPaidCount === 0) setJokerHovered(true) }}
-        >
-          <img src="/images/jokers/1.webp" alt="Joker" className={styles.jokerImg} />
-          <div className={styles.removeAdsText}>
-            <span className={styles.removeAdsTitle}>
-              {ownedPaidCount === 0 && jokerHovered ? 'You have no jokers — Buy a deck!' : 'Reload a Joker'}
-            </span>
-            <span className={styles.removeAdsDesc}>
-              {ownedPaidCount === 0
-                ? 'Buy a deck to earn jokers'
-                : 'Use one extra joker today'}
-            </span>
-          </div>
-          {ownedPaidCount > 0
-            ? <div className={styles.coinPrice}>
-                <img src="/images/coin.webp" alt="" className={styles.coinPriceImg} />
-                {String(JOKER_RELOAD_PRICE).split('').map((d, i) => (
-                  <img key={i} src={`/images/${d}.webp`} alt={d} className={styles.coinPriceDigit} />
-                ))}
-              </div>
-            : <img src="/images/padlock.webp" alt="Locked" className={styles.jokerPadlock} />
-          }
-        </button>
+        {/* Joker reload — hidden until joker system is live */}
 
-        {/* Remove Ads */}
-        <h2 className={styles.sectionTitle}>🚫 Remove Ads</h2>
-        <button
-          className={`${styles.removeAdsCard} ${noAds ? styles.lockedItem : ''}`}
-          onClick={() => { if (!noAds) buy('remove_ads') }}
-          disabled={noAds || !!buying}
-        >
-          <div className={styles.removeAdsText}>
-            <span className={styles.removeAdsTitle}>{noAds ? '✓ Ad-Free Active' : 'Remove Forced Ads'}</span>
-            <span className={styles.removeAdsDesc}>{noAds ? 'Enjoying an ad-free game!' : 'Remove pop-up and banner ads · Rewarded ads remain'}</span>
-          </div>
-          {!noAds && <span className={styles.removeAdsPrice}>from £7.99</span>}
-        </button>
-
-        {/* Lucky Spin entry */}
-        <h2 className={styles.sectionTitle}>🎡 Lucky Spin</h2>
-        <button className={`${styles.removeAdsCard} ${styles.spinCard}`} onClick={navProps?.onSpin}>
-          <img src="/images/wheel.webp" alt="Lucky Spin" className={styles.spinWheelImg} />
-          <div className={styles.removeAdsText}>
-            <span className={styles.removeAdsTitle}>FREE DAILY SPIN</span>
-            <span className={styles.removeAdsDesc}>Spin it to win it!</span>
-          </div>
-        </button>
+        {/* Remove Ads — hidden until ad network is live */}
 
         {/* Loot Box */}
         <h2 className={styles.sectionTitle}>📦 Treasure Chest</h2>
@@ -211,10 +280,27 @@ export default function Shop({ onBack, navProps }) {
           ))}
         </div>
 
+        {/* Restore Purchases */}
+        <div className={styles.restoreRow}>
+          <span className={styles.restoreLabel}>Restore Purchases</span>
+          <div className={styles.restoreRight}>
+            {restoreState === 'done' ? (
+              <span className={styles.restoreDone}>✓ Restored!</span>
+            ) : (
+              <>
+                <button className={styles.restoreImgBtn} onClick={handleRestore} disabled={restoreState === 'loading'} aria-label="Restore purchases">
+                  <img src="/images/restore.webp" alt="Restore" draggable="false" className={`${styles.restoreImg} ${restoreState === 'loading' ? styles.restoreSpinning : ''}`} />
+                </button>
+                {restoreState === 'notfound' && <span className={styles.restoreMsg}>Nothing found</span>}
+                {restoreState === 'error'    && <span className={styles.restoreMsg}>Try again</span>}
+              </>
+            )}
+          </div>
+        </div>
+
         <div className={styles.footer} />
 
       </div>
-      <AdBanner />
       <BottomNav active="shop" {...navProps} />
       {showRemoveAdsModal && (
         <RemoveAdsModal

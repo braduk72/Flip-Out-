@@ -1,21 +1,9 @@
-# Deploy to dev.gizmogames.uk
-# Run this instead of "git push origin dev"
-
-$ErrorActionPreference = "Stop"
-
-Write-Host "Pushing to git..." -ForegroundColor Cyan
-git push origin dev
-
-Write-Host "Deploying to Vercel and getting URL..." -ForegroundColor Cyan
-$deployUrl = (npx vercel deploy --yes --scope chattocal 2>&1 | Select-String "https://flip-" | Select-Object -Last 1).ToString().Trim()
-
-if (-not $deployUrl) {
-    Write-Host "Could not get deployment URL" -ForegroundColor Red
-    exit 1
+﻿$output = npx vercel deploy --scope chattocal --yes 2>&1
+$output | Write-Host
+$url = ($output | Select-String 'https://flip-[a-z0-9]+-chattocal\.vercel\.app').Matches[0].Value
+if ($url) {
+  Write-Host "`nAliasing $url -> dev.gizmogames.uk"
+  npx vercel alias $url dev.gizmogames.uk --scope chattocal
+} else {
+  Write-Host "Could not extract preview URL from deploy output"
 }
-
-Write-Host "Deployed: $deployUrl" -ForegroundColor Yellow
-Write-Host "Aliasing to dev.gizmogames.uk..." -ForegroundColor Cyan
-npx vercel alias set $deployUrl dev.gizmogames.uk --scope chattocal
-
-Write-Host "Done. Visit: https://dev.gizmogames.uk" -ForegroundColor Green

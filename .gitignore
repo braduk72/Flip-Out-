@@ -30,3 +30,13 @@ public/images/downloads/
 
 # Executables that ended up in the wrong folder
 *.exe
+*.msi
+
+# Source/working images — originals and working files, not for repo
+source-images/
+
+# Local documentation — kept on this machine only
+docs/
+CHANGELOG.md
+FLIP_OUT_MASTER_DECK_RULES.md
+ABOUT_US.md

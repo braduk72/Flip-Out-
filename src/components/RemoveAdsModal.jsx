@@ -22,7 +22,7 @@ export default function RemoveAdsModal({ onClose, onBuy }) {
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.card} onClick={e => e.stopPropagation()}>
-        <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        <button className="modal-close-x" onClick={onClose} aria-label="Close">✕</button>
 
         <div className={styles.bigLogo}>A<span className={styles.slash}>/</span>S</div>
         <h2 className={styles.title}>REMOVE ADS</h2>

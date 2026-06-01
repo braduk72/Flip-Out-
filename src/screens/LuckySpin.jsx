@@ -11,7 +11,7 @@ const DATE_KEY   = 'fo_spin_date'
 const FREE_KEY   = 'fo_spin_free'
 const AD_KEY     = 'fo_spin_ad'
 
-function todayKey() { return new Date().toISOString().slice(0, 10) }
+function todayKey() { return new Date().toLocaleDateString('en-CA') } // YYYY-MM-DD in local time
 
 function useMidnightCountdown() {
   const [display, setDisplay] = useState('')
@@ -141,6 +141,7 @@ function labelPos(i) {
 
 export default function LuckySpin({ onBack, navProps }) {
   const [used, setUsed]         = useState(() => getUsed())
+  const [bonusLeft, setBonusLeft] = useState(() => parseInt(localStorage.getItem('fo_spin_bonus') || '0'))
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
   const [prize, setPrize]       = useState(() =>
@@ -167,7 +168,7 @@ export default function LuckySpin({ onBack, navProps }) {
   const adLeft       = Math.max(0, MAX_AD   - used.ad)
   const midnightTimer = useMidnightCountdown()
 
-  function doSpin(isAd = false) {
+  function doSpin(type = 'free') { // type: 'free' | 'ad' | 'bonus'
     if (spinning || prize) return
 
     // Initialise AudioContext on first user gesture
@@ -196,9 +197,13 @@ export default function LuckySpin({ onBack, navProps }) {
 
     // Record spin
     resetIfNewDay()
-    if (isAd) {
+    if (type === 'ad') {
       const next = parseInt(localStorage.getItem(AD_KEY) || '0') + 1
       localStorage.setItem(AD_KEY, String(next))
+    } else if (type === 'bonus') {
+      const cur = parseInt(localStorage.getItem('fo_spin_bonus') || '0')
+      localStorage.setItem('fo_spin_bonus', String(Math.max(0, cur - 1)))
+      setBonusLeft(Math.max(0, cur - 1))
     } else {
       const next = parseInt(localStorage.getItem(FREE_KEY) || '0') + 1
       localStorage.setItem(FREE_KEY, String(next))
@@ -217,7 +222,7 @@ export default function LuckySpin({ onBack, navProps }) {
   }
 
   function handleFree() {
-    if (freeLeft > 0 && !spinning && !prize) doSpin(false)
+    if (freeLeft > 0 && !spinning && !prize) doSpin('free')
   }
 
   function handleAdRequest() {
@@ -226,13 +231,19 @@ export default function LuckySpin({ onBack, navProps }) {
 
   function handleAdClose() {
     setShowAd(false)
-    doSpin(true)
+    doSpin('ad')
+  }
+
+  function handleBonus() {
+    if (bonusLeft > 0 && !spinning && !prize) doSpin('bonus')
   }
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack}>← Back</button>
+        <button className={styles.backBtn} onClick={onBack} aria-label="Back">
+          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+        </button>
         <div className={styles.spinsLeft}>🕛 {midnightTimer}</div>
         {import.meta.env.VITE_DEV_TOOLS === 'true' && (
           <button className={styles.devReset} title="Reset daily spins" onClick={() => {
@@ -240,6 +251,7 @@ export default function LuckySpin({ onBack, navProps }) {
             localStorage.removeItem(FREE_KEY)
             localStorage.removeItem(AD_KEY)
             setUsed(getUsed())
+            setBonusLeft(parseInt(localStorage.getItem('fo_spin_bonus') || '0'))
           }}>🔄</button>
         )}
       </div>
@@ -304,6 +316,19 @@ export default function LuckySpin({ onBack, navProps }) {
             disabled={spinning || !!prize || adLeft === 0}
           >
             <img src="/images/spin1.webp" alt="Watch Ad for Extra Spin" className={`${styles.spinImgBtnImg} ${adLeft === 0 ? styles.spinImgBtnUsed : ''}`} />
+          </button>
+        )}
+
+        {/* Bonus spin button — shown when promo spins are available */}
+        {bonusLeft > 0 && (
+          <button
+            className={styles.bonusSpinBtn}
+            onClick={handleBonus}
+            disabled={spinning || !!prize}
+          >
+            <span className={styles.bonusSpinIcon}>🎟️</span>
+            <span className={styles.bonusSpinLabel}>BONUS SPIN</span>
+            <span className={styles.bonusSpinCount}>×{bonusLeft}</span>
           </button>
         )}
       </div>

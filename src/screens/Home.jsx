@@ -3,8 +3,10 @@ import styles from './Home.module.css'
 import BottomNav from '../components/BottomNav'
 import SpecialOffer, { shouldShowOffer, markOfferSeen } from '../components/SpecialOffer'
 import DailyBonus, { checkDailyBonus } from '../components/DailyBonus'
+import { playHoverTick } from '../hooks/useSfx'
 
 export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop, onAvatar, onSettings, onSeason, onReveal, onRanks, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, gauntletStep, seasonStep = 0, mode = 'vs', onMode, onHomeMusic }) {
+  const tick = sfxOn ? playHoverTick : () => {}
   const coins = parseInt(localStorage.getItem('fo_coins') || '0')
   const [showOffer, setShowOffer] = useState(() => new URLSearchParams(window.location.search).has('testoffer'))
   const [showBugModal, setShowBugModal] = useState(false)
@@ -45,16 +47,16 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
       <div className={styles.mainGrid}>
 
         <div className={styles.sideCol}>
-          <button className={`${styles.iconBtn} ${styles.iconBtnNoShadow}`} onClick={onAvatar} aria-label="Profile">
+          <button className={`${styles.iconBtn} ${styles.iconBtnNoShadow}`} onClick={onAvatar} onMouseEnter={tick} aria-label="Profile">
             <img src="/images/profile_badge_transparent.webp" alt="" draggable="false" className={styles.iconBtnImg} />
           </button>
-          <button className={styles.iconBtn} onClick={onSeason} aria-label="Season">
+          <button className={styles.iconBtn} onClick={onSeason} onMouseEnter={tick} aria-label="Season">
             <img src="/images/season.webp" alt="Season" draggable="false" className={styles.iconBtnImg} />
           </button>
-          <button className={styles.iconBtn} onClick={onKnockout} aria-label="Gauntlet">
+          <button className={styles.iconBtn} onClick={onKnockout} onMouseEnter={tick} aria-label="Gauntlet">
             <img src="/images/gauntlet.webp" alt="Gauntlet" draggable="false" className={styles.iconBtnImg} />
           </button>
-          <button className={styles.passPlayBtn} onClick={onReveal} aria-label="Reveal">
+          <button className={styles.passPlayBtn} onClick={onReveal} onMouseEnter={tick} aria-label="Reveal">
             <img src="/images/peep_oh_v2.webp" alt="Peep-Oh!" draggable="false" className={styles.passPlayImg} />
           </button>
         </div>
@@ -64,16 +66,16 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
         </div>
 
         <div className={styles.sideCol}>
-          <button className={styles.iconBtn} onClick={() => { onMode('vs'); onPlay(false) }} aria-label="VS">
+          <button className={styles.iconBtn} onClick={() => { onMode('vs'); onPlay(false) }} onMouseEnter={tick} aria-label="VS">
             <img src="/images/new_vs.webp" alt="VS" draggable="false" className={styles.iconBtnImg} />
           </button>
-          <button className={styles.iconBtn} onClick={() => { onMode('solo'); onPlay(false) }} aria-label="Time Challenge">
+          <button className={styles.iconBtn} onClick={() => { onMode('solo'); onPlay(false) }} onMouseEnter={tick} aria-label="Time Challenge">
             <img src="/images/timechallenge.webp" alt="Time Challenge" draggable="false" className={styles.iconBtnImg} />
           </button>
-          <button className={styles.iconBtn} onClick={onOnline} aria-label="Online">
+          <button className={styles.iconBtn} onClick={onOnline} onMouseEnter={tick} aria-label="Online">
             <img src="/images/online.webp" alt="Online" draggable="false" className={styles.iconBtnImg} />
           </button>
-          <button className={styles.passPlayBtn} onClick={onLocalPlay} aria-label="Pass and Play">
+          <button className={styles.passPlayBtn} onClick={onLocalPlay} onMouseEnter={tick} aria-label="Pass and Play">
             <img src="/images/pass_and_play_v2.webp" alt="Pass & Play" draggable="false" className={styles.passPlayImg} />
           </button>
         </div>
@@ -86,7 +88,7 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
           <img src="/images/coin.webp" alt="" className={styles.coinIcon} draggable="false" />
           <span className={styles.coinBarAmount}>{coins.toLocaleString()}</span>
         </div>
-        <button className={styles.playBtn} onClick={() => { onMode('vs'); onPlay() }} aria-label="Play">
+        <button className={styles.playBtn} onClick={() => { onMode('vs'); onPlay() }} onMouseEnter={tick} aria-label="Play">
           <img src="/images/play_btn_home.webp" alt="Play" draggable="false" className={styles.playBtnImg} />
         </button>
       </div>
@@ -130,7 +132,7 @@ function BugReportModal({ onClose }) {
   return (
     <div className={styles.bugOverlay} onClick={onClose}>
       <div className={styles.bugModal} onClick={e => e.stopPropagation()}>
-        <button className={styles.bugClose} onClick={onClose} aria-label="Close">✕</button>
+        <button className="modal-close-x" onClick={onClose} aria-label="Close">✕</button>
 
         {status === 'done' ? (
           <>

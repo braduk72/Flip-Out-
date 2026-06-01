@@ -47,7 +47,7 @@ export default async function handler(req, res) {
       )
     }
 
-    // Aggregate everything
+    // Aggregate purchases
     let coins     = 0
     const decks   = new Set()
     let removeAds = false
@@ -62,7 +62,23 @@ export default async function handler(req, res) {
       }
     }
 
-    res.json({ found: true, coins, decks: [...decks], removeAds, extras })
+    // Fetch game stats — take the best value across all linked devices
+    let streakBest = 0, pvpWins = 0
+    try {
+      const { rows: statRows } = await db.query(
+        `SELECT COALESCE(MAX(streak_best), 0) AS streak_best,
+                COALESCE(MAX(pvp_wins),    0) AS pvp_wins
+         FROM fo_game_stats
+         WHERE device_uuid = ANY($1)`,
+        [deviceUuids]
+      )
+      streakBest = statRows[0]?.streak_best ?? 0
+      pvpWins    = statRows[0]?.pvp_wins    ?? 0
+    } catch (_) {
+      // fo_game_stats may not exist yet — stats just won't be restored this time
+    }
+
+    res.json({ found: true, coins, decks: [...decks], removeAds, extras, streakBest, pvpWins })
   } catch (err) {
     console.error('[FO restore]', err)
     res.status(500).json({ error: 'Restore failed' })

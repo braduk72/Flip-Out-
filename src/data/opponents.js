@@ -1,9 +1,41 @@
-export const STANDARD_OPPONENTS = [
-  { id: 'c1', image: '/images/c1.webp', defeatedImage: '/images/c1d.webp' },
-  { id: 'c2', image: '/images/c2.webp', defeatedImage: '/images/c2d.webp' },
-  { id: 'c3', image: '/images/c3.webp', defeatedImage: '/images/c3d.webp' },
-  { id: 'c4', image: '/images/c4.webp', defeatedImage: '/images/c4d.webp' },
+// Avatars — names are assigned separately from the pool below
+const STANDARD_AVATARS = [
+  { id: 'rob1', image: '/images/randomOppos/rob1.webp', defeatedImage: '/images/randomOppos/rob1d.webp' },
+  { id: 'rob2', image: '/images/randomOppos/rob2.webp', defeatedImage: '/images/randomOppos/rob2d.webp' },
+  { id: 'rob3', image: '/images/randomOppos/rob3.webp', defeatedImage: '/images/randomOppos/rob3d.webp' },
+  { id: 'rob4', image: '/images/randomOppos/rob4.webp', defeatedImage: '/images/randomOppos/rob4d.webp' },
+  { id: 'rob5', image: '/images/randomOppos/rob5.webp', defeatedImage: '/images/randomOppos/rob5d.webp' },
 ]
+
+const VS_NAMES = [
+  'ACE',    'APEX',   'ARCS',   'AXLE',   'BEAK',   'BLINK',  'BLITZ',  'BLOX',
+  'BOLT',   'BRAK',   'BRAT',   'BRIX',   'BUNK',   'BYTE',   'CLAW',   'CLANK',
+  'CLOD',   'COIL',   'COLT',   'CRAW',   'CRUD',   'CRUX',   'DAZE',   'DENT',
+  'DOLT',   'DREX',   'DRIX',   'DUNK',   'DUSK',   'EDGE',   'ETCH',   'EXON',
+  'FERR',   'FINK',   'FIZZ',   'FLAW',   'FLUX',   'FRAG',   'FUSE',   'GLITCH',
+  'GLOB',   'GLOM',   'GRIT',   'GROD',   'GRUB',   'GUNK',   'HAZE',   'HIVE',
+  'HOLT',   'HULK',   'HUSK',   'IRIX',   'JAWS',   'JINK',   'JOLT',   'KINK',
+  'KLUNK',  'KNUX',   'KRAK',   'KRIX',   'KRON',   'KRUX',   'LUNK',   'LURK',
+  'MAZE',   'MECH',   'MINT',   'MOLD',   'NEON',   'NEXO',   'NOID',   'NORK',
+  'NOVA',   'NULL',   'NUKE',   'OREX',   'OTTO',   'PAWN',   'PIKE',   'PLAX',
+  'PLEX',   'PRAG',   'PROX',   'QUIX',   'RACK',   'RAZE',   'REKT',   'RIFT',
+  'SLAB',   'SKID',   'SLAG',   'SLAX',   'SNAP',   'SPARKS', 'SPEX',   'STING',
+  'TACK',   'THUD',   'TORP',   'TRIX',   'TUNK',   'TURK',   'UNIT',   'VANE',
+  'VRAK',   'VOID',   'WARP',   'WATT',   'WELD',   'WHIP',   'WREN',   'XERO',
+  'ZING',   'ZINK',   'ZIPPY',  'ZORK',   'ZERO',   'ZOOM',   'ZETA',   'ZEUS',
+]
+
+// Pick a random avatar + a random name independently each call
+export function pickStdOpponent() {
+  const avatar = STANDARD_AVATARS[Math.floor(Math.random() * STANDARD_AVATARS.length)]
+  const name   = VS_NAMES[Math.floor(Math.random() * VS_NAMES.length)]
+  return { ...avatar, name }
+}
+
+// Keep as a plain array for any code that still needs it (Gauntlet etc.)
+export const STANDARD_OPPONENTS = STANDARD_AVATARS.map((a, i) =>
+  ({ ...a, name: VS_NAMES[i] })
+)
 
 // Knockout Gauntlet opponent roster — in fight order.
 // e = Easy tier, m = Medium tier, h = Hard tier, l = Lethal (boss only)
@@ -56,6 +88,7 @@ export const KNOCKOUT_OPPONENTS = [
   {
     id: 'l1',
     image: '/images/Opponants/l1.webp',
+    defeatedImage: '/images/Opponants/l1d.webp',
     difficulty: 'Lethal',
     tier: 'Lethal',
     label: 'FINAL BOSS',

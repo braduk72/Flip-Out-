@@ -54,17 +54,42 @@ export async function verifySession(sessionId, deviceUuid) {
   return res.json()  // { ok, product_type, coins, decks, extras, email }
 }
 
-// ── Restore purchases by email (called from Settings) ────────────────────────
+// ── Restore purchases by device UUID (email sourced from Stripe) ─────────────
 
-export async function restorePurchases(email) {
+export async function restorePurchases() {
   const deviceUuid = getDeviceUuid()
   const res = await fetch('/api/fo-restore', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ email, deviceUuid }),
+    body:    JSON.stringify({ deviceUuid }),
   })
   if (!res.ok) throw new Error('Restore request failed')
   const data = await res.json()
-  if (data.found) applyPurchase(data)
-  return data  // { found, coins, decks, removeAds, extras }
+  if (data.found) {
+    applyPurchase(data)
+    applyRestoredStats(data)
+  }
+  return data  // { found, coins, decks, removeAds, extras, streakBest, pvpWins }
+}
+
+// ── Sync game stats to the server (fire-and-forget) ──────────────────────────
+
+export function syncStats(streakBest, pvpWins) {
+  try {
+    const deviceUuid = getDeviceUuid()
+    fetch('/api/fo-sync-stats', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ deviceUuid, streakBest, pvpWins }),
+    }).catch(() => {})  // silent — stats sync is best-effort
+  } catch (_) {}
+}
+
+// ── Apply restored stats — keeps whichever value is higher ───────────────────
+
+export function applyRestoredStats({ streakBest = 0, pvpWins = 0 }) {
+  const localStreak = parseInt(localStorage.getItem('fo_streak_best') || '0')
+  const localPvp    = parseInt(localStorage.getItem('fo_pvp_wins')    || '0')
+  if (streakBest > localStreak) localStorage.setItem('fo_streak_best', String(streakBest))
+  if (pvpWins    > localPvp)    localStorage.setItem('fo_pvp_wins',    String(pvpWins))
 }
