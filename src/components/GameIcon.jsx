@@ -27,11 +27,13 @@ const SPARKS = [
  *                drift and pop (e.g. on a cheese river). Positions are % of plate.
  * @param ripples array of { x, y, w, rot, dx, dy, dur, delay } — thin highlight
  *                lines that travel along the river to show flowing current.
+ * @param splashes array of { x, y, size, dur, delay } — quick upward sprays
+ *                where the cheese hits the rocks. Positions are % of the plate.
  * @param secret  optional { x, y, size } — a hidden tap zone (e.g. the compass)
  *                that triggers the lunar-lander easter egg.
  * @param onClick handler
  */
-export default function GameIcon({ src, label, flames = [], needle = null, glints = [], bubbles = [], ripples = [], secret = null, onClick }) {
+export default function GameIcon({ src, label, flames = [], needle = null, glints = [], bubbles = [], ripples = [], splashes = [], secret = null, onClick }) {
   const [egg, setEgg] = useState(false)
   const tapsRef = useRef(0)
   const tapTimerRef = useRef(null)
@@ -101,6 +103,21 @@ export default function GameIcon({ src, label, flames = [], needle = null, glint
             }}
           />
         )}
+
+        {/* Splashes where the cheese hits the rocks */}
+        {splashes.map((s, i) => (
+          <span
+            key={`splash-${i}`}
+            className={styles.splash}
+            style={{
+              left: s.x,
+              top: s.y,
+              width: s.size || '5%',
+              animationDuration: s.dur || '3s',
+              animationDelay: s.delay || '0s',
+            }}
+          />
+        ))}
 
         {/* Ripple lines travelling along the river (flow current) */}
         {ripples.map((r, i) => (
