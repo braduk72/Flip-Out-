@@ -54,6 +54,27 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
     return () => document.removeEventListener('visibilitychange', onVisibility)
   }, [])
 
+  // The video carries its own baked-in music — it IS the home soundtrack
+  // (the app's home music is suppressed in App.jsx). Sound follows the
+  // music on/off setting. Browsers block unmuted autoplay until the user
+  // interacts, so if the first unmuted play is rejected we keep the video
+  // playing silently and unmute on the first tap.
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+    if (!musicOn) { v.muted = true; return }
+    v.muted = false
+    let cleanup = () => {}
+    v.play().catch(() => {
+      v.muted = true
+      v.play().catch(() => {})
+      const unmute = () => { v.muted = false; v.play().catch(() => {}); cleanup() }
+      document.addEventListener('pointerdown', unmute, { once: true })
+      cleanup = () => document.removeEventListener('pointerdown', unmute)
+    })
+    return () => cleanup()
+  }, [musicOn])
+
   return (
     <div className={styles.page}>
 

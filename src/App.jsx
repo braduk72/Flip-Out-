@@ -260,9 +260,10 @@ export default function App() {
   }
 
   function forceNewHomeTrack() {
-    if (!musicOn) return
+    // Home screen uses the background video's baked-in music — make sure no
+    // app track plays over it (this fires from the bottom-nav home button).
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current = null }
     activePoolRef.current = null
-    switchToPool(HOME_TRACKS)
   }
 
   // Snapshot progress to cookie on every screen change (only if user consented)
@@ -288,7 +289,9 @@ export default function App() {
     } else if (screen === 'seasonmap') {
       switchToPool(SEASON_TRACKS)
     } else if (screen === 'home') {
-      switchToPool(HOME_TRACKS)
+      // Home screen plays the background video's baked-in music — stop app music.
+      if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current = null }
+      activePoolRef.current = null
     } else if (screen === 'gauntlet' || screen === 'roundstart') {
       switchToPool(BOSS_TRACKS)
     } else if (screen === 'leaderboard') {
@@ -321,9 +324,10 @@ export default function App() {
   useEffect(() => {
     if (!musicOn) return
     const unlock = () => {
-      if (!audioRef.current || audioRef.current.paused) {
+      // Home uses the video's audio — don't start an app track there.
+      if ((prevScreenRef.current || screen) !== 'home' && (!audioRef.current || audioRef.current.paused)) {
         activePoolRef.current = null
-        switchToPool(screen === 'home' ? HOME_TRACKS : INGAME_TRACKS)
+        switchToPool(INGAME_TRACKS)
       }
       document.removeEventListener('click',      unlock)
       document.removeEventListener('touchstart', unlock)
@@ -354,11 +358,15 @@ export default function App() {
     if (!next) {
       if (audioRef.current) audioRef.current.pause()
     } else {
-      if (audioRef.current && !audioRef.current.ended) {
+      if (screen === 'home') {
+        // Home uses the video's audio — keep app music off (the video unmutes itself).
+        if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current = null }
+        activePoolRef.current = null
+      } else if (audioRef.current && !audioRef.current.ended) {
         audioRef.current.play().catch(() => {})
       } else {
         activePoolRef.current = null
-        switchToPool(GAME_SCREENS.has(screen) ? INGAME_TRACKS : screen === 'home' ? HOME_TRACKS : MENU_TRACKS)
+        switchToPool(GAME_SCREENS.has(screen) ? INGAME_TRACKS : MENU_TRACKS)
       }
     }
   }
@@ -606,7 +614,7 @@ export default function App() {
 
   const navProps = {
     onShop:     () => setScreen('shop'),
-    onHome:     () => { if (screen === 'home') playNextRef.current(HOME_TRACKS); else setScreen('home') },
+    onHome:     () => { if (screen !== 'home') setScreen('home') },
     onSettings: () => setScreen('settings'),
     onRanks:    () => setScreen('leaderboard'),
     onSpin:     () => setScreen('luckyspin'),
