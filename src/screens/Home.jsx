@@ -13,6 +13,7 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
   const [dailyBonus, setDailyBonus] = useState(null)
   const [avatarAnim, setAvatarAnim] = useState('idle')
   const avatarTimer = useRef(null)
+  const videoRef = useRef(null)
 
   useEffect(() => {
     function scheduleNext() {
@@ -39,9 +40,38 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
     }
   }, [])
 
+  // Background video — pause when the app/tab is hidden, resume on return.
+  // Saves battery and CPU while backgrounded. The <video loop> attribute
+  // handles seamless looping without re-fetching the file.
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+    function onVisibility() {
+      if (document.hidden) v.pause()
+      else v.play().catch(() => {})
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [])
+
   return (
     <div className={styles.page}>
 
+      {/* Animated "living world" background. Falls back to the poster image
+          (and the CSS bg on .page) if the video can't play. */}
+      <video
+        ref={videoRef}
+        className={styles.bgVideo}
+        src="/video/main_temple.mp4"
+        poster="/images/bg_home.webp"
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        aria-hidden="true"
+        tabIndex={-1}
+      />
 
       {/* Main grid: left icons | mascot | right icons */}
       <div className={styles.mainGrid}>
