@@ -140,12 +140,12 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
             flames={[
               // Primary flames
               { x: '15.8%', y: '33.5%', dur: '2.6s, 1.7s', delay: '-1.1s, -0.4s' },
-              { x: '86.3%', y: '34.5%', dur: '3.3s, 2.1s', delay: '-0.6s, -1.7s' },
+              { x: '85.5%', y: '34.5%', dur: '3.3s, 2.1s', delay: '-0.6s, -1.7s' },
               // Secondary flame tips — smaller, above and to the side, own random timing
               { x: '13.5%', y: '29.5%', size: '15%', dur: '1.9s, 1.3s', delay: '-0.7s, -1.2s' },
-              { x: '88.5%', y: '30%',   size: '15%', dur: '2.3s, 1.5s', delay: '-1.4s, -0.5s' },
+              { x: '87.7%', y: '30%',   size: '15%', dur: '2.3s, 1.5s', delay: '-1.4s, -0.5s' },
             ]}
-            needle={{ x: '34.6%', y: '61.9%', length: '14%' }}
+            needle={{ x: '34.6%', y: '62.2%', length: '14%' }}
             onClick={() => {}}
           />
           <p className={styles.iconTestHint}>Tap anywhere to exit</p>
