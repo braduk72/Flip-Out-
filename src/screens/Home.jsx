@@ -133,7 +133,8 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
 
       <BottomNav active="home" onShop={onShop} onHome={onHomeMusic} onSettings={onSettings} onRanks={onRanks} />
       {showIconTest && (
-        <div className={styles.iconTestOverlay} onClick={() => { window.location.search = '' }}>
+        <div className={styles.iconTestOverlay}>
+          <button className={styles.iconTestClose} onClick={() => { window.location.search = '' }} aria-label="Close">✕</button>
           <GameIcon
             src="/images/icons/season.webp"
             label="Season"
@@ -149,7 +150,7 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
             secret={{ x: '34.3%', y: '62.4%', size: '22%' }}
             onClick={() => {}}
           />
-          <p className={styles.iconTestHint}>Tap anywhere to exit</p>
+          <p className={styles.iconTestHint}>Tap the compass 10× for a surprise • ✕ to exit</p>
         </div>
       )}
       {dailyBonus && <DailyBonus day={dailyBonus.day} coins={dailyBonus.coins} onClose={() => setDailyBonus(null)} />}
