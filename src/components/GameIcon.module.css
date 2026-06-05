@@ -230,8 +230,12 @@
   aspect-ratio: 1;
   transform: translate(-50%, -50%) scale(0.3);
   border-radius: 50%;
+  /* --glint-rgb tints the flash (default red eye); set per-instance for
+     blue lightning, white phone-screen, gold, etc. */
   background: radial-gradient(circle,
-    #ffffff 0%, rgba(255, 200, 200, 0.85) 35%, rgba(255, 60, 60, 0) 70%);
+    #ffffff 0%,
+    rgba(var(--glint-rgb, 255, 60, 60), 0.85) 38%,
+    rgba(var(--glint-rgb, 255, 60, 60), 0) 72%);
   pointer-events: none;
   opacity: 0;
   animation-name: glint;

@@ -36,6 +36,26 @@ const VS_ICON = {
   // River animation (bubbles/ripples/splashes) removed — too hard to sell a
   // baked-in liquid convincingly without a mask. Static plate for now.
 }
+const TIMECHALLENGE_ICON = {
+  src: '/images/icons/timechallenge.webp',
+  label: 'Time Challenge',
+  // Red second-hand sweeping the watch dial + a gold glint catching the case.
+  needle: { x: '48.5%', y: '49%', length: '18%' },
+  glints: [{ x: '48.5%', y: '49%', size: '9%', color: '255, 220, 120', dur: '4s', delay: '0s' }],
+}
+const ONLINE_ICON = {
+  src: '/images/icons/online.webp',
+  label: 'Online',
+  // Electric-blue flashes at the two tower orbs (out of sync = lightning),
+  // a slow cyan pulse over the globe, and small node sparkles on it.
+  glints: [
+    { x: '23%', y: '17%', size: '14%', color: '120, 200, 255', dur: '1.4s', delay: '0s' },
+    { x: '77%', y: '16%', size: '14%', color: '120, 200, 255', dur: '1.7s', delay: '0.6s' },
+    { x: '50%', y: '37%', size: '30%', color: '90, 200, 255',  dur: '3.2s', delay: '0.3s' },
+    { x: '44%', y: '33%', size: '5%',  color: '190, 235, 255', dur: '2.3s', delay: '1.1s' },
+    { x: '57%', y: '41%', size: '5%',  color: '190, 235, 255', dur: '2.8s', delay: '1.9s' },
+  ],
+}
 
 export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop, onAvatar, onSettings, onSeason, onReveal, onRanks, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, gauntletStep, seasonStep = 0, mode = 'vs', onMode, onHomeMusic }) {
   const tick = sfxOn ? playHoverTick : () => {}
@@ -140,6 +160,10 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
             <GameIcon {...VS_ICON} onClick={() => {}} />
           ) : iconTestParam === 'gauntlet' ? (
             <GameIcon {...GAUNTLET_ICON} onClick={() => {}} />
+          ) : iconTestParam === 'time' ? (
+            <GameIcon {...TIMECHALLENGE_ICON} onClick={() => {}} />
+          ) : iconTestParam === 'online' ? (
+            <GameIcon {...ONLINE_ICON} onClick={() => {}} />
           ) : (
             <GameIcon {...SEASON_ICON} onClick={() => {}} />
           )}
