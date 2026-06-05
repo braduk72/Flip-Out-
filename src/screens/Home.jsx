@@ -137,16 +137,7 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
 
       </div>
 
-      {/* Play button + coin display */}
-      <div className={styles.playRow}>
-        <div className={styles.coinBarWrap}>
-          <img src="/images/coin.webp" alt="" className={styles.coinIcon} draggable="false" />
-          <span className={styles.coinBarAmount}>{coins.toLocaleString()}</span>
-        </div>
-        <button className={styles.playBtn} onClick={() => { onMode('vs'); onPlay() }} onMouseEnter={tick} aria-label="Play">
-          <img src="/images/play_btn_home.webp" alt="Play" draggable="false" className={styles.playBtnImg} />
-        </button>
-      </div>
+      {/* Play button + coin counter removed for now */}
 
       <BottomNav active="home" onShop={onShop} onHome={onHomeMusic} onSettings={onSettings} onRanks={onRanks} />
       {showIconTest && (
