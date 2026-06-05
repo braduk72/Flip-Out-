@@ -138,8 +138,8 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
             src="/images/icons/season.webp"
             label="Season"
             flames={[
-              { x: '16%', y: '21%', delay: '0s' },
-              { x: '84%', y: '21%', delay: '0.6s' },
+              { x: '11%', y: '30%', dur: '0.83s, 1.47s', delay: '0s, 0s' },
+              { x: '89%', y: '30%', dur: '0.71s, 1.93s', delay: '0.35s, 0.8s' },
             ]}
             needle={{ x: '30.5%', y: '64%', length: '14%' }}
             onClick={() => {}}

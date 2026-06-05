@@ -21,7 +21,12 @@ export default function GameIcon({ src, label, flames = [], needle = null, onCli
           <span
             key={i}
             className={styles.flame}
-            style={{ left: f.x, top: f.y, animationDelay: f.delay || '0s' }}
+            style={{
+              left: f.x,
+              top: f.y,
+              animationDuration: f.dur || '0.8s, 1.5s',
+              animationDelay: f.delay || '0s, 0s',
+            }}
           />
         ))}
 
