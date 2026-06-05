@@ -146,7 +146,7 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
               { x: '13.5%', y: '29.5%', size: '15%', dur: '1.9s, 1.3s', delay: '-0.7s, -1.2s' },
               { x: '87.4%', y: '30%',   size: '15%', dur: '2.3s, 1.5s', delay: '-1.4s, -0.5s' },
             ]}
-            needle={{ x: '34.3%', y: '62.4%', length: '14%' }}
+            needle={{ x: '34.3%', y: '62.4%', length: '12.6%' }}
             secret={{ x: '34.3%', y: '62.4%', size: '22%' }}
             onClick={() => {}}
           />
