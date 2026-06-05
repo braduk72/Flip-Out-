@@ -146,6 +146,7 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
               { x: '87.4%', y: '30%',   size: '15%', dur: '2.3s, 1.5s', delay: '-1.4s, -0.5s' },
             ]}
             needle={{ x: '34.3%', y: '62.4%', length: '14%' }}
+            secret={{ x: '34.3%', y: '62.4%', size: '22%' }}
             onClick={() => {}}
           />
           <p className={styles.iconTestHint}>Tap anywhere to exit</p>

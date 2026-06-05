@@ -139,6 +139,17 @@
   to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
+/* ── Hidden easter-egg tap zone (compass) ── */
+.secret {
+  position: absolute;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  cursor: pointer;
+  pointer-events: auto;
+  /* invisible — it's a secret */
+}
+
 /* ── Label ──────────────────────────────────────────────────────────── */
 .label {
   font-family: Arial, sans-serif;

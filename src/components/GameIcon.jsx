@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import styles from './GameIcon.module.css'
+import LunarLander from './LunarLander'
 
 // Spark presets — varied durations/delays/drift/size so embers emit at random.
 const SPARKS = [
@@ -17,9 +19,12 @@ const SPARKS = [
  * @param flames  array of { x, y, delay } — firelight flicker points, % positions
  * @param needle  optional { x, y, length } — a CSS-drawn compass needle that
  *                spins on its pivot. Positions are % of the plate.
+ * @param secret  optional { x, y, size } — a hidden tap zone (e.g. the compass)
+ *                that triggers the lunar-lander easter egg.
  * @param onClick handler
  */
-export default function GameIcon({ src, label, flames = [], needle = null, onClick }) {
+export default function GameIcon({ src, label, flames = [], needle = null, secret = null, onClick }) {
+  const [egg, setEgg] = useState(false)
   return (
     <button className={styles.icon} onClick={onClick} aria-label={label}>
       <span className={styles.plate}>
@@ -72,6 +77,20 @@ export default function GameIcon({ src, label, flames = [], needle = null, onCli
             }}
           />
         )}
+
+        {/* Hidden easter-egg tap zone (the compass) */}
+        {secret && (
+          <span
+            role="button"
+            tabIndex={-1}
+            aria-hidden="true"
+            className={styles.secret}
+            style={{ left: secret.x, top: secret.y, width: secret.size || '24%' }}
+            onClick={(e) => { e.stopPropagation(); setEgg(true) }}
+          />
+        )}
+
+        {egg && <LunarLander onDone={() => setEgg(false)} />}
       </span>
 
       <span className={styles.label}>{label}</span>
