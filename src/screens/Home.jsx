@@ -34,14 +34,14 @@ const VS_ICON = {
   src: '/images/icons/vs.webp',
   label: 'VS',
   bubbles: [
-    { x: '50%', y: '22%', size: '3.5%', dur: '2.8s', delay: '0s' },
-    { x: '60%', y: '31%', size: '3%',   dur: '3.5s', delay: '1.2s' },
-    { x: '49%', y: '43%', size: '4%',   dur: '3.1s', delay: '0.6s' },
-    { x: '44%', y: '53%', size: '2.6%', dur: '4.0s', delay: '2.0s' },
-    { x: '70%', y: '40%', size: '3.2%', dur: '3.7s', delay: '1.6s' },
-    { x: '42%', y: '70%', size: '3.6%', dur: '2.9s', delay: '0.9s' },
-    { x: '31%', y: '79%', size: '3%',   dur: '3.4s', delay: '2.4s' },
-    { x: '55%', y: '86%', size: '4%',   dur: '3.2s', delay: '1.4s' },
+    { x: '50%', y: '22%', size: '3.5%', dx: '4cqw',  dur: '2.8s', delay: '0s' },
+    { x: '60%', y: '31%', size: '3%',   dx: '-3cqw', dur: '3.5s', delay: '1.2s' },
+    { x: '49%', y: '43%', size: '4%',   dx: '5cqw',  dur: '3.1s', delay: '0.6s' },
+    { x: '44%', y: '53%', size: '2.6%', dx: '-4cqw', dur: '4.0s', delay: '2.0s' },
+    { x: '70%', y: '40%', size: '3.2%', dx: '3cqw',  dur: '3.7s', delay: '1.6s' },
+    { x: '42%', y: '70%', size: '3.6%', dx: '-5cqw', dur: '2.9s', delay: '0.9s' },
+    { x: '31%', y: '79%', size: '3%',   dx: '-3cqw', dur: '3.4s', delay: '2.4s' },
+    { x: '55%', y: '86%', size: '4%',   dx: '4cqw',  dur: '3.2s', delay: '1.4s' },
   ],
 }
 

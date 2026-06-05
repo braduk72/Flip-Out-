@@ -159,10 +159,10 @@
 }
 @keyframes bubble {
   0%   { opacity: 0;    transform: translate(-50%, -50%) scale(0.2); }
-  8%   { opacity: 0.85; transform: translate(-50%, -60%) scale(1.0); }
-  18%  { opacity: 0.85; transform: translate(-50%, -74%) scale(1.05); }
-  24%  { opacity: 0;    transform: translate(-50%, -80%) scale(1.45); }  /* pop */
-  100% { opacity: 0;    transform: translate(-50%, -80%) scale(0.2); }
+  8%   { opacity: 0.85; transform: translate(calc(-50% + var(--dx, 0cqw) * 0.3), -60%) scale(1.0); }
+  18%  { opacity: 0.85; transform: translate(calc(-50% + var(--dx, 0cqw) * 0.7), -74%) scale(1.05); }
+  24%  { opacity: 0;    transform: translate(calc(-50% + var(--dx, 0cqw)), -82%) scale(1.45); }  /* pop */
+  100% { opacity: 0;    transform: translate(calc(-50% + var(--dx, 0cqw)), -82%) scale(0.2); }
 }
 @media (prefers-reduced-motion: reduce) { .bubble { animation: none; } }
 

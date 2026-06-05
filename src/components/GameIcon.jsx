@@ -109,6 +109,7 @@ export default function GameIcon({ src, label, flames = [], needle = null, glint
               left: b.x,
               top: b.y,
               width: b.size || '4%',
+              '--dx': b.dx || '0cqw',
               animationDuration: b.dur || '3s',
               animationDelay: b.delay || '0s',
             }}
