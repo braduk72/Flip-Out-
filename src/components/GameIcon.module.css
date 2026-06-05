@@ -139,6 +139,31 @@
   to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
+/* ── Glint (eye sparkle) ──────────────────────────────────────────────
+   Mostly invisible; a quick bright flash once per cycle so an eye/gem
+   occasionally catches the light. */
+.glint {
+  position: absolute;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) scale(0.3);
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    #ffffff 0%, rgba(255, 200, 200, 0.85) 35%, rgba(255, 60, 60, 0) 70%);
+  pointer-events: none;
+  opacity: 0;
+  animation-name: glint;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  will-change: transform, opacity;
+}
+@keyframes glint {
+  0%, 72%  { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+  80%      { opacity: 1; transform: translate(-50%, -50%) scale(1.25); }
+  88%      { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+  100%     { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+}
+@media (prefers-reduced-motion: reduce) { .glint { animation: none; } }
+
 /* ── Hidden easter-egg tap zone (compass) ── */
 .secret {
   position: absolute;

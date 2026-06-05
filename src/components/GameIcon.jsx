@@ -21,11 +21,13 @@ const SPARKS = [
  * @param flames  array of { x, y, delay } — firelight flicker points, % positions
  * @param needle  optional { x, y, length } — a CSS-drawn compass needle that
  *                spins on its pivot. Positions are % of the plate.
+ * @param glints  array of { x, y, size, dur, delay } — occasional sparkle
+ *                flashes (e.g. a glinting eye). Positions are % of the plate.
  * @param secret  optional { x, y, size } — a hidden tap zone (e.g. the compass)
  *                that triggers the lunar-lander easter egg.
  * @param onClick handler
  */
-export default function GameIcon({ src, label, flames = [], needle = null, secret = null, onClick }) {
+export default function GameIcon({ src, label, flames = [], needle = null, glints = [], secret = null, onClick }) {
   const [egg, setEgg] = useState(false)
   const tapsRef = useRef(0)
   const tapTimerRef = useRef(null)
@@ -95,6 +97,21 @@ export default function GameIcon({ src, label, flames = [], needle = null, secre
             }}
           />
         )}
+
+        {/* Occasional glints (e.g. a red eye catching the light) */}
+        {glints.map((g, i) => (
+          <span
+            key={`glint-${i}`}
+            className={styles.glint}
+            style={{
+              left: g.x,
+              top: g.y,
+              width: g.size || '5%',
+              animationDuration: g.dur || '3.5s',
+              animationDelay: g.delay || '0s',
+            }}
+          />
+        ))}
 
         {/* Hidden easter-egg tap zone (the compass) */}
         {secret && (

@@ -13,7 +13,8 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
   const [showBugModal, setShowBugModal] = useState(false)
   const [dailyBonus, setDailyBonus] = useState(null)
   const videoRef = useRef(null)
-  const showIconTest = new URLSearchParams(window.location.search).has('icontest')
+  const iconTestParam = new URLSearchParams(window.location.search).get('icontest')
+  const showIconTest = iconTestParam !== null
 
   useEffect(() => {
     const bonus = checkDailyBonus()
@@ -135,22 +136,41 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
       {showIconTest && (
         <div className={styles.iconTestOverlay}>
           <button className={styles.iconTestClose} onClick={() => { window.location.search = '' }} aria-label="Close">✕</button>
-          <GameIcon
-            src="/images/icons/season.webp"
-            label="Season"
-            flames={[
-              // Primary flames
-              { x: '15.8%', y: '33.5%', dur: '2.6s, 1.7s', delay: '-1.1s, -0.4s' },
-              { x: '85.2%', y: '34.5%', dur: '3.3s, 2.1s', delay: '-0.6s, -1.7s' },
-              // Secondary flame tips — smaller, above and to the side, own random timing
-              { x: '13.5%', y: '29.5%', size: '15%', dur: '1.9s, 1.3s', delay: '-0.7s, -1.2s' },
-              { x: '87.4%', y: '30%',   size: '15%', dur: '2.3s, 1.5s', delay: '-1.4s, -0.5s' },
-            ]}
-            needle={{ x: '34.3%', y: '62.4%', length: '12.6%' }}
-            secret={{ x: '34.3%', y: '62.4%', size: '22%' }}
-            onClick={() => {}}
-          />
-          <p className={styles.iconTestHint}>Tap the compass 10× for a surprise • ✕ to exit</p>
+
+          {iconTestParam === 'gauntlet' ? (
+            <GameIcon
+              src="/images/icons/gauntlet.webp"
+              label="Gauntlet"
+              flames={[
+                // Primary flames (large torches)
+                { x: '12%', y: '18%', size: '28%', dur: '2.6s, 1.7s', delay: '-1.1s, -0.4s' },
+                { x: '88%', y: '18%', size: '28%', dur: '3.3s, 2.1s', delay: '-0.6s, -1.7s' },
+                // Secondary flame tips
+                { x: '10.5%', y: '14.5%', size: '18%', dur: '1.9s, 1.3s', delay: '-0.7s, -1.2s' },
+                { x: '89.5%', y: '14.5%', size: '18%', dur: '2.3s, 1.5s', delay: '-1.4s, -0.5s' },
+              ]}
+              glints={[{ x: '39.4%', y: '61.6%', size: '5%', dur: '3.6s', delay: '0s' }]}
+              onClick={() => {}}
+            />
+          ) : (
+            <GameIcon
+              src="/images/icons/season.webp"
+              label="Season"
+              flames={[
+                { x: '15.8%', y: '33.5%', dur: '2.6s, 1.7s', delay: '-1.1s, -0.4s' },
+                { x: '85.2%', y: '34.5%', dur: '3.3s, 2.1s', delay: '-0.6s, -1.7s' },
+                { x: '13.5%', y: '29.5%', size: '15%', dur: '1.9s, 1.3s', delay: '-0.7s, -1.2s' },
+                { x: '87.4%', y: '30%',   size: '15%', dur: '2.3s, 1.5s', delay: '-1.4s, -0.5s' },
+              ]}
+              needle={{ x: '34.3%', y: '62.4%', length: '12.6%' }}
+              secret={{ x: '34.3%', y: '62.4%', size: '22%' }}
+              onClick={() => {}}
+            />
+          )}
+
+          <p className={styles.iconTestHint}>
+            {iconTestParam === 'gauntlet' ? 'Gauntlet icon • ✕ to exit' : 'Tap the compass 10× for a surprise • ✕ to exit'}
+          </p>
         </div>
       )}
       {dailyBonus && <DailyBonus day={dailyBonus.day} coins={dailyBonus.coins} onClose={() => setDailyBonus(null)} />}
