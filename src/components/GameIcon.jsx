@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import styles from './GameIcon.module.css'
 import LunarLander from './LunarLander'
+
+const SECRET_TAPS = 10
 
 // Spark presets — varied durations/delays/drift/size so embers emit at random.
 const SPARKS = [
@@ -25,6 +27,22 @@ const SPARKS = [
  */
 export default function GameIcon({ src, label, flames = [], needle = null, secret = null, onClick }) {
   const [egg, setEgg] = useState(false)
+  const tapsRef = useRef(0)
+  const tapTimerRef = useRef(null)
+
+  function onSecretTap(e) {
+    e.stopPropagation()
+    tapsRef.current += 1
+    clearTimeout(tapTimerRef.current)
+    // Reset the count if they pause — it takes 10 taps in a burst.
+    tapTimerRef.current = setTimeout(() => { tapsRef.current = 0 }, 2000)
+    if (tapsRef.current >= SECRET_TAPS) {
+      tapsRef.current = 0
+      clearTimeout(tapTimerRef.current)
+      setEgg(true)
+    }
+  }
+
   return (
     <button className={styles.icon} onClick={onClick} aria-label={label}>
       <span className={styles.plate}>
@@ -86,7 +104,7 @@ export default function GameIcon({ src, label, flames = [], needle = null, secre
             aria-hidden="true"
             className={styles.secret}
             style={{ left: secret.x, top: secret.y, width: secret.size || '24%' }}
-            onClick={(e) => { e.stopPropagation(); setEgg(true) }}
+            onClick={onSecretTap}
           />
         )}
 
