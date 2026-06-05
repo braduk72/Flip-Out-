@@ -118,7 +118,7 @@
    pivot. width/height are relative to the plate so it scales with the icon. */
 .needle {
   position: absolute;
-  width: 2.4%;
+  width: 2.16%;
   transform: translate(-50%, -50%);
   transform-origin: center center;
   pointer-events: none;
