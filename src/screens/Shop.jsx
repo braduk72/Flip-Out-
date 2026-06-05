@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { DECKS } from '../data/decks'
+import { PROMO_CODES } from '../data/promoCodes'
 import styles from './Shop.module.css'
 import BottomNav from '../components/BottomNav'
-import AdBanner from '../components/AdBanner'
 import RemoveAdsModal from '../components/RemoveAdsModal'
+import { startCheckout, restorePurchases } from '../utils/foShop.js'
 
 function getOwnedPaidCount() {
   const owned = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
@@ -11,124 +12,208 @@ function getOwnedPaidCount() {
 }
 
 const COIN_PACKS = [
-  { id: 'coins_100',  label: '100 Coins',  price: '£0.99',  coins: 100,  highlight: false },
-  { id: 'coins_500',  label: '500 Coins',  price: '£3.99',  coins: 500,  highlight: false },
-  { id: 'coins_1000', label: '1000 Coins', price: '£6.99',  coins: 1000, highlight: true  },
+  { id: 'coins_100',  label: '100 Coins',  price: '£0.99',  coins: 100,  highlight: false, img: '/images/x100.webp'  },
+  { id: 'coins_500',  label: '500 Coins',  price: '£3.99',  coins: 500,  highlight: false, img: '/images/x500.webp'  },
+  { id: 'coins_1000', label: '1000 Coins', price: '£6.99',  coins: 1000, highlight: true,  img: '/images/x1000.webp' },
 ]
 
 const JOKER_RELOAD_PRICE = 50
 
 const POWERUPS = [
-  { id: 'pu_xray',    label: 'X-Ray',   desc: 'Peek at 2 cards before your turn', price: 50, qty: 3, image: '/images/cards/special/xray.png'    },
-  { id: 'pu_freeze',  label: 'Freeze',  desc: 'Freeze surrounding cards for a turn',   price: 50, qty: 3, image: '/images/cards/special/freeze.png'  },
-  { id: 'pu_shuffle', label: 'Shuffle', desc: 'Reshuffle all unmatched cards',   price: 50, qty: 3, image: '/images/cards/special/shuffle.png' },
+  { id: 'pu_xray',    label: 'X-Ray',   desc: 'Peek at 2 cards before your turn', price: 50, qty: 3, image: '/images/cards/special/xray.webp'    },
+  { id: 'pu_freeze',  label: 'Freeze',  desc: 'Freeze surrounding cards for a turn',   price: 50, qty: 3, image: '/images/cards/special/freeze.webp'  },
+  { id: 'pu_shuffle', label: 'Shuffle', desc: 'Reshuffle all unmatched cards',   price: 50, qty: 3, image: '/images/cards/special/shuffle.webp' },
 ]
 
 const BUNDLES = [
-  { id: 'bundle_starter', label: 'Starter Bundle', desc: '500 coins + Peek × 3', price: '£2.99', highlight: false },
-  { id: 'bundle_mega',    label: 'Mega Bundle',    desc: '1500 coins + all power-ups × 5', price: '£9.99', highlight: true },
+  { id: 'bundle_starter', label: 'Starter Bundle', desc: '500 coins + Shield × 3', price: '£2.99', highlight: false },
+  { id: 'bundle_mega',    label: 'Mega Bundle',    desc: '1500 coins + 1× X-Ray, 1× Freeze, 1× Bolt, 2× Shield', price: '£9.99', highlight: true,
+    cards: [
+      '/images/cards/special/xray.webp',
+      '/images/cards/special/freeze.webp',
+      '/images/cards/special/bolt.webp',
+      '/images/cards/special/shield.webp',
+      '/images/cards/special/shield.webp',
+    ]
+  },
 ]
+
+const STAGE_BKGS = [1, 2, 3, 4].map(n => `/images/gameshowStages/${n}.webp`)
 
 export default function Shop({ onBack, navProps }) {
   const ownedPaidCount = getOwnedPaidCount()
+  const [bgIdx, setBgIdx] = useState(0)
+  useEffect(() => {
+    const t = setInterval(() => setBgIdx(i => (i + 1) % STAGE_BKGS.length), 8000)
+    return () => clearInterval(t)
+  }, [])
   const [jokerHovered, setJokerHovered] = useState(false)
   const [noAds, setNoAds] = useState(() => !!localStorage.getItem('fo_no_ads'))
   const [showRemoveAdsModal, setShowRemoveAdsModal] = useState(false)
+  const [buying, setBuying] = useState(null)
+  const [restoreState, setRestoreState] = useState('idle') // idle | loading | done | notfound | error
+
+  async function handleRestore() {
+    if (restoreState === 'loading') return
+    setRestoreState('loading')
+    try {
+      const result = await restorePurchases()
+      if (result.found) setRestoreState('done')
+      else setRestoreState('notfound')
+    } catch { setRestoreState('error') }
+  }
+  const [coinModal, setCoinModal] = useState(null)
+  const [codeInput, setCodeInput] = useState('')
+  const [codeResult, setCodeResult] = useState(null) // null | { loading } | { ok: true, ... } | { ok: false, msg }
+
+  function applyCodeRewards({ coins, spins, unlocks, avatar }) {
+    if (coins)   { const c = parseInt(localStorage.getItem('fo_coins')       || '0', 10); localStorage.setItem('fo_coins',        String(c + coins))   }
+    if (spins)   { const c = parseInt(localStorage.getItem('fo_spin_bonus')  || '0', 10); localStorage.setItem('fo_spin_bonus',   String(c + spins))   }
+    if (unlocks) { const c = parseInt(localStorage.getItem('fo_free_unlocks')|| '0', 10); localStorage.setItem('fo_free_unlocks', String(c + unlocks)) }
+    if (avatar)  { const a = JSON.parse(localStorage.getItem('fo_unlocked_avatars') || '[]'); if (!a.includes(avatar)) localStorage.setItem('fo_unlocked_avatars', JSON.stringify([...a, avatar])) }
+  }
+
+  async function redeemCode() {
+    const code = codeInput.trim().toUpperCase()
+    if (!code) return
+
+    // Fast local check to avoid an obvious round-trip
+    const used = JSON.parse(localStorage.getItem('fo_used_codes') || '[]')
+    if (used.includes(code)) { setCodeResult({ ok: false, msg: '✗ Code already redeemed' }); return }
+
+    setCodeResult({ loading: true })
+
+    try {
+      const { getDeviceUuid } = await import('../utils/deviceId.js')
+      const res  = await fetch('/api/fo-redeem-code', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ code, deviceUuid: getDeviceUuid() }),
+      })
+      const data = await res.json()
+
+      if (!data.ok) { setCodeResult({ ok: false, msg: `✗ ${data.msg || 'Invalid code'}` }); return }
+
+      applyCodeRewards(data)
+      localStorage.setItem('fo_used_codes', JSON.stringify([...used, code]))
+      setCodeResult({ ok: true, coins: data.coins, spins: data.spins, unlocks: data.unlocks, avatar: data.avatar })
+      setCodeInput('')
+
+    } catch {
+      // Network failure — fall back to client-side validation so the player isn't blocked offline
+      const promo = PROMO_CODES[code]
+      if (!promo) { setCodeResult({ ok: false, msg: '✗ Invalid code' }); return }
+      applyCodeRewards({ coins: promo.coins || 0, spins: promo.spins || 0, unlocks: promo.unlocks || 0, avatar: promo.avatar || null })
+      localStorage.setItem('fo_used_codes', JSON.stringify([...used, code]))
+      setCodeResult({ ok: true, coins: promo.coins || 0, spins: promo.spins || 0, unlocks: promo.unlocks || 0, avatar: promo.avatar || null })
+      setCodeInput('')
+    }
+  }
+
+  async function buy(productId) {
+    if (buying) return
+    setBuying(productId)
+    try { await startCheckout(productId) }
+    catch { setBuying(null) }
+  }
   return (
     <div className={styles.page}>
+      {STAGE_BKGS.map((src, i) => (
+        <img
+          key={src}
+          src={src}
+          aria-hidden="true"
+          draggable="false"
+          className={`${styles.stageBg} ${i === bgIdx ? styles.stageBgActive : ''}`}
+        />
+      ))}
+      <div className={styles.stageBgOverlay} />
       <div className={styles.scroll}>
 
         <div className={styles.header}>
-          <button className={styles.backBtn} onClick={onBack}>← Back</button>
+          <button className={styles.backBtn} onClick={onBack} aria-label="Back">
+            <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+          </button>
           <h1 className={styles.title}>Shop</h1>
+        </div>
+
+        {/* Lucky Spin entry */}
+        <h2 className={styles.sectionTitle}>🎡 Lucky Spin</h2>
+        <button className={`${styles.removeAdsCard} ${styles.spinCard}`} onClick={navProps?.onSpin}>
+          <img src="/images/wheel.webp" alt="Lucky Spin" className={styles.spinWheelImg} />
+          <div className={styles.removeAdsText}>
+            <span className={styles.removeAdsTitle}>FREE DAILY SPIN</span>
+            <span className={styles.removeAdsDesc}>Spin it to win it!</span>
+          </div>
+        </button>
+
+        {/* Promo code */}
+        <h2 className={styles.sectionTitle}>🎟️ Enter a Code</h2>
+        <div className={styles.promoCard}>
+          <input
+            className={styles.promoInput}
+            type="text"
+            placeholder="Enter your code…"
+            value={codeInput}
+            onChange={e => { setCodeInput(e.target.value.toUpperCase()); setCodeResult(null) }}
+            onKeyDown={e => e.key === 'Enter' && codeInput.trim() && redeemCode()}
+            maxLength={20}
+            autoCapitalize="characters"
+            autoCorrect="off"
+            spellCheck={false}
+          />
+          <button className={styles.promoBtn} onClick={redeemCode} disabled={!codeInput.trim() || !!codeResult?.loading}>
+            {codeResult?.loading ? 'Checking…' : 'Redeem'}
+          </button>
+          {codeResult?.ok && (
+            <p className={`${styles.codeMsg} ${styles.codeMsgOk}`}>
+              ✓ {[
+                codeResult.coins   && `${codeResult.coins} coins`,
+                codeResult.spins   && `${codeResult.spins} bonus spins`,
+                codeResult.unlocks && `${codeResult.unlocks} free deck unlock`,
+                codeResult.avatar  && `exclusive avatar unlocked`,
+              ].filter(Boolean).join(' + ')} added!
+            </p>
+          )}
+          {codeResult && !codeResult.ok && (
+            <p className={`${styles.codeMsg} ${styles.codeMsgErr}`}>{codeResult.msg}</p>
+          )}
         </div>
 
         {/* Coins */}
         <h2 className={styles.sectionTitle}>🪙 Coins</h2>
         <div className={styles.coinGrid}>
           {COIN_PACKS.map(pack => (
-            <button key={pack.id} className={`${styles.coinCard} ${pack.highlight ? styles.highlighted : ''}`}>
-              <img src="/images/coin.png" alt="" className={styles.coinCardImg} />
-              <span className={styles.coinCardLabel}>{pack.label}</span>
-              <span className={styles.coinCardPrice}>{pack.price}</span>
-              {pack.highlight && <span className={styles.bestValue}>BEST VALUE</span>}
+            <button key={pack.id} className={styles.coinPackCard} onClick={() => setCoinModal(pack)} disabled={!!buying}>
+              <img src={pack.img} alt={pack.label} className={styles.coinPackImg} />
             </button>
           ))}
         </div>
 
-        {/* Joker reload */}
-        <h2 className={styles.sectionTitle}>🃏 Joker</h2>
-        <button
-          className={`${styles.removeAdsCard} ${ownedPaidCount === 0 ? styles.lockedItem : ''}`}
-          onMouseEnter={() => ownedPaidCount === 0 && setJokerHovered(true)}
-          onMouseLeave={() => setJokerHovered(false)}
-          onClick={() => { if (ownedPaidCount === 0) setJokerHovered(true) }}
-        >
-          <div className={styles.removeAdsText}>
-            <span className={styles.removeAdsTitle}>
-              {ownedPaidCount === 0 && jokerHovered ? 'You have no jokers — Buy a deck!' : 'Reload a Joker'}
-            </span>
-            <span className={styles.removeAdsDesc}>
-              {ownedPaidCount === 0
-                ? 'Buy a deck to earn jokers'
-                : 'Use one extra joker today'}
-            </span>
-          </div>
-          {ownedPaidCount > 0
-            ? <div className={styles.coinPrice}>
-                <img src="/images/coin.png" alt="" className={styles.coinPriceImg} />
-                {String(JOKER_RELOAD_PRICE).split('').map((d, i) => (
-                  <img key={i} src={`/images/${d}.png`} alt={d} className={styles.coinPriceDigit} />
-                ))}
-              </div>
-            : <span className={styles.lockedLabel}>🔒</span>
-          }
-        </button>
+        {/* Joker reload — hidden until joker system is live */}
 
-        {/* Remove Ads */}
-        <h2 className={styles.sectionTitle}>🚫 Remove Ads</h2>
-        <button
-          className={`${styles.removeAdsCard} ${noAds ? styles.lockedItem : ''}`}
-          onClick={() => !noAds && setShowRemoveAdsModal(true)}
-          disabled={noAds}
-        >
-          <div className={styles.removeAdsText}>
-            <span className={styles.removeAdsTitle}>{noAds ? '✓ Ad-Free Active' : 'Remove Forced Ads'}</span>
-            <span className={styles.removeAdsDesc}>{noAds ? 'Enjoying an ad-free game!' : 'Remove pop-up and banner ads · Rewarded ads remain'}</span>
-          </div>
-          {!noAds && <span className={styles.removeAdsPrice}>from £7.99</span>}
-        </button>
-
-        {/* Lucky Spin entry */}
-        <h2 className={styles.sectionTitle}>🎡 Lucky Spin</h2>
-        <button className={styles.removeAdsCard} onClick={navProps?.onSpin}>
-          <div className={styles.removeAdsText}>
-            <span className={styles.removeAdsTitle}>Daily Spin Wheel</span>
-            <span className={styles.removeAdsDesc}>Spin for coins and power-ups · up to 2 spins daily</span>
-          </div>
-          <span className={styles.removeAdsPrice}>FREE</span>
-        </button>
+        {/* Remove Ads — hidden until ad network is live */}
 
         {/* Loot Box */}
         <h2 className={styles.sectionTitle}>📦 Treasure Chest</h2>
-        <button className={`${styles.removeAdsCard} ${styles.chestCard}`}>
-          <div className={styles.chestEmoji}>🎁</div>
+        <button className={`${styles.removeAdsCard} ${styles.chestCard}`} onClick={() => buy('chest')} disabled={!!buying}>
+          <div className={styles.chestEmoji}>
+            <img src="/images/chest.webp" alt="Chest" className={styles.chestImg} draggable="false" />
+          </div>
           <div className={styles.removeAdsText}>
-            <span className={styles.removeAdsTitle}>Mystery Chest</span>
-            <span className={styles.removeAdsDesc}>Random coins + power-ups + bonus rewards</span>
+            <span className={styles.removeAdsTitle}>Bonus Chest</span>
+            <span className={styles.removeAdsDesc}>400 coins + power-ups + bonus rewards</span>
           </div>
           <span className={styles.removeAdsPrice}>£3.99</span>
         </button>
         <div className={styles.chestTiers}>
           <div className={styles.chestTierLocked}>
-            <span className={styles.chestTierReward}><img src="/images/coin.png" alt="coins" className={styles.chestTierCoin} /> ×150</span>
-            <span className={styles.chestTierLabel}>Free</span>
-            <span className={styles.chestTierLock}>🔒</span>
+            <span className={styles.chestTierReward}><img src="/images/coin.webp" alt="coins" className={styles.chestTierCoin} /> ×400</span>
+            <span className={styles.chestTierLabel}>BONUS!</span>
           </div>
           <div className={styles.chestTierLocked}>
-            <span className={styles.chestTierReward}>❄️ ×1</span>
-            <span className={styles.chestTierLabel}>Free</span>
-            <span className={styles.chestTierLock}>🔒</span>
+            <span className={styles.chestTierReward}><img src="/images/cards/special/freeze.webp" alt="Freeze" className={styles.chestTierCoin} /> ×1</span>
+            <span className={styles.chestTierLabel}>BONUS!</span>
           </div>
         </div>
 
@@ -143,7 +228,7 @@ export default function Shop({ onBack, navProps }) {
               </span>
               <span className={styles.powerupDesc}>{pu.desc}</span>
               <div className={styles.powerupPrice}>
-                <img src="/images/coin.png" alt="" className={styles.powerupCoin} />
+                <img src="/images/coin.webp" alt="" className={styles.powerupCoin} />
                 {pu.price}
               </div>
             </button>
@@ -154,27 +239,90 @@ export default function Shop({ onBack, navProps }) {
         <h2 className={styles.sectionTitle}>🎁 Bundles</h2>
         <div className={styles.bundleList}>
           {BUNDLES.map(b => (
-            <button key={b.id} className={`${styles.bundleCard} ${b.highlight ? styles.highlighted : ''}`}>
+            <button key={b.id} className={`${styles.bundleCard} ${b.highlight ? styles.highlighted : ''}`} onClick={() => buy(b.id)} disabled={!!buying}>
+              {b.id === 'bundle_mega' && (
+                <div className={styles.starterVisual}>
+                  <div className={styles.shieldStack}>
+                    {b.cards.map((src, i) => (
+                      <img key={i} src={src} alt="" className={styles.shieldStackImg} style={{ zIndex: i, transform: `translateX(${i * 14}px)` }} />
+                    ))}
+                  </div>
+                  <div className={styles.starterCoins}>
+                    <img src="/images/coin.webp" alt="coins" className={styles.starterCoinImg} />
+                    {'1500'.split('').map((d, i) => (
+                      <img key={i} src={`/images/${d}.webp`} alt={d} className={styles.starterDigit} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {b.id === 'bundle_starter' && (
+                <div className={styles.starterVisual}>
+                  <div className={styles.shieldStack}>
+                    {[0,1,2].map(i => (
+                      <img key={i} src="/images/cards/special/shield.webp" alt="Shield" className={styles.shieldStackImg} style={{ zIndex: i, transform: `translateX(${i * 14}px)` }} />
+                    ))}
+                  </div>
+                  <div className={styles.starterCoins}>
+                    <img src="/images/coin.webp" alt="coins" className={styles.starterCoinImg} />
+                    {'500'.split('').map((d, i) => (
+                      <img key={i} src={`/images/${d}.webp`} alt={d} className={styles.starterDigit} />
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className={styles.bundleText}>
                 <span className={styles.bundleLabel}>{b.label}</span>
                 <span className={styles.bundleDesc}>{b.desc}</span>
               </div>
-              <span className={styles.bundlePrice}>{b.price}</span>
+              <span className={styles.bundlePrice}>{buying === b.id ? '…' : b.price}</span>
               {b.highlight && <span className={styles.bestValue}>BEST VALUE</span>}
             </button>
           ))}
         </div>
 
+        {/* Restore Purchases */}
+        <div className={styles.restoreRow}>
+          <span className={styles.restoreLabel}>Restore Purchases</span>
+          <div className={styles.restoreRight}>
+            {restoreState === 'done' ? (
+              <span className={styles.restoreDone}>✓ Restored!</span>
+            ) : (
+              <>
+                <button className={styles.restoreImgBtn} onClick={handleRestore} disabled={restoreState === 'loading'} aria-label="Restore purchases">
+                  <img src="/images/restore.webp" alt="Restore" draggable="false" className={`${styles.restoreImg} ${restoreState === 'loading' ? styles.restoreSpinning : ''}`} />
+                </button>
+                {restoreState === 'notfound' && <span className={styles.restoreMsg}>Nothing found</span>}
+                {restoreState === 'error'    && <span className={styles.restoreMsg}>Try again</span>}
+              </>
+            )}
+          </div>
+        </div>
+
         <div className={styles.footer} />
 
       </div>
-      <AdBanner />
       <BottomNav active="shop" {...navProps} />
       {showRemoveAdsModal && (
         <RemoveAdsModal
           onClose={() => setShowRemoveAdsModal(false)}
           onBuy={() => setNoAds(true)}
         />
+      )}
+
+      {coinModal && (
+        <div className={styles.coinModalOverlay} onClick={() => setCoinModal(null)}>
+          <div className={styles.coinModal} onClick={e => e.stopPropagation()}>
+            <img src={coinModal.img} alt={coinModal.label} className={styles.coinModalImg} />
+            <div className={styles.coinModalBtns}>
+              <button className={styles.coinModalBtn} onClick={() => { setCoinModal(null); buy(coinModal.id) }} disabled={!!buying}>
+                <img src="/images/a13.webp" alt="Buy" className={styles.coinModalBtnImg} />
+              </button>
+              <button className={styles.coinModalBtn} onClick={() => setCoinModal(null)}>
+                <img src="/images/a14.webp" alt="Cancel" className={styles.coinModalBtnImg} />
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

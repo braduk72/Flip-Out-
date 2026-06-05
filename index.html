@@ -3,8 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>flipout</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Flip Out!</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#200008" />
+    <!-- iOS PWA -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Flip Out!" />
+    <link rel="apple-touch-icon" href="/images/gizmo_games.webp" />
+    <!-- AdSense H5 Games rewarded ad API — fires immediately as fallback until approved -->
+    <script>window.adBreak = window.adBreak || function(o){(window.adsbygoogle=window.adsbygoogle||[]).push(o)}</script>
     <!-- Google AdSense verification -->
     <meta name="google-adsense-account" content="ca-pub-1025164951575228">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1025164951575228" crossorigin="anonymous"></script>
@@ -12,5 +22,26 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Static content for search engines — noscript is invisible to JS users, readable by crawlers -->
+    <noscript>
+      <div style="font-family:Arial,sans-serif;font-size:14px;text-align:center;padding:24px;line-height:1.7;">
+        <h1>Flip Out!</h1>
+        <p>The ultimate card-matching showdown by Gizmo Games.</p>
+        <p>Flip Out! is a memory card-matching game with a twist — special power cards shake up every round
+        with abilities like the Stopwatch, Freeze, Rocket, Tornado and more. Challenge the AI, battle
+        through the Gauntlet, or go head-to-head with a friend in real-time online multiplayer.</p>
+        <p>Made by <strong>Gizmo Games</strong>, a UK-based Community Interest Company (CIC).
+        Every penny of profit goes towards establishing a cat sanctuary and free veterinary service
+        for local residents who cannot afford care elsewhere.</p>
+        <p>Every game played. Every purchase made. Every cat helped.</p>
+        <nav>
+          <a href="/about.html">About Us</a> |
+          <a href="/privacy.html">Privacy Policy</a> |
+          <a href="mailto:support@gizmogames.uk">Contact</a>
+        </nav>
+        <p>© 2026 Gizmo Games. All rights reserved.</p>
+      </div>
+    </noscript>
   </body>
 </html>

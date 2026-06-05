@@ -1,19 +1,35 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import styles from './SeasonMap.module.css'
 import BottomNav from '../components/BottomNav'
-import { ACTIVE_SEASON } from '../data/seasonalOpponents'
+import { ACTIVE_SEASON, STEPS_PER_STAGE, BOSS_STEP, ROB_OPPONENTS, getRobNames } from '../data/seasonalOpponents'
+import { KNOCKOUT_OPPONENTS } from '../data/opponents'
 
 // Cache-bust version — bump this whenever sprite images are replaced
-const V = '?v=2'
+const V = '?v=4'
 
-// Node positions as % of image (width × height).
+// Path waypoints as % of image (width × height) — player avatar interpolates along these
 const NODE_POSITIONS = [
-  { x: 50, y: 91 }, // N0 VEXOR   — large green start circle, bottom centre
-  { x: 66, y: 75 }, // N1 DREAD   — lower-right winding path section
-  { x: 44, y: 57 }, // N2 MALIX   — white/teal robocat platform, mid green zone
-  { x: 50, y: 32 }, // N3 OBLIQUE — gold robocat platform, industrial zone
-  { x: 48, y:  5 }, // N4 BOSS    — red boss robocat, danger zone top
+  { x: 50, y: 91 }, // N0 — start, bottom centre
+  { x: 66, y: 75 }, // N1 — lower-right
+  { x: 44, y: 57 }, // N2 — mid
+  { x: 50, y: 32 }, // N3 — industrial zone
+  { x: 48, y:  5 }, // N4 — boss, danger zone top
 ]
+
+// Checkpoint steps along the path (at each waypoint) — shown as ✓ when passed
+const CHECKPOINT_STEPS = [0, 7, 15, 22, BOSS_STEP]
+
+// Interpolate player position along the waypoint path (0 = start, 1 = boss)
+function getMapPos(step) {
+  const t        = Math.min(step / BOSS_STEP, 1)
+  const segments = NODE_POSITIONS.length - 1
+  const segF     = t * segments
+  const segIdx   = Math.min(Math.floor(segF), segments - 1)
+  const segT     = segF - segIdx
+  const a        = NODE_POSITIONS[segIdx]
+  const b        = NODE_POSITIONS[segIdx + 1]
+  return { x: a.x + segT * (b.x - a.x), y: a.y + segT * (b.y - a.y) }
+}
 
 // Steam emitter positions (x%, y%) — pipe/chimney spots in the industrial zone
 const STEAM_EMITTERS = [
@@ -23,9 +39,9 @@ const STEAM_EMITTERS = [
 
 // Electric storm clouds in the danger zone (each gets a real dark cloud + lightning)
 const CLOUD_POSITIONS = [
-  { x: 15, y: 14, src: `/images/cld_pd1.png${V}` },
-  { x: 75, y: 10, src: `/images/cld_pd3.png${V}` },
-  { x: 40, y: 20, src: `/images/cld_pd2.png${V}` },
+  { x: 15, y: 14, src: `/images/cld_pd1.webp${V}` },
+  { x: 75, y: 10, src: `/images/cld_pd3.webp${V}` },
+  { x: 40, y: 20, src: `/images/cld_pd2.webp${V}` },
 ]
 
 // Robomice — scattered across the map, heavier in the green zone
@@ -49,21 +65,24 @@ const TESLA_COILS = [
   { x: 76, y: 14, colour: 'b', scale: 0.80, delay: 3.2 },
 ]
 
-// Fog cloud sprites — layered from bottom edge (wispy/light) to top (dark smoke)
-const FOG_CLOUDS = [
-  // Bottom edge — flat white, slow drift
-  { src: `/images/cld_fw2.png${V}`, cls: 'fogD0' },
-  { src: `/images/cld_fw1.png${V}`, cls: 'fogD1' },
-  { src: `/images/cld_fw3.png${V}`, cls: 'fogD2' },
-  // Mid fog — flat medium grey
-  { src: `/images/cld_fm2.png${V}`, cls: 'fogD3' },
-  { src: `/images/cld_pm2.png${V}`, cls: 'fogD4' },
-  // Upper mid — dark puffs
-  { src: `/images/cld_pd2.png${V}`, cls: 'fogD5' },
-  { src: `/images/cld_fd2.png${V}`, cls: 'fogD6' },
-  // Near top — heavy smoke
-  { src: `/images/cld_fs2.png${V}`, cls: 'fogD7' },
-  { src: `/images/cld_fs1.png${V}`, cls: 'fogD8' },
+// Fog cloud strips — each scrolls continuously left or right (marquee pattern).
+// Two images side-by-side in a 200%-wide strip; animating translateX(-50%) gives a seamless loop.
+// Different cloud types, heights, speeds and directions → full coverage, no gaps.
+const FOG_STRIPS = [
+  // Top — dense smoke / heavy dark puffs
+  { top:  0, dir: 'R', dur: 65, a: 'cld_fs1', b: 'cld_fs2' },
+  { top: 10, dir: 'L', dur: 52, a: 'cld_fd2', b: 'cld_pd3' },
+  // Upper-mid — dark puffs
+  { top: 21, dir: 'R', dur: 43, a: 'cld_pd1', b: 'cld_fd2' },
+  { top: 32, dir: 'L', dur: 71, a: 'cld_pd2', b: 'cld_pd1' },
+  // Mid — puff + medium grey mix
+  { top: 44, dir: 'R', dur: 57, a: 'cld_pm2', b: 'cld_pd3' },
+  { top: 55, dir: 'L', dur: 38, a: 'cld_fm2', b: 'cld_pm2' },
+  // Lower-mid — lighter grey
+  { top: 66, dir: 'R', dur: 60, a: 'cld_fw3', b: 'cld_fm2' },
+  // Bottom — wispy white, fastest (nearest the reveal edge)
+  { top: 76, dir: 'L', dur: 45, a: 'cld_fw1', b: 'cld_fw3' },
+  { top: 85, dir: 'R', dur: 33, a: 'cld_fw2', b: 'cld_fw1' },
 ]
 
 // Animated sprite robomouse — cycles 4 frames at 6fps
@@ -76,7 +95,7 @@ function RoboMouse({ scale = 1, colour = 'g' }) {
   const size = Math.round(48 * scale)
   return (
     <img
-      src={`/images/m${colour}${frame}.png${V}`}
+      src={`/images/m${colour}${frame}.webp${V}`}
       alt=""
       draggable="false"
       className={styles.roboMouse}
@@ -96,7 +115,7 @@ function TeslaCoil({ colour = 'b', scale = 1 }) {
   const size = Math.round(72 * scale)
   return (
     <img
-      src={`/images/tc_${colour}${frame}.png${V}`}
+      src={`/images/tc_${colour}${frame}.webp${V}`}
       alt=""
       draggable="false"
       className={styles.teslaImg}
@@ -105,32 +124,34 @@ function TeslaCoil({ colour = 'b', scale = 1 }) {
   )
 }
 
-const ALL_NODES = [
-  ...ACTIVE_SEASON.opponents,
-  ACTIVE_SEASON.boss,
-]
-
-export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps }) {
+export default function SeasonMap({ seasonStep = 0, portrait = 1, onFight, onBack, navProps }) {
   const scrollRef  = useRef(null)
   const imgRef     = useRef(null)
-  const currentIdx = Math.min(seasonStep, ALL_NODES.length - 1)
+  const playerPos  = getMapPos(seasonStep)
+  const isBoss     = seasonStep === BOSS_STEP
+  const isComplete = seasonStep > BOSS_STEP
+  const robNames   = getRobNames()
+  const isRobStep  = seasonStep < ROB_OPPONENTS.length && !isBoss
+  const E_STEP_MAP = { 5: 0, 10: 1, 15: 2, 20: 0, 25: 1, 30: 2 }
+  const eIdx       = E_STEP_MAP[seasonStep]
+  const challName  = isBoss ? ACTIVE_SEASON.boss.name
+    : eIdx !== undefined   ? KNOCKOUT_OPPONENTS[eIdx].name
+    : isRobStep            ? robNames[seasonStep]
+    : 'CHALLENGER'
 
-  const fogHeight = seasonStep >= ALL_NODES.length
-    ? 0
-    : Math.max(0, NODE_POSITIONS[currentIdx].y - 38)
+  const fogHeight = isComplete ? 0 : Math.max(0, playerPos.y - 38)
 
   const doScroll = useCallback(() => {
     const el  = scrollRef.current
     const img = imgRef.current
     if (!el || !img) return
-    const pos         = NODE_POSITIONS[currentIdx]
     const imgH        = img.offsetHeight
-    const scrollTarget = (pos.y / 100) * imgH - el.clientHeight * 0.42
+    const scrollTarget = (playerPos.y / 100) * imgH - el.clientHeight * 0.42
     el.scrollTo({ top: 0, behavior: 'instant' })
     setTimeout(() => {
       el.scrollTo({ top: Math.max(0, scrollTarget), behavior: 'smooth' })
     }, 650)
-  }, [currentIdx])
+  }, [playerPos.y])
 
   useEffect(() => {
     const img = imgRef.current
@@ -142,26 +163,34 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack}>← Back</button>
+        <button className={styles.backBtn} onClick={onBack} aria-label="Back">
+          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+        </button>
         <div className={styles.seasonTitle}>
           <span className={styles.seasonTag}>SEASON 1</span>
           <span className={styles.seasonName}>{ACTIVE_SEASON.theme}</span>
         </div>
-        <div className={styles.stepCounter}>{Math.min(seasonStep, ALL_NODES.length)}/{ALL_NODES.length}</div>
+        <div className={styles.stepCounter}>{Math.min(seasonStep + 1, STEPS_PER_STAGE)}/{STEPS_PER_STAGE}</div>
       </div>
 
       <div className={styles.mapScroll} ref={scrollRef}>
         <div className={styles.mapCanvas}>
 
           {/* Map image — natural dimensions drive the canvas height */}
-          <img ref={imgRef} src="/images/season1map.png" className={styles.mapBgImg} alt="" draggable="false" />
+          <img ref={imgRef} src="/images/season1map.webp" className={styles.mapBgImg} alt="" draggable="false" />
 
-          {/* ── Fog of war — real cloud sprites drifting in layers ── */}
+          {/* ── Fog of war — cloud strips scrolling continuously L or R ── */}
           <div className={styles.fogZone} style={{ height: `${fogHeight}%` }}>
             <div className={styles.fogBody} />
-            {FOG_CLOUDS.map((c, i) => (
-              <img key={i} src={c.src} alt="" draggable="false"
-                className={`${styles.fogDrift} ${styles[c.cls]}`} />
+            {FOG_STRIPS.map((s, i) => (
+              <div
+                key={i}
+                className={`${styles.fogStrip} ${s.dir === 'L' ? styles.fogScrollL : styles.fogScrollR}`}
+                style={{ top: `${s.top}%`, animationDuration: `${s.dur}s` }}
+              >
+                <img src={`/images/${s.a}.webp${V}`} alt="" draggable="false" />
+                <img src={`/images/${s.b}.webp${V}`} alt="" draggable="false" />
+              </div>
             ))}
           </div>
 
@@ -211,64 +240,90 @@ export default function SeasonMap({ seasonStep = 0, onFight, onBack, navProps })
             </div>
           ))}
 
-          {/* ── Opponent nodes ── */}
-          {ALL_NODES.map((opp, i) => {
-            const pos    = NODE_POSITIONS[i]
-            const status = i < seasonStep ? 'done' : i === seasonStep ? 'current' : 'locked'
-            const isBoss = !!opp.isBoss
-
+          {/* ── Checkpoint markers along the path ── */}
+          {CHECKPOINT_STEPS.map((chkStep, i) => {
+            if (chkStep === BOSS_STEP) return null  // boss handled separately
+            const pos  = NODE_POSITIONS[i]
+            const done = seasonStep > chkStep
             return (
               <div
-                key={opp.id}
-                className={`${styles.node} ${styles[status]} ${isBoss ? styles.nodeBoss : ''}`}
+                key={`chk-${i}`}
+                className={`${styles.checkpoint} ${done ? styles.checkpointDone : ''}`}
                 style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-                onClick={status === 'current' ? onFight : undefined}
-                role={status === 'current' ? 'button' : undefined}
-                aria-label={status === 'current' ? `Fight ${opp.name}` : opp.name}
               >
-                {status === 'done' ? (
-                  <>
-                    <img src={opp.image} alt={opp.name} className={styles.nodeImg} draggable="false" />
-                    <div className={styles.nodeDoneOverlay}>✓</div>
-                  </>
-                ) : status === 'current' ? (
-                  <>
-                    <img src={opp.image} alt={opp.name} className={styles.nodeImg} draggable="false" />
-                    <div className={styles.nodePulse} />
-                    {isBoss && <div className={styles.bossFlame}>💀</div>}
-                  </>
-                ) : (
-                  <div className={styles.nodeLocked}>
-                    {isBoss ? '💀' : '🔒'}
-                  </div>
-                )}
-                <div className={styles.nodeLabel}>
-                  {status === 'locked' ? '???' : opp.name}
-                </div>
+                {done ? '✓' : ''}
               </div>
             )
           })}
 
+          {/* ── Boss node — always visible at top ── */}
+          {(() => {
+            const boss   = ACTIVE_SEASON.boss
+            const pos    = NODE_POSITIONS[NODE_POSITIONS.length - 1]
+            const done   = seasonStep > BOSS_STEP
+            const active = isBoss
+            return (
+              <div
+                className={`${styles.node} ${styles.nodeBoss} ${done ? styles.done : active ? styles.current : styles.locked}`}
+                style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+              >
+                {done ? (
+                  <>
+                    <img src={boss.image} alt={boss.name} className={styles.nodeImg} draggable="false" />
+                    <div className={styles.nodeDoneOverlay}>✓</div>
+                  </>
+                ) : active ? (
+                  <>
+                    <img src={boss.image} alt={boss.name} className={styles.nodeImg} draggable="false" />
+                    <div className={styles.nodePulse} />
+                    <div className={styles.bossFlame}>💀</div>
+                  </>
+                ) : (
+                  <div className={styles.nodeLocked}>💀</div>
+                )}
+                <div className={styles.nodeLabel}>{done || active ? boss.name : '???'}</div>
+              </div>
+            )
+          })()}
+
+          {/* ── Player avatar — moves along path with each step ── */}
+          <div
+            className={styles.playerMarker}
+            style={{ left: `${playerPos.x}%`, top: `${playerPos.y}%` }}
+          >
+            <img
+              src={`/images/a${portrait}.webp`}
+              alt="You"
+              draggable="false"
+              className={styles.playerAvatar}
+            />
+            <div className={styles.playerPulse} />
+          </div>
+
         </div>
       </div>
 
-      {/* Fight CTA — only shown when not complete */}
-      {seasonStep < ALL_NODES.length && (
+      {/* Fight CTA */}
+      {!isComplete && (
         <div className={styles.ctaBar}>
           <div className={styles.ctaInfo}>
-            <span className={styles.ctaRound}>{ALL_NODES[currentIdx].label}</span>
-            <span className={styles.ctaName}>{ALL_NODES[currentIdx].name}</span>
+            <span className={styles.ctaRound}>
+              {isBoss ? 'SEASONAL BOSS' : `STEP ${seasonStep + 1} / ${STEPS_PER_STAGE}`}
+            </span>
+            <span className={styles.ctaName}>
+              {challName}
+            </span>
           </div>
           <button
-            className={`${styles.ctaBtn} ${ALL_NODES[currentIdx].isBoss ? styles.ctaBoss : ''}`}
+            className={`${styles.ctaBtn} ${isBoss ? styles.ctaBoss : ''}`}
             onClick={onFight}
           >
-            {ALL_NODES[currentIdx].isBoss ? '⚡ FACE THE BOSS' : 'FIGHT!'}
+            {isBoss ? '⚡ FACE THE BOSS' : 'FIGHT!'}
           </button>
         </div>
       )}
 
-      {seasonStep >= ALL_NODES.length && (
+      {isComplete && (
         <div className={styles.ctaBar}>
           <div className={styles.ctaInfo}>
             <span className={styles.ctaRound}>SEASON COMPLETE</span>

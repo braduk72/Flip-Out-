@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import styles from './LuckySpin.module.css'
 import BottomNav from '../components/BottomNav'
 import Interstitial from '../components/Interstitial'
+import confetti from 'canvas-confetti'
 
 const MAX_FREE   = 1   // 1 free spin per day
 const MAX_AD     = 1   // 1 extra spin per day after watching an ad
@@ -10,7 +11,27 @@ const DATE_KEY   = 'fo_spin_date'
 const FREE_KEY   = 'fo_spin_free'
 const AD_KEY     = 'fo_spin_ad'
 
-function todayKey() { return new Date().toISOString().slice(0, 10) }
+function todayKey() { return new Date().toLocaleDateString('en-CA') } // YYYY-MM-DD in local time
+
+function useMidnightCountdown() {
+  const [display, setDisplay] = useState('')
+  useEffect(() => {
+    function update() {
+      const now = new Date()
+      const midnight = new Date(now)
+      midnight.setHours(24, 0, 0, 0)
+      const diff = Math.max(0, midnight - now)
+      const h = Math.floor(diff / 3600000)
+      const m = Math.floor((diff % 3600000) / 60000)
+      const s = Math.floor((diff % 60000) / 1000)
+      setDisplay(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`)
+    }
+    update()
+    const t = setInterval(update, 1000)
+    return () => clearInterval(t)
+  }, [])
+  return display
+}
 
 function resetIfNewDay() {
   if (localStorage.getItem(DATE_KEY) !== todayKey()) {
@@ -29,14 +50,14 @@ function getUsed() {
 }
 
 const SEGMENTS = [
-  { label: '10',   icon: '🪙', type: 'coins', value: 10,   color: '#b8721e', weight: 30 },
-  { label: '25',   icon: '🪙', type: 'coins', value: 25,   color: '#e8a838', weight: 25 },
-  { label: '50',   icon: '🪙', type: 'coins', value: 50,   color: '#f97316', weight: 18 },
-  { label: '100',  icon: '🪙', type: 'coins', value: 100,  color: '#e84b4b', weight: 12 },
-  { label: '150',  icon: '🪙', type: 'coins', value: 150,  color: '#26c25a', weight: 8  },
-  { label: '250',  icon: '🪙', type: 'coins', value: 250,  color: '#9b4fe8', weight: 4  },
-  { label: '500',  icon: '🪙', type: 'coins', value: 500,  color: '#3ecfd4', weight: 2  },
-  { label: '1000', icon: '🪙', type: 'coins', value: 1000, color: '#FFD700', weight: 1  },
+  { label: '10',  icon: '🪙', img: 'coin_mult_x10.webp',  type: 'coins', value: 10,  color: '#f97316', weight: 18 },
+  { label: '100', icon: '🪙', img: 'coin_mult_x100.webp', type: 'coins', value: 100, color: '#FFD700', weight: 1  },
+  { label: '5',   icon: '🪙', img: 'coin_mult_x5.webp',   type: 'coins', value: 5,   color: '#e8a838', weight: 25 },
+  { label: '50',  icon: '🪙', img: 'coin_mult_x50.webp',  type: 'coins', value: 50,  color: '#3ecfd4', weight: 2  },
+  { label: '1',   icon: '🪙', img: 'coin_mult_x1.webp',   type: 'coins', value: 1,   color: '#b8721e', weight: 30 },
+  { label: '25',  icon: '🪙', img: 'coin_mult_x25.webp',  type: 'coins', value: 25,  color: '#9b4fe8', weight: 4  },
+  { label: '15',  icon: '🪙', img: 'coin_mult_x15.webp',  type: 'coins', value: 15,  color: '#e84b4b', weight: 12 },
+  { label: '20',  icon: '🪙', img: 'coin_mult_x20.webp',  type: 'coins', value: 20,  color: '#26c25a', weight: 8  },
 ]
 
 function weightedRandomSeg() {
@@ -52,6 +73,26 @@ function weightedRandomSeg() {
 const N = SEGMENTS.length
 const SEG_DEG = 360 / N
 const CX = 150, CY = 150, R = 128
+
+// ── Web Audio tada fanfare ───────────────────────────────────────────────────
+function playTadaSound(ctx) {
+  try {
+    const notes = [523, 659, 784, 1047] // C5 E5 G5 C6
+    notes.forEach((freq, i) => {
+      const osc  = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.value = freq
+      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.12)
+      gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + i * 0.12 + 0.02)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.35)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start(ctx.currentTime + i * 0.12)
+      osc.stop(ctx.currentTime + i * 0.12 + 0.35)
+    })
+  } catch (_) {}
+}
 
 // ── Web Audio tick ──────────────────────────────────────────────────────────
 function playTickSound(ctx) {
@@ -100,9 +141,12 @@ function labelPos(i) {
 
 export default function LuckySpin({ onBack, navProps }) {
   const [used, setUsed]         = useState(() => getUsed())
+  const [bonusLeft, setBonusLeft] = useState(() => parseInt(localStorage.getItem('fo_spin_bonus') || '0'))
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
-  const [prize, setPrize]       = useState(null)
+  const [prize, setPrize]       = useState(() =>
+    new URLSearchParams(window.location.search).has('testprize') ? SEGMENTS[0] : null
+  )
   const [showAd, setShowAd]     = useState(false)
   const rotRef       = useRef(0)
   const pointerRef   = useRef(null)
@@ -120,10 +164,11 @@ export default function LuckySpin({ onBack, navProps }) {
     el.classList.add(styles.pointerTick)
   }
 
-  const freeLeft = Math.max(0, MAX_FREE - used.free)
-  const adLeft   = Math.max(0, MAX_AD   - used.ad)
+  const freeLeft     = Math.max(0, MAX_FREE - used.free)
+  const adLeft       = Math.max(0, MAX_AD   - used.ad)
+  const midnightTimer = useMidnightCountdown()
 
-  function doSpin(isAd = false) {
+  function doSpin(type = 'free') { // type: 'free' | 'ad' | 'bonus'
     if (spinning || prize) return
 
     // Initialise AudioContext on first user gesture
@@ -152,9 +197,13 @@ export default function LuckySpin({ onBack, navProps }) {
 
     // Record spin
     resetIfNewDay()
-    if (isAd) {
+    if (type === 'ad') {
       const next = parseInt(localStorage.getItem(AD_KEY) || '0') + 1
       localStorage.setItem(AD_KEY, String(next))
+    } else if (type === 'bonus') {
+      const cur = parseInt(localStorage.getItem('fo_spin_bonus') || '0')
+      localStorage.setItem('fo_spin_bonus', String(Math.max(0, cur - 1)))
+      setBonusLeft(Math.max(0, cur - 1))
     } else {
       const next = parseInt(localStorage.getItem(FREE_KEY) || '0') + 1
       localStorage.setItem(FREE_KEY, String(next))
@@ -165,13 +214,15 @@ export default function LuckySpin({ onBack, navProps }) {
       const seg = SEGMENTS[targetSeg]
       setPrize(seg)
       setSpinning(false)
+      if (audioCtxRef.current) playTadaSound(audioCtxRef.current)
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.55 }, zIndex: 200 })
       const cur = parseInt(localStorage.getItem('fo_coins') || '0')
       localStorage.setItem('fo_coins', String(cur + seg.value))
     }, 7100)
   }
 
   function handleFree() {
-    if (freeLeft > 0 && !spinning && !prize) doSpin(false)
+    if (freeLeft > 0 && !spinning && !prize) doSpin('free')
   }
 
   function handleAdRequest() {
@@ -180,69 +231,115 @@ export default function LuckySpin({ onBack, navProps }) {
 
   function handleAdClose() {
     setShowAd(false)
-    doSpin(true)
+    doSpin('ad')
+  }
+
+  function handleBonus() {
+    if (bonusLeft > 0 && !spinning && !prize) doSpin('bonus')
   }
 
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack}>← Back</button>
-        <img src="/images/luckySpinBanner.png" alt="Lucky Spin" className={styles.bannerImg} />
-        <div className={styles.spinsLeft}>{freeLeft + adLeft} left</div>
+        <button className={styles.backBtn} onClick={onBack} aria-label="Back">
+          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+        </button>
+        <div className={styles.spinsLeft}>🕛 {midnightTimer}</div>
+        {import.meta.env.VITE_DEV_TOOLS === 'true' && (
+          <button className={styles.devReset} title="Reset daily spins" onClick={() => {
+            localStorage.removeItem(DATE_KEY)
+            localStorage.removeItem(FREE_KEY)
+            localStorage.removeItem(AD_KEY)
+            setUsed(getUsed())
+            setBonusLeft(parseInt(localStorage.getItem('fo_spin_bonus') || '0'))
+          }}>🔄</button>
+        )}
       </div>
 
       <div className={styles.wheelArea}>
+        <img src="/images/luckySpinBanner.webp" alt="Lucky Spin" className={styles.bigBanner} />
         <img
           ref={pointerRef}
-          src="/images/pointer.png"
+          src="/images/pointer.webp"
           alt=""
           className={styles.pointer}
           onAnimationEnd={() => pointerRef.current?.classList.remove(styles.pointerTick)}
         />
-        <img
-          src="/images/wheel2.png"
-          alt="Spin wheel"
-          className={styles.wheel}
+        <div
+          className={styles.wheelWrap}
           style={{
             transform: `rotate(${rotation}deg)`,
             transition: spinning ? 'transform 7s cubic-bezier(0.17, 0.67, 0.08, 0.99)' : 'none',
           }}
-        />
+        >
+          <img src="/images/wheel2.webp" alt="Spin wheel" className={styles.wheelBg} draggable="false" />
+          {SEGMENTS.map((seg, i) => {
+            const midDeg = -90 + i * (360 / N) + (360 / N) / 2
+            const rad    = midDeg * Math.PI / 180
+            const x      = 50 + 34 * Math.cos(rad)
+            const y      = 50 + 34 * Math.sin(rad)
+            return (
+              <img
+                key={i}
+                src={`/images/${seg.img}`}
+                alt={seg.label}
+                draggable="false"
+                className={styles.segImg}
+                style={{
+                  left:      `${x}%`,
+                  top:       `${y}%`,
+                  transform: `translate(-50%, -50%) rotate(${midDeg + 90}deg)`,
+                }}
+              />
+            )
+          })}
+        </div>
       </div>
 
       <div className={styles.controls}>
-        {/* Free spin button */}
-        <button
-          className={styles.spinBtn}
-          onClick={handleFree}
-          disabled={spinning || !!prize || freeLeft === 0}
-        >
-          🎡 {freeLeft > 0 ? `Spin Free  (${freeLeft} today)` : 'Free spin used'}
-        </button>
-
-        {/* Ad spin button — only shown if free spin is used and ad spin remains */}
-        {freeLeft === 0 && (
+        {/* Free spin button — hidden once used */}
+        {freeLeft > 0 && (
           <button
-            className={styles.adBtn}
-            onClick={handleAdRequest}
-            disabled={spinning || !!prize || adLeft === 0}
+            className={styles.spinImgBtn}
+            onClick={handleFree}
+            disabled={spinning || !!prize}
           >
-            {adLeft > 0 ? '📺  Watch Ad for Extra Spin' : '✓  Ad spin used today'}
+            <img src="/images/play.webp" alt="Spin" className={styles.spinImgBtnImg} />
           </button>
         )}
 
-        <div className={styles.dailyInfo}>Resets at midnight · {freeLeft + adLeft} spin{freeLeft + adLeft !== 1 ? 's' : ''} remaining</div>
+        {/* Ad spin button — shown once free spin is used */}
+        {freeLeft === 0 && (
+          <button
+            className={styles.spinImgBtn}
+            onClick={handleAdRequest}
+            disabled={spinning || !!prize || adLeft === 0}
+          >
+            <img src="/images/spin1.webp" alt="Watch Ad for Extra Spin" className={`${styles.spinImgBtnImg} ${adLeft === 0 ? styles.spinImgBtnUsed : ''}`} />
+          </button>
+        )}
+
+        {/* Bonus spin button — shown when promo spins are available */}
+        {bonusLeft > 0 && (
+          <button
+            className={styles.bonusSpinBtn}
+            onClick={handleBonus}
+            disabled={spinning || !!prize}
+          >
+            <span className={styles.bonusSpinIcon}>🎟️</span>
+            <span className={styles.bonusSpinLabel}>BONUS SPIN</span>
+            <span className={styles.bonusSpinCount}>×{bonusLeft}</span>
+          </button>
+        )}
       </div>
 
       {/* Prize overlay */}
       {prize && (
         <div className={styles.prizeOverlay}>
           <div className={styles.prizeCard}>
-            <div className={styles.prizeEmoji}>{prize.icon}</div>
+            <img src={`/images/${prize.img}`} alt={prize.label} className={styles.prizeCoinImg} />
             <div className={styles.prizeWon}>You won!</div>
-            <div className={styles.prizeLabel}>
-              {prize.label} Coins 🪙
-            </div>
+            <div className={styles.prizeLabel}>{prize.label} Coins</div>
             <button className={styles.collectBtn} onClick={() => setPrize(null)}>Collect!</button>
           </div>
         </div>

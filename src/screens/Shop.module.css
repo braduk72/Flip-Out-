@@ -2,26 +2,33 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: radial-gradient(ellipse at 50% 40%, #7A0030 0%, #200008 70%);
+  background: #100008;
   position: relative;
   overflow: hidden;
 }
 
-.page::before {
-  content: '';
+/* ── Cycling gameshow stage backgrounds ── */
+.stageBg {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  translate: -50% -54%;
-  width: 160vmax;
-  height: 160vmax;
-  background: repeating-conic-gradient(
-    rgba(255, 220, 210, 0.07) 0deg 9deg,
-    transparent               9deg 18deg
-  );
-  border-radius: 50%;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out;
   pointer-events: none;
   z-index: 0;
+}
+.stageBgActive {
+  opacity: 1;
+}
+.stageBgOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10,0,20,0.55) 0%, rgba(10,0,20,0.72) 100%);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .scroll {
@@ -32,7 +39,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .scroll::-webkit-scrollbar { display: none; }
@@ -46,15 +53,19 @@
 }
 
 .backBtn {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #fff;
-  padding: 8px 16px;
-  border-radius: 50px;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: Arial, sans-serif;
+  background: none;
+  border: none;
+  padding: 0;
   cursor: pointer;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+  transition: transform 0.1s;
+}
+.backBtn:hover { transform: scale(1.05); }
+.backBtn:active { transform: scale(0.95); }
+.backBtnImg {
+  height: clamp(36px, 10vw, 44px);
+  width: auto;
+  display: block;
 }
 
 .title {
@@ -82,45 +93,67 @@
   padding: 0 16px;
 }
 
-.coinCard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  background: #5C1228;
-  border: 1.5px solid rgba(255,200,200,0.25);
-  border-radius: 16px;
-  padding: 14px 8px;
+.coinPackCard {
+  background: none;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-  position: relative;
+  transition: transform 0.15s;
 }
 
-.coinCard:hover { transform: translateY(-3px); }
+.coinPackCard:hover:not(:disabled) { transform: translateY(-3px) scale(1.03); }
+.coinPackCard:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.coinCard.highlighted {
-  border-color: #FFD700;
-  box-shadow: 0 0 16px rgba(255,215,0,0.4);
-}
-
-.coinCardImg {
-  width: 40px;
-  height: 40px;
+.coinPackImg {
+  width: 100%;
+  height: auto;
+  display: block;
   object-fit: contain;
 }
 
-.coinCardLabel {
-  font-size: 12px;
-  font-weight: 900;
-  color: #fff;
-  text-align: center;
+/* ── Coin purchase modal ── */
+.coinModalOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
 }
 
-.coinCardPrice {
-  font-size: 15px;
-  font-weight: 900;
-  color: #FFD700;
-  font-family: 'Arial Black', Arial, sans-serif;
+.coinModal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+}
+
+.coinModalImg {
+  width: min(260px, 70vw);
+  height: auto;
+}
+
+.coinModalBtns {
+  display: flex;
+  gap: 16px;
+}
+
+.coinModalBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.coinModalBtn:hover:not(:disabled) { transform: scale(1.06); }
+.coinModalBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.coinModalBtnImg {
+  width: 120px;
+  height: auto;
 }
 
 /* ── Remove Ads ── */
@@ -172,6 +205,31 @@
 
 .lockedLabel {
   font-size: 20px;
+}
+
+.jokerPadlock {
+  width: 64px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+.jokerImg {
+  width: 64px;
+  height: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.spinCard {
+  justify-content: center;
+  gap: 16px;
+}
+
+.spinWheelImg {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .coinPrice {
@@ -263,8 +321,8 @@
 }
 
 .chestTierCoin {
-  width: 16px;
-  height: 16px;
+  width: auto;
+  height: 20px;
   object-fit: contain;
   vertical-align: middle;
   margin-right: 1px;
@@ -317,6 +375,46 @@
   color: rgba(255,255,255,0.6);
 }
 
+.starterVisual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.shieldStack {
+  display: flex;
+  position: relative;
+  height: 48px;
+  width: 96px;
+}
+
+.shieldStackImg {
+  position: absolute;
+  width: 40px;
+  height: auto;
+  top: 0;
+}
+
+.starterCoins {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.starterCoinImg {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.starterDigit {
+  height: 18px;
+  width: auto;
+}
+
 .bundlePrice {
   font-size: 18px;
   font-weight: 900;
@@ -338,6 +436,60 @@
   letter-spacing: 1px;
 }
 
+/* ── Restore Purchases row ── */
+.restoreRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(180deg, rgba(60,0,80,0.7) 0%, rgba(30,0,50,0.7) 100%);
+  border: 1.5px solid rgba(180,100,255,0.25);
+  border-radius: 16px;
+  padding: 12px 20px;
+  margin: 0 0 8px;
+}
+.restoreLabel {
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.75);
+  font-family: Arial, sans-serif;
+}
+.restoreRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.restoreImgBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.restoreImgBtn:active { transform: scale(0.9); }
+.restoreImgBtn:disabled { opacity: 0.5; cursor: default; }
+.restoreImg {
+  width: 52px;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 0 6px rgba(255,215,0,0.4));
+}
+@keyframes restoreSpin {
+  from { rotate: 0deg; }
+  to   { rotate: 360deg; }
+}
+.restoreSpinning { animation: restoreSpin 1s linear infinite; }
+.restoreDone {
+  font-size: 13px;
+  font-weight: 700;
+  color: #7fff7f;
+  font-family: Arial, sans-serif;
+}
+.restoreMsg {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  font-family: Arial, sans-serif;
+}
+
 .footer { height: 32px; }
 
 /* ── Loot Box / Chest ── */
@@ -349,6 +501,14 @@
 .chestEmoji {
   font-size: 32px;
   margin-right: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.chestImg {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }
 
 .chestTiers {
@@ -385,3 +545,74 @@
 }
 
 .chestTierLock { font-size: 18px; opacity: 0.5; }
+
+/* ── Promo code ── */
+.promoCard {
+  margin: 0 16px;
+  background: #5C1228;
+  border: 1.5px solid rgba(255,200,200,0.25);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.promoInput {
+  flex: 1;
+  min-width: 120px;
+  background: rgba(0,0,0,0.35);
+  border: 1.5px solid rgba(255,200,200,0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 2px;
+  outline: none;
+  font-family: 'Arial Black', Arial, sans-serif;
+}
+
+.promoInput::placeholder {
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0;
+  font-weight: 400;
+  font-family: Arial, sans-serif;
+}
+
+.promoInput:focus {
+  border-color: rgba(255,215,0,0.6);
+  background: rgba(0,0,0,0.5);
+}
+
+.promoBtn {
+  background: linear-gradient(135deg, #c0392b, #8B0030);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 900;
+  color: #fff;
+  font-family: 'Arial Black', Arial, sans-serif;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.1s;
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+
+.promoBtn:hover:not(:disabled) { transform: scale(1.05); }
+.promoBtn:active:not(:disabled) { transform: scale(0.97); }
+.promoBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.codeMsg {
+  width: 100%;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.codeMsgOk  { color: #26c25a; }
+.codeMsgErr { color: #ff6b6b; }

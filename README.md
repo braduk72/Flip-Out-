@@ -1,138 +1,195 @@
-# Flip Out! 🃏
+# Flip Out!
 
-A card-matching game with special power-ups, season mode, gauntlet mode, and multiplayer.
+A memory card-matching game with a twist — special power cards (Stopwatch, Freeze, Rocket, Tornado and more) shake up every round. Challenge the AI, battle through the Gauntlet, climb the Season Map, or go head-to-head with a friend in real-time multiplayer.
 
-**Live:** https://flipout.gizmogames.uk  
-**Repo:** https://github.com/braduk72/Flip-Out-
-
----
-
-## Deployment
-
-Hosted on **Vercel** (project `flip-out`, team `chattocal`).
-
-| Branch | Where it deploys | URL |
-|--------|-----------------|-----|
-| `main` | **Production** — updates flipout.gizmogames.uk | https://flipout.gizmogames.uk |
-| `dev`  | **Preview** only — unique URL per commit, never updates the live domain | `flip-out-git-dev-chattocal.vercel.app` |
-
-> **To ship changes to the live site:**
-> ```bash
-> git checkout main
-> git merge dev --no-edit
-> git push origin main
-> git checkout dev
-> ```
-> Vercel auto-builds from `main` and updates flipout.gizmogames.uk within ~2 minutes.
-
-Build command: `npm run build` → output: `dist/`
-
-### APOLLO local server (optional)
-
-`server.js` in the project root is a zero-dependency static server that serves `dist/` on port 5174.
-It's registered in pm2 on APOLLO as the process named `flipout`.
-
-```bash
-# Rebuild and restart the local server after changes
-npm run build
-pm2 restart flipout
-```
-
-Cloudflare Tunnel on APOLLO routes `flipout.gizmogames.uk` through Vercel (DNS CNAME), **not** through the local server.
-The APOLLO pm2 process is a local fallback / development convenience only.
+Developed by **Gizmo Games** — a UK Community Interest Company whose mission is to fund a cat sanctuary and free veterinary service for local residents.
 
 ---
 
 ## Tech Stack
 
-- React 19 + Vite
-- CSS Modules
-- Socket.io multiplayer (on CAL backend, port 3001)
+- **Frontend:** React 19 + Vite 8, CSS Modules
+- **Native wrapper:** Capacitor 8 (iOS + Android — both platforms created)
+- **Hosting:** Vercel (scope: `chattocal`)
+- **Backend/API:** Node/Express — in the CAL project (`C:\Users\bradc\OneDrive\Documents\CAL\server`)
+- **Database:** PostgreSQL (Neon)
+- **Multiplayer:** Socket.io server on Railway (EU West)
+- **Payments:** Stripe (live keys in Vercel env vars)
+- **Bundle ID:** `uk.gizmogames.flipout`
+- **Live URL:** [flipout.gizmogames.uk](https://flipout.gizmogames.uk)
+- **Dev URL:** [dev.gizmogames.uk](https://dev.gizmogames.uk)
+
+---
+
+## Project Location
+
+```
+C:\brad\FlipOut
+```
+
+> **Do not move this back to OneDrive.** OneDrive silently fails file copy/rename operations and blocks Vercel CLI file reads, causing broken deployments.
+
+---
+
+## Deployment
+
+Standard `vercel deploy` silently 404s images due to file-read issues. Always use the prebuilt method:
+
+**Deploy to dev.gizmogames.uk only:**
+```powershell
+Set-Location "C:\brad\FlipOut"
+
+# 1. Build locally
+npx vercel build --yes --scope chattocal
+
+# 2. Deploy prebuilt output
+$output = npx vercel deploy --prebuilt --scope chattocal --yes 2>&1
+$output | Write-Host
+$url = ($output | Select-String 'https://flip-[a-z0-9]+-chattocal\.vercel\.app').Matches[0].Value
+
+# 3. Alias to dev only
+npx vercel alias $url dev.gizmogames.uk --scope chattocal
+```
+
+**Promote to production (gizmogames.uk) — only when Brad says "push to live":**
+```powershell
+npx vercel promote $url --scope chattocal --yes
+```
 
 ---
 
 ## Project Structure
 
 ```
-src/
-  screens/     Game, Home, SeasonMap, DeckPicker, Settings, Gauntlet, Shop, etc.
-  components/  Card, BottomNav, SpecialOffer, Interstitial, etc.
-  hooks/       useGame.js (core reducer), useMultiplayer.js, useSfx.js
-  data/        decks.js, specialCards.js, seasonalOpponents.js, opponents.js
 public/
-  images/      All card/avatar/map sprites (transparent PNGs)
-  music/       24 tracks across 3 pools — see Music section below
+  images/           # All game images
+    cards/          # Card decks (cats, babyAnimals, birdsOfPrey, etc.)
+    menus/          # Nav bar icons (drop replacements here)
+  music/            # All music tracks (27 files)
+src/
+  components/       # Shared components (BottomNav, SpecialOffer, etc.)
+  data/             # Game data (decks, opponents, seasons)
+  hooks/            # useGame, useMultiplayer
+  screens/          # All screens (Home, Game, Shop, Settings, etc.)
+  utils/            # Helpers (deviceId, foShop, etc.)
 ```
 
 ---
 
-## Music System
+## Music Pools
 
-Three pools, each plays random tracks (no back-to-back repeats), pool switches on screen change:
-
-| Pool | Screens | Files |
-|------|---------|-------|
-| `MENU_TRACKS` | home, deckpicker, shop, season map, etc. | `menu_1–2.mp3` |
-| `INGAME_TRACKS` | game, roundstart, gauntlet, multiplayer | `ingame_*.mp3` (18 tracks) |
-| `GAMEOVER_TRACKS` | triggered when player loses a round | `gameover_1–4.mp3` |
-
-Music toggle and pool switching are managed in `App.jsx`. `onPlayerLost` prop on `<Game>` triggers the gameover pool.
-
----
-
-## Current State — Session 16 (23 May 2026)
-
-### ✅ Done & working
-- **Core game** — card matching, special cards (12 types), AI opponent, difficulty levels
-- **Solo mode** — count-up timer, personal best per deck+difficulty
-- **Gauntlet mode** — 10-round knockout bracket vs AI opponents
-- **Season mode** — 5-node season map (4 opponents + boss), cinematic win screen
-- **Multiplayer** — Socket.io Quick Match/Create/Join; board sync; special card seed relay; turn reporting; opponent-left detection. **Code complete — live testing in progress**
-- **Shop / Lucky Spin / Leaderboard / Avatar picker**
-- **Special offer popup** — 80% off flash top-left, countdown timer, one-time display
-- **Season map** — animated robomice (3 colours, transparent sprites), tesla coil poles (sparking, 3 colours), 9-layer cloud fog of war, steam emitters, storm clouds + lightning
-- **Image backgrounds** — all card/avatar/UI PNGs have transparent backgrounds
-- **Music** — 24-track randomised pool system (menu / in-game / game-over)
-- **SFX** — Web Audio API sounds (flip, match, no-match, special, win, lose) via `useSfx.js`
-- **AI 3-card bug fixed** — ref pattern prevents doAITurn re-firing mid-turn
-
-### ⚠️ Known issues / in progress
-- **Multiplayer live testing** — code complete but not yet tested with two real devices
-- **Node positions** — season map node positions estimated visually; need calibration on a real phone
-- **Boss image** — `l1.png` placeholder used for THE ARCHITECT; real asset needed
-- **Robomouse direction** — sprites are forward-facing; scaleX flip in animations doesn't give side-facing look. May need side-facing art.
-
-### 📋 Brad action items
-- Continue multiplayer live testing (two devices, Quick Match)
-- Supply boss image for THE ARCHITECT
-- Decide on side-facing robomouse sprites or keep current art
+| Pool     | Tracks                                  | Trigger              |
+|----------|-----------------------------------------|----------------------|
+| HOME     | `Memory_Mayhem_Welcome_to_Flip_Out.mp3` | Home screen only     |
+| MENU     | `menu_1`, `menu_2`                      | All other menu screens |
+| INGAME   | 18 tracks                               | Any game screen      |
+| BOSS     | `ingame_boss_final`                     | Season boss fight    |
+| SEASON   | `deal-the-tension`                      | Season map           |
+| GAMEOVER | `gameover_1-4`                          | On player loss       |
 
 ---
 
-## Dev URL Params
+## Nav Icons
 
-```
-?specials=1      — board of all special cards
-?unlock=gizmo    — unlock all decks
-?resetseason=1   — reset season progress
-?resetgauntlet=1 — reset gauntlet progress
-?resetoffer=1    — reset special offer popup
-```
-
-DEV toolbar toggle also available in-game (small button below board).
+Currently using static `b1_` images (no active/inactive states).
+Penny's replacement icons go in `public/images/menus/` — tell Felix the filenames to wire them up.
 
 ---
 
-## Image & Sprite Pipeline
+## Coin Economy
 
-Sprite sheets split using `crop-sprites.mjs` (sharp) — run once after downloading new sheets.  
-Background removal using `strip_bg.mjs` (jimp, corner-sampling, threshold 40).  
-Both scripts live in the project root. `sharp` and `jimp` are devDependencies.
-
-Raw sprite sheet downloads live in `public/images/downloads/` — gitignored (too large).
+| Action | Coins |
+|---|---|
+| Win any round | +10 |
+| Daily login bonus | +5 to +50 (7-day streak, resets Tuesdays) |
+| Lucky Spin | +1 to +100 (weighted) |
+| Bug report | +50 |
+| Promo code | variable |
 
 ---
 
-## Version
+## Key localStorage Keys
 
-Current: **v0.25** (shown in Settings screen)
+| Key | Contents |
+|---|---|
+| `fo_coins` | Coin balance |
+| `fo_trophies` | Trophy count |
+| `fo_streak` | Daily login streak (days) |
+| `fo_pvp_wins` | PVP wins (for leaderboard) |
+| `fo_player_id` | FLIP-XXXXX unique ID (not yet implemented) |
+| `fo_dlb_last` | Date of last daily bonus claim |
+| `fo_dlb_day` | Day in 7-day bonus cycle (0–6) |
+| `fo_spin_date` | Date of last Lucky Spin reset |
+| `fo_spin_free` | Free spins used today |
+| `fo_spin_ad` | Ad spins used today |
+| `fo_spin_bonus` | Bonus spins remaining |
+| `fo_owned_decks` | JSON array of unlocked deck IDs |
+| `fo_device_id` | UUID for this device (Stripe restore) |
+| `fo_rob_names` | Assigned names for Rob opponents |
+
+> **Date keys** — always use `toLocaleDateString('en-CA')` for YYYY-MM-DD. Never `toISOString().slice(0,10)` — that gives UTC and causes midnight reset bugs for UK users in BST.
+
+---
+
+## What's Built ✅
+
+- Full vs-AI card matching game with special power cards
+- Season mode (30 steps, Rob + E-type opponents, boss battles, SEASON COMPLETE)
+- Gauntlet mode
+- Multiplayer (built, untested on real devices)
+- Lucky Spin (daily free + ad spin, midnight reset in local time)
+- Daily Login Bonus modal (7-day streak, resets Tuesdays, coins awarded immediately)
+- Coin balance (earn + persist via localStorage)
+- Easy/Medium: matched cards stay visible as dimmed card backs
+- Shop (decks, Lucky Spin, Restore Purchases)
+- Leaderboard (Longest Streak + PVPs Won tabs — placeholder data until Player ID system is live)
+- Settings (difficulty, music, SFX)
+- Daily spin uses local midnight (not UTC)
+- Stripe IAP (web purchases via Stripe, live keys configured)
+- Capacitor iOS + Android platforms created
+
+## What's Pending 🔜
+
+- **Player ID system** — FLIP-XXXXX (5 chars, charset: `BCDFGHJKMNPQRSTVWXYZ23456789`), stored server-side, shown under avatar with country flag from IP
+- **Leaderboard real data** — wire to server once Player IDs exist
+- **Profile screen** — avatar, Player ID, country flag, stats
+- **Coin shop screen** — assets ready (`coins_100/500/1000.webp`), not yet wired
+- **Shop avatar page** — 100 coins each, seasonal availability
+- **TCG Pack system** — rarity tiers, Stripe products, pack opening UI, trade board
+- **Android Studio build** (Windows)
+- **iOS TestFlight** (Mac + Xcode required)
+- **Apple IAP / Google Play Billing** — for native coin purchases
+- **Multiplayer live test** — two real devices
+- Opponent portraits for all season/gauntlet opponents
+- Season COMPLETE screen celebration + gold card display
+
+---
+
+## Gotchas
+
+- **PWA caching** — after deploy, use incognito to see changes. Hard refresh does NOT bypass the service worker.
+- **OneDrive + Vercel** — never use standard `vercel deploy`. Always `vercel build` then `deploy --prebuilt`.
+- **Music pool switching** — `activePoolRef` must be nulled when entering a game screen from a non-game screen.
+- **Never auto-promote** — always deploy to dev first. Only promote when Brad says "push to live".
+
+---
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `src/App.jsx` | Root — screen routing, music manager, nav props |
+| `src/screens/Game.jsx` | Core game logic (VS, Solo, MP, Season, Gauntlet) |
+| `src/hooks/useGame.js` | Board state, card flipping, scoring |
+| `src/hooks/useMultiplayer.js` | Socket.io multiplayer hook |
+| `src/data/decks.js` | All card deck definitions |
+| `src/data/opponents.js` | Gauntlet + standard AI opponents |
+| `src/data/seasonalOpponents.js` | Season map opponents + boss |
+
+---
+
+## Credits
+
+Code by Claude Sonnet 4.6, Graphics by ChatGPT. This project would not have been possible without their invaluable assistance.
+
+© 2026 Gizmo Games. All rights reserved.

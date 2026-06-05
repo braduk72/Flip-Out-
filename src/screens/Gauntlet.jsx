@@ -20,7 +20,9 @@ export default function Gauntlet({ step, onFight, onBack, onReset, navProps }) {
 
       {/* Header */}
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack} aria-label="Back">← Back</button>
+        <button className={styles.backBtn} onClick={onBack} aria-label="Back">
+          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+        </button>
         <h1 className={styles.title}>KNOCKOUT<br />GAUNTLET</h1>
       </div>
 
@@ -64,7 +66,7 @@ export default function Gauntlet({ step, onFight, onBack, onReset, navProps }) {
               <div className={styles.goldCardShimmer} />
               <div className={styles.goldCardHeader}>✦ GOLD COLLECTOR CARD ✦</div>
               <div className={styles.goldCardPortraitWrap}>
-                <img src="/images/Opponants/l1.png" alt="Professor Claw" className={styles.goldCardPortrait} />
+                <img src="/images/Opponants/l1.webp" alt="Professor Claw" className={styles.goldCardPortrait} />
               </div>
               <div className={styles.goldCardName}>PROFESSOR CLAW</div>
               <div className={styles.goldCardRarity}>GAUNTLET CHAMPION · UNIQUE</div>
@@ -118,6 +120,7 @@ export default function Gauntlet({ step, onFight, onBack, onReset, navProps }) {
         )}
       </div>
 
+      <div style={{ flex: 1 }} />
       <BottomNav active="home" {...navProps} />
     </div>
   )

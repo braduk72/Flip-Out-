@@ -35,15 +35,19 @@
 }
 
 .backBtn {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #fff;
-  padding: 8px 16px;
-  border-radius: 50px;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: Arial, sans-serif;
+  background: none;
+  border: none;
+  padding: 0;
   cursor: pointer;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+  transition: transform 0.1s;
+}
+.backBtn:hover { transform: scale(1.05); }
+.backBtn:active { transform: scale(0.95); }
+.backBtnImg {
+  height: clamp(36px, 10vw, 44px);
+  width: auto;
+  display: block;
 }
 
 .title {
@@ -56,7 +60,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
   padding: 20px 24px;
   position: relative;
@@ -112,55 +116,42 @@
   justify-content: center;
 }
 
-/* ── Locked seasonal slots ── */
+/* ── Special unlockable avatars ── */
+.specialAvatar {
+  border-color: #FFD700;
+  box-shadow: 0 0 12px rgba(255,215,0,0.4);
+}
+
+.specialBadge {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #FFD700;
+  color: #1a0030;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* ── Locked slots — solid purple disk, ? only ── */
 .lockedSlot {
   aspect-ratio: 1 / 1;
   border-radius: 50%;
-  border: 3px dashed rgba(255, 215, 0, 0.25);
-  background: rgba(255, 215, 0, 0.04);
+  background: #3a006a;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
   cursor: default;
-  position: relative;
-  overflow: hidden;
-}
-
-.lockedSlot::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: repeating-conic-gradient(
-    rgba(255, 215, 0, 0.04) 0deg 30deg,
-    transparent             30deg 60deg
-  );
-  animation: lockedSpin 12s linear infinite;
-}
-
-@keyframes lockedSpin {
-  to { rotate: 360deg; }
 }
 
 .lockedQ {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 900;
   font-family: 'Arial Black', Arial, sans-serif;
-  color: rgba(255, 215, 0, 0.35);
+  color: #6a20aa;
   line-height: 1;
-  position: relative;
-  z-index: 1;
-}
-
-.lockedLabel {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(255, 215, 0, 0.3);
-  font-family: Arial, sans-serif;
-  position: relative;
-  z-index: 1;
 }

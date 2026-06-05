@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import styles from './SpecialOffer.module.css'
+import { startCheckout } from '../utils/foShop'
 
 const OFFER_KEY    = 'fo_offer_seen'
 const EXPIRES_KEY  = 'fo_offer_expires'
@@ -39,35 +40,38 @@ function useCountdown(expiresTs) {
 }
 
 const ITEMS = [
-  { label: '200 Coins',  image: '/images/coin.png' },
-  { label: 'X-Ray ×1',  image: '/images/cards/special/xray.png' },
-  { label: 'Freeze ×1', image: '/images/cards/special/freeze.png' },
-  { label: 'Shuffle ×1',image: '/images/cards/special/shuffle.png' },
+  { label: '200 Coins',  image: '/images/coin.webp' },
+  { label: 'X-Ray ×1',  image: '/images/cards/special/xray.webp' },
+  { label: 'Freeze ×1', image: '/images/cards/special/freeze.webp' },
+  { label: 'Shuffle ×1',image: '/images/cards/special/shuffle.webp' },
 ]
 
 export default function SpecialOffer({ onClose, onBuy }) {
   const expiresTs = parseInt(localStorage.getItem(EXPIRES_KEY) || String(Date.now() + OFFER_HOURS * 3600 * 1000))
   const countdown = useCountdown(expiresTs)
+  const [loading, setLoading] = useState(false)
 
-  function handleBuy() {
-    localStorage.setItem('fo_offer_bought', '1')
-    const cur = parseInt(localStorage.getItem('fo_coins') || '0')
-    localStorage.setItem('fo_coins', String(cur + 200))
-    onBuy?.()
-    onClose()
+  async function handleBuy() {
+    setLoading(true)
+    try {
+      await startCheckout('offer_launch')
+    } catch (err) {
+      console.error('[SpecialOffer]', err)
+      setLoading(false)
+    }
   }
 
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.card} onClick={e => e.stopPropagation()}>
-        <button className={styles.closeBtn} onClick={onClose}>✕</button>
+        <button className="modal-close-x" onClick={onClose} aria-label="Close">✕</button>
 
         <div className={styles.timerBadge}>⏱ {countdown}</div>
 
         <div className={styles.offBadge}>80%<br/>off</div>
 
         <div className={styles.bannerArt}>
-          <img src="/images/chest.png" alt="" className={styles.bannerChest} draggable="false" />
+          <img src="/images/chest.webp" alt="" className={styles.bannerChest} draggable="false" />
         </div>
 
         <h2 className={styles.title}>Limited Time Offer!</h2>
@@ -82,15 +86,15 @@ export default function SpecialOffer({ onClose, onBuy }) {
           ))}
         </div>
 
-        <button className={styles.buyBtn} onClick={handleBuy}>
+        <button className={styles.buyBtn} onClick={handleBuy} disabled={loading}>
           <span className={styles.buyBtnPrice}>
-            <img src="/images/pound.png" alt="£" className={styles.poundImg} />
+            <img src="/images/pound.webp" alt="£" className={styles.poundImg} />
             {'1.99'.split('').map((ch, i) =>
-              ch === '.' ? <img key={i} src="/images/dot.png" alt="." className={styles.priceDigit} />
-                         : <img key={i} src={`/images/${ch}.png`} alt={ch} className={styles.priceDigit} />
+              ch === '.' ? <img key={i} src="/images/dot.webp" alt="." className={styles.priceDigit} />
+                         : <img key={i} src={`/images/${ch}.webp`} alt={ch} className={styles.priceDigit} />
             )}
           </span>
-          <span className={styles.buyBtnSub}>Tap to unlock</span>
+          <span className={styles.buyBtnSub}>{loading ? '…' : 'Tap to unlock'}</span>
         </button>
       </div>
     </div>

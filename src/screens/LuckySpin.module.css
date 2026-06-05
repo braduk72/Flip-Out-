@@ -16,22 +16,28 @@
 }
 
 .backBtn {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #fff;
-  padding: 8px 16px;
-  border-radius: 50px;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: Arial, sans-serif;
+  background: none;
+  border: none;
+  padding: 0;
   cursor: pointer;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+  transition: transform 0.1s;
+}
+.backBtn:hover { transform: scale(1.05); }
+.backBtn:active { transform: scale(0.95); }
+.backBtnImg {
+  height: clamp(36px, 10vw, 44px);
+  width: auto;
+  display: block;
 }
 
-.bannerImg {
-  height: 36px;
-  width: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 0 12px rgba(255,215,0,0.5));
+.devReset {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0.5;
+  padding: 4px;
 }
 
 .spinsLeft {
@@ -46,6 +52,16 @@
 }
 
 /* ── Wheel ── */
+.bigBanner {
+  width: 100%;
+  max-width: 380px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 20px rgba(255,215,0,0.6));
+  margin-bottom: 2px;
+  flex-shrink: 0;
+}
+
 .wheelArea {
   flex: 1;
   display: flex;
@@ -77,11 +93,27 @@
   100% { transform: rotate(0deg);   }
 }
 
-.wheel {
+.wheelWrap {
+  position: relative;
   width: 100%;
-  max-width: 300px;
-  height: auto;
+  max-width: 360px;
   filter: drop-shadow(0 8px 24px rgba(0,0,0,0.6));
+}
+
+.wheelBg {
+  width: 100%;
+  height: auto;   /* lets the image drive the container height */
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+.segImg {
+  position: absolute;
+  width: 22%;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
 }
 
 /* ── Controls ── */
@@ -89,34 +121,37 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 16px 20px 12px;
+  gap: 6px;
+  padding: 8px 20px 8px;
   flex-shrink: 0;
 }
 
-.spinBtn {
-  width: 100%;
-  max-width: 300px;
-  padding: 16px 0;
-  border-radius: 50px;
+.spinImgBtn {
+  background: none;
   border: none;
-  background: linear-gradient(135deg, #26c25a 0%, #1a9e48 100%);
-  color: #fff;
-  font-size: 18px;
-  font-weight: 900;
-  font-family: 'Arial Black', Arial, sans-serif;
+  padding: 0;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(38,194,90,0.45);
   transition: transform 0.1s, filter 0.1s;
+  width: 100%;
+  max-width: 240px;
 }
 
-.spinBtn:hover:not(:disabled) { transform: translateY(-2px); }
-.spinBtn:active:not(:disabled) { transform: translateY(1px); }
-.spinBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.spinImgBtn:hover:not(:disabled) { transform: translateY(-2px); }
+.spinImgBtn:active:not(:disabled) { transform: translateY(2px); filter: brightness(0.9); }
+.spinImgBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.spinImgBtnUsed { filter: grayscale(0.6) brightness(0.7); }
+
+.spinImgBtnImg {
+  width: 100%;
+  max-width: 240px;
+  height: auto;
+  display: block;
+}
 
 .adBtn {
   width: 100%;
-  max-width: 300px;
+  max-width: 360px;
   padding: 16px 0;
   border-radius: 50px;
   border: none;
@@ -135,6 +170,13 @@
 }
 
 .adBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.adBtnIcon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
 
 .dailyInfo {
   font-size: 12px;
@@ -175,7 +217,11 @@
   to   { transform: scale(1);   opacity: 1; }
 }
 
-.prizeEmoji { font-size: 56px; }
+.prizeCoinImg {
+  width: 140px;
+  height: auto;
+  object-fit: contain;
+}
 
 .prizeWon {
   font-size: 14px;
@@ -208,3 +254,46 @@
 }
 
 .collectBtn:hover { transform: scale(1.05); }
+
+/* ── Bonus spin button ── */
+.bonusSpinBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 240px;
+  padding: 11px 20px;
+  border-radius: 50px;
+  border: 2px solid rgba(255,215,0,0.6);
+  background: linear-gradient(135deg, #7a3b00 0%, #3d1a00 100%);
+  box-shadow: 0 4px 16px rgba(255,215,0,0.2);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.bonusSpinBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255,215,0,0.35);
+}
+
+.bonusSpinBtn:active:not(:disabled) { transform: translateY(1px); }
+.bonusSpinBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.bonusSpinIcon { font-size: 20px; }
+
+.bonusSpinLabel {
+  font-size: 16px;
+  font-weight: 900;
+  color: #FFD700;
+  font-family: 'Arial Black', Arial, sans-serif;
+  letter-spacing: 1px;
+}
+
+.bonusSpinCount {
+  font-size: 14px;
+  font-weight: 900;
+  color: rgba(255,215,0,0.7);
+  font-family: 'Arial Black', Arial, sans-serif;
+  letter-spacing: 0.5px;
+}

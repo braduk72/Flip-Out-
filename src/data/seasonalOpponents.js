@@ -1,17 +1,56 @@
 // Seasonal bad guys — one season at a time.
-// Beat all four to face the Seasonal Boss and earn the gold collector card.
+// Each stage is 30 steps. Steps 0–28 = generic challenger. Step 29 = boss.
 // Swap this file each season; archive the old one.
+
+const ROB_NAMES_POOL = [
+  'FIZZ', 'CLANK', 'BLINK', 'WREN', 'ZETA',
+  'BYTE', 'COIL', 'DRIX', 'OTTO', 'NEXO',
+  'FLUX', 'GRUB', 'TRIX', 'SLAG', 'KRON',
+]
+
+export function getRobNames() {
+  const stored = localStorage.getItem('fo_rob_names')
+  if (stored) { try { const p = JSON.parse(stored); if (p.length === 5) return p } catch {} }
+  const pool = [...ROB_NAMES_POOL]
+  const picked = []
+  while (picked.length < 5) {
+    const i = Math.floor(Math.random() * pool.length)
+    picked.push(pool.splice(i, 1)[0])
+  }
+  localStorage.setItem('fo_rob_names', JSON.stringify(picked))
+  return picked
+}
+
+export const ROB_OPPONENTS = [1, 2, 3, 4, 5].map((n, i) => ({
+  id:           `rob${n}`,
+  image:        `/images/randomOppos/rob${n}.webp`,
+  defeatedImage: `/images/randomOppos/rob${n}d.webp`,
+  difficulty:   ['Easy', 'Easy', 'Medium', 'Medium', 'Hard'][i],
+  tier:         'Seasonal',
+  label:        `ROUND ${n}`,
+}))
+
+export const STEPS_PER_STAGE = 32
+export const BOSS_STEP       = 31   // 0-indexed; the 32nd and final step
+
+// Generic challenger for non-boss steps — Brad will supply real image/name
+export const GENERIC_OPPONENT = {
+  id:         'generic',
+  name:       'CHALLENGER',
+  image:      null,   // no character card shown
+  isBoss:     false,
+}
 
 export const SEASON_1 = {
   id:    'season_1',
   name:  'Season 1',
-  theme: 'The Reckoning',
+  theme: 'CAT-astrophe!',
   active: true,
 
   opponents: [
     {
       id: 's1_c1',
-      image: '/images/c1.png',
+      image: '/images/c1.webp',
       difficulty: 'Easy',
       tier: 'Seasonal',
       label: 'ROUND 1',
@@ -21,7 +60,7 @@ export const SEASON_1 = {
     },
     {
       id: 's1_c2',
-      image: '/images/c2.png',
+      image: '/images/c2.webp',
       difficulty: 'Medium',
       tier: 'Seasonal',
       label: 'ROUND 2',
@@ -31,7 +70,7 @@ export const SEASON_1 = {
     },
     {
       id: 's1_c3',
-      image: '/images/c3.png',
+      image: '/images/c3.webp',
       difficulty: 'Medium',
       tier: 'Seasonal',
       label: 'ROUND 3',
@@ -41,7 +80,7 @@ export const SEASON_1 = {
     },
     {
       id: 's1_c4',
-      image: '/images/c4.png',
+      image: '/images/c4.webp',
       difficulty: 'Hard',
       tier: 'Seasonal',
       label: 'ROUND 4',
@@ -54,7 +93,7 @@ export const SEASON_1 = {
   // Seasonal boss — swap image + details each season
   boss: {
     id: 's1_boss',
-    image: '/images/Opponants/l1.png',   // placeholder — swap for a dedicated seasonal boss image
+    image: '/images/Opponants/l1.webp',   // placeholder — swap for a dedicated seasonal boss image
     difficulty: 'Lethal',
     tier: 'SeasonBoss',
     label: 'SEASONAL BOSS',

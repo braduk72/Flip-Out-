@@ -1,29 +1,60 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import styles from './MultiplayerLobby.module.css'
-import { DECKS, getDeckBackImage } from '../data/decks'
+import { DECKS } from '../data/decks'
 
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard']
+const MATCHMAKE_TIMEOUT = 30
+
+function pickRandomDeckId() {
+  const ownedIds = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
+  const available = DECKS.filter(d => d.free || ownedIds.includes(d.id))
+  const pool = available.length > 0 ? available : DECKS
+  return pool[Math.floor(Math.random() * pool.length)].id
+}
 
 export default function MultiplayerLobby({
   mp,
   portrait,
   onBack,
+  onFallbackCPU,
 }) {
   const [tab,        setTab]        = useState('matchmake') // 'matchmake' | 'create' | 'join'
   const [joinCode,   setJoinCode]   = useState('')
   const [mpDifficulty, setMpDifficulty] = useState('Medium')
+  const [secondsLeft, setSecondsLeft] = useState(null)
+  const timerRef = useRef(null)
+  const tickRef  = useRef(null)
 
-  // Pick the first owned or free deck as default
-  const ownedIds = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
-  const available = DECKS.filter(d => d.free || ownedIds.includes(d.id))
-  const [selectedDeck, setSelectedDeck] = useState(available[0]?.id ?? DECKS[0].id)
+  // 30-second CPU fallback timer — starts when matchmaking begins
+  useEffect(() => {
+    if (mp.status === 'searching') {
+      setSecondsLeft(MATCHMAKE_TIMEOUT)
+
+      tickRef.current = setInterval(() => {
+        setSecondsLeft(s => (s > 1 ? s - 1 : 0))
+      }, 1000)
+
+      timerRef.current = setTimeout(() => {
+        mp.cancelMatchmake()
+        onFallbackCPU?.({ deckId: pickRandomDeckId(), difficulty: mpDifficulty })
+      }, MATCHMAKE_TIMEOUT * 1000)
+    } else {
+      clearTimeout(timerRef.current)
+      clearInterval(tickRef.current)
+      setSecondsLeft(null)
+    }
+    return () => {
+      clearTimeout(timerRef.current)
+      clearInterval(tickRef.current)
+    }
+  }, [mp.status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleMatchmake() {
-    mp.matchmake({ portrait, deckId: selectedDeck, difficulty: mpDifficulty })
+    mp.matchmake({ portrait, deckId: pickRandomDeckId(), difficulty: mpDifficulty })
   }
 
   function handleCreate() {
-    mp.createRoom({ portrait, deckId: selectedDeck, difficulty: mpDifficulty })
+    mp.createRoom({ portrait, deckId: pickRandomDeckId(), difficulty: mpDifficulty })
   }
 
   function handleJoin() {
@@ -43,7 +74,9 @@ export default function MultiplayerLobby({
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={isBusy ? handleCancel : onBack}>✕</button>
+        <button className={styles.backBtn} onClick={isBusy ? handleCancel : onBack} aria-label="Back">
+          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+        </button>
         <div className={styles.title}>PLAY ONLINE</div>
       </div>
 
@@ -55,6 +88,11 @@ export default function MultiplayerLobby({
             <>
               <div className={styles.statusMsg}>Finding an opponent…</div>
               <div className={styles.statusSub}>Searching for a {mpDifficulty} match</div>
+              {secondsLeft !== null && (
+                <div className={styles.statusCountdown}>
+                  No one found? Playing CPU in {secondsLeft}s
+                </div>
+              )}
             </>
           )}
           {(isWaiting || isCreating) && (
@@ -111,21 +149,7 @@ export default function MultiplayerLobby({
             ) : (
               /* ── Matchmake / Create tabs share settings ── */
               <>
-                {/* Deck picker */}
-                <div className={styles.fieldLabel}>DECK</div>
-                <div className={styles.deckRow}>
-                  {available.map(d => (
-                    <button
-                      key={d.id}
-                      className={`${styles.deckBtn} ${selectedDeck === d.id ? styles.deckBtnActive : ''}`}
-                      onClick={() => setSelectedDeck(d.id)}
-                      title={d.name}
-                    >
-                      <img src={getDeckBackImage(d)} alt={d.name} className={styles.deckThumb} />
-                      <span className={styles.deckName}>{d.name}</span>
-                    </button>
-                  ))}
-                </div>
+                <div className={styles.randomNote}>🎲 A random deck from your collection will be used</div>
 
                 {/* Difficulty */}
                 <div className={styles.fieldLabel}>DIFFICULTY</div>
