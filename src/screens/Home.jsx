@@ -39,22 +39,42 @@ const VS_ICON = {
 const TIMECHALLENGE_ICON = {
   src: '/images/icons/timechallenge.webp',
   label: 'Time Challenge',
-  // Red second-hand sweeping the watch dial + a gold glint catching the case.
-  needle: { x: '48.5%', y: '49%', length: '18%' },
+  // Watch was drawn with no hands on purpose — add spinning CSS hands.
+  // Hour (slow), minute (medium), second (fast red) all on the dial pivot.
+  hands: [
+    { x: '48.5%', y: '49%', length: '11%', width: '2.8%', color: '#3a2a12', dur: '20s' },
+    { x: '48.5%', y: '49%', length: '17%', width: '2%',   color: '#3a2a12', dur: '7s' },
+    { x: '48.5%', y: '49%', length: '19%', width: '0.9%', color: '#c0392b', dur: '2.5s' },
+  ],
   glints: [{ x: '48.5%', y: '49%', size: '9%', color: '255, 220, 120', dur: '4s', delay: '0s' }],
 }
 const ONLINE_ICON = {
   src: '/images/icons/online.webp',
   label: 'Online',
-  // Electric-blue flashes at the two tower orbs (out of sync = lightning),
-  // a slow cyan pulse over the globe, and small node sparkles on it.
-  glints: [
-    { x: '23%', y: '17%', size: '14%', color: '120, 200, 255', dur: '1.4s', delay: '0s' },
-    { x: '77%', y: '16%', size: '14%', color: '120, 200, 255', dur: '1.7s', delay: '0.6s' },
-    { x: '50%', y: '37%', size: '30%', color: '90, 200, 255',  dur: '3.2s', delay: '0.3s' },
-    { x: '44%', y: '33%', size: '5%',  color: '190, 235, 255', dur: '2.3s', delay: '1.1s' },
-    { x: '57%', y: '41%', size: '5%',  color: '190, 235, 255', dur: '2.8s', delay: '1.9s' },
+  // Electric arcs flicker between the tower orbs and the globe; orbs glow,
+  // globe pulses cyan, network nodes sparkle.
+  arcs: [
+    { x: '37%', y: '27%', w: '30%', rot: '37deg',  dur: '1.5s', delay: '0s' },   // left orb → globe
+    { x: '63%', y: '27%', w: '30%', rot: '-37deg', dur: '1.8s', delay: '0.4s' }, // right orb → globe
+    { x: '50%', y: '13%', w: '50%', rot: '3deg',   dur: '1.3s', delay: '0.7s' }, // arc over the top
   ],
+  glints: [
+    { x: '23%', y: '17%', size: '9%',  color: '150, 215, 255', dur: '1.6s', delay: '0.2s' }, // left orb glow
+    { x: '77%', y: '16%', size: '9%',  color: '150, 215, 255', dur: '1.9s', delay: '0.9s' }, // right orb glow
+    { x: '50%', y: '37%', size: '30%', color: '90, 200, 255',  dur: '3.2s', delay: '0.3s' }, // globe pulse
+    { x: '44%', y: '33%', size: '5%',  color: '190, 235, 255', dur: '2.3s', delay: '1.1s' }, // node
+    { x: '57%', y: '41%', size: '5%',  color: '190, 235, 255', dur: '2.8s', delay: '1.9s' }, // node
+  ],
+}
+const PASSANDPLAY_ICON = {
+  src: '/images/icons/passandplay.webp',
+  label: 'Pass & Play',
+  // Wall torch flickers (+ embers); Sprockett's phone screen glints.
+  flames: [
+    { x: '50%',  y: '23%', size: '15%', dur: '2.6s, 1.7s', delay: '-1.1s, -0.4s' },
+    { x: '50.5%', y: '20%', size: '9%', dur: '1.9s, 1.3s', delay: '-0.7s, -1.2s' },
+  ],
+  glints: [{ x: '87%', y: '44%', size: '6%', color: '200, 230, 255', dur: '2.6s', delay: '0.5s' }],
 }
 
 export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop, onAvatar, onSettings, onSeason, onReveal, onRanks, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, gauntletStep, seasonStep = 0, mode = 'vs', onMode, onHomeMusic }) {
@@ -164,6 +184,8 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
             <GameIcon {...TIMECHALLENGE_ICON} onClick={() => {}} />
           ) : iconTestParam === 'online' ? (
             <GameIcon {...ONLINE_ICON} onClick={() => {}} />
+          ) : iconTestParam === 'passandplay' ? (
+            <GameIcon {...PASSANDPLAY_ICON} onClick={() => {}} />
           ) : (
             <GameIcon {...SEASON_ICON} onClick={() => {}} />
           )}

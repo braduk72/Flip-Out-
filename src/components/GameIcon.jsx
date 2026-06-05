@@ -33,7 +33,7 @@ const SPARKS = [
  *                that triggers the lunar-lander easter egg.
  * @param onClick handler
  */
-export default function GameIcon({ src, label, flames = [], needle = null, glints = [], bubbles = [], ripples = [], splashes = [], secret = null, onClick }) {
+export default function GameIcon({ src, label, flames = [], needle = null, hands = [], arcs = [], glints = [], bubbles = [], ripples = [], splashes = [], secret = null, onClick }) {
   const [egg, setEgg] = useState(false)
   const tapsRef = useRef(0)
   const tapTimerRef = useRef(null)
@@ -103,6 +103,38 @@ export default function GameIcon({ src, label, flames = [], needle = null, glint
             }}
           />
         )}
+
+        {/* Spinning clock hands (pivot at base) */}
+        {hands.map((h, i) => (
+          <span
+            key={`hand-${i}`}
+            className={styles.hand}
+            style={{
+              left: h.x,
+              top: h.y,
+              width: h.width || '2%',
+              height: h.length || '15%',
+              background: h.color || '#2a2010',
+              animationDuration: h.dur || '6s',
+            }}
+          />
+        ))}
+
+        {/* Electric arcs (lightning) */}
+        {arcs.map((a, i) => (
+          <span
+            key={`arc-${i}`}
+            className={styles.arc}
+            style={{
+              left: a.x,
+              top: a.y,
+              width: a.w || '20%',
+              '--rot': a.rot || '0deg',
+              animationDuration: a.dur || '1.6s',
+              animationDelay: a.delay || '0s',
+            }}
+          />
+        ))}
 
         {/* Splashes where the cheese hits the rocks */}
         {splashes.map((s, i) => (
