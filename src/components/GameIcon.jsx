@@ -33,6 +33,7 @@ export default function GameIcon({ src, label, flames = [], needle = null, onCli
             style={{
               left: f.x,
               top: f.y,
+              width: f.size || undefined,
               animationDuration: f.dur || '0.8s, 1.5s',
               animationDelay: f.delay || '0s, 0s',
             }}

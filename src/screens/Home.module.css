@@ -98,8 +98,7 @@
   align-items: center;
   justify-content: center;
   gap: 18px;
-  background: rgba(8, 10, 24, 0.82);
-  backdrop-filter: blur(3px);
+  background: #080a18;
 }
 .iconTestOverlay > :global(button) {
   width: min(62vw, 300px);

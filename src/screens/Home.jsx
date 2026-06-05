@@ -138,8 +138,12 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
             src="/images/icons/season.webp"
             label="Season"
             flames={[
+              // Primary flames
               { x: '15.8%', y: '33.5%', dur: '2.6s, 1.7s', delay: '-1.1s, -0.4s' },
               { x: '86.3%', y: '34.5%', dur: '3.3s, 2.1s', delay: '-0.6s, -1.7s' },
+              // Secondary flame tips — smaller, above and to the side, own random timing
+              { x: '14.8%', y: '31%',   size: '15%', dur: '1.9s, 1.3s', delay: '-0.7s, -1.2s' },
+              { x: '87.3%', y: '32%',   size: '15%', dur: '2.3s, 1.5s', delay: '-1.4s, -0.5s' },
             ]}
             needle={{ x: '35%', y: '61.3%', length: '14%' }}
             onClick={() => {}}
