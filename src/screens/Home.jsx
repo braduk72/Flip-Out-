@@ -47,6 +47,7 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
+    v.volume = 0.15            // baked-in track is loud — keep it gentle
     if (!musicOn) { v.muted = true; return }
     v.muted = false
     let cleanup = () => {}
