@@ -139,6 +139,33 @@
   to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
+/* ── Ripples (river flow) ─────────────────────────────────────────────
+   Thin soft highlight lines that drift along the channel and fade, looping
+   continuously so the cheese surface always looks like it's moving. */
+.ripple {
+  position: absolute;
+  height: 1.6%;
+  transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
+  border-radius: 50%;
+  background: linear-gradient(90deg,
+    rgba(255, 248, 210, 0) 0%, rgba(255, 248, 210, 0.7) 50%, rgba(255, 248, 210, 0) 100%);
+  filter: blur(1.2px);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  opacity: 0;
+  animation-name: ripple;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  will-change: transform, opacity;
+}
+@keyframes ripple {
+  0%   { opacity: 0;    transform: translate(-50%, -50%) rotate(var(--rot, 0deg)); }
+  25%  { opacity: 0.75; }
+  70%  { opacity: 0.4;  }
+  100% { opacity: 0;    transform: translate(calc(-50% + var(--dx, 0cqw)), calc(-50% + var(--dy, 0cqw))) rotate(var(--rot, 0deg)); }
+}
+@media (prefers-reduced-motion: reduce) { .ripple { animation: none; } }
+
 /* ── Bubbles (honey river) ────────────────────────────────────────────
    Rise a little and pop, then a long invisible gap. Staggered timings make
    the river bubble at random. */

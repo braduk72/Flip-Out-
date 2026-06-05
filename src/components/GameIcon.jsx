@@ -23,13 +23,15 @@ const SPARKS = [
  *                spins on its pivot. Positions are % of the plate.
  * @param glints  array of { x, y, size, dur, delay } — occasional sparkle
  *                flashes (e.g. a glinting eye). Positions are % of the plate.
- * @param bubbles array of { x, y, size, dur, delay } — bubbles that rise and
- *                pop (e.g. on a honey river). Positions are % of the plate.
+ * @param bubbles array of { x, y, size, dx, dur, delay } — bubbles that rise,
+ *                drift and pop (e.g. on a cheese river). Positions are % of plate.
+ * @param ripples array of { x, y, w, rot, dx, dy, dur, delay } — thin highlight
+ *                lines that travel along the river to show flowing current.
  * @param secret  optional { x, y, size } — a hidden tap zone (e.g. the compass)
  *                that triggers the lunar-lander easter egg.
  * @param onClick handler
  */
-export default function GameIcon({ src, label, flames = [], needle = null, glints = [], bubbles = [], secret = null, onClick }) {
+export default function GameIcon({ src, label, flames = [], needle = null, glints = [], bubbles = [], ripples = [], secret = null, onClick }) {
   const [egg, setEgg] = useState(false)
   const tapsRef = useRef(0)
   const tapTimerRef = useRef(null)
@@ -99,6 +101,24 @@ export default function GameIcon({ src, label, flames = [], needle = null, glint
             }}
           />
         )}
+
+        {/* Ripple lines travelling along the river (flow current) */}
+        {ripples.map((r, i) => (
+          <span
+            key={`ripple-${i}`}
+            className={styles.ripple}
+            style={{
+              left: r.x,
+              top: r.y,
+              width: r.w || '9%',
+              '--dx': r.dx || '0cqw',
+              '--dy': r.dy || '0cqw',
+              '--rot': r.rot || '0deg',
+              animationDuration: r.dur || '2.6s',
+              animationDelay: r.delay || '0s',
+            }}
+          />
+        ))}
 
         {/* Bubbles rising/popping on the honey */}
         {bubbles.map((b, i) => (
