@@ -18,6 +18,9 @@
   line-height: 0;
   transition: transform 0.12s ease;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+  /* Lets child effects (sparks) size/move in cqw units = % of plate width,
+     so they scale with the icon at any size. */
+  container-type: inline-size;
 }
 .icon:active .plate { transform: scale(0.94); }
 
@@ -76,6 +79,30 @@
   100% { transform: translate(-50%, -50%) scale(1.00); }
 }
 
+/* ── Embers / sparks ──────────────────────────────────────────────────
+   Tiny dots that flash on at a flame, fall and drift, then fade. Each runs
+   on a long cycle (most of which is invisible) with its own duration/delay,
+   so sparks appear intermittently and at random rather than in lockstep. */
+.spark {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  animation-name: sparkFall;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in;
+  will-change: transform, opacity;
+}
+@keyframes sparkFall {
+  0%   { opacity: 0; transform: translate(-50%, -50%); }
+  3%   { opacity: 1; transform: translate(-50%, -50%); }
+  6%   { opacity: 1; transform: translate(-50%, calc(-50% + 3cqw)); }
+  26%  { opacity: 0; transform: translate(calc(-50% + var(--dx, 0)), calc(-50% + 15cqw)); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx, 0)), calc(-50% + 15cqw)); }
+}
+
 /* ── Compass needle spin ──────────────────────────────────────────────
    A slim two-tone line (red north / pale south) rotating on the compass
    pivot. width/height are relative to the plate so it scales with the icon. */
@@ -116,5 +143,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flame, .needle { animation: none; }
+  .flame, .needle, .spark { animation: none; }
 }

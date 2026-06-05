@@ -1,5 +1,13 @@
 import styles from './GameIcon.module.css'
 
+// Spark presets — varied durations/delays/drift so embers emit at random.
+const SPARKS = [
+  { dur: '2.4s', delay: '0s',   dx: '-6cqw', color: '#ffd24a' },
+  { dur: '3.3s', delay: '1.1s', dx: '5cqw',  color: '#ff9b2e' },
+  { dur: '4.1s', delay: '0.6s', dx: '-3cqw', color: '#ff8c1a' },
+  { dur: '5.0s', delay: '2.2s', dx: '7cqw',  color: '#ffe06a' },
+]
+
 /**
  * Animated stone game icon.
  *
@@ -29,6 +37,25 @@ export default function GameIcon({ src, label, flames = [], needle = null, onCli
             }}
           />
         ))}
+
+        {/* Embers falling from each flame */}
+        {flames.flatMap((f, i) =>
+          SPARKS.map((s, j) => (
+            <span
+              key={`spark-${i}-${j}`}
+              className={styles.spark}
+              style={{
+                left: f.x,
+                top: f.y,
+                background: s.color,
+                boxShadow: `0 0 3px ${s.color}`,
+                '--dx': s.dx,
+                animationDuration: s.dur,
+                animationDelay: `calc(${s.delay} + ${i * 0.7}s)`,
+              }}
+            />
+          ))
+        )}
 
         {/* Spinning compass needle — a CSS line on the compass pivot */}
         {needle && (
