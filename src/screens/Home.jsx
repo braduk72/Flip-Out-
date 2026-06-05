@@ -42,10 +42,10 @@ const TIMECHALLENGE_ICON = {
   // Watch drawn hand-less on purpose — two shiny gold hands, scaled down,
   // pivot nudged up/right, spun fast (4×) for a "time racing" feel.
   hands: [
-    { x: '50.2%', y: '45.6%', length: '8.8%',  width: '2.24%', color: 'linear-gradient(90deg, #9a7b1e, #ffe9a0, #9a7b1e)', dur: '1.67s' },
-    { x: '50.2%', y: '45.6%', length: '13.6%', width: '1.6%',  color: 'linear-gradient(90deg, #9a7b1e, #ffe9a0, #9a7b1e)', dur: '0.58s' },
+    { x: '50.5%', y: '45.3%', length: '8.8%',  width: '2.24%', color: 'linear-gradient(90deg, #9a7b1e, #ffe9a0, #9a7b1e)', dur: '1.67s' },
+    { x: '50.5%', y: '45.3%', length: '13.6%', width: '1.6%',  color: 'linear-gradient(90deg, #9a7b1e, #ffe9a0, #9a7b1e)', dur: '0.58s' },
   ],
-  glints: [{ x: '50.2%', y: '45.6%', size: '9%', color: '255, 220, 120', dur: '4s', delay: '0s' }],
+  glints: [{ x: '57%', y: '25%', size: '6%', color: '255, 232, 160', dur: '4s', delay: '0s' }],
 }
 const ONLINE_ICON = {
   src: '/images/icons/online.webp',
