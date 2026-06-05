@@ -137,7 +137,13 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
         <div className={styles.iconTestOverlay}>
           <button className={styles.iconTestClose} onClick={() => { window.location.search = '' }} aria-label="Close">✕</button>
 
-          {iconTestParam === 'gauntlet' ? (
+          {iconTestParam === 'vs' ? (
+            <GameIcon
+              src="/images/icons/vs.webp"
+              label="VS"
+              onClick={() => {}}
+            />
+          ) : iconTestParam === 'gauntlet' ? (
             <GameIcon
               src="/images/icons/gauntlet.webp"
               label="Gauntlet"
