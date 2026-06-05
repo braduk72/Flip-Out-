@@ -60,13 +60,25 @@
 }
 
 /* ── Compass needle spin ──────────────────────────────────────────────
-   Rotates a separate transparent needle image about its own centre. */
+   A slim two-tone line (red north / pale south) rotating on the compass
+   pivot. width/height are relative to the plate so it scales with the icon. */
 .needle {
   position: absolute;
+  width: 2.4%;
   transform: translate(-50%, -50%);
   transform-origin: center center;
   pointer-events: none;
+  border-radius: 40%;
+  background: linear-gradient(
+    to bottom,
+    #e23b22 0%,
+    #e23b22 48%,
+    #f4ecd6 52%,
+    #f4ecd6 100%
+  );
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
   animation: spin 6s linear infinite;
+  will-change: transform;
 }
 @keyframes spin {
   from { transform: translate(-50%, -50%) rotate(0deg); }

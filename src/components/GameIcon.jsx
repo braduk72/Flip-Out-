@@ -6,8 +6,8 @@ import styles from './GameIcon.module.css'
  * @param src     base plate image (transparent webp)
  * @param label   text rendered below the plate (kept out of the art on purpose)
  * @param flames  array of { x, y, delay } — firelight flicker points, % positions
- * @param needle  optional { src, x, y, size } — a separate transparent needle/
- *                pointer image that spins on its centre (compass). Drop-in ready.
+ * @param needle  optional { x, y, length } — a CSS-drawn compass needle that
+ *                spins on its pivot. Positions are % of the plate.
  * @param onClick handler
  */
 export default function GameIcon({ src, label, flames = [], needle = null, onClick }) {
@@ -25,17 +25,14 @@ export default function GameIcon({ src, label, flames = [], needle = null, onCli
           />
         ))}
 
-        {/* Spinning compass needle (separate transparent asset, centred on pivot) */}
+        {/* Spinning compass needle — a CSS line on the compass pivot */}
         {needle && (
-          <img
-            src={needle.src}
-            alt=""
+          <span
             className={styles.needle}
-            draggable="false"
             style={{
               left: needle.x,
               top: needle.y,
-              width: needle.size || '20%',
+              height: needle.length || '14%',
             }}
           />
         )}

@@ -141,9 +141,10 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
               { x: '16%', y: '21%', delay: '0s' },
               { x: '84%', y: '21%', delay: '0.6s' },
             ]}
+            needle={{ x: '30.5%', y: '64%', length: '14%' }}
             onClick={() => {}}
           />
-          <p className={styles.iconTestHint}>Tap anywhere to exit • needle spin pending Clara's isolated pointer asset</p>
+          <p className={styles.iconTestHint}>Tap anywhere to exit</p>
         </div>
       )}
       {dailyBonus && <DailyBonus day={dailyBonus.day} coins={dailyBonus.coins} onClose={() => setDailyBonus(null)} />}
