@@ -1,0 +1,16 @@
+# Cloudflare Pages headers — ported from the old vercel.json
+# HTML and the root are never cached, so players always get the latest deploy.
+/
+  Cache-Control: no-store, no-cache, must-revalidate
+  Pragma: no-cache
+
+/*.html
+  Cache-Control: no-store, no-cache, must-revalidate
+  Pragma: no-cache
+
+# Images and music are large and rarely change — cache them hard.
+/images/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+
+/music/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
