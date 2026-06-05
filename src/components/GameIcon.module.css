@@ -139,6 +139,33 @@
   to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
+/* ── Bubbles (honey river) ────────────────────────────────────────────
+   Rise a little and pop, then a long invisible gap. Staggered timings make
+   the river bubble at random. */
+.bubble {
+  position: absolute;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) scale(0.2);
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%,
+    rgba(255, 255, 255, 0.85), rgba(255, 205, 90, 0.4) 52%, rgba(190, 130, 20, 0.12) 82%);
+  border: 1px solid rgba(255, 235, 150, 0.4);
+  pointer-events: none;
+  opacity: 0;
+  animation-name: bubble;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-out;
+  will-change: transform, opacity;
+}
+@keyframes bubble {
+  0%   { opacity: 0;    transform: translate(-50%, -50%) scale(0.2); }
+  8%   { opacity: 0.85; transform: translate(-50%, -60%) scale(1.0); }
+  18%  { opacity: 0.85; transform: translate(-50%, -74%) scale(1.05); }
+  24%  { opacity: 0;    transform: translate(-50%, -80%) scale(1.45); }  /* pop */
+  100% { opacity: 0;    transform: translate(-50%, -80%) scale(0.2); }
+}
+@media (prefers-reduced-motion: reduce) { .bubble { animation: none; } }
+
 /* ── Glint (eye sparkle) ──────────────────────────────────────────────
    Mostly invisible; a quick bright flash once per cycle so an eye/gem
    occasionally catches the light. */

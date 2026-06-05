@@ -23,11 +23,13 @@ const SPARKS = [
  *                spins on its pivot. Positions are % of the plate.
  * @param glints  array of { x, y, size, dur, delay } — occasional sparkle
  *                flashes (e.g. a glinting eye). Positions are % of the plate.
+ * @param bubbles array of { x, y, size, dur, delay } — bubbles that rise and
+ *                pop (e.g. on a honey river). Positions are % of the plate.
  * @param secret  optional { x, y, size } — a hidden tap zone (e.g. the compass)
  *                that triggers the lunar-lander easter egg.
  * @param onClick handler
  */
-export default function GameIcon({ src, label, flames = [], needle = null, glints = [], secret = null, onClick }) {
+export default function GameIcon({ src, label, flames = [], needle = null, glints = [], bubbles = [], secret = null, onClick }) {
   const [egg, setEgg] = useState(false)
   const tapsRef = useRef(0)
   const tapTimerRef = useRef(null)
@@ -97,6 +99,21 @@ export default function GameIcon({ src, label, flames = [], needle = null, glint
             }}
           />
         )}
+
+        {/* Bubbles rising/popping on the honey */}
+        {bubbles.map((b, i) => (
+          <span
+            key={`bubble-${i}`}
+            className={styles.bubble}
+            style={{
+              left: b.x,
+              top: b.y,
+              width: b.size || '4%',
+              animationDuration: b.dur || '3s',
+              animationDelay: b.delay || '0s',
+            }}
+          />
+        ))}
 
         {/* Occasional glints (e.g. a red eye catching the light) */}
         {glints.map((g, i) => (
