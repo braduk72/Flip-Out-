@@ -2,20 +2,22 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  /* Static fallback shown if the background video element fails entirely. */
-  background: url('/images/bg_home.webp') center top / cover no-repeat;
+  /* Deep-navy backing matches the temple night sky and fills the small
+     letterbox gaps above/below the 9:16 video on taller phone screens. */
+  background: #0a0e1f;
   position: relative;
   overflow: hidden;
 }
 
-/* Animated background video — fills the screen, centre-cropped, behind all UI. */
+/* Animated background video — shows the full scene at its intended size
+   (contain, not cover) so the characters aren't zoomed into the side icons. */
 .bgVideo {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   z-index: 0;
   pointer-events: none;
