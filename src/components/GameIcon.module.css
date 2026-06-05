@@ -75,14 +75,17 @@
   100% { opacity: 0.60; }
 }
 
-/* Shape/position jitter — also irregular, on its own period. */
+/* Position wander + scale — the glow drifts to irregular spots within a small
+   circle and pulses, so the fire dances rather than sitting still. Base centre
+   is (-50%,-50%); offsets are % of the glow's own size. */
 @keyframes flameShape {
   0%   { transform: translate(-50%, -50%) scale(1.00); }
-  13%  { transform: translate(-50%, -53%) scale(1.13); }
-  27%  { transform: translate(-52%, -50%) scale(0.90); }
-  44%  { transform: translate(-49%, -55%) scale(1.18); }
-  61%  { transform: translate(-50%, -50%) scale(0.96); }
-  79%  { transform: translate(-51%, -53%) scale(1.08); }
+  13%  { transform: translate(-42%, -58%) scale(1.13); }
+  27%  { transform: translate(-59%, -52%) scale(0.90); }
+  41%  { transform: translate(-53%, -41%) scale(1.18); }
+  55%  { transform: translate(-41%, -49%) scale(0.96); }
+  69%  { transform: translate(-50%, -61%) scale(1.09); }
+  83%  { transform: translate(-58%, -44%) scale(1.04); }
   100% { transform: translate(-50%, -50%) scale(1.00); }
 }
 
