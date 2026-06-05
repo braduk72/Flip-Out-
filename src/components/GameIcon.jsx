@@ -1,11 +1,12 @@
 import styles from './GameIcon.module.css'
 
-// Spark presets — varied durations/delays/drift so embers emit at random.
+// Spark presets — varied durations/delays/drift/size so embers emit at random.
 const SPARKS = [
-  { dur: '2.4s', delay: '0s',   dx: '-6cqw', color: '#ffd24a' },
-  { dur: '3.3s', delay: '1.1s', dx: '5cqw',  color: '#ff9b2e' },
-  { dur: '4.1s', delay: '0.6s', dx: '-3cqw', color: '#ff8c1a' },
-  { dur: '5.0s', delay: '2.2s', dx: '7cqw',  color: '#ffe06a' },
+  { dur: '2.4s', delay: '0s',   dx: '-6cqw', color: '#ffd24a', size: '2px' },
+  { dur: '3.3s', delay: '1.1s', dx: '5cqw',  color: '#ff9b2e', size: '3px' },
+  { dur: '4.1s', delay: '0.6s', dx: '-3cqw', color: '#ff8c1a', size: '1.5px' },
+  { dur: '5.0s', delay: '2.2s', dx: '7cqw',  color: '#ffe06a', size: '2.5px' },
+  { dur: '3.7s', delay: '1.6s', dx: '-5cqw', color: '#ffb43a', size: '3px' },
 ]
 
 /**
@@ -47,6 +48,8 @@ export default function GameIcon({ src, label, flames = [], needle = null, onCli
               style={{
                 left: f.x,
                 top: f.y,
+                width: s.size,
+                height: s.size,
                 background: s.color,
                 boxShadow: `0 0 3px ${s.color}`,
                 '--dx': s.dx,

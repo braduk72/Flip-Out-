@@ -138,10 +138,10 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
             src="/images/icons/season.webp"
             label="Season"
             flames={[
-              { x: '13%', y: '33%', dur: '2.6s, 1.7s', delay: '-1.1s, -0.4s' },
-              { x: '87%', y: '33%', dur: '3.3s, 2.1s', delay: '-0.6s, -1.7s' },
+              { x: '15.5%', y: '34%', dur: '2.6s, 1.7s', delay: '-1.1s, -0.4s' },
+              { x: '89%',   y: '36%', dur: '3.3s, 2.1s', delay: '-0.6s, -1.7s' },
             ]}
-            needle={{ x: '32%', y: '63.7%', length: '14%' }}
+            needle={{ x: '35.5%', y: '66.3%', length: '14%' }}
             onClick={() => {}}
           />
           <p className={styles.iconTestHint}>Tap anywhere to exit</p>
