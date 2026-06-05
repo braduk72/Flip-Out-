@@ -39,14 +39,13 @@ const VS_ICON = {
 const TIMECHALLENGE_ICON = {
   src: '/images/icons/timechallenge.webp',
   label: 'Time Challenge',
-  // Watch was drawn with no hands on purpose — add spinning CSS hands.
-  // Hour (slow), minute (medium), second (fast red) all on the dial pivot.
+  // Watch drawn hand-less on purpose — two shiny gold hands, scaled down,
+  // pivot nudged up/right, spun fast (4×) for a "time racing" feel.
   hands: [
-    { x: '48.5%', y: '49%', length: '11%', width: '2.8%', color: '#3a2a12', dur: '20s' },
-    { x: '48.5%', y: '49%', length: '17%', width: '2%',   color: '#3a2a12', dur: '7s' },
-    { x: '48.5%', y: '49%', length: '19%', width: '0.9%', color: '#c0392b', dur: '2.5s' },
+    { x: '49.5%', y: '46.3%', length: '8.8%',  width: '2.24%', color: 'linear-gradient(90deg, #9a7b1e, #ffe9a0, #9a7b1e)', dur: '5s' },
+    { x: '49.5%', y: '46.3%', length: '13.6%', width: '1.6%',  color: 'linear-gradient(90deg, #9a7b1e, #ffe9a0, #9a7b1e)', dur: '1.75s' },
   ],
-  glints: [{ x: '48.5%', y: '49%', size: '9%', color: '255, 220, 120', dur: '4s', delay: '0s' }],
+  glints: [{ x: '49.5%', y: '46.3%', size: '9%', color: '255, 220, 120', dur: '4s', delay: '0s' }],
 }
 const ONLINE_ICON = {
   src: '/images/icons/online.webp',
