@@ -45,14 +45,15 @@ const VS_ICON = {
     { x: '58%', y: '80%', w: '9%',  rot: '-45deg', dx: '-10cqw', dy: '10cqw', dur: '2.9s', delay: '0.9s' },
     { x: '30%', y: '56%', w: '8%',  rot: '-45deg', dx: '-9cqw',  dy: '9cqw',  dur: '3.3s', delay: '2.0s' },
   ],
-  // Splashes where the cheese meets the rock walls / cracker edges
+  // Splashes against the little rock-nuggets poking up through the cheese
   splashes: [
-    { x: '45%', y: '54%', size: '6%', dur: '3.4s', delay: '0s' },
-    { x: '60%', y: '49%', size: '5%', dur: '4.0s', delay: '1.3s' },
-    { x: '38%', y: '46%', size: '5%', dur: '3.7s', delay: '2.1s' },
-    { x: '50%', y: '70%', size: '6%', dur: '3.1s', delay: '0.8s' },
-    { x: '63%', y: '66%', size: '5%', dur: '4.2s', delay: '2.6s' },
-    { x: '30%', y: '64%', size: '5%', dur: '3.6s', delay: '1.7s' },
+    { x: '60%', y: '27%', size: '4.5%', dur: '3.4s', delay: '0s' },
+    { x: '74%', y: '24%', size: '4%',   dur: '4.0s', delay: '1.3s' },
+    { x: '79%', y: '41%', size: '4%',   dur: '3.7s', delay: '2.1s' },
+    { x: '48%', y: '61%', size: '4.5%', dur: '3.1s', delay: '0.8s' },
+    { x: '40%', y: '65%', size: '4%',   dur: '4.2s', delay: '2.6s' },
+    { x: '47%', y: '76%', size: '4.5%', dur: '3.6s', delay: '1.7s' },
+    { x: '57%', y: '73%', size: '4%',   dur: '3.9s', delay: '0.4s' },
   ],
   bubbles: [
     { x: '50%', y: '22%', size: '3.5%', dx: '12cqw',  dur: '2.6s', delay: '0s' },
