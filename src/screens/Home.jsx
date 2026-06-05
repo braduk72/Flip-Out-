@@ -70,7 +70,7 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
         ref={videoRef}
         className={styles.bgVideo}
         src="/video/main_temple.mp4"
-        poster="/images/bg_home.webp"
+        poster="/images/home_still_v2.webp"
         autoPlay
         loop
         muted
