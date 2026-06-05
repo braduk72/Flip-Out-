@@ -33,42 +33,8 @@ const GAUNTLET_ICON = {
 const VS_ICON = {
   src: '/images/icons/vs.webp',
   label: 'VS',
-  // River flows top-right → bottom-left, so ripples travel down-left at ~45°,
-  // lines aligned to that "/" axis (rot -45deg).
-  ripples: [
-    { x: '58%', y: '28%', w: '11%', rot: '-45deg', dx: '-9cqw',  dy: '9cqw',  dur: '2.6s', delay: '0s' },
-    { x: '64%', y: '40%', w: '9%',  rot: '-45deg', dx: '-8cqw',  dy: '8cqw',  dur: '3.0s', delay: '0.7s' },
-    { x: '50%', y: '46%', w: '12%', rot: '-45deg', dx: '-10cqw', dy: '10cqw', dur: '2.8s', delay: '0.3s' },
-    { x: '72%', y: '34%', w: '8%',  rot: '-45deg', dx: '-8cqw',  dy: '8cqw',  dur: '3.2s', delay: '1.3s' },
-    { x: '44%', y: '62%', w: '10%', rot: '-45deg', dx: '-9cqw',  dy: '9cqw',  dur: '2.7s', delay: '0.5s' },
-    { x: '36%', y: '74%', w: '11%', rot: '-45deg', dx: '-8cqw',  dy: '8cqw',  dur: '3.1s', delay: '1.6s' },
-    { x: '58%', y: '80%', w: '9%',  rot: '-45deg', dx: '-10cqw', dy: '10cqw', dur: '2.9s', delay: '0.9s' },
-    { x: '30%', y: '56%', w: '8%',  rot: '-45deg', dx: '-9cqw',  dy: '9cqw',  dur: '3.3s', delay: '2.0s' },
-  ],
-  // Splashes against the little rock-nuggets poking up through the cheese
-  splashes: [
-    { x: '60%', y: '27%', size: '4.5%', dur: '3.4s', delay: '0s' },
-    { x: '74%', y: '24%', size: '4%',   dur: '4.0s', delay: '1.3s' },
-    { x: '79%', y: '41%', size: '4%',   dur: '3.7s', delay: '2.1s' },
-    { x: '48%', y: '61%', size: '4.5%', dur: '3.1s', delay: '0.8s' },
-    { x: '40%', y: '65%', size: '4%',   dur: '4.2s', delay: '2.6s' },
-    { x: '47%', y: '76%', size: '4.5%', dur: '3.6s', delay: '1.7s' },
-    { x: '57%', y: '73%', size: '4%',   dur: '3.9s', delay: '0.4s' },
-  ],
-  bubbles: [
-    { x: '50%', y: '22%', size: '3.5%', dx: '12cqw',  dur: '2.6s', delay: '0s' },
-    { x: '60%', y: '31%', size: '3%',   dx: '-9cqw',  dur: '3.0s', delay: '0.8s' },
-    { x: '49%', y: '43%', size: '4%',   dx: '14cqw',  dur: '2.8s', delay: '0.4s' },
-    { x: '44%', y: '53%', size: '2.6%', dx: '-11cqw', dur: '3.3s', delay: '1.6s' },
-    { x: '70%', y: '40%', size: '3.2%', dx: '10cqw',  dur: '3.1s', delay: '1.2s' },
-    { x: '42%', y: '70%', size: '3.6%', dx: '-13cqw', dur: '2.7s', delay: '0.6s' },
-    { x: '31%', y: '79%', size: '3%',   dx: '-10cqw', dur: '3.2s', delay: '2.0s' },
-    { x: '55%', y: '86%', size: '4%',   dx: '12cqw',  dur: '2.9s', delay: '1.0s' },
-    { x: '38%', y: '34%', size: '2.8%', dx: '9cqw',   dur: '3.4s', delay: '2.2s' },
-    { x: '64%', y: '60%', size: '3.4%', dx: '-12cqw', dur: '2.8s', delay: '0.3s' },
-    { x: '52%', y: '74%', size: '3%',   dx: '11cqw',  dur: '3.0s', delay: '1.8s' },
-    { x: '26%', y: '60%', size: '2.6%', dx: '-9cqw',  dur: '3.3s', delay: '1.1s' },
-  ],
+  // River animation (bubbles/ripples/splashes) removed — too hard to sell a
+  // baked-in liquid convincingly without a mask. Static plate for now.
 }
 
 export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop, onAvatar, onSettings, onSeason, onReveal, onRanks, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, gauntletStep, seasonStep = 0, mode = 'vs', onMode, onHomeMusic }) {
