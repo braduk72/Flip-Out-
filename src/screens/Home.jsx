@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import styles from './Home.module.css'
 import BottomNav from '../components/BottomNav'
+import GameIcon from '../components/GameIcon'
 import SpecialOffer, { shouldShowOffer, markOfferSeen } from '../components/SpecialOffer'
 import DailyBonus, { checkDailyBonus } from '../components/DailyBonus'
 import { playHoverTick } from '../hooks/useSfx'
@@ -12,6 +13,7 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
   const [showBugModal, setShowBugModal] = useState(false)
   const [dailyBonus, setDailyBonus] = useState(null)
   const videoRef = useRef(null)
+  const showIconTest = new URLSearchParams(window.location.search).has('icontest')
 
   useEffect(() => {
     const bonus = checkDailyBonus()
@@ -130,6 +132,20 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
       </div>
 
       <BottomNav active="home" onShop={onShop} onHome={onHomeMusic} onSettings={onSettings} onRanks={onRanks} />
+      {showIconTest && (
+        <div className={styles.iconTestOverlay} onClick={() => { window.location.search = '' }}>
+          <GameIcon
+            src="/images/icons/season.webp"
+            label="Season"
+            flames={[
+              { x: '16%', y: '21%', delay: '0s' },
+              { x: '84%', y: '21%', delay: '0.6s' },
+            ]}
+            onClick={() => {}}
+          />
+          <p className={styles.iconTestHint}>Tap anywhere to exit • needle spin pending Clara's isolated pointer asset</p>
+        </div>
+      )}
       {dailyBonus && <DailyBonus day={dailyBonus.day} coins={dailyBonus.coins} onClose={() => setDailyBonus(null)} />}
       {showOffer && <SpecialOffer onClose={() => setShowOffer(false)} />}
       {showBugModal && <BugReportModal onClose={() => setShowBugModal(false)} />}

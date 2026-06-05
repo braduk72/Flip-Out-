@@ -1,0 +1,91 @@
+.icon {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Stone plate + its overlaid effects share one positioning context */
+.plate {
+  position: relative;
+  display: block;
+  width: 100%;
+  line-height: 0;
+  transition: transform 0.12s ease;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+}
+.icon:active .plate { transform: scale(0.94); }
+
+.plateImg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── Torch flame flicker ──────────────────────────────────────────────
+   A warm radial light placed over each baked-in flame. Brightness, size
+   and position jitter on an irregular cycle so it reads as living fire.
+   plus-lighter blend makes it add light to the flame underneath. */
+.flame {
+  position: absolute;
+  width: 26%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 224, 150, 0.95) 0%,
+    rgba(255, 150, 40, 0.55) 38%,
+    rgba(255, 90, 0, 0) 70%
+  );
+  mix-blend-mode: plus-lighter;
+  filter: blur(2px);
+  pointer-events: none;
+  animation: flicker 1.7s infinite ease-in-out;
+  will-change: transform, opacity;
+}
+
+@keyframes flicker {
+  0%   { opacity: 0.6;  transform: translate(-50%, -50%)   scale(1.00); }
+  18%  { opacity: 0.95; transform: translate(-50%, -53%)   scale(1.14); }
+  33%  { opacity: 0.5;  transform: translate(-51%, -50%)   scale(0.92); }
+  52%  { opacity: 0.9;  transform: translate(-49%, -54%)   scale(1.10); }
+  68%  { opacity: 0.62; transform: translate(-50%, -50%)   scale(1.00); }
+  84%  { opacity: 1.0;  transform: translate(-50%, -52%)   scale(1.12); }
+  100% { opacity: 0.6;  transform: translate(-50%, -50%)   scale(1.00); }
+}
+
+/* ── Compass needle spin ──────────────────────────────────────────────
+   Rotates a separate transparent needle image about its own centre. */
+.needle {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  pointer-events: none;
+  animation: spin 6s linear infinite;
+}
+@keyframes spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ── Label ──────────────────────────────────────────────────────────── */
+.label {
+  font-family: Arial, sans-serif;
+  font-weight: 900;
+  font-size: clamp(13px, 3.4vw, 18px);
+  letter-spacing: 0.06em;
+  color: #FFD86A;
+  text-shadow:
+    0 1px 0 #5a3a12,
+    0 2px 4px rgba(0, 0, 0, 0.85);
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flame, .needle { animation: none; }
+}
