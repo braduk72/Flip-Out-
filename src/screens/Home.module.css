@@ -18,7 +18,9 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  object-position: center;
+  /* Anchor to the top so the letterbox gap falls at the bottom, where the
+     Play button and bottom nav already cover it — no visible band up top. */
+  object-position: top center;
   z-index: 0;
   pointer-events: none;
 }
