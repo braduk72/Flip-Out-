@@ -33,15 +33,17 @@ const GAUNTLET_ICON = {
 const VS_ICON = {
   src: '/images/icons/vs.webp',
   label: 'VS',
+  // River flows top-right → bottom-left, so ripples travel down-left at ~45°,
+  // lines aligned to that "/" axis (rot -45deg).
   ripples: [
-    { x: '50%', y: '24%', w: '11%', rot: '-8deg',  dx: '10cqw', dy: '4cqw',  dur: '2.6s', delay: '0s' },
-    { x: '62%', y: '34%', w: '9%',  rot: '12deg',  dx: '-8cqw', dy: '6cqw',  dur: '3.0s', delay: '0.7s' },
-    { x: '48%', y: '46%', w: '12%', rot: '-6deg',  dx: '9cqw',  dy: '7cqw',  dur: '2.8s', delay: '0.3s' },
-    { x: '70%', y: '42%', w: '8%',  rot: '18deg',  dx: '-7cqw', dy: '5cqw',  dur: '3.2s', delay: '1.3s' },
-    { x: '40%', y: '64%', w: '10%', rot: '-14deg', dx: '-9cqw', dy: '6cqw',  dur: '2.7s', delay: '0.5s' },
-    { x: '33%', y: '78%', w: '11%', rot: '6deg',   dx: '8cqw',  dy: '4cqw',  dur: '3.1s', delay: '1.6s' },
-    { x: '56%', y: '82%', w: '9%',  rot: '-10deg', dx: '-8cqw', dy: '5cqw',  dur: '2.9s', delay: '0.9s' },
-    { x: '26%', y: '58%', w: '8%',  rot: '16deg',  dx: '7cqw',  dy: '6cqw',  dur: '3.3s', delay: '2.0s' },
+    { x: '58%', y: '28%', w: '11%', rot: '-45deg', dx: '-9cqw',  dy: '9cqw',  dur: '2.6s', delay: '0s' },
+    { x: '64%', y: '40%', w: '9%',  rot: '-45deg', dx: '-8cqw',  dy: '8cqw',  dur: '3.0s', delay: '0.7s' },
+    { x: '50%', y: '46%', w: '12%', rot: '-45deg', dx: '-10cqw', dy: '10cqw', dur: '2.8s', delay: '0.3s' },
+    { x: '72%', y: '34%', w: '8%',  rot: '-45deg', dx: '-8cqw',  dy: '8cqw',  dur: '3.2s', delay: '1.3s' },
+    { x: '44%', y: '62%', w: '10%', rot: '-45deg', dx: '-9cqw',  dy: '9cqw',  dur: '2.7s', delay: '0.5s' },
+    { x: '36%', y: '74%', w: '11%', rot: '-45deg', dx: '-8cqw',  dy: '8cqw',  dur: '3.1s', delay: '1.6s' },
+    { x: '58%', y: '80%', w: '9%',  rot: '-45deg', dx: '-10cqw', dy: '10cqw', dur: '2.9s', delay: '0.9s' },
+    { x: '30%', y: '56%', w: '8%',  rot: '-45deg', dx: '-9cqw',  dy: '9cqw',  dur: '3.3s', delay: '2.0s' },
   ],
   bubbles: [
     { x: '50%', y: '22%', size: '3.5%', dx: '12cqw',  dur: '2.6s', delay: '0s' },
