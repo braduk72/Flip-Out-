@@ -6,6 +6,45 @@ import SpecialOffer, { shouldShowOffer, markOfferSeen } from '../components/Spec
 import DailyBonus, { checkDailyBonus } from '../components/DailyBonus'
 import { playHoverTick } from '../hooks/useSfx'
 
+// ── New stone icon configs (shared by the home layout + the icon test view) ──
+const SEASON_ICON = {
+  src: '/images/icons/season.webp',
+  label: 'Season',
+  flames: [
+    { x: '15.8%', y: '33.5%', dur: '2.6s, 1.7s', delay: '-1.1s, -0.4s' },
+    { x: '85.2%', y: '34.5%', dur: '3.3s, 2.1s', delay: '-0.6s, -1.7s' },
+    { x: '13.5%', y: '29.5%', size: '15%', dur: '1.9s, 1.3s', delay: '-0.7s, -1.2s' },
+    { x: '87.4%', y: '30%',   size: '15%', dur: '2.3s, 1.5s', delay: '-1.4s, -0.5s' },
+  ],
+  needle: { x: '34.3%', y: '62.4%', length: '12.6%' },
+  secret: { x: '34.3%', y: '62.4%', size: '22%' },
+}
+const GAUNTLET_ICON = {
+  src: '/images/icons/gauntlet.webp',
+  label: 'Gauntlet',
+  flames: [
+    { x: '12%', y: '18%', size: '28%', dur: '2.6s, 1.7s', delay: '-1.1s, -0.4s' },
+    { x: '88%', y: '18%', size: '28%', dur: '3.3s, 2.1s', delay: '-0.6s, -1.7s' },
+    { x: '10.5%', y: '14.5%', size: '18%', dur: '1.9s, 1.3s', delay: '-0.7s, -1.2s' },
+    { x: '89.5%', y: '14.5%', size: '18%', dur: '2.3s, 1.5s', delay: '-1.4s, -0.5s' },
+  ],
+  glints: [{ x: '39.4%', y: '61.6%', size: '5%', dur: '3.6s', delay: '0s' }],
+}
+const VS_ICON = {
+  src: '/images/icons/vs.webp',
+  label: 'VS',
+  bubbles: [
+    { x: '50%', y: '22%', size: '3.5%', dur: '2.8s', delay: '0s' },
+    { x: '60%', y: '31%', size: '3%',   dur: '3.5s', delay: '1.2s' },
+    { x: '49%', y: '43%', size: '4%',   dur: '3.1s', delay: '0.6s' },
+    { x: '44%', y: '53%', size: '2.6%', dur: '4.0s', delay: '2.0s' },
+    { x: '70%', y: '40%', size: '3.2%', dur: '3.7s', delay: '1.6s' },
+    { x: '42%', y: '70%', size: '3.6%', dur: '2.9s', delay: '0.9s' },
+    { x: '31%', y: '79%', size: '3%',   dur: '3.4s', delay: '2.4s' },
+    { x: '55%', y: '86%', size: '4%',   dur: '3.2s', delay: '1.4s' },
+  ],
+}
+
 export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop, onAvatar, onSettings, onSeason, onReveal, onRanks, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, gauntletStep, seasonStep = 0, mode = 'vs', onMode, onHomeMusic }) {
   const tick = sfxOn ? playHoverTick : () => {}
   const coins = parseInt(localStorage.getItem('fo_coins') || '0')
@@ -83,40 +122,17 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
         tabIndex={-1}
       />
 
-      {/* Main grid: left icons | mascot | right icons */}
+      {/* Main grid: new stone icons — Season + Gauntlet (left), VS (right).
+          Old icons removed; remaining modes return as their art is made. */}
       <div className={styles.mainGrid}>
 
-        <div className={styles.sideCol}>
-          <button className={`${styles.iconBtn} ${styles.iconBtnNoShadow}`} onClick={onAvatar} onMouseEnter={tick} aria-label="Profile">
-            <img src="/images/profile_badge_transparent.webp" alt="" draggable="false" className={styles.iconBtnImg} />
-          </button>
-          <button className={styles.iconBtn} onClick={onSeason} onMouseEnter={tick} aria-label="Season">
-            <img src="/images/season.webp" alt="Season" draggable="false" className={styles.iconBtnImg} />
-          </button>
-          <button className={styles.iconBtn} onClick={onKnockout} onMouseEnter={tick} aria-label="Gauntlet">
-            <img src="/images/gauntlet.webp" alt="Gauntlet" draggable="false" className={styles.iconBtnImg} />
-          </button>
-          <button className={styles.passPlayBtn} onClick={onReveal} onMouseEnter={tick} aria-label="Reveal">
-            <img src="/images/peep_oh_v2.webp" alt="Peep-Oh!" draggable="false" className={styles.passPlayImg} />
-          </button>
+        <div className={styles.iconCol}>
+          <GameIcon {...SEASON_ICON} onClick={onSeason} />
+          <GameIcon {...GAUNTLET_ICON} onClick={onKnockout} />
         </div>
 
-        {/* Centre spacer — mascot removed; the video background is the focal point */}
-        <div className={styles.mascotCol}></div>
-
-        <div className={styles.sideCol}>
-          <button className={styles.iconBtn} onClick={() => { onMode('vs'); onPlay(false) }} onMouseEnter={tick} aria-label="VS">
-            <img src="/images/new_vs.webp" alt="VS" draggable="false" className={styles.iconBtnImg} />
-          </button>
-          <button className={styles.iconBtn} onClick={() => { onMode('solo'); onPlay(false) }} onMouseEnter={tick} aria-label="Time Challenge">
-            <img src="/images/timechallenge.webp" alt="Time Challenge" draggable="false" className={styles.iconBtnImg} />
-          </button>
-          <button className={styles.iconBtn} onClick={onOnline} onMouseEnter={tick} aria-label="Online">
-            <img src="/images/online.webp" alt="Online" draggable="false" className={styles.iconBtnImg} />
-          </button>
-          <button className={styles.passPlayBtn} onClick={onLocalPlay} onMouseEnter={tick} aria-label="Pass and Play">
-            <img src="/images/pass_and_play_v2.webp" alt="Pass & Play" draggable="false" className={styles.passPlayImg} />
-          </button>
+        <div className={styles.iconColRight}>
+          <GameIcon {...VS_ICON} onClick={() => { onMode('vs'); onPlay(false) }} />
         </div>
 
       </div>
@@ -138,50 +154,11 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
           <button className={styles.iconTestClose} onClick={() => { window.location.search = '' }} aria-label="Close">✕</button>
 
           {iconTestParam === 'vs' ? (
-            <GameIcon
-              src="/images/icons/vs.webp"
-              label="VS"
-              bubbles={[
-                { x: '50%', y: '22%', size: '3.5%', dur: '2.8s', delay: '0s' },
-                { x: '60%', y: '31%', size: '3%',   dur: '3.5s', delay: '1.2s' },
-                { x: '49%', y: '43%', size: '4%',   dur: '3.1s', delay: '0.6s' },
-                { x: '44%', y: '53%', size: '2.6%', dur: '4.0s', delay: '2.0s' },
-                { x: '70%', y: '40%', size: '3.2%', dur: '3.7s', delay: '1.6s' },
-                { x: '42%', y: '70%', size: '3.6%', dur: '2.9s', delay: '0.9s' },
-                { x: '31%', y: '79%', size: '3%',   dur: '3.4s', delay: '2.4s' },
-                { x: '55%', y: '86%', size: '4%',   dur: '3.2s', delay: '1.4s' },
-              ]}
-              onClick={() => {}}
-            />
+            <GameIcon {...VS_ICON} onClick={() => {}} />
           ) : iconTestParam === 'gauntlet' ? (
-            <GameIcon
-              src="/images/icons/gauntlet.webp"
-              label="Gauntlet"
-              flames={[
-                // Primary flames (large torches)
-                { x: '12%', y: '18%', size: '28%', dur: '2.6s, 1.7s', delay: '-1.1s, -0.4s' },
-                { x: '88%', y: '18%', size: '28%', dur: '3.3s, 2.1s', delay: '-0.6s, -1.7s' },
-                // Secondary flame tips
-                { x: '10.5%', y: '14.5%', size: '18%', dur: '1.9s, 1.3s', delay: '-0.7s, -1.2s' },
-                { x: '89.5%', y: '14.5%', size: '18%', dur: '2.3s, 1.5s', delay: '-1.4s, -0.5s' },
-              ]}
-              glints={[{ x: '39.4%', y: '61.6%', size: '5%', dur: '3.6s', delay: '0s' }]}
-              onClick={() => {}}
-            />
+            <GameIcon {...GAUNTLET_ICON} onClick={() => {}} />
           ) : (
-            <GameIcon
-              src="/images/icons/season.webp"
-              label="Season"
-              flames={[
-                { x: '15.8%', y: '33.5%', dur: '2.6s, 1.7s', delay: '-1.1s, -0.4s' },
-                { x: '85.2%', y: '34.5%', dur: '3.3s, 2.1s', delay: '-0.6s, -1.7s' },
-                { x: '13.5%', y: '29.5%', size: '15%', dur: '1.9s, 1.3s', delay: '-0.7s, -1.2s' },
-                { x: '87.4%', y: '30%',   size: '15%', dur: '2.3s, 1.5s', delay: '-1.4s, -0.5s' },
-              ]}
-              needle={{ x: '34.3%', y: '62.4%', length: '12.6%' }}
-              secret={{ x: '34.3%', y: '62.4%', size: '22%' }}
-              onClick={() => {}}
-            />
+            <GameIcon {...SEASON_ICON} onClick={() => {}} />
           )}
 
           <p className={styles.iconTestHint}>

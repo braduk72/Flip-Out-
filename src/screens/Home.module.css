@@ -55,12 +55,25 @@
 .mainGrid {
   display: flex;
   flex-direction: row;
-  align-items: stretch;
+  align-items: center;
+  justify-content: space-between;
   flex: 1;
   min-height: 0;
-  padding: 0;
+  padding: 0 3%;
   z-index: 10;
   gap: 0;
+}
+
+/* New stone-icon columns */
+.iconCol,
+.iconColRight {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: clamp(10px, 3vw, 22px);
+  flex: 0 0 38%;
+  max-width: 38%;
 }
 
 .sideCol {
