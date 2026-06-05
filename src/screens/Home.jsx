@@ -11,22 +11,7 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
   const [showOffer, setShowOffer] = useState(() => new URLSearchParams(window.location.search).has('testoffer'))
   const [showBugModal, setShowBugModal] = useState(false)
   const [dailyBonus, setDailyBonus] = useState(null)
-  const [avatarAnim, setAvatarAnim] = useState('idle')
-  const avatarTimer = useRef(null)
   const videoRef = useRef(null)
-
-  useEffect(() => {
-    function scheduleNext() {
-      const delay = 6000 + Math.random() * 8000
-      avatarTimer.current = setTimeout(() => {
-        const anim = Math.random() < 0.55 ? 'spin' : 'flip'
-        setAvatarAnim(anim)
-        setTimeout(() => { setAvatarAnim('idle'); scheduleNext() }, 900)
-      }, delay)
-    }
-    scheduleNext()
-    return () => clearTimeout(avatarTimer.current)
-  }, [])
 
   useEffect(() => {
     const bonus = checkDailyBonus()
@@ -112,9 +97,8 @@ export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop
           </button>
         </div>
 
-        <div className={styles.mascotCol}>
-          <img src="/images/mascot3b.webp" alt="" draggable="false" className={styles.mascot} />
-        </div>
+        {/* Centre spacer — mascot removed; the video background is the focal point */}
+        <div className={styles.mascotCol}></div>
 
         <div className={styles.sideCol}>
           <button className={styles.iconBtn} onClick={() => { onMode('vs'); onPlay(false) }} onMouseEnter={tick} aria-label="VS">
