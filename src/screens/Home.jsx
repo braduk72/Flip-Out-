@@ -73,7 +73,7 @@ const PASSANDPLAY_ICON = {
     { x: '50%',  y: '23%', size: '15%', dur: '2.6s, 1.7s', delay: '-1.1s, -0.4s' },
     { x: '50.5%', y: '20%', size: '9%', dur: '1.9s, 1.3s', delay: '-0.7s, -1.2s' },
   ],
-  glints: [{ x: '87%', y: '44%', size: '6%', color: '200, 230, 255', dur: '2.6s', delay: '0.5s' }],
+  glints: [{ x: '87.7%', y: '41.3%', size: '6%', color: '200, 230, 255', dur: '2.6s', delay: '0.5s' }],
 }
 
 export default function Home({ onPlay, onKnockout, onOnline, onLocalPlay, onShop, onAvatar, onSettings, onSeason, onReveal, onRanks, portrait, onPortrait, musicOn, sfxOn, onToggleMusic, onToggleSfx, gauntletStep, seasonStep = 0, mode = 'vs', onMode, onHomeMusic }) {
