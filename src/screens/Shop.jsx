@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { DECKS } from '../data/decks'
 import styles from './Shop.module.css'
 import BottomNav from '../components/BottomNav'
-import AdBanner from '../components/AdBanner'
 import RemoveAdsModal from '../components/RemoveAdsModal'
 import { startCheckout } from '../utils/foShop.js'
 
@@ -57,7 +56,9 @@ export default function Shop({ onBack, navProps }) {
       <div className={styles.scroll}>
 
         <div className={styles.header}>
-          <button className={styles.backBtn} onClick={onBack}>← Back</button>
+          <button className={styles.backBtn} onClick={onBack} aria-label="Back">
+            <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+          </button>
           <h1 className={styles.title}>Shop</h1>
         </div>
 
@@ -97,7 +98,7 @@ export default function Shop({ onBack, navProps }) {
                   <img key={i} src={`/images/${d}.webp`} alt={d} className={styles.coinPriceDigit} />
                 ))}
               </div>
-            : <img src="/images/padlock.webp" alt="Locked" className={styles.jokerPadlock} />
+            : <img src="/images/lock_icon.webp" alt="Locked" className={styles.jokerPadlock} />
           }
         </button>
 
@@ -214,7 +215,6 @@ export default function Shop({ onBack, navProps }) {
         <div className={styles.footer} />
 
       </div>
-      <AdBanner />
       <BottomNav active="shop" {...navProps} />
       {showRemoveAdsModal && (
         <RemoveAdsModal

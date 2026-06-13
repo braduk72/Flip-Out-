@@ -53,7 +53,9 @@ export default function Leaderboard({ portrait = 1, onBack, navProps }) {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack}>← Back</button>
+        <button className={styles.backBtn} onClick={onBack} aria-label="Back">
+          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+        </button>
         <h1 className={styles.title}>Leaderboard</h1>
       </div>
 

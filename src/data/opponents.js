@@ -1,8 +1,8 @@
 export const STANDARD_OPPONENTS = [
-  { id: 'c1', image: '/images/c1.webp', defeatedImage: '/images/c1d.webp' },
-  { id: 'c2', image: '/images/c2.webp', defeatedImage: '/images/c2d.webp' },
-  { id: 'c3', image: '/images/c3.webp', defeatedImage: '/images/c3d.webp' },
-  { id: 'c4', image: '/images/c4.webp', defeatedImage: '/images/c4d.webp' },
+  { id: 'c1', image: '/images/c1.webp', defeatedImage: '/images/c1d.webp', name: 'BINKY' },
+  { id: 'c2', image: '/images/c2.webp', defeatedImage: '/images/c2d.webp', name: 'TIDDLES' },
+  { id: 'c3', image: '/images/c3.webp', defeatedImage: '/images/c3d.webp', name: 'SPARKLE' },
+  { id: 'c4', image: '/images/c4.webp', defeatedImage: '/images/c4d.webp', name: 'FURBALL' },
 ]
 
 // Knockout Gauntlet opponent roster — in fight order.

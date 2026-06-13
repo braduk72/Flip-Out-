@@ -232,7 +232,9 @@ export default function LuckySpin({ onBack, navProps }) {
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack}>← Back</button>
+        <button className={styles.backBtn} onClick={onBack} aria-label="Back">
+          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+        </button>
         <div className={styles.spinsLeft}>🕛 {midnightTimer}</div>
         {import.meta.env.VITE_DEV_TOOLS === 'true' && (
           <button className={styles.devReset} title="Reset daily spins" onClick={() => {

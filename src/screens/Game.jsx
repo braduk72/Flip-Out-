@@ -89,6 +89,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const stageRef   = useRef(randomStage())
   const aiContRef  = useRef(randomContestant(portrait))
   const aiTimerRef = useRef(null)
+  const consecutiveAITurnRef = useRef(0)
   const [spinning, setSpinning] = useState(false)
   const [cinematicDismissed, setCinematicDismissed] = useState(false)
   const [portraitFlipped, setPortraitFlipped] = useState(false)
@@ -97,6 +98,8 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const pendingAction = useRef(null)
   const soloFrozenReadyToClear = useRef(false)
   const [xrayPeeked, setXrayPeeked] = useState([])
+  const [swSecsLeft, setSwSecsLeft] = useState(null)
+  const swRafRef = useRef(null)
   const [shuffleAnimating, setShuffleAnimating] = useState(false)
   const [tornadoStep, setTornadoStep] = useState(-1)
   const [rocketStep, setRocketStep] = useState(-1)
@@ -104,6 +107,11 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const [diceDisplay, setDiceDisplay] = useState([1, 1])
   const [diceRevealed, setDiceRevealed] = useState(false)
   const [watchingAd, setWatchingAd] = useState(false)
+
+  // Turn timer (VS / MP only — not solo)
+  const turnTimerRef     = useRef(null)
+  const turnCountdownRef = useRef(null)
+  const [turnSecsLeft, setTurnSecsLeft] = useState(null)
   const [showEasyWin, setShowEasyWin] = useState(false)
   const [showEasyLose, setShowEasyLose] = useState(false)
   const easyWinShown = useRef(false)
@@ -176,6 +184,9 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       return () => clearTimeout(t)
     }
   }, [gameOver, winner, onResult, opponentDefeatedImage])
+
+  // Reset consecutive-turn counter on every turn change
+  useEffect(() => { consecutiveAITurnRef.current = 0 }, [turn]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Spin both portraits on turn change
   useEffect(() => {
@@ -313,6 +324,59 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     return () => clearTimeout(t)
   }, [stopwatchEnd, endStopwatch])
 
+  // Stopwatch countdown display — rAF loop updates secsLeft each frame
+  useEffect(() => {
+    if (!stopwatchEnd) { setSwSecsLeft(null); cancelAnimationFrame(swRafRef.current); return }
+    function tick() {
+      const rem = stopwatchEnd - Date.now()
+      if (rem <= 0) { setSwSecsLeft(null); return }
+      setSwSecsLeft(Math.ceil(rem / 1000))
+      swRafRef.current = requestAnimationFrame(tick)
+    }
+    swRafRef.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(swRafRef.current)
+  }, [stopwatchEnd])
+
+  // ── 10-second turn timer (VS / MP only) ──────────────────────────────────
+  // After 5 s of inactivity on the player's turn, show a 5→0 red countdown.
+  // At 0 s hideFlipped() is called automatically.
+  useEffect(() => {
+    clearTimeout(turnTimerRef.current)
+    clearInterval(turnCountdownRef.current)
+    setTurnSecsLeft(null)
+
+    if (mode === 'solo' || gameOver || (stopwatchEnd && Date.now() < stopwatchEnd) || turn !== 'player') return
+
+    turnTimerRef.current = setTimeout(() => {
+      setTurnSecsLeft(5)
+      let n = 5
+      turnCountdownRef.current = setInterval(() => {
+        n -= 1
+        if (n > 0) {
+          setTurnSecsLeft(n)
+        } else {
+          clearInterval(turnCountdownRef.current)
+          setTurnSecsLeft(null)
+          hideFlipped()
+        }
+      }, 1000)
+    }, 5000)
+
+    return () => {
+      clearTimeout(turnTimerRef.current)
+      clearInterval(turnCountdownRef.current)
+    }
+  }, [turn, gameOver, stopwatchEnd, mode]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Cancel turn timer once the player has committed their two flips
+  useEffect(() => {
+    if (pendingResolve || flipped.length >= 2) {
+      clearTimeout(turnTimerRef.current)
+      clearInterval(turnCountdownRef.current)
+      setTurnSecsLeft(null)
+    }
+  }, [pendingResolve, flipped.length])
+
   // Auto-skip player's turn when stunned by a bolt
   useEffect(() => {
     if (turn !== 'player' || stunned !== 'player' || gameOver) return
@@ -332,16 +396,20 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   }, [pendingResolve, commitResolve]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle no-match — hide cards after delay; solo is faster and skippable by tap
+  // During stopwatch: no-match should never fire (we only call resolveFlip on actual matches),
+  // but if it somehow does, just clear the effect and keep cards revealed.
   useEffect(() => {
     if (activeEffect?.type === 'no_match') {
       const playerStopwatch = stopwatchActive && activeEffect.data?.whose === 'player'
-      const delay = playerStopwatch ? 150 : mode === 'solo' ? 500 : 1800
+      if (playerStopwatch) { clearEffect(); return }
+      const delay = mode === 'solo' ? 500 : 1800
       const t = setTimeout(() => { hideFlipped(); clearEffect() }, delay)
       return () => clearTimeout(t)
     }
   }, [activeEffect, hideFlipped, clearEffect]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Clear effect after display — long enough for players to read
+  // During stopwatch: clear match banner fast so the player can keep flipping
   useEffect(() => {
     if (
       activeEffect &&
@@ -353,10 +421,11 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       activeEffect.type !== 'rocket' &&
       activeEffect.type !== 'shuffle'
     ) {
-      const t = setTimeout(clearEffect, 5000)
+      const swNow = stopwatchEnd && Date.now() < stopwatchEnd
+      const t = setTimeout(clearEffect, swNow ? 700 : 5000)
       return () => clearTimeout(t)
     }
-  }, [activeEffect, clearEffect])
+  }, [activeEffect, clearEffect]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Boom reveal — independent 2s timer, not tied to the banner
   useEffect(() => {
@@ -468,7 +537,9 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       return
     }
 
-    const delay1 = 1200 + Math.random() * 800
+    const isConsecutive = consecutiveAITurnRef.current > 0
+    consecutiveAITurnRef.current++
+    const delay1 = isConsecutive ? 400 + Math.random() * 300 : 1200 + Math.random() * 800
     aiTimerRef.current = setTimeout(() => {
       const { cards, flipped, matched, consumed, frozen } = aiTurnStateRef.current
       const move1 = getAIMove(cards, flipped, matched, consumed, frozen)
@@ -738,7 +809,8 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                     flipCard(i)
                     return
                   }
-                  if (pendingResolve || flipped.length >= 2) return
+                  // During stopwatch: no 2-flip limit — cards stay revealed until time runs out
+                  if (pendingResolve || (!stopwatchActive && flipped.length >= 2)) return
                   if (mode === 'solo' || turn === 'player') {
                     flipCard(i)
                     if (mode === 'mp') mpState?.sendFlip(i)
@@ -848,6 +920,20 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
           )}
         </div>
 
+        {/* Stopwatch countdown — number zooms from deep background to centre */}
+        {swSecsLeft !== null && !gameOver && (
+          <div className={styles.swOverlay}>
+            <div key={swSecsLeft} className={styles.swNum}>{swSecsLeft}</div>
+          </div>
+        )}
+
+        {/* Turn timer countdown — red urgent countdown when player is slow */}
+        {turnSecsLeft !== null && !gameOver && (
+          <div className={styles.turnOverlay}>
+            <div key={turnSecsLeft} className={styles.turnNum}>{turnSecsLeft}</div>
+          </div>
+        )}
+
         {/* Dice roll overlay */}
         {activeEffect?.type === 'dice' && (
           <div className={styles.diceOverlay} onClick={diceRevealed ? clearEffect : undefined}>
@@ -862,7 +948,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
             {diceRevealed && (
               <>
                 <div className={styles.diceResultText}>
-                  {activeEffect.data.isDouble ? '🎉 DOUBLE! Take another turn!' : 'No double — turn passes'}
+                  {activeEffect.data.isDouble ? '🎉 DOUBLE! Bonus turn after this!' : 'No double — opponent goes next'}
                 </div>
                 <div className={styles.effectDismissHint}>tap to dismiss</div>
               </>
@@ -1049,9 +1135,14 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
               <div className={styles.gameOverlay}>
                 <div className={styles.stdVictoryCard}>
                   <img src="/images/victory_banner.webp" alt="Victory!" className={styles.stdBanner} />
-                  {opponentDefeatedImage && (
+                  {opponentDefeatedImage ? (
                     <img src={opponentDefeatedImage} alt="Defeated opponent" className={styles.stdDefeatAvatar} />
-                  )}
+                  ) : opponentImage ? (
+                    <div className={styles.stdDefeatAvatarWrap}>
+                      <img src={opponentImage} alt="" className={styles.stdDefeatAvatar} />
+                      <div className={styles.stdDefeatX}>✕</div>
+                    </div>
+                  ) : null}
                   <div className={styles.finalScores}>
                     <span>You: {playerScore}</span>
                     <span>Opponent: {aiScore}</span>
@@ -1072,9 +1163,11 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                   <div className={styles.resultTitle}>It's a Draw!</div>
                   <div className={styles.finalScores}>
                     <span>You: {playerScore}</span>
-                    <span>AI: {aiScore}</span>
+                    <span>{(opponentName || 'AI').toUpperCase()}: {aiScore}</span>
                   </div>
-                  <button className={styles.playAgainBtn} onClick={() => withInterstitial(onBack)}>Play Again</button>
+                  <button className={styles.playAgainBtn} onClick={() => gauntletStep !== undefined ? onRetry?.() : withInterstitial(onBack)}>
+                    {gauntletStep !== undefined ? 'REPLAY ROUND' : 'Play Again'}
+                  </button>
                 </div>
               </div>
             )}
@@ -1104,7 +1197,9 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       </div>
 
       {/* Back button — outside gameInner so it stays top-right of full screen */}
-      <button className={styles.backBtn} onClick={() => onResult && !gameOver ? setShowQuitModal(true) : onBack()}>✕</button>
+      <button className={styles.backBtn} onClick={() => onResult && !gameOver ? setShowQuitModal(true) : onBack()} aria-label="Close">
+        <img src="/images/close_button.webp" alt="Close" draggable="false" className={styles.backBtnImg} />
+      </button>
 
       {/* Interstitial ad — shown when navigating away from game-over */}
       {showInterstitial && <Interstitial onClose={handleInterstitialClose} />}
@@ -1178,13 +1273,13 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
         </div>
       )}
 
-      {/* Quit confirmation modal — gauntlet only */}
+      {/* Quit confirmation modal — gauntlet / season */}
       {showQuitModal && (
         <div className={styles.quitOverlay}>
           <div className={styles.quitModal}>
             <div className={styles.quitIcon}>⚠️</div>
-            <div className={styles.quitTitle}>QUIT GAUNTLET?</div>
-            <div className={styles.quitBody}>Leaving now counts as a loss — your gauntlet progress will reset to Round 1.</div>
+            <div className={styles.quitTitle}>{gauntletStep !== undefined ? 'QUIT GAUNTLET?' : 'QUIT SEASON?'}</div>
+            <div className={styles.quitBody}>{gauntletStep !== undefined ? 'Leaving now counts as a loss — your gauntlet progress will reset to Round 1.' : 'Leaving now counts as a loss for this round.'}</div>
             <div className={styles.quitBtns}>
               <button className={styles.quitStayBtn} onClick={() => setShowQuitModal(false)}>KEEP PLAYING</button>
               <button className={styles.quitLeaveBtn} onClick={() => { setShowQuitModal(false); onQuit ? onQuit() : onResult?.('ai') }}>QUIT & LOSE</button>

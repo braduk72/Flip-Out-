@@ -87,7 +87,9 @@ export default function DeckPicker({ onSelect, onBack }) {
 
     <div className={styles.scroll}>
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack}>← Back</button>
+        <button className={styles.backBtn} onClick={onBack} aria-label="Back">
+          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+        </button>
         <h1 className={styles.title}>Pick a Deck</h1>
       </div>
 
@@ -96,7 +98,14 @@ export default function DeckPicker({ onSelect, onBack }) {
       </button>
 
       <div className={styles.grid}>
-        {DECKS.map((deck, i) => (
+        {DECKS
+          .map((deck, i) => ({ deck, i }))
+          .sort((a, b) => {
+            const aU = (a.deck.free || ownedDecks.includes(a.deck.id)) ? 1 : 0
+            const bU = (b.deck.free || ownedDecks.includes(b.deck.id)) ? 1 : 0
+            return bU - aU
+          })
+          .map(({ deck, i }) => (
           <button
             key={deck.id}
             className={`${styles.deckCard} ${selected?.id === deck.id ? styles.deckSelected : ''}`}
@@ -107,7 +116,7 @@ export default function DeckPicker({ onSelect, onBack }) {
           >
             <div className={styles.deckPreview}>
               <img key={previews[i]} src={previews[i]} alt={deck.name} className={styles.previewImg} />
-              {!deck.free && !ownedDecks.includes(deck.id) && <div className={styles.lockBadge}><img src="/images/padlock.webp" alt="Locked" /></div>}
+              {!deck.free && !ownedDecks.includes(deck.id) && <div className={styles.lockBadge}><img src="/images/lock_icon.webp" alt="Locked" /></div>}
             </div>
             <div className={styles.deckName}>{deck.name}</div>
           </button>

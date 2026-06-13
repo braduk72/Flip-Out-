@@ -1,22 +1,51 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import styles from './MultiplayerLobby.module.css'
 import { DECKS, getDeckBackImage } from '../data/decks'
 
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard']
+const MATCHMAKE_TIMEOUT = 30
 
 export default function MultiplayerLobby({
   mp,
   portrait,
   onBack,
+  onFallbackCPU,
 }) {
   const [tab,        setTab]        = useState('matchmake') // 'matchmake' | 'create' | 'join'
   const [joinCode,   setJoinCode]   = useState('')
   const [mpDifficulty, setMpDifficulty] = useState('Medium')
+  const [secondsLeft, setSecondsLeft] = useState(null)
+  const timerRef = useRef(null)
+  const tickRef  = useRef(null)
 
   // Pick the first owned or free deck as default
   const ownedIds = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
   const available = DECKS.filter(d => d.free || ownedIds.includes(d.id))
   const [selectedDeck, setSelectedDeck] = useState(available[0]?.id ?? DECKS[0].id)
+
+  // 30-second CPU fallback timer — starts when matchmaking begins
+  useEffect(() => {
+    if (mp.status === 'searching') {
+      setSecondsLeft(MATCHMAKE_TIMEOUT)
+
+      tickRef.current = setInterval(() => {
+        setSecondsLeft(s => (s > 1 ? s - 1 : 0))
+      }, 1000)
+
+      timerRef.current = setTimeout(() => {
+        mp.cancelMatchmake()
+        onFallbackCPU?.({ deckId: selectedDeck, difficulty: mpDifficulty })
+      }, MATCHMAKE_TIMEOUT * 1000)
+    } else {
+      clearTimeout(timerRef.current)
+      clearInterval(tickRef.current)
+      setSecondsLeft(null)
+    }
+    return () => {
+      clearTimeout(timerRef.current)
+      clearInterval(tickRef.current)
+    }
+  }, [mp.status]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleMatchmake() {
     mp.matchmake({ portrait, deckId: selectedDeck, difficulty: mpDifficulty })
@@ -43,7 +72,9 @@ export default function MultiplayerLobby({
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={isBusy ? handleCancel : onBack}>✕</button>
+        <button className={styles.backBtn} onClick={isBusy ? handleCancel : onBack} aria-label="Back">
+          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+        </button>
         <div className={styles.title}>PLAY ONLINE</div>
       </div>
 
@@ -55,6 +86,11 @@ export default function MultiplayerLobby({
             <>
               <div className={styles.statusMsg}>Finding an opponent…</div>
               <div className={styles.statusSub}>Searching for a {mpDifficulty} match</div>
+              {secondsLeft !== null && (
+                <div className={styles.statusCountdown}>
+                  No one found? Playing CPU in {secondsLeft}s
+                </div>
+              )}
             </>
           )}
           {(isWaiting || isCreating) && (

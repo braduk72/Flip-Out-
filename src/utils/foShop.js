@@ -54,14 +54,14 @@ export async function verifySession(sessionId, deviceUuid) {
   return res.json()  // { ok, product_type, coins, decks, extras, email }
 }
 
-// ── Restore purchases by email (called from Settings) ────────────────────────
+// ── Restore purchases by device UUID (email sourced from Stripe) ─────────────
 
-export async function restorePurchases(email) {
+export async function restorePurchases() {
   const deviceUuid = getDeviceUuid()
   const res = await fetch('/api/fo-restore', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ email, deviceUuid }),
+    body:    JSON.stringify({ deviceUuid }),
   })
   if (!res.ok) throw new Error('Restore request failed')
   const data = await res.json()

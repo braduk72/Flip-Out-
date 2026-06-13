@@ -20,7 +20,9 @@ export default function Gauntlet({ step, onFight, onBack, onReset, navProps }) {
 
       {/* Header */}
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack} aria-label="Back">← Back</button>
+        <button className={styles.backBtn} onClick={onBack} aria-label="Back">
+          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+        </button>
         <h1 className={styles.title}>KNOCKOUT<br />GAUNTLET</h1>
       </div>
 

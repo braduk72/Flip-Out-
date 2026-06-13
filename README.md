@@ -1,106 +1,92 @@
-# Flip Out! 🃏
+# Flip Out! — Project README & Handover
 
-A card-matching game with special power-ups, season mode, gauntlet mode, and multiplayer.
+_Last updated: 24 May 2026 — v0.1.38_
 
-**Live:** https://flipout.gizmogames.uk  
-**Dev:** https://dev.gizmogames.uk  
-**Repo:** https://github.com/braduk72/Flip-Out-
+> Card-matching game for Gizmo Games. React 19 + Vite PWA, deployed to Vercel at [dev.gizmogames.uk](https://dev.gizmogames.uk).
 
 ---
 
-## 🔴 PICK UP HERE — Session 22 handover (24 May 2026)
+## Quick Links
 
-### What was done this session
-
-- **Solo mode — specials removed** — `useGame` now accepts `isSolo` flag; solo boards have 0 special cards; pair count rounded up to next even number so 4-column grid stays full
-- **DNS fixed permanently** — `dev.gizmogames.uk` now A record → `76.76.21.21` (Vercel), proxy off; SSL cert issued; auto-updates on every push. No more APOLLO stale build
-- **`gizmogames.uk` root fixed** — was pointing to old Cloudflare Pages build; now A record → Vercel production; AdSense can find it; SSL cert issued
-- **Full Stripe shop built** — Vercel serverless API routes:
-  - `api/fo-checkout.js` — creates Stripe Checkout session, records pending purchase in DB
-  - `api/fo-webhook.js` — handles `checkout.session.completed`; marks purchase complete; links Stripe email to device UUID
-  - `api/fo-verify.js` — called after Stripe redirect; verifies payment server-side; applies purchase to localStorage
-  - `api/fo-restore.js` — Restore Purchases by email; aggregates all purchases across devices
-  - `api/_products.js` — shared product catalog (6 decks @ £1.99, coin packs, remove ads, bundles, chest, launch offer)
-- **Silent device UUID** — `src/utils/deviceId.js`; `crypto.randomUUID()` on first visit, stored in `fo_device_uuid` localStorage key; invisible to player
-- **Post-payment overlay** — after Stripe redirect back with `?fo_session` + `?fo_device`, purchase is verified server-side and applied to localStorage; success screen shows what was granted
-- **Restore Purchases in Settings** — email input with "Enter email address to enable cross-platform play"; calls `/api/fo-restore`; applies all prior purchases to new device
-- **Shop buttons wired** — coin packs, bundles, chest, remove ads all call `startCheckout(productId)`; shows `…` while redirecting
-- **DB migration run** — `073_flipout_shop.sql` applied to Railway production; tables `fo_players` and `fo_purchases` created
-- **All Vercel env vars set** — `STRIPE_SECRET_KEY`, `STRIPE_FO_WEBHOOK_SECRET`, `DATABASE_URL` (Railway public URL), `FO_URL`, `VITE_DEV_TOOLS=true` — all set for both production and dev
-
-### ✅ Shop is fully wired — ready to test next session
-
-Everything is deployed. Next session: test a real purchase on dev, verify coins/decks land, verify Restore Purchases works.
-
-### Unresolved / next session
-
-1. **Test the shop** — open `https://dev.gizmogames.uk`, go to Shop, try buying 100 coins (£0.99); confirm success overlay appears and coins are credited
-2. **Graphics / deck backgrounds** — Brad has more images to strip backgrounds from; more decks to add
-3. **Deck unlock wiring** — DeckPicker needs to show locked/unlocked state based on `fo_owned_decks` in localStorage; buy button for locked decks should call `startCheckout('deck_xxx')`
-4. **SpecialOffer popup** — wire "Tap to unlock" button to `startCheckout('offer_launch')`
-5. **Approve dev → main merge** — when shop tested and happy, merge to production
-6. **Neon DB option** — currently using Railway public URL (may incur small egress fees on purchases). Can migrate to free Neon DB if preferred
-
-### Brad action items
-1. Test the shop on `https://dev.gizmogames.uk`
-2. Provide graphics for new decks
-3. Approve merge to main when ready
+| | |
+|---|---|
+| **Dev deployment** | https://dev.gizmogames.uk |
+| **Vercel project** | chattocal / flip-out |
+| **Roadmap** | [docs/ROADMAP.md](docs/ROADMAP.md) |
+| **Patch notes** | [docs/PATCH_NOTES.md](docs/PATCH_NOTES.md) |
 
 ---
 
-## Deployment
+## Team
 
-Hosted on **Vercel** (project `flip-out`, team `chattocal`).
-
-| Branch | Deploys to | URL |
-|--------|-----------|-----|
-| `main` | Production | https://flipout.gizmogames.uk |
-| `dev`  | Preview / Dev | https://dev.gizmogames.uk |
-
-> **Claude always pushes to `dev` only. Brad approves before merging to `main`.**
-
-```bash
-# To ship to live:
-git checkout main
-git merge dev --no-edit
-git push origin main
-git checkout dev
-```
-
-Vercel auto-builds → live within ~2 minutes.
-
-### Cache behaviour (vercel.json)
-- `index.html` / root → `no-store, no-cache` — always fresh
-- `/images/*` and `/music/*` → 30-day public cache — safe (Vite hashes filenames)
-
----
-
-## Dev URL Params
-
-```
-?testoffer       — force SpecialOffer popup open immediately
-?testprize       — go to Lucky Spin with prize overlay open
-?specials=1      — board filled with all special cards
-?unlock=gizmo    — unlock all paid decks
-?resetseason=1   — reset season progress to step 0
-?resetgauntlet=1 — reset gauntlet to round 1
-?resetoffer=1    — reset special offer seen/bought state
-```
-
-In-game DEV toolbar: visible on dev branch (`VITE_DEV_TOOLS=true` set in Vercel).
-Contains: FREEZE / BOOM / TORNADO / MAGNET / BOLT / ROCKET / DICE / XRAY / SHUFFLE / MIRROR / GLUE / 🏆 WIN
+- **Brad** — product owner / designer brief
+- **Clara (ChatGPT)** — all artwork and assets
+- **Felix (Claude)** — all engineering
 
 ---
 
 ## Tech Stack
 
-- React 19 + Vite
-- CSS Modules
-- Vercel Serverless Functions (API routes in `/api/`)
-- Stripe Checkout (one-time payments)
-- PostgreSQL on Railway (via public proxy)
-- Socket.io multiplayer (on CAL backend, port 3001)
-- Web Audio API — tick sounds on Lucky Spin; SFX via `useSfx.js`
+- **React 19** + **Vite 8** — SPA, CSS Modules throughout
+- **Vercel** — hosting + CDN (project `flip-out` under `chattocal` scope)
+- **Firebase Realtime DB** — multiplayer matchmaking
+- **Stripe** — IAP / coin purchases (web flow)
+- **LocalStorage** — game state, coins, settings, season progress
+
+---
+
+## CRITICAL: Deployment Method
+
+> **Standard `vercel deploy` silently fails on OneDrive** — Vercel CLI reads image files from the OneDrive virtual filesystem and produces 0-byte uploads. **Always use the prebuilt method.**
+
+```powershell
+Set-Location "C:\Users\bradc\OneDrive\Documents\FlipOut"
+
+# 1. Build locally (Vite reads OneDrive correctly)
+npx vercel build --yes --scope chattocal
+
+# 2. Deploy the prebuilt output
+$output = npx vercel deploy --prebuilt --scope chattocal --yes 2>&1
+$output | Write-Host
+$url = ($output | Select-String 'https://flip-[a-z0-9]+-chattocal\.vercel\.app').Matches[0].Value
+
+# 3. Alias to dev domain
+npx vercel alias $url dev.gizmogames.uk --scope chattocal
+```
+
+---
+
+## CRITICAL: File Copies on OneDrive
+
+> **bash `cp` silently fails on OneDrive.** Always use PowerShell raw bytes copy:
+
+```powershell
+$bytes = [System.IO.File]::ReadAllBytes("source\path\file.webp")
+[System.IO.File]::WriteAllBytes("dest\path\file.webp", $bytes)
+```
+
+Or via Node.js:
+```js
+fs.writeFileSync(dest, fs.readFileSync(src))
+```
+
+---
+
+## Asset Pipeline
+
+Clara (ChatGPT) generates all artwork as PNGs with transparent backgrounds.
+
+1. Clara drops files into `public/images/downloads/` (or a subfolder)
+2. Felix converts PNGs to webp using `sharp` (`quality: 88`)
+3. Felix copies webps to `public/images/` via Node.js or PowerShell raw bytes
+4. Processed source files moved to `public/images/downloads/removed/`
+
+**Naming conventions:**
+- Nav icons: `home_icon.webp`, `shop_icon.webp`, `ranks_icon.webp`, `settings_icon.webp`
+- Coin shop: `coins_100.webp`, `coins_500.webp`, `coins_1000.webp`
+- Buttons: `back_button.webp`, `close_button.webp`, `confirm_button.webp`, etc.
+- Backgrounds: `bg_home.webp`
+- Opponents: `rob1.webp`–`rob5.webp`, `rob1d.webp`–`rob5d.webp` (defeated)
 
 ---
 
@@ -108,147 +94,161 @@ Contains: FREEZE / BOOM / TORNADO / MAGNET / BOLT / ROCKET / DICE / XRAY / SHUFF
 
 ```
 src/
-  screens/     Game, Home, SeasonMap, LuckySpin, DeckPicker, Settings, Gauntlet, Shop, etc.
-  components/  Card, BottomNav, SpecialOffer, Interstitial, AdBanner, RemoveAdsModal
-  hooks/       useGame.js (core reducer), useMultiplayer.js, useSfx.js
-  data/        decks.js, specialCards.js, seasonalOpponents.js, opponents.js
-  utils/       deviceId.js, foShop.js
-api/
-  _products.js      — product catalog (shared)
-  fo-checkout.js    — POST: create Stripe Checkout session
-  fo-webhook.js     — POST: Stripe webhook handler
-  fo-verify.js      — GET: verify session after redirect, apply purchase
-  fo-restore.js     — POST: restore purchases by email
+  screens/         # One file per screen (JSX + CSS Module pair)
+    Home.jsx / Home.module.css
+    Game.jsx / Game.module.css
+    Shop.jsx / Shop.module.css
+    Settings.jsx
+    SeasonMap.jsx
+    Gauntlet.jsx
+    AvatarPicker.jsx
+    DeckPicker.jsx
+    Leaderboard.jsx
+    LuckySpin.jsx
+    Multiplayer*.jsx
+  components/
+    BottomNav.jsx   # 4-icon nav bar, shown on most screens
+    AdBanner.jsx
+    SpecialOffer.jsx
+  utils/
+    foShop.js       # Stripe integration + restore purchases
+    aiLogic.js      # AI opponent logic (difficulty levels)
+    cards.js        # Card deck definitions
+    decks.js        # Deck configs + unlock state
+  App.jsx           # Top-level router (screen state machine)
 public/
-  images/      All sprites — WebP only, no PNGs
-  music/       24 tracks across 4 pools
-scripts/
-  convert_coin_multipliers.cjs   PNG → WebP for Lucky Spin badge images
-  split_sprites.cjs              Sprite sheet splitter
+  images/           # All game assets (webp)
+  audio/            # Background music + SFX
 ```
 
 ---
 
-## Vercel Environment Variables
+## Key localStorage Keys
 
-| Variable | Environments |
+| Key | Purpose |
 |---|---|
-| `STRIPE_SECRET_KEY` | Production + Preview/dev |
-| `STRIPE_FO_WEBHOOK_SECRET` | Production + Preview/dev |
-| `DATABASE_URL` | Production + Preview/dev (Railway public URL) |
-| `FO_URL` | Production (`https://flipout.gizmogames.uk`) + Preview/dev |
-| `VITE_DEV_TOOLS` | Preview/dev only (`true`) |
+| `fo_coins` | Coin balance (integer string) |
+| `fo_owned_decks` | JSON array of unlocked deck IDs |
+| `fo_season_step` | Season progress (0–30) |
+| `fo_gauntlet_step` | Gauntlet round progress |
+| `fo_avatar` | Selected avatar portrait filename |
+| `fo_difficulty` | `Easy` / `Medium` / `Hard` |
+| `fo_music` | `1` / `0` |
+| `fo_sfx` | `1` / `0` |
+| `fo_rob_names` | JSON map of Rob opponent names per step |
 
 ---
 
-## Shop & Payments
+## Screens & Navigation
 
-### Architecture
-- **No user accounts** — silent device UUID (`fo_device_uuid` in localStorage) is the player's invisible ID
-- **Stripe Checkout** — redirect flow; Stripe collects email automatically
-- **After payment** — webhook fires + success URL verified; purchase applied to localStorage
-- **Cross-platform restore** — email captured from Stripe checkout; "Restore Purchases" in Settings applies all past purchases to new device
+App.jsx manages a `screen` state string. Navigation is prop callbacks (`onPlay`, `onBack`, etc.) — no router library.
 
-### Products (`api/_products.js`)
-| ID | Type | Price |
-|---|---|---|
-| `deck_sportscars` | deck | £1.99 |
-| `deck_birdsOfPrey` | deck | £1.99 |
-| `deck_dogs` | deck | £1.99 |
-| `deck_cats` | deck | £1.99 |
-| `deck_KingsandQueens` | deck | £1.99 |
-| `deck_WorldLandmarks` | deck | £1.99 |
-| `coins_100` | coins | £0.99 |
-| `coins_500` | coins | £3.99 |
-| `coins_1000` | coins | £6.99 |
-| `remove_ads` | remove_ads | £7.99 |
-| `chest` | chest | £3.99 |
-| `bundle_starter` | bundle | £2.99 |
-| `bundle_mega` | bundle | £9.99 |
-| `offer_launch` | offer | £1.99 |
-
-### Database (Railway PostgreSQL)
-- `fo_players` — device_uuid (PK), email, created_at, updated_at
-- `fo_purchases` — id, device_uuid, stripe_session_id (unique), product_id, product_type, coins_granted, decks_granted[], extras_granted{}, pence, status, completed_at
+```
+home → deckpicker → game → home
+home → season → game → season
+home → gauntlet → game → gauntlet
+home → shop
+home → avatar
+home → leaderboard
+home → settings
+home → multiplayer lobby → game
+```
 
 ---
 
-## Current State — What is built
+## Game Modes
 
-### Core gameplay
-- Card matching vs AI — Easy / Medium / Hard / Lethal
-- 12 special cards — freeze, boom, tornado, magnet, bolt, rocket, dice, shield, stopwatch, crown, xray, random, shuffle
-- Solo mode — count-up timer, personal best per deck + difficulty; **no special cards**
-- Multiplayer — Socket.io Quick Match / Create / Join; board sync; turn reporting (**code complete, needs live test with 2 devices**)
-- Joker system — one per day per owned paid deck
-- Gauntlet — 10-round knockout; Professor Claw final boss; gold card reward
-- Season 1 — 30-step path; steps 0–28 = generic challenger; step 29 = THE ARCHITECT (Lethal); fog of war reveals as player advances; gold card + 150 coins on boss win; auto-resets
-
-### Shop & economy
-- Coin system
-- Lucky Spin — 8 segments with coin multiplier badge images; 1 free/day + 1 ad spin/day; pointer tick + Web Audio
-- Shop — Bonus Chest, coin packs, bundles, remove ads — all wired to Stripe Checkout
-- Special Offer popup — 80% off badge, 24h countdown, one-time, 4 items (buy button not yet wired to Stripe — **todo**)
-- Remove Ads modal
-
-### Visuals & UI
-- 9 card decks (1 free, 8 paid — 4 awaiting new graphics from Brad)
-- Season 1 map — 30-step scrollable path; animated robomice; tesla coils; 9-layer fog of war; electric storm; steam emitters
-- 4 gameshow stage backgrounds
-- Avatar picker (4 avatars; 6 locked slots)
-- Win / loss overlays — 😊 You Win! / 😢 You Lost!
-
-### Infrastructure
-- All images WebP — no PNGs in production
-- `vercel.json` — no-store for HTML; 30-day cache for images + music
-- 4-pool music system — menu / in-game (18 tracks) / game-over (4 tracks) / boss (1 track)
-- Dev toolbar gated behind `VITE_DEV_TOOLS` env var
-- Full Stripe payment backend — serverless, no separate server needed
-
----
-
-## Known Issues
-
-| Issue | Notes |
+| Mode | Description |
 |---|---|
-| Multiplayer untested live | Code complete; needs two real devices |
-| Season map node positions | `NODE_POSITIONS` in `SeasonMap.jsx` estimated visually — calibrate on phone |
-| THE ARCHITECT boss image | `Opponants/l1.webp` is placeholder — Brad has real artwork |
-| SpecialOffer buy button | Not yet wired to `startCheckout('offer_launch')` |
-| DeckPicker locked state | Needs to check `fo_owned_decks` and show buy button for locked decks |
-| Railway egress fees | Small fees possible on purchases; can migrate to free Neon DB if needed |
+| `vs` | Player vs AI, normal flip-match |
+| `solo` | Time Challenge — solo, beat the clock |
+| `season` | Season map campaign (30 steps, Rob + E-type opponents) |
+| `gauntlet` | Gauntlet mode — escalating difficulty |
+| `online` | Multiplayer (Firebase, untested) |
 
 ---
 
-## Music System
+## Season Map
 
-| Pool | Screens | Files |
-|------|---------|-------|
-| `MENU_TRACKS` | home, shop, season map, etc. | `menu_1–2.mp3` |
-| `INGAME_TRACKS` | game, roundstart, gauntlet, mp | `ingame_*.mp3` (18 tracks) |
-| `GAMEOVER_TRACKS` | triggered by `onPlayerLost` | `gameover_1–4.mp3` |
-| `BOSS_TRACKS` | season game at step 29 only | `ingame_boss_final.mp3` |
-
----
-
-## Backlog (priority order)
-
-1. **Test shop end-to-end** — buy coins on dev, confirm credits land
-2. **Wire SpecialOffer buy button** — `startCheckout('offer_launch')`
-3. **DeckPicker locked/buy state** — check `fo_owned_decks`, show Stripe buy for locked decks
-4. **Graphics for new decks** — Brad has images to process
-5. **Multiplayer live test** — two real devices
-6. **Season map node calibration** — phone testing
-7. **Real boss image for THE ARCHITECT**
-8. **Interstitial ads** — `Interstitial.jsx` is placeholder; wire PropellerAds or AdSense
-9. **Robomouse side-facing sprites** — new art needed
-10. **Season 2**
-11. **Leaderboard** — stub; needs real data
-12. **More decks**
-13. **CAL integration** — coins appear in CAL wallet
+- 30 steps: steps 1–5 = Rob opponents, step 6/11/16/21/26/31 = E-type (KNOCKOUT_OPPONENTS)
+- Rob names randomly assigned from pool, persisted per device in `fo_rob_names`
+- Defeated portraits: `rob1d.webp`–`rob5d.webp`
+- Season 1 name: "CAT-astrophe!"
+- SEASON COMPLETE state reached after beating step 30 boss (no replay yet — backlog)
 
 ---
 
-## Version
+## Current State (v0.1.38)
 
-Current: **v0.27** (session 22, 24 May 2026)
+### What's working
+- Full game loop (VS, Time Challenge, Season, Gauntlet)
+- All special cards (tornado, freeze, rocket, crown, shuffle, shield, stopwatch, bolt)
+- Season map with 30 steps, Rob opponents, E-type bosses
+- Coin balance display (localStorage)
+- Avatar picker, deck picker (locked decks show padlock)
+- Shop screen (Stripe checkout wired, not fully tested)
+- Lucky spin
+- Leaderboard (placeholder data)
+- Settings (difficulty, music, sfx, restore purchases)
+- Special offer modal
+- Multiplayer lobby + game built (Firebase, **untested**)
+- Background music + SFX toggle
+- Home screen: whimsical carnival background, two-column icon grid, image PLAY button, carnival-theme nav icons
+
+### Immediately next
+- Test coin shop purchase flow end-to-end on dev
+- Wire `coin_balance_bar.webp` (batch_07) to replace `coin_bar.webp` in home top bar
+- Wire `continue_button.webp` to game-over / continue flow
+- Wire opponent portrait images (several robot cat PNGs in downloads awaiting conversion)
+- First live multiplayer test (two real devices)
+
+### Known issues
+- Season COMPLETE — no way to reset/replay (intentional for now)
+- Multiplayer untested — needs real two-device session
+- `play_button.webp` (batch_07, 363×110) appears mislabelled — visual content looks like a coin bar UI rather than a play button; review with Clara
+
+---
+
+## Batch Asset History
+
+| Batch | Contents |
+|---|---|
+| batch_01 | Original mockup assets (superseded) |
+| batch_02 | Production UI webps (superseded) |
+| batch_03 | Split transparent webps |
+| batch_04 | Nav icons, pill buttons, settings, mascot |
+| batch_05 | Season banner, special offer panel, avatar states, shop buttons, coin multipliers, energy/gem bars |
+| batch_06 | Back/close/confirm/cancel/pause/undo/lock buttons, daily reward panel, paw spinner |
+| batch_07 | Nav icons (carnival theme), play/continue/claim buttons, coin/gem/energy bars, blank popup panel, daily reward panel, notification badge, mail/gift/profile icons |
+
+---
+
+## Coin Shop Assets (ready to wire)
+
+| File | Content |
+|---|---|
+| `public/images/coins_100.webp` | 100 Coins — 99p chest |
+| `public/images/coins_500.webp` | 500 Coins — £3.99 chest |
+| `public/images/coins_1000.webp` | 1000 Coins — £6.99 BEST VALUE chest |
+
+Products defined in `src/utils/_products.js`.
+
+---
+
+## Other Unprocessed Assets (in downloads/)
+
+| File | Identified as |
+|---|---|
+| `image.png` | PLAY button (compact, paw prints) — converted to `play_btn.webp` |
+| `play_large.webp` | PLAY button (wide, light-bulb border) — in downloads, not yet wired |
+| `continue.png` | CONTINUE button — converted to `continue_btn.webp` |
+| `gameover.png` | TRY AGAIN button |
+| `9ba85f01...png` | TRY AGAIN button (alternate) |
+| `ChatGPT Image May 23 08_55_*.png` | Robot cat portraits (Rob opponents) |
+| `ChatGPT Image May 23 08_59_09 PM (1).png` | "Defeated" ribbon banner |
+| `06390f2f...png` | Orange/ginger cat — defeated avatar portrait |
+| Various UUID PNGs | Unidentified — review with Clara |
+
+---
+
+_Code by Claude Sonnet 4.6, Graphics by ChatGPT. This project would not have been possible without their invaluable assistance._

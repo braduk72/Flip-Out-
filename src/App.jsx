@@ -4,6 +4,8 @@ import DeckPicker from './screens/DeckPicker'
 import Shop from './screens/Shop'
 import AvatarPicker from './screens/AvatarPicker'
 import Settings from './screens/Settings'
+import AboutUs from './screens/AboutUs'
+import PrivacyPolicy from './screens/PrivacyPolicy'
 import Game from './screens/Game'
 import Gauntlet from './screens/Gauntlet'
 import RoundStart from './screens/RoundStart'
@@ -12,7 +14,7 @@ import LuckySpin from './screens/LuckySpin'
 import Leaderboard from './screens/Leaderboard'
 import SeasonMap from './screens/SeasonMap'
 import { KNOCKOUT_OPPONENTS, STANDARD_OPPONENTS } from './data/opponents'
-import { ACTIVE_SEASON, STEPS_PER_STAGE, BOSS_STEP, GENERIC_OPPONENT } from './data/seasonalOpponents'
+import { ACTIVE_SEASON, STEPS_PER_STAGE, BOSS_STEP, GENERIC_OPPONENT, ROB_OPPONENTS, getRobNames } from './data/seasonalOpponents'
 import { DECKS } from './data/decks'
 import { useMultiplayer } from './hooks/useMultiplayer'
 import { buildBoard } from './hooks/useGame'
@@ -20,6 +22,9 @@ import { verifySession, applyPurchase } from './utils/foShop.js'
 import { getDeviceUuid } from './utils/deviceId.js'
 
 // ── Music pools ───────────────────────────────────────────────────────────────
+const HOME_TRACKS = [
+  '/music/Memory_Mayhem_Welcome_to_Flip_Out.mp3',
+]
 const MENU_TRACKS = [
   '/music/menu_1.mp3',
   '/music/menu_2.mp3',
@@ -53,7 +58,10 @@ const INGAME_TRACKS = [
   '/music/ingame_tangerine_rumble_short.mp3',
   '/music/ingame_tin_piano.mp3',
 ]
-const MENU_SCREENS = new Set(['home','deckpicker','shop','avatarpicker','settings','leaderboard','luckyspin','mplobby','gauntlet','seasonmap'])
+const SEASON_TRACKS = [
+  '/music/deal-the-tension.mp3',
+]
+const MENU_SCREENS = new Set(['home','deckpicker','shop','avatarpicker','settings','leaderboard','luckyspin','mplobby','gauntlet'])
 const GAME_SCREENS = new Set(['game','mpgame','roundstart','seasongame','seasonroundstart'])
 
 function awardGoldCard() {
@@ -95,7 +103,11 @@ export default function App() {
   // Season state — seasonStep 0..BOSS_STEP (0-indexed, 30 steps total)
   const [seasonStep,   setSeasonStep]   = useState(() => parseInt(localStorage.getItem('fo_season1_step') || '0'))
   const [seasonActive, setSeasonActive] = useState(false)
-  const isBossStep = seasonStep === BOSS_STEP
+  const isBossStep  = seasonStep === BOSS_STEP
+  const [robNames]  = useState(getRobNames)
+  const isRobStep   = seasonStep < ROB_OPPONENTS.length && !isBossStep
+  // e-type checkpoint opponents at rounds 6,11,16,21,26,31 (steps 5,10,15,20,25,30)
+  const E_STEP_MAP  = { 5: 0, 10: 1, 15: 2, 20: 0, 25: 1, 30: 2 }
 
   const audioRef       = useRef(null)
   const activePoolRef  = useRef(null)   // which pool array is currently playing
@@ -225,6 +237,10 @@ export default function App() {
       switchToPool(BOSS_TRACKS)
     } else if (GAME_SCREENS.has(screen)) {
       switchToPool(INGAME_TRACKS)
+    } else if (screen === 'seasonmap') {
+      switchToPool(SEASON_TRACKS)
+    } else if (screen === 'home') {
+      switchToPool(HOME_TRACKS)
     } else {
       switchToPool(MENU_TRACKS)
     }
@@ -252,7 +268,7 @@ export default function App() {
         audioRef.current.play().catch(() => {})
       } else {
         activePoolRef.current = null
-        switchToPool(GAME_SCREENS.has(screen) ? INGAME_TRACKS : MENU_TRACKS)
+        switchToPool(GAME_SCREENS.has(screen) ? INGAME_TRACKS : screen === 'home' ? HOME_TRACKS : MENU_TRACKS)
       }
     }
   }
@@ -284,6 +300,23 @@ export default function App() {
   function handleOnline()    { setScreen('mplobby') }
   function handleMpBack()    { mp.disconnect(); setMpDeck(null); setMpCards(null); setScreen('home') }
   function handleMpGameBack() { mp.disconnect(); setMpDeck(null); setMpCards(null); setScreen('home') }
+
+  // No opponent found after 30s — drop into a normal VS CPU game
+  function handleMpFallbackCPU({ deckId, difficulty: fallbackDiff }) {
+    mp.disconnect()
+    setMpDeck(null)
+    setMpCards(null)
+    const ownedIds   = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
+    const available  = DECKS.filter(d => d.free || ownedIds.includes(d.id))
+    const fallbackDeck = available.find(d => d.id === deckId) ?? available[0] ?? DECKS[0]
+    setDeck(fallbackDeck)
+    setDifficulty(fallbackDiff)
+    setStdOpponent(STANDARD_OPPONENTS[Math.floor(Math.random() * STANDARD_OPPONENTS.length)])
+    setRetryKey(0)
+    setTryAgainUsed(false)
+    setMode('vs')
+    setScreen('game')
+  }
 
   // ── Gauntlet flow ──────────────────────────────────────────────────────────
   function handleKnockout() {
@@ -347,8 +380,9 @@ export default function App() {
           localStorage.setItem(key, new Date().toISOString().slice(0, 10))
         }
         addCoins(150)
-        setSeasonStep(0)
-        localStorage.setItem('fo_season1_step', '0')
+        const completeStep = BOSS_STEP + 1
+        setSeasonStep(completeStep)
+        localStorage.setItem('fo_season1_step', String(completeStep))
       } else {
         const next = seasonStep + 1
         setSeasonStep(next)
@@ -395,16 +429,19 @@ export default function App() {
     )
   }
   if (screen === 'seasongame' && deck) {
-    const opp = isBossStep ? ACTIVE_SEASON.boss : GENERIC_OPPONENT
+    const robOpp = isRobStep ? { ...ROB_OPPONENTS[seasonStep], name: robNames[seasonStep] } : null
+    const eIdx   = E_STEP_MAP[seasonStep]
+    const eOpp   = eIdx !== undefined ? KNOCKOUT_OPPONENTS[eIdx] : null
+    const opp = isBossStep ? ACTIVE_SEASON.boss : eOpp ?? robOpp ?? GENERIC_OPPONENT
     return (
       <Game
         key={`season-${seasonStep}-${deck.id}`}
         deck={deck}
         portrait={portrait}
         mode="vs"
-        difficulty={isBossStep ? 'Lethal' : difficulty}
+        difficulty={isBossStep ? 'Lethal' : opp.difficulty ?? difficulty}
         opponentImage={opp.image ?? undefined}
-        opponentDefeatedImage={opp.defeatedImage ?? stdOpponent.defeatedImage}
+        opponentDefeatedImage={opp.defeatedImage ?? undefined}
         opponentName={opp.name}
         opponentModel={opp.model ?? undefined}
         opponentBio={opp.bio ?? undefined}
@@ -431,7 +468,13 @@ export default function App() {
     return <AvatarPicker portrait={portrait} onPortrait={handlePortrait} onBack={() => setScreen('home')} navProps={navProps} />
   }
   if (screen === 'settings') {
-    return <Settings onBack={() => setScreen('home')} onSeason={handleSeasonMap} musicOn={musicOn} sfxOn={sfxOn} onToggleMusic={toggleMusic} onToggleSfx={toggleSfx} difficulty={difficulty} onDifficulty={handleDifficulty} onDevWin={handleDevSeasonWin} seasonStep={seasonStep} navProps={navProps} />
+    return <Settings onBack={() => setScreen('home')} onSeason={handleSeasonMap} onAbout={() => setScreen('about')} onPrivacy={() => setScreen('privacy')} musicOn={musicOn} sfxOn={sfxOn} onToggleMusic={toggleMusic} onToggleSfx={toggleSfx} difficulty={difficulty} onDifficulty={handleDifficulty} onDevWin={handleDevSeasonWin} seasonStep={seasonStep} navProps={navProps} />
+  }
+  if (screen === 'about') {
+    return <AboutUs onBack={() => setScreen('settings')} navProps={navProps} />
+  }
+  if (screen === 'privacy') {
+    return <PrivacyPolicy onBack={() => setScreen('settings')} navProps={navProps} />
   }
   if (screen === 'gauntlet') {
     return (
@@ -468,13 +511,13 @@ export default function App() {
         difficulty={isGauntlet ? gauntletOpponent.difficulty : difficulty}
         opponentImage={isGauntlet ? gauntletOpponent.image : stdOpponent.image}
         opponentDefeatedImage={isGauntlet ? gauntletOpponent.defeatedImage : stdOpponent.defeatedImage}
-        opponentName={isGauntlet ? gauntletOpponent.name : undefined}
+        opponentName={isGauntlet ? gauntletOpponent.name : stdOpponent.name}
         opponentModel={isGauntlet ? gauntletOpponent.model : undefined}
         opponentBio={isGauntlet ? gauntletOpponent.bio : undefined}
         gauntletStep={isGauntlet ? gauntletStep : undefined}
         canRetry={!isGauntlet && !tryAgainUsed}
         onBack={handleBack}
-        onRetry={!isGauntlet ? () => { setTryAgainUsed(true); setRetryKey(k => k + 1) } : undefined}
+        onRetry={isGauntlet ? () => setRetryKey(k => k + 1) : (!tryAgainUsed ? () => { setTryAgainUsed(true); setRetryKey(k => k + 1) } : undefined)}
         onResult={isGauntlet ? handleGauntletResult : undefined}
         onQuit={isGauntlet ? (() => {
           setGauntletStep(0)
@@ -495,7 +538,7 @@ export default function App() {
     return <DeckPicker onSelect={handleSelectDeck} onBack={handleBack} />
   }
   if (screen === 'mplobby') {
-    return <MultiplayerLobby mp={mp} portrait={portrait} onBack={handleMpBack} />
+    return <MultiplayerLobby mp={mp} portrait={portrait} onBack={handleMpBack} onFallbackCPU={handleMpFallbackCPU} />
   }
   if (screen === 'mpgame' && mpDeck && mpCards) {
     return (

@@ -9,16 +9,15 @@ const DIFFICULTIES = [
   { id: 'Hard',   label: '🔴  Hard',   bg: '#7a1500', color: '#ffaaaa' },
 ]
 
-export default function Settings({ onBack, onSeason, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty, onDifficulty, onDevWin, seasonStep, navProps }) {
-  const [restoreEmail,  setRestoreEmail]  = useState('')
+export default function Settings({ onBack, onSeason, onAbout, onPrivacy, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty, onDifficulty, onDevWin, seasonStep, navProps }) {
   const [restoreState,  setRestoreState]  = useState('idle') // 'idle' | 'loading' | 'done' | 'notfound' | 'error'
   const [restoreResult, setRestoreResult] = useState(null)
 
   async function handleRestore() {
-    if (!restoreEmail.trim() || restoreState === 'loading') return
+    if (restoreState === 'loading') return
     setRestoreState('loading')
     try {
-      const result = await restorePurchases(restoreEmail.trim())
+      const result = await restorePurchases()
       if (result.found) { setRestoreResult(result); setRestoreState('done') }
       else setRestoreState('notfound')
     } catch { setRestoreState('error') }
@@ -27,18 +26,13 @@ export default function Settings({ onBack, onSeason, musicOn, sfxOn, onToggleMus
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack}>← Back</button>
+        <button className={styles.backBtn} onClick={onBack} aria-label="Back">
+          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+        </button>
         <h1 className={styles.title}>Settings</h1>
       </div>
 
       <div className={styles.list}>
-
-        {/* Difficulty */}
-        {/* Season map shortcut */}
-        <button className={styles.seasonLink} onClick={onSeason}>
-          <span>🗺️  Season 1 · The Reckoning</span>
-          <span className={styles.seasonArrow}>›</span>
-        </button>
 
         {/* Difficulty */}
         <div className={styles.row}>
@@ -78,32 +72,25 @@ export default function Settings({ onBack, onSeason, musicOn, sfxOn, onToggleMus
           </button>
         </div>
 
+        {/* Known Issues */}
+        <div className={styles.issuesSection}>
+          <div className={styles.issuesTitle}>Known Issues</div>
+          <div className={styles.issuesText}>- Adverts not yet implemented</div>
+        </div>
+
       </div>
 
       {/* ── Restore Purchases ── */}
-      <div className={styles.restoreSection}>
-        <div className={styles.restoreLabel}>RESTORE PURCHASES</div>
+      <div className={styles.restoreCorner}>
         {restoreState === 'done' ? (
-          <div className={styles.restoreDone}>
-            ✓ Purchases restored!
-            {restoreResult?.coins > 0 && <span> +{restoreResult.coins} coins</span>}
-            {restoreResult?.decks?.length > 0 && <span> · {restoreResult.decks.length} deck{restoreResult.decks.length > 1 ? 's' : ''} unlocked</span>}
-          </div>
+          <div className={styles.restoreDone}>✓ Restored!</div>
         ) : (
           <>
-            <input
-              className={styles.restoreInput}
-              type="email"
-              placeholder="Enter email address to enable cross-platform play"
-              value={restoreEmail}
-              onChange={e => { setRestoreEmail(e.target.value); setRestoreState('idle') }}
-              onKeyDown={e => e.key === 'Enter' && handleRestore()}
-            />
-            <button className={styles.restoreBtn} onClick={handleRestore} disabled={restoreState === 'loading'}>
-              {restoreState === 'loading' ? 'Restoring…' : 'Restore'}
+            <button className={styles.restoreImgBtn} onClick={handleRestore} disabled={restoreState === 'loading'} aria-label="Restore purchases">
+              <img src="/images/restore.webp" alt="Restore" draggable="false" className={`${styles.restoreImg} ${restoreState === 'loading' ? styles.restoreSpinning : ''}`} />
             </button>
-            {restoreState === 'notfound' && <div className={styles.restoreMsg}>No purchases found for that email.</div>}
-            {restoreState === 'error'    && <div className={styles.restoreMsg}>Something went wrong — try again.</div>}
+            {restoreState === 'notfound' && <div className={styles.restoreMsg}>Nothing found</div>}
+            {restoreState === 'error'    && <div className={styles.restoreMsg}>Try again</div>}
           </>
         )}
       </div>
@@ -119,7 +106,13 @@ export default function Settings({ onBack, onSeason, musicOn, sfxOn, onToggleMus
         </div>
       )}
 
-      <div className={styles.versionTag}>v0.25</div>
+      <div className={styles.footerLinks}>
+        <button className={styles.footerLink} onClick={onAbout}>About Us</button>
+        <span className={styles.footerDivider}>·</span>
+        <button className={styles.footerLink} onClick={onPrivacy}>Privacy Policy</button>
+      </div>
+
+      <div className={styles.versionTag}>v0.1.38</div>
 
       <BottomNav active="settings" {...navProps} />
     </div>

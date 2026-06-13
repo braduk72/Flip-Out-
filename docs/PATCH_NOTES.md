@@ -1,0 +1,184 @@
+# Flip Out! — Patch Notes
+
+---
+
+## [v0.1.38 — 24 May 2026]
+
+### New Features
+- **Home screen background** — `whimsical_carnival_by_the_fairy_tale_castle.webp` wired as `bg_home.webp`; replaces the CSS spinning gold starburst overlay (starburst removed from `Home.module.css`)
+- **Home PLAY button** — CSS text button replaced with `play_btn.webp` image (converted from Clara's full-size PNG); gold paw-print PLAY button with drop-shadow hover effect
+- **Bottom nav icons** — updated to batch_07 carnival-themed icon set: `home_icon.webp`, `shop_icon.webp`, `ranks_icon.webp`, `settings_icon.webp`
+
+### Assets (batch_07)
+- `play_button.webp`, `continue_button.webp`, `claim_button.webp`, `blank_popup_panel.webp`, `daily_reward_panel.webp`, `coin_balance_bar.webp`, `gem_balance_bar.webp`, `energy_bar.webp`, `home_icon.webp`, `shop_icon.webp`, `ranks_icon.webp`, `settings_icon.webp`, `profile_icon.webp`, `notification_badge.webp`, `mail_icon.webp`, `gift_icon.webp`, `lock_icon.webp` — all in `public/images/`
+- `play_btn.webp` — converted from `image.png` (Clara's PLAY button PNG, 2.4 MB → 155 KB webp)
+- `coins_100.webp`, `coins_500.webp`, `coins_1000.webp` — coin shop chest images converted from PNG, ready for coin shop screen
+- `continue_btn.webp` — CONTINUE button converted from PNG
+
+---
+
+## [v0.1.37 — 24 May 2026]
+
+### Bug Fixes
+- **Icon modal play button** — replaced broken `play_large.webp` (cached 404) with `confirm_button.webp`; placeholder until Clara provides a proper play button asset
+
+---
+
+## [v0.1.36 — 24 May 2026]
+
+### Bug Fixes
+- **Broken images** — several images were missing or wrong (batch_01 originals) due to silent `cp` failures in a previous session; fixed via PowerShell raw-byte copy: `coin_bar.webp` (was missing), `play_large.webp` (was missing), `mascot.webp` (was 1.3 MB batch_01 original, now correct jester cat), `home/ranks/shop/settings.webp` (all were 1.3 MB+ batch_01 originals, now correct batch_04 nav icons)
+
+### New Features
+- **Back buttons** — all `← Back` text buttons replaced with `back_button.webp` image across Shop, DeckPicker, AvatarPicker, Gauntlet, Leaderboard, Settings, LuckySpin, SeasonMap
+- **Close buttons** — in-game `✕` button replaced with `close_button.webp`; Home icon modal gains a corner close button
+- **Lock icons** — `padlock.webp` replaced with `lock_icon.webp` in Shop and DeckPicker
+
+### Assets (batch_06)
+- `back_button.webp`, `close_button.webp`, `confirm_button.webp`, `cancel_button.webp`, `pause_button.webp`, `undo_button.webp`, `blank_panel.webp`, `daily_reward_panel.webp`, `lock_icon.webp`, `paw_badge_left.webp`, `paw_spinner.webp`, `play_small_button.webp`, `alert_badge.webp` — all wired into `public/images/`
+
+---
+
+## [v0.1.35 — 24 May 2026]
+
+### Bug Fixes
+- **Home mascot** — constrained height so it no longer overflows below the nav bar
+- **Shop** — GizmoGames AdBanner removed (was appearing above nav unexpectedly)
+
+---
+
+## [v0.1.34 — 24 May 2026]
+
+### Changes
+- **Settings** — Season map shortcut removed; "Settings" title centred; Restore Purchases replaced with `restore.webp` image button pinned to bottom-right; spins while loading
+- **Home screen** — VS image enlarged; globe moved into right column below watch; bottom panel removed; mascot repositioned higher and layered behind icons, above starburst
+- **Home background** — static jpg replaced with spinning gold starburst (matches game screen)
+- **Season 1** — renamed to "CAT-astrophe!"
+
+### Assets
+- `restore.webp` added to `public/images/`
+
+---
+
+## [v0.1.33 — 24 May 2026]
+
+### New Features
+- **Home screen background** — replaced static jpg with the same spinning gold starburst from the game screen
+- **Season 1 renamed** — "The Reckoning" → "CAT-astrophe!"
+
+---
+
+## [v0.1.32 — 24 May 2026]
+
+### Changes
+- **Settings — Restore Purchases** — email input removed; restore now works by device UUID only (email is captured by Stripe at point of purchase)
+
+---
+
+## [v0.1.31 — 24 May 2026]
+
+### Changes
+- **Home screen** — Play button and mode toggle removed; replaced with VS (vs computer) and Watch (time trial) image buttons on the right side, mirroring the map/gauntlet column on the left
+- `vs.webp`, `watch.webp` added to `public/images/`
+
+---
+
+## [v0.1.30 — 24 May 2026]
+
+### Changes
+- **Home layout** — Season map and Gauntlet image buttons moved to left column under coin balance; globe icon resized to match
+
+---
+
+## [v0.1.29 — 24 May 2026] _(renumbered from v0.2.1)_
+
+### Changes
+- **Home screen mode buttons** — Season and Gauntlet are now pure image buttons (map + gauntlet glove) side by side, no text labels
+
+---
+
+## [v0.1.28 — 24 May 2026] _(renumbered from v0.2.0)_
+
+### New Features
+- **Home screen icons** — Season button now shows the `map.webp` treasure map; Gauntlet button now shows the `gauntlet.webp` golden glove, replacing the placeholder emojis
+
+### Assets
+- `gauntlet.webp`, `map.webp` — generated by Clara, added to `public/images/`
+
+---
+
+## [v0.1.29 — 24 May 2026]
+
+### New Features
+- **Rob defeated images** — `rob1d–rob5d.webp` added; defeated portrait now shows after beating a Rob opponent in Season mode
+
+### Assets
+- `rob1d–rob5d.webp` — generated by Clara (no Canva), gold-circle framed, sad robot cat portraits
+
+---
+
+## [v0.1.28 — 24 May 2026]
+
+### Changes
+- **Ad banner removed from Home screen** — took too much space; revisit when AdSense is ready
+
+---
+
+## [v0.1.27 — 24 May 2026]
+
+### Bug Fixes
+- **Ad banner layout** — image now fills full bar width edge-to-edge; no colour mismatch at sides
+
+---
+
+## [v0.1.26 — 24 May 2026]
+
+### Bug Fixes
+- **Ad banner background** — set to match the Gizmo Games logo purple (`#9B2FD4`)
+
+---
+
+## [v0.1.25 — 24 May 2026]
+
+### New Features
+- **AdSense placeholder** — `gg.webp` logo now fills the ad banner space on the Home screen; clicking it is wired for the upcoming About Us modal
+
+---
+
+## [v0.1.24 — 24 May 2026]
+
+### Bug Fixes
+- **Draw screen showed "AI: 3"** — now shows the opponent's name (e.g. "BINKY: 3")
+- **Tornado during stopwatch ended player's turn** — stopwatch now keeps your turn through all turn-ending specials (tornado, freeze, rocket, crown, shuffle). Bolt-shield penalty still cuts through stopwatch (intentional).
+- **Season progress reset after beating the boss** — boss win now advances to SEASON COMPLETE state instead of resetting to step 0
+- **Season quit modal said "QUIT GAUNTLET?"** — fixed; now correctly says "QUIT SEASON?" for season games and "QUIT GAUNTLET?" for gauntlet games
+- **Gauntlet draw dumped player to main menu** — draws in gauntlet now replay the round
+- **Shield card ended the player's turn** — shield now grants the shield without consuming the player's remaining reveals
+- **Consecutive AI turns had a 2-second delay** — AI now uses a 400–700 ms delay when taking consecutive turns (matched a pair), down from 1200–2000 ms
+
+### New Features
+- **Season Map music** — distinct track plays when viewing the Season Map
+- **Season Map slide-in animation** — map slides down smoothly (0.7 s) when opened
+- **Stopwatch countdown overlay** — seconds remaining zoom in from the centre of the screen while the stopwatch is running
+- **Rob opponents (Season steps 1–5)** — Rob1–Rob5 with randomly assigned names from a pool; names persist per device via localStorage
+- **E-type opponents (Season steps 6, 11, 16, 21, 26, 31)** — KNOCKOUT_OPPONENTS cycle in at milestone rounds
+- **Defeat overlay for opponents without a defeated image** — shows opponent portrait with a large red ✕ instead of a blank card
+- **Opponent names on AI turn banner** — "BINKY'S TURN" instead of "AI'S TURN"
+- **Unlocked decks appear first** in the Deck Picker
+- **Coin balance moved under avatar** on the Home screen
+- **Facebook button hidden** from Home screen
+
+### Assets
+- `rob1–rob5.webp` converted from PNG (sharp, quality 88, 1254×1254)
+
+---
+
+## [Session 15 — 22 May 2026]
+
+### New Features
+- Multiplayer fully built (untested)
+- Gauntlet mode
+
+---
+
+_Older history not yet documented._

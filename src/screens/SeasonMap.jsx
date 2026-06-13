@@ -1,7 +1,8 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import styles from './SeasonMap.module.css'
 import BottomNav from '../components/BottomNav'
-import { ACTIVE_SEASON, STEPS_PER_STAGE, BOSS_STEP } from '../data/seasonalOpponents'
+import { ACTIVE_SEASON, STEPS_PER_STAGE, BOSS_STEP, ROB_OPPONENTS, getRobNames } from '../data/seasonalOpponents'
+import { KNOCKOUT_OPPONENTS } from '../data/opponents'
 
 // Cache-bust version — bump this whenever sprite images are replaced
 const V = '?v=4'
@@ -129,6 +130,14 @@ export default function SeasonMap({ seasonStep = 0, portrait = 1, onFight, onBac
   const playerPos  = getMapPos(seasonStep)
   const isBoss     = seasonStep === BOSS_STEP
   const isComplete = seasonStep > BOSS_STEP
+  const robNames   = getRobNames()
+  const isRobStep  = seasonStep < ROB_OPPONENTS.length && !isBoss
+  const E_STEP_MAP = { 5: 0, 10: 1, 15: 2, 20: 0, 25: 1, 30: 2 }
+  const eIdx       = E_STEP_MAP[seasonStep]
+  const challName  = isBoss ? ACTIVE_SEASON.boss.name
+    : eIdx !== undefined   ? KNOCKOUT_OPPONENTS[eIdx].name
+    : isRobStep            ? robNames[seasonStep]
+    : 'CHALLENGER'
 
   const fogHeight = isComplete ? 0 : Math.max(0, playerPos.y - 38)
 
@@ -154,7 +163,9 @@ export default function SeasonMap({ seasonStep = 0, portrait = 1, onFight, onBac
   return (
     <div className={styles.page}>
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={onBack}>← Back</button>
+        <button className={styles.backBtn} onClick={onBack} aria-label="Back">
+          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+        </button>
         <div className={styles.seasonTitle}>
           <span className={styles.seasonTag}>SEASON 1</span>
           <span className={styles.seasonName}>{ACTIVE_SEASON.theme}</span>
@@ -300,7 +311,7 @@ export default function SeasonMap({ seasonStep = 0, portrait = 1, onFight, onBac
               {isBoss ? 'SEASONAL BOSS' : `STEP ${seasonStep + 1} / ${STEPS_PER_STAGE}`}
             </span>
             <span className={styles.ctaName}>
-              {isBoss ? ACTIVE_SEASON.boss.name : 'CHALLENGER'}
+              {challName}
             </span>
           </div>
           <button
