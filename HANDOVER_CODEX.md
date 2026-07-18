@@ -117,8 +117,26 @@ docs/old/                 # ROADMAP.md, IN_FLIGHT.md (historical, session-20 era
 
 ## 5. Hosting & deployment (READ CAREFULLY — recently changed)
 
-The project **moved off Vercel onto Cloudflare Pages**. Latest commit on `main`:
-`157344e — chore: replace vercel.json with Cloudflare _headers`.
+> ⚠️ **THREE hosting providers are all connected to this repo and auto-build on
+> every push.** Confirmed on PR #1 (commit `15cbce0`), where all three posted
+> successful deploys. **Which one serves production `flipout.gizmogames.uk` is
+> currently UNCONFIRMED — Brad was not certain (18 Jul 2026). Codex must confirm
+> before touching deploy config.** Leaving two of them connected risks a stale
+> provider silently serving prod or previews.
+
+| Provider | Project(s) | Preview URL seen on PR #1 | Notes |
+|---|---|---|---|
+| **Cloudflare Pages** | `flip-out`, `flip-out-dev` | `…flip-out.pages.dev`, `…flip-out-dev.pages.dev` | Two projects (prod + dev). Latest `main` commit points here (`_headers`) — most likely intended prod |
+| **Vercel** | `flip-out`, `flip-out-3mtb` (scope `chattocal`) | `flip-out-git-…-chattocal.vercel.app` | Two projects; matches the `api/` Vercel handler signature (§6) |
+| **Netlify** | `unique-tulumba-0eb9a5` | `deploy-preview-1--unique-tulumba-0eb9a5.netlify.app` | Also building — purpose unclear |
+
+**Action for Codex:** ask Brad which provider is authoritative for production, then
+**disconnect the other two** from the repo to stop confusing/duplicate deploys.
+
+---
+
+The project **appears to have moved off Vercel onto Cloudflare Pages**. Latest
+commit on `main`: `157344e — chore: replace vercel.json with Cloudflare _headers`.
 
 - **Cache rules** now live in `public/_headers` (Cloudflare Pages format):
   HTML/root = `no-store`; `/images/*` and `/music/*` = 30-day cache with SWR.
@@ -164,6 +182,9 @@ env })`), not `(req, res)`. So one of these is true and Codex must confirm which
 3. They still need **porting** to Cloudflare Pages Functions / Workers.
 
 **Do not assume.** Ask Brad where the live API is served from before editing these.
+As of 18 Jul 2026 Brad was **not certain** which of the three options is live — and
+since **two Vercel projects** (`flip-out`, `flip-out-3mtb`) are both connected
+(§5), the API may still be served from one of them. Confirm before editing.
 
 ---
 
@@ -272,8 +293,11 @@ The `README.md` predates the Cloudflare move. When they conflict, trust this doc
 ## 12. First-day checklist for Codex
 
 1. Clone `braduk72/Flip-Out-`; `npm install`; `npm run dev` (loads on :5173).
-2. Get from Brad: current **Cloudflare Pages** production/preview branch mapping,
-   and **where the live API runs** (Vercel vs CAL server vs to-be-ported).
+2. **Untangle hosting first (§5).** Five deploy targets across three providers are
+   all connected: Cloudflare Pages (`flip-out`, `flip-out-dev`), Vercel
+   (`flip-out`, `flip-out-3mtb`), Netlify (`unique-tulumba-0eb9a5`). Confirm with
+   Brad which serves production `flipout.gizmogames.uk`, disconnect the rest, and
+   confirm **where the live API runs** (Vercel vs CAL server vs to-be-ported).
 3. Get the secret env values (or a `.env` for local API/multiplayer) from Brad.
 4. Confirm the branch convention (historical flow: `dev` → test → `main`).
 5. Read `docs/old/IN_FLIGHT.md` and `docs/old/ROADMAP.md` for prior context.
