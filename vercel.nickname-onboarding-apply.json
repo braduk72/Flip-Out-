@@ -1,0 +1,5 @@
+{
+  "framework": "vite",
+  "buildCommand": "node scripts/run-economy-migration.mjs --apply && node --test tests/nickname.test.js tests/nickname-db.test.js && npx vitest run --config vitest.config.js tests-ui/nickname-onboarding.test.jsx tests-ui/home.test.jsx && vite build",
+  "outputDirectory": "dist"
+}

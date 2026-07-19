@@ -5,7 +5,7 @@ import { expect, test, vi } from 'vitest'
 import Home from '../src/screens/Home.jsx'
 
 const homeData = {
-  profile: { accountKind: 'guest', playerName: 'Guest Player', level: null, xp: null, xpTarget: null },
+  profile: { accountKind: 'guest', displayName: 'GuestPlayer', playerName: 'GuestPlayer', level: null, xp: null, xpTarget: null },
   currencies: { stars: 1200, coins: 75 },
   match3: { level: 8, completed: 7, resume: null },
   collection: { owned: 12, total: 100, newest: { name: 'Aurora Crown', asset: '/images/cards/babyAnimals/1.webp', rarity: 'rare' } },

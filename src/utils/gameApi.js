@@ -11,6 +11,7 @@ async function request(path, body) {
 }
 
 export const playerGameApi = {
+  setDisplayName: displayName => request('/api/fo-player-state', { action: 'set-display-name', displayName }),
   state: (timeZone = getDeviceTimeZone()) => request(`/api/fo-game?service=rewards&timeZone=${encodeURIComponent(timeZone)}`),
   dailyLogin: timeZone => request('/api/fo-game?service=rewards', { action: 'daily-login', timeZone }),
   spinWheel: ({ spinType, advertCompletionId }) => request('/api/fo-game?service=rewards', { action: 'daily-wheel', spinType, advertCompletionId, timeZone: getDeviceTimeZone() }),

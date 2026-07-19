@@ -113,3 +113,11 @@ The application currently reports `1.2.1-mobile-ux` from `src/version.js`. Repor
 - The permanent URL served `/assets/index-C1HtgBKc.js` (405,111 bytes) containing `1.4.0-collection2` and `/assets/Inventory-l_c7LhSB.js` (23,563 bytes) at HTTP 200.
 - Deployed browser checks passed at 320×568, 390×844 and 1024×768 with no horizontal overflow or undersized visible interactions.
 - No production deployment, production domain, DNS, root records, nameservers, database or economy balance was changed.
+
+## Verification record — one-time nickname onboarding, 19 July 2026
+
+- Preview-only migration deployment: `dpl_368z9mE7nK2hdLURCb2jVLBP3dBD`, generated URL `https://flip-kvmytmlnv-chattocal.vercel.app`.
+- The Vercel Preview build targeted Railway `railway/public` at `yamanote.proxy.rlwy.net` with `VERCEL_ENV=preview`; migration `012_player_display_name.sql` committed at `2026-07-19T14:54:07.959Z`.
+- The nullable `fo_accounts.display_name` column and its 3–12 alphanumeric database constraint were verified after migration.
+- Preview verification passed 7/7 server/database tests, including duplicate display-name allowance and one-time retry/no-overwrite behavior, plus 9/9 focused UI tests. The 142-module Vite production build passed.
+- This was a Preview deployment only. The production domain, root DNS records, nameservers and Production deployment were not changed.

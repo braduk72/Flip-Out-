@@ -465,3 +465,10 @@ Focused lint for the newly added transaction service, backend helper/endpoints, 
 - Migration 011 `recycler_common_reward_balance` committed to Preview at `2026-07-19T14:37:25.075Z`; no production target was used. Final balance-correction deployment: `https://flip-r2k6hd99c-chattocal.vercel.app` (`dpl_DNHovuYCSAC6VwmAXro8xr9rsPGS`).
 - One broad Preview build test remains blocked by Vercel omitting a gitignored Android native file; this is unrelated to Recycler logic and is detailed in `FLIPOUT_RECYCLER_REPORT.md`.
 - Commit `2d8eefb` deployed Ready as Preview `dpl_Pe11GoVn1HEQwY97ktuzYbWx74WW`; `https://dev.flipout.gizmogames.uk` returned HTTP 200, matched the generated deployment bundle/ETag and reported `1.5.0-recycler`.
+
+## One-time nickname onboarding — 19 July 2026
+
+- **Status: Implemented and verified in Preview.** First-time accounts without `display_name` are held on an accessible nickname screen before Home. Existing named accounts bypass it permanently.
+- Migration `012_player_display_name.sql` adds a nullable, non-unique `fo_accounts.display_name` with a database format constraint. `player_id` remains the permanent UUID used for account, economy and future social identity.
+- The server validates 3–12 ASCII letters/numbers, case-insensitive reserved names and the server-side profanity list. It only sets an empty display name, treats same-name retries as idempotent and rejects any different second claim. Duplicate display names across accounts are allowed.
+- Migration 012 committed to Railway Preview at `2026-07-19T14:54:07.959Z`; `fo_accounts.display_name` was verified nullable and the format constraint was created. Preview verification passed 7/7 server/database tests and 9/9 focused UI tests; the Preview build passed with 142 modules. No authentication, purchase or economy behavior changed. Generated Preview: `https://flip-kvmytmlnv-chattocal.vercel.app`.

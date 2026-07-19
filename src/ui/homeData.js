@@ -14,7 +14,6 @@ function profileOverrides(storage) {
   const xp = Number(storage.getItem('fo_player_xp'))
   const xpTarget = Number(storage.getItem('fo_player_xp_target'))
   return {
-    playerName: storage.getItem('fo_player_name') || null,
     level: Number.isSafeInteger(level) && level > 0 ? level : null,
     xp: Number.isSafeInteger(xp) && xp >= 0 ? xp : null,
     xpTarget: Number.isSafeInteger(xpTarget) && xpTarget > 0 ? xpTarget : null,
@@ -41,7 +40,8 @@ export function normaliseHomeData({ playerPayload, match3Payload, liveOpsPayload
     profile: {
       accountKind,
       playerId: profile.player_id ?? null,
-      playerName: overrides.playerName || (accountKind === 'guest' ? 'Guest Player' : shortId ? `Player ${shortId}` : 'Player'),
+      displayName: profile.display_name ?? null,
+      playerName: profile.display_name ?? (accountKind === 'guest' ? 'Guest Player' : shortId ? `Player ${shortId}` : 'Player'),
       level: overrides.level,
       xp: overrides.xp,
       xpTarget: overrides.xpTarget,

@@ -1,0 +1,40 @@
+.page {
+  display: grid;
+  min-height: 100svh;
+  padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  place-items: center;
+  background:
+    radial-gradient(circle at 20% 16%, rgb(34 211 238 / .18), transparent 30%),
+    radial-gradient(circle at 80% 82%, rgb(168 85 247 / .2), transparent 34%),
+    var(--fo-canvas);
+}
+
+.card {
+  width: min(100%, 440px);
+  padding: clamp(24px, 7vw, 40px);
+  color: var(--fo-text);
+  text-align: center;
+  background: linear-gradient(145deg, rgb(37 52 90 / .98), rgb(16 23 41 / .98));
+  border: 1px solid rgb(168 85 247 / .6);
+  border-radius: var(--fo-radius-hero);
+  box-shadow: var(--fo-shadow-2), 0 0 34px rgb(109 40 217 / .26);
+  animation: enter var(--fo-motion-standard) var(--fo-ease-enter);
+}
+
+.brand { margin-bottom: var(--fo-space-4); color: var(--fo-gold); font-family: 'Nunito Sans', system-ui, sans-serif; font-size: clamp(1.45rem, 7vw, 2rem); font-weight: 900; letter-spacing: .04em; text-shadow: 0 3px 0 #7c2d12, 0 0 20px rgb(245 196 81 / .35); }
+.card h1 { margin: 0; font-size: clamp(1.6rem, 7vw, 2.15rem); }
+.card > p { margin: var(--fo-space-3) 0 var(--fo-space-6); color: var(--fo-text-secondary); }
+.card form { display: grid; gap: var(--fo-space-2); text-align: left; }
+.card label { color: var(--fo-text); font-weight: 800; }
+.card input { min-height: 52px; width: 100%; padding: 10px 14px; color: var(--fo-text); background: rgb(5 8 20 / .7); border: 2px solid rgb(125 211 252 / .35); border-radius: var(--fo-radius-control); font: inherit; font-size: 1.1rem; }
+.card input:focus { border-color: var(--fo-cyan); outline: none; box-shadow: 0 0 0 3px rgb(34 211 238 / .24); }
+.rules, .message { min-height: 1.4em; margin: 0; font-size: .88rem; }
+.rules { color: var(--fo-text-secondary); }
+.message { color: #ffd4dc; }
+.continueButton { min-height: 54px; width: 100%; margin-top: var(--fo-space-3); color: #fff; background: linear-gradient(180deg, #9b6cff, #6d28d9); border: 1px solid #d8c9ff; border-radius: var(--fo-radius-compact); box-shadow: 0 5px 0 #3b0764, 0 0 18px rgb(168 85 247 / .35); font: 900 1.05rem 'Nunito Sans', system-ui, sans-serif; }
+.continueButton:disabled { cursor: not-allowed; opacity: .48; box-shadow: none; }
+.continueButton:not(:disabled):active { transform: translateY(3px); box-shadow: 0 2px 0 #3b0764; }
+
+@keyframes enter { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) { .card { animation: none; } }

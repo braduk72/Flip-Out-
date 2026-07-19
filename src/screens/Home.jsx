@@ -14,8 +14,10 @@ import {
   SeasonProgressCard,
 } from '../ui/components.jsx'
 import Match3Preview from '../ui/Match3Preview.jsx'
+import NicknameOnboarding from '../components/NicknameOnboarding.jsx'
 import { useMotionMode } from '../ui/motion.js'
 import { claimHomeDailyReward, fetchHomeData } from '../ui/homeData.js'
+import { playerGameApi } from '../utils/gameApi.js'
 import { APP_VERSION } from '../version.js'
 import '../ui/tokens.css'
 import styles from './Home.module.css'
@@ -48,6 +50,7 @@ export default function Home({
   sfxOn = true,
   dataLoader = fetchHomeData,
   dailyClaimer = claimHomeDailyReward,
+  nicknameSaver = playerGameApi.setDisplayName,
 }) {
   const [data, setData] = useState(EMPTY_HOME)
   const [status, setStatus] = useState('loading')
@@ -163,6 +166,16 @@ export default function Home({
     if (destination === 'collection') onCollection?.()
     if (destination === 'rewards') onRewards?.()
     if (destination === 'more') onMore?.()
+  }
+
+  if (status === 'ready' && !data.profile?.displayName) {
+    return <NicknameOnboarding onSubmit={async displayName => {
+      const result = await nicknameSaver(displayName)
+      setData(current => ({
+        ...current,
+        profile: { ...current.profile, displayName: result.displayName, playerName: result.displayName },
+      }))
+    }}/>
   }
 
   return (
