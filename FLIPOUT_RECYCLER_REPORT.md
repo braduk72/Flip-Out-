@@ -40,7 +40,7 @@ Tables:
 
 Verified indexes and constraints include all three primary keys, account/time receipt index, item/transaction trace index, account and recipe foreign keys, positive quantity/batch checks, rarity allowlist and JSON-object reward checks.
 
-Migration 010 committed to the Railway Preview database at `2026-07-19T14:17:11.289Z`. Target identity was `yamanote.proxy.rlwy.net`, database `railway`, user `postgres`, schema `public`, with `VERCEL_ENV=preview`. Migrations 001–009 were already applied. No Production target was used.
+Migration 010 committed to the Railway Preview database at `2026-07-19T14:17:11.289Z`; migration 011 committed at `2026-07-19T14:37:25.075Z`. Target identity was `yamanote.proxy.rlwy.net`, database `railway`, user `postgres`, schema `public`, with `VERCEL_ENV=preview`. Migrations 001–010 were already applied before 011. No Production target was used.
 
 ## Collection experience
 
@@ -83,9 +83,10 @@ Migration 010 committed to the Railway Preview database at `2026-07-19T14:17:11.
 - Full local Node suite: **116 discovered; 107 passed, 0 failed, 9 Preview-only skipped**.
 - Full local UI suite: **33 passed, 0 failed**.
 - Local production build: **passed**, 139 modules in 1.21 seconds, main JS 405.54 kB / 128.17 kB gzip and Collection chunk 31.34 kB / 9.18 kB gzip.
-- Preview Recycler verification: **8 passed, 0 failed, 0 skipped**, including live PostgreSQL concurrency, idempotency, cross-account rejection and last-copy protection.
+- Preview Recycler verification: **9 passed, 0 failed, 0 skipped**, including exact 1-Star reward, live PostgreSQL concurrency, idempotency, cross-account rejection and last-copy protection.
 - Preview verification build: **passed**, 139 modules in 1.80 seconds.
 - Ready verification deployment: `https://flip-2byq6y99m-chattocal.vercel.app` (`dpl_FHvohRLGLRDrPu2pm7byUoDeZXKt`).
+- Balance-correction Preview deployment: `https://flip-rec88ruhg-chattocal.vercel.app` (`dpl_DaiGwp6JiBhdPjW4oniMzo6dM6t3`), Ready after migration 011 and the 9-test focused verification build.
 - Dev-branch commit: `2d8eefb` (`Build secure duplicate card recycler`). Standard Vercel deployment `dpl_Pe11GoVn1HEQwY97ktuzYbWx74WW` reached Ready at `https://flip-8lnylx40e-chattocal.vercel.app`.
 - Permanent development URL: `https://dev.flipout.gizmogames.uk` returned HTTP 200, used the same `/assets/index-DHG-xlKH.js` bundle and ETag as the generated deployment, and contained build version `1.5.0-recycler`.
 

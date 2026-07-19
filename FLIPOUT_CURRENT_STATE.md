@@ -461,6 +461,7 @@ Focused lint for the newly added transaction service, backend helper/endpoints, 
 - Duplicate, concurrent and interrupted retries reuse the same transaction ID and cannot destroy or reward twice. Different input or cross-account replay is rejected.
 - Additive migration `010_duplicate_card_recycler.sql` committed to Railway Preview at `2026-07-19T14:17:11.289Z`; the three Recycler tables, indexes and constraints were verified. Production was not touched.
 - The provisional development recipe is 5 common duplicates to 1 Star. It is data-driven and requires balancing before release. Coins are not issued.
-- Local verification: 116 Node tests discovered (107 passed, 9 Preview-only skipped), 33 UI tests passed, focused lint passed and production build passed. Focused Preview verification passed 8/8 including live database concurrency and last-copy protection.
+- Local verification: focused Recycler/model tests passed, 6 Collection UI tests passed, focused lint passed and production build passed. Focused Preview verification passed 9/9 including exact 1-Star reward, live database concurrency and last-copy protection.
+- Migration 011 `recycler_common_reward_balance` committed to Preview at `2026-07-19T14:37:25.075Z`; no production target was used. Balance-correction deployment: `https://flip-rec88ruhg-chattocal.vercel.app`.
 - One broad Preview build test remains blocked by Vercel omitting a gitignored Android native file; this is unrelated to Recycler logic and is detailed in `FLIPOUT_RECYCLER_REPORT.md`.
 - Commit `2d8eefb` deployed Ready as Preview `dpl_Pe11GoVn1HEQwY97ktuzYbWx74WW`; `https://dev.flipout.gizmogames.uk` returned HTTP 200, matched the generated deployment bundle/ETag and reported `1.5.0-recycler`.
