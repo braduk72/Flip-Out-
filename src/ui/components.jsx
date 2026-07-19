@@ -160,65 +160,111 @@ export function PromoCarousel({ items, autoRotateMs = 6500, sfxOn = true }) {
   const [index, setIndex] = useState(0)
   const [userPaused, setUserPaused] = useState(false)
   const [interactionPaused, setInteractionPaused] = useState(false)
-  const pointerStart = useRef(null)
+  const viewportRef = useRef(null)
+  const scrollFrame = useRef(null)
+  const interactionTimer = useRef(null)
   const motion = useMotionMode()
   const visible = usePageVisibility()
   const audio = useUiAudio(sfxOn)
   const count = items.length
 
+  const scrollToSlide = (next, behavior = motion === 'full' ? 'smooth' : 'auto') => {
+    const viewport = viewportRef.current
+    if (!viewport) return
+    const left = next * viewport.clientWidth
+    if (typeof viewport.scrollTo === 'function') viewport.scrollTo({ left, behavior })
+    else viewport.scrollLeft = left
+  }
+
+  const selectSlide = (next, manual = false) => {
+    const safeNext = ((next % count) + count) % count
+    if (manual) audio.carouselChange()
+    setIndex(safeNext)
+    scrollToSlide(safeNext)
+  }
+
   useEffect(() => {
     if (count < 2 || motion !== 'full' || userPaused || interactionPaused || !visible) return undefined
-    const timer = window.setInterval(() => setIndex(current => (current + 1) % count), autoRotateMs)
+    const timer = window.setInterval(() => {
+      setIndex(current => {
+        const next = (current + 1) % count
+        scrollToSlide(next)
+        return next
+      })
+    }, autoRotateMs)
     return () => window.clearInterval(timer)
-  }, [autoRotateMs, count, interactionPaused, motion, userPaused, visible])
+  }, [autoRotateMs, count, interactionPaused, motion, userPaused, visible]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const reposition = () => scrollToSlide(index, 'auto')
+    window.addEventListener('resize', reposition)
+    return () => {
+      window.removeEventListener('resize', reposition)
+      window.cancelAnimationFrame(scrollFrame.current)
+      window.clearTimeout(interactionTimer.current)
+    }
+  }, [index]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!count) return <CardPanel variant="promo"><EmptyState title="No promotions right now" detail="Your next Match-3 level is ready."/></CardPanel>
   const safeIndex = index % count
-  const item = items[safeIndex]
-  const move = (direction, manual = true) => {
-    if (manual) { setUserPaused(true); audio.carouselChange() }
-    setIndex(current => (current + direction + count) % count)
+  const move = direction => selectSlide(safeIndex + direction, true)
+  const settleInteraction = () => {
+    window.clearTimeout(interactionTimer.current)
+    interactionTimer.current = window.setTimeout(() => setInteractionPaused(false), 220)
   }
-  const goTo = next => { setUserPaused(true); audio.carouselChange(); setIndex(next) }
+  const handleScroll = event => {
+    const viewport = event.currentTarget
+    setInteractionPaused(true)
+    settleInteraction()
+    window.cancelAnimationFrame(scrollFrame.current)
+    scrollFrame.current = window.requestAnimationFrame(() => {
+      if (!viewport.clientWidth) return
+      const next = Math.max(0, Math.min(count - 1, Math.round(viewport.scrollLeft / viewport.clientWidth)))
+      setIndex(next)
+    })
+  }
   return (
     <section
       className={styles.carousel}
       role="region"
       aria-roledescription="carousel"
       aria-label="Featured Flip-Out promotions"
-      onPointerDown={event => { pointerStart.current = event.clientX; setInteractionPaused(true) }}
-      onPointerUp={event => {
-        const start = pointerStart.current
-        pointerStart.current = null
-        setInteractionPaused(false)
-        if (start == null) return
-        const delta = event.clientX - start
-        if (Math.abs(delta) >= 40) move(delta < 0 ? 1 : -1)
-      }}
-      onPointerCancel={() => { pointerStart.current = null; setInteractionPaused(false) }}
       onMouseEnter={() => setInteractionPaused(true)}
       onMouseLeave={() => setInteractionPaused(false)}
       onFocusCapture={() => setInteractionPaused(true)}
       onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget)) setInteractionPaused(false) }}
     >
-      <article className={styles.promoSlide} aria-label={`${safeIndex + 1} of ${count}: ${item.title}`} style={{ backgroundImage: `linear-gradient(90deg, rgba(5,8,20,.98) 0%, rgba(5,8,20,.88) 38%, rgba(5,8,20,.18) 72%), url(${item.image})` }}>
-        <img className={styles.promoFrame} src="/ui/promo-frame.svg" alt="" aria-hidden="true"/>
-        <div className={styles.promoCopy}>
-          <Badge tone={item.tone ?? 'feature'}>{item.eyebrow}</Badge>
-          <h2>{item.title}</h2>
-          <p>{item.detail}</p>
-          {item.progress && <ProgressBar value={item.progress.current} max={item.progress.target} label={`${item.title}: ${item.progress.current} of ${item.progress.target}`} tone={item.progress.tone ?? 'teal'}/>}
-          {item.action && <button type="button" className={styles.promoAction} onClick={item.action.onClick}>{item.action.label} <Icon name="right" size={18}/></button>}
-        </div>
-      </article>
+      <div
+        ref={viewportRef}
+        className={styles.carouselViewport}
+        role="group"
+        aria-label="Promotion slides"
+        onScroll={handleScroll}
+        onTouchStart={() => setInteractionPaused(true)}
+        onTouchEnd={settleInteraction}
+        onTouchCancel={settleInteraction}
+      >
+        {items.map((item, slideIndex) => (
+          <article key={item.id} className={styles.promoSlide} aria-label={`${slideIndex + 1} of ${count}: ${item.title}`} aria-current={slideIndex === safeIndex ? 'true' : undefined} aria-hidden={slideIndex === safeIndex ? undefined : 'true'} style={{ backgroundImage: `linear-gradient(90deg, rgba(5,8,20,.98) 0%, rgba(5,8,20,.88) 38%, rgba(5,8,20,.18) 72%), url(${item.image})` }}>
+            <img className={styles.promoFrame} src="/ui/promo-frame.svg" alt="" aria-hidden="true"/>
+            <div className={styles.promoCopy}>
+              <Badge tone={item.tone ?? 'feature'}>{item.eyebrow}</Badge>
+              <h2>{item.title}</h2>
+              <p>{item.detail}</p>
+              {item.progress && <ProgressBar value={item.progress.current} max={item.progress.target} label={`${item.title}: ${item.progress.current} of ${item.progress.target}`} tone={item.progress.tone ?? 'teal'}/>}
+              {item.action && <button type="button" className={styles.promoAction} tabIndex={slideIndex === safeIndex ? 0 : -1} onClick={item.action.onClick}>{item.action.label} <Icon name="right" size={18}/></button>}
+            </div>
+          </article>
+        ))}
+      </div>
       {count > 1 && <>
-        <IconButton icon="left" label="Previous promotion" className={`${styles.carouselArrow} ${styles.carouselPrev}`} onClick={() => move(-1)}/>
-        <IconButton icon="right" label="Next promotion" className={`${styles.carouselArrow} ${styles.carouselNext}`} onClick={() => move(1)}/>
         <div className={styles.carouselControls}>
+          <IconButton icon="left" label="Previous promotion" className={styles.carouselArrow} onClick={() => move(-1)}/>
           <div className={styles.carouselDots} role="group" aria-label={`Promotion ${safeIndex + 1} of ${count}`}>
-            {items.map((entry, dot) => <button key={entry.id} type="button" className={dot === safeIndex ? styles.carouselDotActive : ''} aria-label={`Show promotion ${dot + 1}: ${entry.title}`} aria-current={dot === safeIndex ? 'true' : undefined} onClick={() => goTo(dot)}/>) }
+            {items.map((entry, dot) => <button key={entry.id} type="button" className={dot === safeIndex ? styles.carouselDotActive : ''} aria-label={`Show promotion ${dot + 1}: ${entry.title}`} aria-current={dot === safeIndex ? 'true' : undefined} onClick={() => selectSlide(dot, true)}/>) }
           </div>
           {motion === 'full' && <button type="button" className={styles.carouselPause} aria-label={userPaused ? 'Resume automatic promotion rotation' : 'Pause automatic promotion rotation'} onClick={() => setUserPaused(value => !value)}><Icon name={userPaused ? 'play' : 'pause'} size={17}/></button>}
+          <IconButton icon="right" label="Next promotion" className={styles.carouselArrow} onClick={() => move(1)}/>
         </div>
       </>}
     </section>
@@ -238,10 +284,10 @@ export function PrimaryPlayButton({ level, onClick, sfxOn = true, disabled = fal
   )
 }
 
-export function ProgressCard({ icon, title, detail, value, max, tone = 'teal', badge, onClick, thumbnail, unavailable = false, className = '' }) {
+export function ProgressCard({ icon, title, detail, value, max, tone = 'teal', badge, onClick, thumbnail, unavailable = false, disabled = false, pending = false, className = '' }) {
   const Element = onClick ? 'button' : 'article'
   return (
-    <Element type={onClick ? 'button' : undefined} className={`${styles.progressCard} ${className}`} onClick={onClick}>
+    <Element type={onClick ? 'button' : undefined} className={`${styles.progressCard} ${className}`} onClick={onClick} disabled={onClick ? disabled : undefined} aria-busy={pending || undefined}>
       <span className={styles.progressIcon} aria-hidden="true">{thumbnail ? <img src={thumbnail} alt=""/> : <Icon name={icon} size={30}/>}</span>
       <span className={styles.progressContent}>
         <span className={styles.progressHeading}><strong>{title}</strong>{badge && <Badge tone={badge.tone}>{badge.label}</Badge>}</span>
@@ -268,7 +314,7 @@ export function SeasonProgressCard({ season, onClick }) {
 
 export function DailyRewardCard({ reward, onClaim, pending = false }) {
   if (!reward?.available) return null
-  return <ProgressCard icon="rewards" title="Claim Daily Reward" detail={`${reward.nextReward?.amount ?? 0} Stars · Day ${reward.nextStreak ?? 1}`} badge={{ label: 'Ready', tone: 'ready' }} onClick={pending ? undefined : onClaim} className={styles.dailyReady}/>
+  return <ProgressCard icon="rewards" title={pending ? 'Collecting Daily Reward…' : 'Claim Daily Reward'} detail={`${reward.nextReward?.amount ?? 0} Stars · Day ${reward.nextStreak ?? 1}`} badge={{ label: pending ? 'Collecting' : 'Ready', tone: 'ready' }} onClick={onClaim} disabled={pending} pending={pending} className={styles.dailyReady}/>
 }
 
 const navItems = [

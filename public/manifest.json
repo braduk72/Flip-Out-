@@ -4,7 +4,7 @@
   "description": "Memory card-matching game with power cards, multiplayer and more — by Gizmo Games",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#0d0020",
   "theme_color": "#200008",
   "icons": [

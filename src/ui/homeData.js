@@ -1,5 +1,6 @@
 import { ITEM_BY_ID, ITEM_CATALOG } from '../data/itemCatalog.js'
 import { playerGameApi } from '../utils/gameApi.js'
+import { getDeviceTimeZone } from '../utils/timeZone.js'
 
 const CARD_TYPES = new Set(['card', 'card_variant'])
 
@@ -92,5 +93,5 @@ export async function fetchHomeData({ seasonStep = 0, storage = globalThis.local
 }
 
 export async function claimHomeDailyReward() {
-  return playerGameApi.dailyLogin(Intl.DateTimeFormat().resolvedOptions().timeZone)
+  return playerGameApi.dailyLogin(getDeviceTimeZone())
 }

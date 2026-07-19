@@ -119,13 +119,6 @@
   .heroHeading > span { padding: 6px 8px; }
 }
 
-@media (max-height: 540px) and (orientation: landscape) {
-  .content { grid-template-columns: minmax(360px, 1.45fr) minmax(260px, .75fr); gap: 18px; padding-top: 14px; }
-  .promoRegion { grid-column: 1 / -1; }
-  .hero { grid-column: 1; padding: 18px 18px 24px; }
-  .progressGroup { grid-column: 2; }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .ambient, .hero, .progressGroup { animation: none; }
 }

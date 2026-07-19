@@ -1,5 +1,11 @@
 # Flip-Out Concept 4D Home implementation report
 
+## Mobile UX addendum — 19 July 2026
+
+The Home foundation now follows the project-wide phone portrait/tablet adaptive orientation policy. Runtime safe-area variables cover cut-outs, rounded corners, system bars and gesture insets. Phone-landscape styling was removed; unsupported web orientation locking uses an accessible portrait guard.
+
+The promotional carousel is a native momentum-scrolling snap viewport with autoplay, labelled indicators and controls below the art. Daily Reward is a stable pending button backed by the authenticated authoritative grant, with immediate duplicate-tap protection and a Safari-safe timezone fallback. Coarse-pointer controls have a 44 x 44 CSS-pixel floor. See `FLIPOUT_MOBILE_UX_REPORT.md` for exact verification and remaining physical Safari/Android checks.
+
 Date: 19 July 2026. Environment: development and Vercel Preview only. Production was not targeted.
 
 ## Outcome

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import axe from 'axe-core'
 import { expect, test, vi } from 'vitest'
@@ -48,6 +48,24 @@ test('Daily Reward appears only while claimable and returns an authoritative rec
   await userEvent.click(await screen.findByRole('button', { name: /claim daily reward/i }))
   expect(await screen.findByRole('dialog', { name: 'Daily Reward claimed' })).toHaveTextContent('100 Stars')
   expect(dailyClaimer).toHaveBeenCalledOnce()
+})
+
+test('Daily Reward keeps a stable mobile button and rejects rapid duplicate taps', async () => {
+  let releaseClaim
+  const pendingClaim = new Promise(resolve => { releaseClaim = resolve })
+  const loader = vi.fn()
+    .mockResolvedValueOnce({ ...homeData, dailyLogin: { available: true, nextStreak: 3, nextReward: { currencyId: 'stars', amount: 150 } } })
+    .mockResolvedValueOnce({ ...homeData, currencies: { ...homeData.currencies, stars: 1350 }, dailyLogin: { available: false } })
+  const dailyClaimer = vi.fn(() => pendingClaim)
+  render(<Home dataLoader={loader} dailyClaimer={dailyClaimer} onMatch3={() => {}} onMemory={() => {}} sfxOn={false}/>)
+  const claim = await screen.findByRole('button', { name: /claim daily reward/i })
+  fireEvent.click(claim)
+  fireEvent.click(claim)
+  expect(dailyClaimer).toHaveBeenCalledOnce()
+  expect(screen.getByRole('button', { name: /collecting daily reward/i })).toBeDisabled()
+  releaseClaim({ streak: 3, reward: { currencyId: 'stars', amount: 150 } })
+  expect(await screen.findByRole('dialog', { name: 'Daily Reward claimed' })).toHaveTextContent('150 Stars')
+  await waitFor(() => expect(screen.getByLabelText('1,350 Stars')).toBeInTheDocument())
 })
 
 test('Home has no automated accessibility violations detectable in jsdom', async () => {

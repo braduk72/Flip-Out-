@@ -1,5 +1,14 @@
 # Flip-Out! current-state audit
 
+## Mobile UX polish — 19 July 2026
+
+- **Status: Implemented; development verification in progress.** Native iPhone orientation is portrait-only, Android phones request portrait, and tablets retain portrait/landscape through a 600 dp smallest-width policy. Web applies the same boundary progressively and presents a portrait guard where Safari or another browser refuses programmatic locking.
+- Runtime safe-area variables now cover all four edges; compact phone-landscape layouts were removed from Home, shared components and Match-3.
+- The promotional carousel now uses native touch/momentum scrolling and snap points, preserves autoplay/indicators/pause controls, and puts both arrows below rather than over the slide artwork or text.
+- Daily Reward remains an authenticated server claim. The pending card stays a disabled semantic button, same-tick duplicate taps are blocked, the exact confirmed Star amount is displayed immediately, and Safari timezone detection has a safe UTC fallback. No placeholder reward animation or client-invented grant remains.
+- Coarse-pointer controls have a shared 44 x 44 CSS-pixel floor; carousel dots were enlarged to a full 44 x 44 target.
+- Exact commands, files, limits and deployment evidence are recorded in `FLIPOUT_MOBILE_UX_REPORT.md`. Economy balance and gameplay rules were not changed.
+
 > **Development deployment URL:** Future verification and handover reports use `https://dev.flipout.gizmogames.uk`. Vercel-generated `*.vercel.app` addresses below are preserved only as historical deployment evidence, not as user-facing development URLs.
 
 ## Match-3 card-art tokens — 19 July 2026

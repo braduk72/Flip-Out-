@@ -36,19 +36,23 @@ describe('Flip-Out design-system components', () => {
     expect(screen.getByLabelText('Coins unavailable')).toHaveTextContent('—')
   })
 
-  test('carousel rotates, pauses and supports manual swipe', () => {
+  test('carousel rotates, pauses and tracks native momentum scrolling', () => {
     vi.useFakeTimers()
     render(<PromoCarousel items={promotions} autoRotateMs={1000} sfxOn={false}/>)
-    expect(screen.getByRole('article')).toHaveAttribute('aria-label', '1 of 2: Coin Store')
+    const first = screen.getByRole('article', { name: '1 of 2: Coin Store' })
+    const second = screen.getAllByRole('article', { hidden: true })[1]
+    expect(first).toHaveAttribute('aria-current', 'true')
     act(() => vi.advanceTimersByTime(1000))
-    expect(screen.getByRole('article')).toHaveAttribute('aria-label', '2 of 2: Collection')
+    expect(second).toHaveAttribute('aria-current', 'true')
     fireEvent.click(screen.getByRole('button', { name: 'Pause automatic promotion rotation' }))
     act(() => vi.advanceTimersByTime(3000))
-    expect(screen.getByRole('article')).toHaveAttribute('aria-label', '2 of 2: Collection')
-    const carousel = screen.getByRole('region', { name: 'Featured Flip-Out promotions' })
-    fireEvent.pointerDown(carousel, { clientX: 180 })
-    fireEvent.pointerUp(carousel, { clientX: 80 })
-    expect(screen.getByRole('article')).toHaveAttribute('aria-label', '1 of 2: Coin Store')
+    expect(second).toHaveAttribute('aria-current', 'true')
+    const viewport = screen.getByRole('group', { name: 'Promotion slides' })
+    Object.defineProperty(viewport, 'clientWidth', { configurable: true, value: 320 })
+    Object.defineProperty(viewport, 'scrollLeft', { configurable: true, writable: true, value: 0 })
+    fireEvent.scroll(viewport)
+    act(() => vi.advanceTimersByTime(250))
+    expect(first).toHaveAttribute('aria-current', 'true')
   })
 
   test('reduced motion prevents automatic carousel rotation', () => {
@@ -56,7 +60,7 @@ describe('Flip-Out design-system components', () => {
     vi.useFakeTimers()
     render(<PromoCarousel items={promotions} autoRotateMs={500} sfxOn={false}/>)
     act(() => vi.advanceTimersByTime(2500))
-    expect(screen.getByRole('article')).toHaveAttribute('aria-label', '1 of 2: Coin Store')
+    expect(screen.getByRole('article', { name: '1 of 2: Coin Store' })).toHaveAttribute('aria-current', 'true')
     expect(screen.queryByRole('button', { name: /automatic promotion rotation/i })).not.toBeInTheDocument()
   })
 

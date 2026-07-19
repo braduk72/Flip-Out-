@@ -222,14 +222,28 @@ button.playerSummary { cursor: pointer; }
   position: relative;
   width: 100%;
   min-width: 0;
-  touch-action: pan-y pinch-zoom;
   user-select: none;
   animation: panelEnter var(--fo-motion-emphasis) var(--fo-ease-enter) both;
 }
+.carouselViewport {
+  display: flex;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  touch-action: pan-x pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
+}
+.carouselViewport::-webkit-scrollbar { display: none; }
 .promoSlide {
   position: relative;
   display: grid;
+  flex: 0 0 100%;
   align-items: center;
+  width: 100%;
   min-height: clamp(168px, 25vw, 270px);
   overflow: hidden;
   padding: clamp(20px, 4vw, 42px);
@@ -237,6 +251,8 @@ button.playerSummary { cursor: pointer; }
   background-size: cover;
   border-radius: clamp(18px, 3vw, 28px);
   box-shadow: 0 10px 36px rgb(0 0 0 / .48), 0 0 26px rgb(109 40 217 / .2);
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
 }
 .promoFrame { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .promoCopy { position: relative; z-index: 2; display: grid; gap: clamp(5px, 1vw, 10px); width: min(58%, 590px); }
@@ -258,13 +274,11 @@ button.playerSummary { cursor: pointer; }
   font-weight: 900;
 }
 .promoAction:active { transform: translateY(2px); }
-.carouselArrow { position: absolute; z-index: 3; top: 50%; transform: translateY(-50%); width: 44px; min-width: 44px; height: 44px; border-radius: 50%; background: rgb(5 8 20 / .76); }
-.carouselArrow:active { transform: translateY(calc(-50% + 2px)) scale(.96); }
-.carouselPrev { left: 8px; }
-.carouselNext { right: 8px; }
-.carouselControls { position: absolute; z-index: 4; right: 0; bottom: -24px; left: 0; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; }
-.carouselDots { display: flex; align-items: center; gap: 4px; }
-.carouselDots button { position: relative; width: 28px; height: 44px; padding: 0; background: none; }
+.carouselArrow { position: static; z-index: 3; flex: 0 0 44px; width: 44px; min-width: 44px; height: 44px; border-radius: 50%; background: rgb(5 8 20 / .76); transform: none; }
+.carouselArrow:active { transform: translateY(2px) scale(.96); }
+.carouselControls { position: relative; z-index: 4; display: flex; align-items: center; justify-content: center; gap: clamp(3px, 1.5vw, 10px); min-height: 52px; padding-top: 6px; }
+.carouselDots { display: flex; min-width: 0; align-items: center; justify-content: center; gap: 0; }
+.carouselDots button { position: relative; width: 44px; min-width: 44px; height: 44px; padding: 0; background: none; }
 .carouselDots button::after { content: ''; position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; border-radius: 999px; background: #aeb8cc; transform: translate(-50%, -50%); transition: width var(--fo-motion-fast), background var(--fo-motion-fast); }
 .carouselDots .carouselDotActive::after { width: 20px; background: var(--fo-cyan); box-shadow: 0 0 8px var(--fo-cyan); }
 .carouselPause { display: grid; place-items: center; width: 44px; height: 44px; color: var(--fo-text-secondary); background: transparent; border-radius: 50%; }
@@ -392,7 +406,6 @@ button.progressCard:active { transform: translateY(2px); }
   .promoSlide { min-height: 180px; padding: 18px; }
   .promoCopy { width: 68%; }
   .promoCopy p { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-  .carouselArrow { display: none; }
   .progressCard { grid-template-columns: 48px minmax(0, 1fr) auto; gap: 8px; padding: 9px 8px; }
   .progressIcon { width: 46px; height: 46px; }
 }
@@ -401,17 +414,6 @@ button.progressCard:active { transform: translateY(2px); }
   .safeHeader { padding-bottom: 12px; }
   .promoSlide { min-height: 250px; }
   .bottomNav { width: min(100%, 760px); margin: 0 auto; border: 1px solid rgb(125 211 252 / .2); border-bottom: 0; border-radius: 22px 22px 0 0; }
-}
-
-@media (max-height: 540px) and (orientation: landscape) {
-  .safeHeader { padding-top: max(4px, env(safe-area-inset-top)); padding-bottom: 4px; }
-  .headerRow { grid-template-columns: minmax(145px, 1fr) 76px minmax(190px, 1fr); }
-  .playerSummary { min-height: 52px; }
-  .avatar { width: 44px; }
-  .brandLogo { width: 70px; }
-  .currencyGroup { grid-column: 3; grid-row: 1; }
-  .bottomNav { min-height: calc(58px + env(safe-area-inset-bottom)); }
-  .bottomNav button { min-height: 48px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

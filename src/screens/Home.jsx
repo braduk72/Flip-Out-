@@ -54,6 +54,7 @@ export default function Home({
   const [error, setError] = useState('')
   const [dailyPending, setDailyPending] = useState(false)
   const [dailyReceipt, setDailyReceipt] = useState(null)
+  const dailyClaimInFlight = useRef(false)
   const [moreGamesOpen, setMoreGamesOpen] = useState(false)
   const scrollRef = useRef(null)
   const motion = useMotionMode()
@@ -90,15 +91,23 @@ export default function Home({
   }, [motion])
 
   const claimDaily = async () => {
-    if (dailyPending) return
+    if (dailyClaimInFlight.current) return
+    dailyClaimInFlight.current = true
     setDailyPending(true)
     try {
       const result = await dailyClaimer()
+      const amount = Math.max(0, Number(result?.reward?.amount) || 0)
+      setData(current => ({
+        ...current,
+        currencies: { ...current.currencies, stars: current.currencies.stars + amount },
+        dailyLogin: { ...current.dailyLogin, available: false },
+      }))
       setDailyReceipt(result)
       await load()
     } catch (claimError) {
       setError(claimError?.message || 'The Daily Reward could not be claimed.')
     } finally {
+      dailyClaimInFlight.current = false
       setDailyPending(false)
     }
   }

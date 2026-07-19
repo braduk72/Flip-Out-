@@ -255,20 +255,6 @@
   .powers { gap: 8px; }
 }
 
-@media (orientation: landscape) and (max-height: 620px) {
-  .game { display: grid; grid-template-columns: minmax(260px, 58dvh) minmax(260px, 1fr); grid-template-rows: auto auto auto 1fr; justify-content: center; gap: 4px 18px; padding-inline: max(12px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-right)); }
-  .gameTop,
-  .stats,
-  .objectives,
-  .powers { width: 100%; }
-  .gameTop { grid-column: 1 / -1; }
-  .stats { grid-column: 2; grid-row: 2; }
-  .objectives { grid-column: 2; grid-row: 3; align-self: start; }
-  .boardShell { grid-column: 1; grid-row: 2 / span 4; width: min(58dvh, 480px); margin: 0; }
-  .powers { grid-column: 2; grid-row: 4; grid-template-columns: repeat(2, minmax(100px, 1fr)); align-self: start; }
-  .resolvingText { grid-column: 2; }
-}
-
 @media (max-width: 340px) {
   .page,
   .game { padding-inline: max(4px, env(safe-area-inset-left)) max(4px, env(safe-area-inset-right)); }

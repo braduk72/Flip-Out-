@@ -1,5 +1,11 @@
 # Flip-Out continuation report
 
+## Mobile UX polish package — 19 July 2026
+
+Phone shells now use portrait orientation, while tablets retain portrait/landscape at the 600 dp smallest-width boundary. The web uses progressive Screen Orientation support plus an accessible portrait guard, and the shell consumes runtime safe-area insets on all four edges. Phone-landscape presentation CSS was removed instead of maintaining compressed layouts.
+
+The Home carousel now provides native finger scrolling, momentum and snapping, autoplay, indicators and non-overlay controls. Daily Reward collection remains server-authoritative, blocks immediate duplicate taps, keeps its pending button semantics and displays only the confirmed reward. Shared coarse-pointer targets have a 44 x 44 CSS-pixel minimum. Full technical evidence and physical-device limitations are in `FLIPOUT_MOBILE_UX_REPORT.md`; no economy or gameplay balance was altered.
+
 > **Development deployment URL:** Future verification and handover reports use `https://dev.flipout.gizmogames.uk`. Vercel-generated `*.vercel.app` addresses below are preserved only as historical deployment evidence, not as user-facing development URLs.
 
 ## Match-3 card-art token package — 19 July 2026

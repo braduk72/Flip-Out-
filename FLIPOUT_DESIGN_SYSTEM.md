@@ -156,7 +156,7 @@ Layout rules:
 - Respect safe-area insets on every edge.
 - Never enforce a 390 × 844 application frame.
 - At 320 CSS pixels, primary actions, currency values and gameplay controls remain visible without horizontal scrolling.
-- Landscape gameplay prioritises the board and places HUD/objectives beside it where space permits.
+- Phone layouts are portrait-only. Tablet landscape gameplay prioritises the board and places HUD/objectives beside it where space permits.
 
 ## Responsive layout contract
 
@@ -181,7 +181,7 @@ Every redesigned screen must be reviewed at:
 
 - 320 CSS-pixel narrow phone width
 - 360–430 CSS-pixel standard modern phone range
-- A short landscape phone viewport
+- A phone-landscape orientation-guard check
 - A large phone or foldable-width viewport
 - 768 CSS-pixel tablet width
 - A larger tablet in portrait and landscape
@@ -884,13 +884,14 @@ This review applies to the entire design system. Individual screens may add stri
 - Scrollable content begins after the measured header rather than using a copied header-height constant.
 - Bottom navigation includes the runtime bottom inset and never competes with gesture/home-indicator regions.
 - Side gutters combine design spacing with safe-area values so rounded corners and landscape camera cut-outs cannot clip controls.
-- Required physical checks include iPhone 17 Pro Max, iPhone 16 Pro, iPhone 15, Pixel 9 and Samsung Galaxy S25 in portrait and landscape.
+- Required physical checks include iPhone 17 Pro Max, iPhone 16 Pro, iPhone 15, Pixel 9 and Samsung Galaxy S25 in portrait. Tablet checks cover portrait and landscape.
 
 ### Responsive orientation and tablets
 
-- No ordinary screen locks orientation. A gameplay exception requires evidence that rotation would make the interaction unusable and must still offer an accessible alternative.
+- Phones are locked to portrait at the native iOS and Android shells. The web requests a portrait lock where the Screen Orientation API permits it and otherwise presents a clear portrait guard in phone landscape. This is progressive enhancement because Safari does not generally permit a page-level orientation lock.
+- Tablets, classified from a 600 dp/CSS-pixel smallest-width boundary, support portrait and landscape. Each tablet layout must remain genuinely usable in both orientations before release.
 - At 320 CSS-pixel width, content reflows without two-dimensional page scrolling or loss of actions. A game board may retain its essential two-dimensional structure, but surrounding UI must reflow.
-- Short landscape phones use a compact header and side-by-side board/HUD composition. The Play control remains prominent and the bottom navigation remains reachable.
+- Phone-landscape presentation layouts are not maintained. Rotation produces the portrait orientation guard rather than a compressed alternative interface.
 - Tablets use an intentional two-column or wider composition; they never show a stretched phone layout or a narrow simulated handset floating in empty space.
 - Reading and focus order remains logical when visual regions move between one and two columns.
 - Split-screen, browser chrome and the on-screen keyboard may reduce available height without trapping or covering the focused control.

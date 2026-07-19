@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/react'
 import './index.css'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
+import OrientationGuard from './components/OrientationGuard.jsx'
 import { restoreFromCookie } from './utils/gameStorage.js'
 import { bootstrapPlatformIdentity } from './utils/platformIdentity.js'
 import { syncCloudSave } from './utils/cloudSave.js'
@@ -16,6 +17,7 @@ bootstrapPlatformIdentity()
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
+      <OrientationGuard />
       <Suspense fallback={<div role="status" style={{minHeight:'100vh',display:'grid',placeItems:'center',background:'#12052d',color:'#fff'}}>Loading…</div>}><App /></Suspense>
       <Analytics />
     </ErrorBoundary>

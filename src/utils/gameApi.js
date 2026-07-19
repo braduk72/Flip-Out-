@@ -1,4 +1,5 @@
 import { currentSessionToken, ensureGuestIdentity } from './platformIdentity.js'
+import { getDeviceTimeZone } from './timeZone.js'
 
 async function request(path, body) {
   let token = currentSessionToken()
@@ -10,9 +11,9 @@ async function request(path, body) {
 }
 
 export const playerGameApi = {
-  state: (timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone) => request(`/api/fo-game?service=rewards&timeZone=${encodeURIComponent(timeZone)}`),
+  state: (timeZone = getDeviceTimeZone()) => request(`/api/fo-game?service=rewards&timeZone=${encodeURIComponent(timeZone)}`),
   dailyLogin: timeZone => request('/api/fo-game?service=rewards', { action: 'daily-login', timeZone }),
-  spinWheel: ({ spinType, advertCompletionId }) => request('/api/fo-game?service=rewards', { action: 'daily-wheel', spinType, advertCompletionId, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }),
+  spinWheel: ({ spinType, advertCompletionId }) => request('/api/fo-game?service=rewards', { action: 'daily-wheel', spinType, advertCompletionId, timeZone: getDeviceTimeZone() }),
   action: body => request('/api/fo-game?service=actions', body),
   market: body => request('/api/fo-game?service=market', body),
   marketListings: () => request('/api/fo-game?service=market'),

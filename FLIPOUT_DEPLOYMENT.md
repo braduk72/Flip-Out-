@@ -55,7 +55,7 @@ npx vercel inspect https://dev.flipout.gizmogames.uk --scope chattocal
 npx vercel ls flip-out --scope chattocal
 ```
 
-The application currently reports `1.1.1-card-tokens` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+The application currently reports `1.2.1-mobile-ux` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
 
 ## Verification record — Match-3 card-art tokens, 19 July 2026
 
