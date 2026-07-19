@@ -126,3 +126,11 @@ The application currently reports `1.2.1-mobile-ux` from `src/version.js`. Repor
 ## Booster Store revision — 19 July 2026
 
 The supplied booster artwork is bundled as `public/ui/shop/booster-packs.webp`. Booster purchases remain disabled pending a server-authoritative receipt and approved foil configuration. Preview only.
+
+## Verification record — approved themed booster opening, 19 July 2026
+
+- Commit `8955e75` was pushed to `dev`; no production branch, production deployment, production domain, root DNS record or nameserver was changed.
+- Vercel Ready Preview: `dpl_6mi6fKuPFTg6EyTE9w32zWRGLJDZ`, generated diagnostic URL `https://flip-modjhhhfr-chattocal.vercel.app`, target `preview`.
+- Vercel inspection confirms `https://dev.flipout.gizmogames.uk` aliases that Ready Preview deployment. The permanent development URL returned HTTP 200 with ETag `"30351a96e2565d210ba42a58681aa805"` and entry `assets/index-ChIs5IAc.js`.
+- The permanent URL returned HTTP 200 for `/ui/booster-opening/themed/frames.json` (11 frames), `/ui/booster-opening/themed/booster-open-10.webp` (`image/webp`) and `/?dev=booster-opening`.
+- The Preview-only review route was browser-checked and rendered the expected Frame 01 metadata/control surface. Production was not touched.

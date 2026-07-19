@@ -84,3 +84,13 @@ The following graphics are deliberately produced by reusable vector/CSS componen
 ## Booster Store additions — 19 July 2026
 
 `public/ui/shop/booster-packs.webp` is the supplied Themed/Random Booster comparison artwork converted to WebP. `/images/cards/special/rocket.webp` is ready line-special artwork; the Match-3 Sun is a reusable CSS graphic.
+
+## Themed booster opening keyframes — 19 July 2026
+
+| Assets | Source / runtime purpose | Size/type | Status |
+|---|---|---|---|
+| `assets/source/booster-opening/themed/booster-opening-themed-source.png` | Approved master source sheet; retained outside the served public tree | 768×1376 transparent PNG | **READY — SOURCE ONLY** |
+| `public/ui/booster-opening/themed/booster-open-01.webp` … `booster-open-11.webp` | Eleven approved wrapper/card key poses for the themed opening | 640×640 transparent WebP each; shared register `(320,320)` | **READY** |
+| `public/ui/booster-opening/themed/frames.json` | Generated source alpha/crop bounds, 3/3/3/2 grouping, shared canvas metadata and Frame 10 remnant flag | JSON | **READY** |
+
+The assets are produced only by `scripts/process-themed-booster-opening.mjs` from the approved source sheet. It uses one scale (`1`), 6 px source padding, WebP quality `96`, alpha quality `100` and effort `6`; it does not generate, redraw, stretch or independently resize artwork. Frame 10 includes the detached wrapper remnant, while Frame 11 is a visual target for the procedural independent-card fan. The development-only review route is `?dev=booster-opening` on the approved development hostname.
