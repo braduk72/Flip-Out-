@@ -1,0 +1,323 @@
+{
+  "source": {
+    "archive": "C:/brad/FlipOut/assets/source/booster-opening/themed/booster-opening-themed-source.png",
+    "width": 768,
+    "height": 1376,
+    "alphaThreshold": 16,
+    "layout": [
+      3,
+      3,
+      3,
+      2
+    ]
+  },
+  "canvas": {
+    "width": 640,
+    "height": 640,
+    "registration": {
+      "x": 320,
+      "y": 320
+    },
+    "scale": 1,
+    "padding": 6
+  },
+  "frames": [
+    {
+      "frame": 1,
+      "file": "booster-open-01.webp",
+      "row": 1,
+      "alphaBounds": {
+        "left": 35,
+        "top": 37,
+        "width": 186,
+        "height": 294
+      },
+      "cropBounds": {
+        "left": 29,
+        "top": 31,
+        "width": 198,
+        "height": 306
+      },
+      "canvas": {
+        "width": 640,
+        "height": 640
+      },
+      "registration": {
+        "x": 320,
+        "y": 320
+      },
+      "scale": 1,
+      "detachedWrapperRemnant": false
+    },
+    {
+      "frame": 2,
+      "file": "booster-open-02.webp",
+      "row": 1,
+      "alphaBounds": {
+        "left": 317,
+        "top": 37,
+        "width": 143,
+        "height": 290
+      },
+      "cropBounds": {
+        "left": 311,
+        "top": 31,
+        "width": 155,
+        "height": 302
+      },
+      "canvas": {
+        "width": 640,
+        "height": 640
+      },
+      "registration": {
+        "x": 320,
+        "y": 320
+      },
+      "scale": 1,
+      "detachedWrapperRemnant": false
+    },
+    {
+      "frame": 3,
+      "file": "booster-open-03.webp",
+      "row": 1,
+      "alphaBounds": {
+        "left": 631,
+        "top": 37,
+        "width": 28,
+        "height": 294
+      },
+      "cropBounds": {
+        "left": 625,
+        "top": 31,
+        "width": 40,
+        "height": 306
+      },
+      "canvas": {
+        "width": 640,
+        "height": 640
+      },
+      "registration": {
+        "x": 320,
+        "y": 320
+      },
+      "scale": 1,
+      "detachedWrapperRemnant": false
+    },
+    {
+      "frame": 4,
+      "file": "booster-open-04.webp",
+      "row": 2,
+      "alphaBounds": {
+        "left": 70,
+        "top": 381,
+        "width": 117,
+        "height": 281
+      },
+      "cropBounds": {
+        "left": 64,
+        "top": 375,
+        "width": 129,
+        "height": 293
+      },
+      "canvas": {
+        "width": 640,
+        "height": 640
+      },
+      "registration": {
+        "x": 320,
+        "y": 320
+      },
+      "scale": 1,
+      "detachedWrapperRemnant": false
+    },
+    {
+      "frame": 5,
+      "file": "booster-open-05.webp",
+      "row": 2,
+      "alphaBounds": {
+        "left": 319,
+        "top": 381,
+        "width": 133,
+        "height": 281
+      },
+      "cropBounds": {
+        "left": 313,
+        "top": 375,
+        "width": 145,
+        "height": 293
+      },
+      "canvas": {
+        "width": 640,
+        "height": 640
+      },
+      "registration": {
+        "x": 320,
+        "y": 320
+      },
+      "scale": 1,
+      "detachedWrapperRemnant": false
+    },
+    {
+      "frame": 6,
+      "file": "booster-open-06.webp",
+      "row": 2,
+      "alphaBounds": {
+        "left": 578,
+        "top": 381,
+        "width": 132,
+        "height": 281
+      },
+      "cropBounds": {
+        "left": 572,
+        "top": 375,
+        "width": 144,
+        "height": 293
+      },
+      "canvas": {
+        "width": 640,
+        "height": 640
+      },
+      "registration": {
+        "x": 320,
+        "y": 320
+      },
+      "scale": 1,
+      "detachedWrapperRemnant": false
+    },
+    {
+      "frame": 7,
+      "file": "booster-open-07.webp",
+      "row": 3,
+      "alphaBounds": {
+        "left": 58,
+        "top": 712,
+        "width": 140,
+        "height": 275
+      },
+      "cropBounds": {
+        "left": 52,
+        "top": 706,
+        "width": 152,
+        "height": 287
+      },
+      "canvas": {
+        "width": 640,
+        "height": 640
+      },
+      "registration": {
+        "x": 320,
+        "y": 320
+      },
+      "scale": 1,
+      "detachedWrapperRemnant": false
+    },
+    {
+      "frame": 8,
+      "file": "booster-open-08.webp",
+      "row": 3,
+      "alphaBounds": {
+        "left": 302,
+        "top": 709,
+        "width": 167,
+        "height": 278
+      },
+      "cropBounds": {
+        "left": 296,
+        "top": 703,
+        "width": 179,
+        "height": 290
+      },
+      "canvas": {
+        "width": 640,
+        "height": 640
+      },
+      "registration": {
+        "x": 320,
+        "y": 320
+      },
+      "scale": 1,
+      "detachedWrapperRemnant": false
+    },
+    {
+      "frame": 9,
+      "file": "booster-open-09.webp",
+      "row": 3,
+      "alphaBounds": {
+        "left": 550,
+        "top": 717,
+        "width": 169,
+        "height": 276
+      },
+      "cropBounds": {
+        "left": 544,
+        "top": 711,
+        "width": 181,
+        "height": 288
+      },
+      "canvas": {
+        "width": 640,
+        "height": 640
+      },
+      "registration": {
+        "x": 320,
+        "y": 320
+      },
+      "scale": 1,
+      "detachedWrapperRemnant": false
+    },
+    {
+      "frame": 10,
+      "file": "booster-open-10.webp",
+      "row": 4,
+      "alphaBounds": {
+        "left": 73,
+        "top": 1060,
+        "width": 204,
+        "height": 287
+      },
+      "cropBounds": {
+        "left": 67,
+        "top": 1054,
+        "width": 216,
+        "height": 299
+      },
+      "canvas": {
+        "width": 640,
+        "height": 640
+      },
+      "registration": {
+        "x": 320,
+        "y": 320
+      },
+      "scale": 1,
+      "detachedWrapperRemnant": true
+    },
+    {
+      "frame": 11,
+      "file": "booster-open-11.webp",
+      "row": 4,
+      "alphaBounds": {
+        "left": 397,
+        "top": 1101,
+        "width": 364,
+        "height": 185
+      },
+      "cropBounds": {
+        "left": 391,
+        "top": 1095,
+        "width": 376,
+        "height": 197
+      },
+      "canvas": {
+        "width": 640,
+        "height": 640
+      },
+      "registration": {
+        "x": 320,
+        "y": 320
+      },
+      "scale": 1,
+      "detachedWrapperRemnant": false
+    }
+  ]
+}

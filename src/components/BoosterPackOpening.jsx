@@ -17,8 +17,8 @@ function durationFor(step, motion) {
   return motion === 'off' ? 0 : motion === 'reduced' ? Math.max(70, Math.round(step.duration * 0.28)) : step.duration
 }
 
-export default function BoosterPackOpening({ packId, cards, interruption = null, onCelebration, onComplete, onClose, onFeedback }) {
-  const presentation = useMemo(() => createPackOpeningPresentation({ packId, cards, interruption }), [cards, interruption, packId])
+export default function BoosterPackOpening({ packId, receiptId = null, cards, interruption = null, onCelebration, onComplete, onClose, onFeedback }) {
+  const presentation = useMemo(() => createPackOpeningPresentation({ packId, receiptId, cards, interruption }), [cards, interruption, packId, receiptId])
   const motion = useMotionMode()
   const [phase, setPhase] = useState('idle')
   const [preloaded, setPreloaded] = useState(false)
@@ -112,6 +112,7 @@ export default function BoosterPackOpening({ packId, cards, interruption = null,
   }
 
   const currentFrame = packPhaseFrame(phase)
+  const cardsVisible = ['stacked', 'fan-ready', 'revealing', 'celebration-paused', 'complete'].includes(phase)
   const canReveal = phase === 'fan-ready' || phase === 'revealing'
   const wrapperVisible = !['fan-ready', 'revealing', 'celebration-paused', 'complete'].includes(phase)
 
@@ -121,11 +122,11 @@ export default function BoosterPackOpening({ packId, cards, interruption = null,
         <div className={styles.lightBloom} aria-hidden="true"/>
         <p className={styles.status} aria-live="polite">{phase === 'idle' ? 'Your five-card pack is ready.' : phase === 'fan-ready' ? 'Tap a card to reveal it, or reveal all.' : phase === 'celebration-paused' ? 'A collection celebration is ready.' : 'Opening your pack…'}</p>
         <div className={`${styles.packScene} ${styles[`phase_${phase}`] ?? ''}`}>
-          <div className={styles.cards} data-fanned={canReveal || undefined}>
+          <div className={styles.cards} data-stacked={cardsVisible || undefined} data-fanned={canReveal || undefined}>
             {revealed.map((card, index) => {
               const pose = CARD_FAN_POSES[index]
               const isFoil = foilEffect?.cardId === card.id
-              return <button key={card.id} type="button" className={`${styles.card} ${card.revealed ? styles.cardRevealed : ''} ${isFoil ? styles.cardFoil : ''}`} style={{ '--fan-x': `${pose.x}px`, '--fan-y': `${pose.y}px`, '--fan-rotate': `${pose.rotate}deg`, '--fan-delay': `${pose.delay}ms` }} aria-label={card.revealed ? `${card.name} revealed` : `Reveal card ${index + 1}`} disabled={!canReveal || card.revealed} onClick={() => revealCard(index)}>
+              return <button key={card.id} type="button" className={`${styles.card} ${card.revealed ? styles.cardRevealed : ''} ${isFoil ? styles.cardFoil : ''}`} style={{ '--fan-x': `${pose.x}px`, '--fan-y': `${pose.y}px`, '--fan-rotate': `${pose.rotate}deg`, '--fan-delay': `${pose.delay}ms`, '--stack-depth': index, '--card-accent': `var(--booster-${pose.color})` }} aria-label={card.revealed ? `${card.name} revealed` : `Reveal card ${index + 1}`} disabled={!canReveal || card.revealed} onClick={() => revealCard(index)}>
                 <span className={styles.cardInner}>
                   <span className={`${styles.cardFace} ${styles.cardBack}`}><img src="/images/back.webp" alt=""/></span>
                   <span className={`${styles.cardFace} ${styles.cardFront}`}><img src={card.asset} alt={card.revealed ? card.name : ''}/>{card.foil && <span className={styles.foilBadge} aria-hidden="true">FOIL</span>}</span>

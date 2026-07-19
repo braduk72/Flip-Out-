@@ -22,6 +22,7 @@ import { isAutomatedAudioDisabled } from './utils/audioSafety.js'
 import { createTransactionId, economy } from './utils/economyService.js'
 import CookieBanner, { consentAnswered, hasConsent } from './components/CookieBanner.jsx'
 import { isMatch3TokenReviewRequest } from './match3/tokenReviewAccess.js'
+import { isBoosterOpeningReviewRequest } from './ui/boosterOpeningReviewAccess.js'
 import { LoadingState, Modal } from './ui/components.jsx'
 import appStyles from './App.module.css'
 
@@ -33,6 +34,7 @@ const Marketplace=lazy(()=>import('./screens/Marketplace'))
 const RevealGame=lazy(()=>import('./screens/RevealGame'))
 const Match3=lazy(()=>import('./screens/Match3'))
 const Match3TokenReview=lazy(()=>import('./screens/Match3TokenReview'))
+const BoosterOpeningReview=lazy(()=>import('./screens/BoosterOpeningReview'))
 
 // ── Music pools ───────────────────────────────────────────────────────────────
 const HOME_TRACKS = [
@@ -75,7 +77,7 @@ const SPIN_TRACKS     = [
 const GAME_SCREENS = new Set(['game','mpgame','roundstart'])
 
 export default function App() {
-  const [screen,     setScreen]     = useState(() => isMatch3TokenReviewRequest() ? 'match3-token-review' : 'home')
+  const [screen,     setScreen]     = useState(() => isBoosterOpeningReviewRequest() ? 'booster-opening-review' : isMatch3TokenReviewRequest() ? 'match3-token-review' : 'home')
   const [cookieBannerDone, setCookieBannerDone] = useState(consentAnswered)
   const [deck,       setDeck]       = useState(null)
   const [portrait,   setPortrait]   = useState(() => parseInt(localStorage.getItem('fo_portrait')   || '1'))
@@ -587,6 +589,7 @@ export default function App() {
   }
   if (screen === 'match3') return <Match3 onBack={() => setScreen('home')} />
   if (screen === 'match3-token-review') return <Match3TokenReview onBack={() => { window.history.replaceState({}, '', window.location.pathname); setScreen('home') }} />
+  if (screen === 'booster-opening-review') return <BoosterOpeningReview onBack={() => { window.history.replaceState({}, '', window.location.pathname); setScreen('home') }} />
   if (screen === 'inventory') {
     return <Inventory onBack={() => setScreen('home')} navProps={navProps} />
   }

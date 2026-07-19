@@ -1,17 +1,18 @@
-.overlay { position: fixed; z-index: 120; inset: 0; display: grid; place-items: center; min-height: 100dvh; padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); overflow: hidden; color: #f8fbff; background: radial-gradient(circle at 50% 42%, #342070 0%, #100c2b 45%, #050712 100%); isolation: isolate; }
+.overlay { --booster-blue: #35c7ff; --booster-red: #ff6570; --booster-green: #65e19d; --booster-purple: #cf79ff; --booster-gold: #ffd56b; position: fixed; z-index: 120; inset: 0; display: grid; place-items: center; min-height: 100dvh; padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); overflow: hidden; color: #f8fbff; background: radial-gradient(circle at 50% 42%, #342070 0%, #100c2b 45%, #050712 100%); isolation: isolate; }
 .stage { position: relative; z-index: 1; display: grid; justify-items: center; width: min(100%, 720px); min-height: min(82dvh, 720px); padding: clamp(18px, 5vw, 42px); overflow: hidden; border: 1px solid rgb(196 181 253 / .42); border-radius: clamp(22px, 5vw, 38px); box-shadow: 0 28px 90px rgb(0 0 0 / .58), inset 0 1px rgb(255 255 255 / .12); }
 .status { position: relative; z-index: 4; min-height: 2.8em; margin: 0; color: #e9e4ff; font-weight: 800; text-align: center; }
 .lightBloom { position: absolute; z-index: -1; inset: 16% -25%; background: radial-gradient(ellipse, rgb(168 85 247 / .26), transparent 66%); filter: blur(20px); pointer-events: none; }
 .packScene { position: relative; display: grid; place-items: center; width: min(100%, 560px); min-height: clamp(360px, 64vw, 500px); perspective: 1200px; transform-style: preserve-3d; }
 .packKeyframe { position: absolute; z-index: 3; width: min(88%, 400px); max-height: 82%; object-fit: contain; pointer-events: none; will-change: transform; transform: translate3d(0, 12px, 0) rotateY(0deg) scale(.9); }
 .cards { position: absolute; z-index: 2; width: 330px; height: 236px; transform-style: preserve-3d; }
-.card { position: absolute; top: 20px; left: 50%; width: 116px; height: 174px; padding: 0; overflow: visible; background: transparent; border: 0; border-radius: 12px; cursor: pointer; opacity: 0; perspective: 900px; transform: translate3d(-50%, 20px, -80px) rotate(0deg) scale(.72); transition: transform 620ms cubic-bezier(.18,.86,.22,1.18) var(--fan-delay), opacity 140ms linear; will-change: transform; }
-.cards[data-fanned] .card { opacity: 1; transform: translate3d(calc(-50% + var(--fan-x)), var(--fan-y), 0) rotate(var(--fan-rotate)) scale(1); }
+.card { position: absolute; top: 20px; left: 50%; width: 116px; height: 174px; padding: 0; overflow: visible; background: transparent; border: 0; border-radius: 12px; cursor: pointer; opacity: 0; perspective: 900px; transform: translate3d(-50%, 20px, -80px) rotate(0deg) scale(.72); transition: transform 620ms cubic-bezier(.18,.86,.22,1.18) var(--fan-delay); will-change: transform; }
+.cards[data-stacked] .card { opacity: 1; transform: translate3d(-50%, 8px, calc(var(--stack-depth) * 2px)) rotate(0deg) scale(.76); }
+.cards[data-fanned] .card { transform: translate3d(calc(-50% + var(--fan-x)), var(--fan-y), 0) rotate(var(--fan-rotate)) scale(1); }
 .card:focus-visible { z-index: 8; outline: 3px solid #fff3a1; outline-offset: 5px; }
 .card:disabled { cursor: default; }
 .cardInner { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 420ms cubic-bezier(.2,.8,.2,1); will-change: transform; }
 .cardRevealed .cardInner { transform: rotateY(180deg); }
-.cardFace { position: absolute; inset: 0; display: block; overflow: hidden; border: 2px solid #f8e9a0; border-radius: 12px; backface-visibility: hidden; box-shadow: 0 8px 20px rgb(0 0 0 / .55); }
+.cardFace { position: absolute; inset: 0; display: block; overflow: hidden; border: 2px solid var(--card-accent, #f8e9a0); border-radius: 12px; backface-visibility: hidden; box-shadow: 0 8px 20px rgb(0 0 0 / .55), 0 0 10px color-mix(in srgb, var(--card-accent, #f8e9a0) 38%, transparent); }
 .cardFace img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .cardBack { background: #101827; }
 .cardFront { transform: rotateY(180deg); background: #121827; }
@@ -24,13 +25,17 @@
 .openButton:disabled, .revealAllButton:disabled { cursor: wait; filter: grayscale(.4); opacity: .62; }
 .phase_appearing .packKeyframe { animation: packAppear 180ms cubic-bezier(.2,.9,.2,1) both; }
 .phase_enlarging .packKeyframe { transform: translate3d(0, 4px, 10px) rotateY(0deg) scale(1); transition: transform 130ms cubic-bezier(.2,.85,.25,1); }
-.phase_lifting .packKeyframe { transform: translate3d(0, -14px, 20px) rotateY(-5deg) scale(1); transition: transform 260ms cubic-bezier(.2,.85,.25,1); }
-.phase_turning .packKeyframe { transform: translate3d(0, -8px, 10px) rotateY(78deg) scale(.98); transition: transform 340ms cubic-bezier(.25,.8,.2,1); }
-.phase_settling .packKeyframe { transform: translate3d(0, 6px, 0) rotateY(180deg) scale(1); animation: settle 170ms ease-out both; }
-.phase_tearing .packKeyframe { transform: translate3d(0, 3px, 0) rotateY(180deg) scale(1.01); filter: brightness(1.18) drop-shadow(0 0 12px rgb(250 204 21 / .6)); transition: transform 150ms cubic-bezier(.2,.8,.2,1), filter 150ms ease; }
-.phase_opening .packKeyframe { transform: translate3d(0, -2px, 0) rotateY(180deg) scale(1.03); animation: seamOpen 360ms cubic-bezier(.2,.86,.2,1) both; }
-.phase_dealing .packKeyframe { transform: translate3d(0, 55px, -5px) rotateY(180deg) scale(1.01); transition: transform 160ms cubic-bezier(.2,.8,.2,1); }
-.phase_uncovering .packKeyframe { transform: translate3d(0, 205px, -20px) rotateY(180deg) scale(.98); transition: transform 420ms cubic-bezier(.2,.75,.2,1); }
+.phase_lifting .packKeyframe { transform: translate3d(0, -14px, 20px) rotateY(-5deg) scale(1); transition: transform 220ms cubic-bezier(.2,.85,.25,1); }
+.phase_turning .packKeyframe { transform: translate3d(0, -8px, 10px) rotateY(78deg) scale(.98); transition: transform 220ms cubic-bezier(.25,.8,.2,1); }
+.phase_rear-turning .packKeyframe { transform: translate3d(0, -4px, 4px) rotateY(118deg) scale(.98); transition: transform 220ms cubic-bezier(.25,.8,.2,1); }
+.phase_rear-aligning .packKeyframe { transform: translate3d(0, 2px, 0) rotateY(160deg) scale(.99); transition: transform 160ms cubic-bezier(.25,.8,.2,1); }
+.phase_settling .packKeyframe { transform: translate3d(0, 6px, 0) rotateY(180deg) scale(1); animation: settle 150ms ease-out both; }
+.phase_tearing .packKeyframe { transform: translate3d(0, 3px, 0) rotateY(180deg) scale(1.01); filter: brightness(1.18) drop-shadow(0 0 12px rgb(250 204 21 / .6)); transition: transform 180ms cubic-bezier(.2,.8,.2,1), filter 180ms ease; }
+.phase_opening .packKeyframe { transform: translate3d(0, -2px, 0) rotateY(180deg) scale(1.03); animation: seamOpen 250ms cubic-bezier(.2,.86,.2,1) both; }
+.phase_dealing .packKeyframe { transform: translate3d(0, 55px, -5px) rotateY(180deg) scale(1.01); transition: transform 220ms cubic-bezier(.2,.8,.2,1); }
+.phase_uncovering .packKeyframe { transform: translate3d(0, 148px, -15px) rotateY(180deg) scale(.99); transition: transform 240ms cubic-bezier(.2,.75,.2,1); }
+.phase_wrapper-remnant .packKeyframe { transform: translate3d(0, 260px, -25px) rotateY(180deg) scale(.94); transition: transform 180ms cubic-bezier(.2,.75,.2,1); }
+.phase_stacked .packKeyframe { transform: translate3d(0, 350px, -40px) rotateY(180deg) scale(.88); transition: transform 220ms cubic-bezier(.2,.75,.2,1); }
 .phase_fan-ready .cards { animation: fanFinish 620ms cubic-bezier(.18,.86,.22,1.18) both; }
 .foilEffects { position: absolute; z-index: 7; width: 380px; height: 300px; pointer-events: none; mix-blend-mode: screen; animation: foilBloom 820ms ease-out both; }
 .foilEffects span { position: absolute; width: 130px; height: 130px; border-radius: 50%; filter: blur(22px); opacity: .7; animation: smokeRise 780ms ease-out both; }

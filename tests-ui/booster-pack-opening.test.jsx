@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import BoosterPackOpening from '../src/components/BoosterPackOpening.jsx'
 import { BOOSTER_ANIMATION_FRAMES, PACK_OPENING_TIMELINE, createPackOpeningPresentation, packOpeningDuration } from '../src/ui/packOpeningFlow.js'
+import { isBoosterOpeningReviewRequest } from '../src/ui/boosterOpeningReviewAccess.js'
 
 const cards = [
   { id: 'one', name: 'Card one', asset: '/images/cards/babyAnimals/1.webp' },
@@ -21,11 +22,14 @@ beforeEach(() => {
 afterEach(() => { globalThis.Image = OriginalImage })
 
 test('keyframe timeline is procedural, complete and motion-aware', () => {
-  expect(BOOSTER_ANIMATION_FRAMES).toHaveLength(10)
-  expect(PACK_OPENING_TIMELINE.map(step => step.phase)).toEqual(['appearing', 'enlarging', 'lifting', 'turning', 'settling', 'tearing', 'opening', 'dealing', 'uncovering', 'fan-ready'])
+  expect(BOOSTER_ANIMATION_FRAMES).toHaveLength(11)
+  expect(PACK_OPENING_TIMELINE.map(step => step.phase)).toEqual(['appearing', 'enlarging', 'lifting', 'turning', 'rear-turning', 'rear-aligning', 'settling', 'tearing', 'opening', 'dealing', 'uncovering', 'wrapper-remnant', 'stacked', 'fan-ready'])
   expect(packOpeningDuration('off')).toBe(0)
   expect(packOpeningDuration('reduced')).toBeLessThan(packOpeningDuration('full'))
   expect(() => createPackOpeningPresentation({ packId: 'bad', cards: cards.slice(0, 4) })).toThrow(/exactly five/)
+  expect(createPackOpeningPresentation({ packId: 'receipt', receiptId: 'server-receipt', cards }).isReopenable).toBe(true)
+  expect(isBoosterOpeningReviewRequest({ hostname: 'dev.flipout.gizmogames.uk', search: '?dev=booster-opening' }, false)).toBe(true)
+  expect(isBoosterOpeningReviewRequest({ hostname: 'example.com', search: '?dev=booster-opening' }, false)).toBe(false)
 })
 
 test('players can reveal any individual card or reveal all after the procedural fan', async () => {
@@ -36,6 +40,7 @@ test('players can reveal any individual card or reveal all after the procedural 
   fireEvent.click(screen.getByRole('button', { name: 'Open Pack' }))
   act(() => { vi.advanceTimersByTime(packOpeningDuration('full') + 60) })
   expect(screen.getByRole('button', { name: 'Reveal card 3' })).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'Reveal card 3' }).parentElement).toHaveAttribute('data-stacked', 'true')
   fireEvent.click(screen.getByRole('button', { name: 'Reveal card 3' }))
   expect(screen.getByRole('button', { name: 'Card three revealed' })).toBeDisabled()
   fireEvent.click(screen.getByRole('button', { name: 'Reveal All' }))
