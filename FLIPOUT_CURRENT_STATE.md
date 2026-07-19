@@ -492,3 +492,8 @@ Focused lint for the newly added transaction service, backend helper/endpoints, 
 - **Status: Implemented and verified in Preview.** Added deterministic presentation phases for invalid-swap return, resolving cascades/falls/refills, dead-board shuffle and special feedback. The authoritative board/session is still committed from the API before presentation; animation timing cannot change gameplay logic.
 - Input remains locked only for busy requests, genuine presentation duration, pause, blocking dialogs or non-active state. Duplicate move submission is guarded in `GameBoard`; visibility changes clear presentation safely. Reduced motion preserves labels/effects with shortened timing.
 - Focused verification passes 37/37 Node tests and 8/8 UI/token tests; focused lint and the 145-module production build pass. Preview `https://flip-azm52xj8g-chattocal.vercel.app` (`dpl_922goAdpMUfRjaCig1WEL81n9gtc`) reached Ready. T-Rex metadata remains `(0.56, 0.26)`, zoom `4.2`, source `mastersOfTheLostWorld:1`.
+
+## Real-device gameplay repair revision — 19 July 2026
+
+- **Status: Preview deployed; manual acceptance still required.** Added per-token swap geometry, pointer capture, touch-action control, drag threshold handling, invalid swap return motion, and a development diagnostics overlay with a 25% slow-motion control.
+- Preview: `https://flip-4lw572b7k-chattocal.vercel.app` (`dpl_3tH1ZE26TtJ7ugCUA4pbQ1F5dy7H`). Cloud build passed 37/37 Node tests, 8/8 UI/token tests and the 145-module production build. Browser-level coordinate/trace tests and real iPhone Safari/manual acceptance were not available in this environment and remain required before calling this complete.

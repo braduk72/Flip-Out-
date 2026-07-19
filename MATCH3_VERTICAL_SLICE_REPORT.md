@@ -94,3 +94,7 @@ Run structured real-device playtesting and add a deterministic auto-player that 
 ## Gameplay animation correction addendum — 19 July 2026
 
 The vertical slice now separates authoritative resolution from presentation. Server-returned cascades drive bounded swap, invalid-return, fall/refill, shuffle, special, clear, particle, combo and score effects. Input is guarded during only the necessary request/presentation window, with interruption recovery and reduced-motion timing. Verification passed 37/37 Node tests, 8/8 UI/token tests, focused lint and the 145-module production build. Preview: `https://flip-azm52xj8g-chattocal.vercel.app` (`dpl_922goAdpMUfRjaCig1WEL81n9gtc`).
+
+## Real-device repair revision — 19 July 2026
+
+The current revision adds explicit swap offsets, pointer capture and drag handling rather than relying on board replacement plus scale effects. Preview `https://flip-4lw572b7k-chattocal.vercel.app` (`dpl_3tH1ZE26TtJ7ugCUA4pbQ1F5dy7H`) passed 37/37 Node tests, 8/8 UI/token tests and production build. Real-device/browser trace acceptance remains outstanding.

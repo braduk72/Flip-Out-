@@ -167,13 +167,16 @@ function Result({ stars, level, movesUsed, error, onDouble, onMap, onNext }) {
 
 export function GameBoard({ session, busy, error, presentation, onMove, onPower, onRestart, onQuit }) {
   const state = session.state
+  const motionMode = useMotionMode()
   const [selected, setSelected] = useState(null)
   const [power, setPower] = useState(null)
   const [paused, setPaused] = useState(false)
+  const [slowAnimations, setSlowAnimations] = useState(false)
   const drag = useRef(null)
   const moveInFlight = useRef(false)
   const level = state.level
   const locked = isMatch3BoardInputLocked({ status: state.status, paused, busy, presentation })
+  const lockReason = busy ? 'server request' : paused ? 'paused' : state.status !== 'active' ? state.status : presentation?.durationMs > 0 ? presentation.phase : 'unlocked'
   const rows = state.board.length
   const columns = state.board[0].length
   const summary = useMemo(() => `Level ${level.id}. ${state.movesRemaining} moves left. Score ${state.score}.`, [level.id, state.movesRemaining, state.score])
@@ -235,12 +238,12 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
     <div className={styles.stats}><span>Score <strong>{state.score.toLocaleString()}</strong></span><span>Moves <strong>{state.movesRemaining}</strong></span></div>
     <div className={styles.objectives}>{level.objectives.map((objective, index) => <span key={index}>{objectiveLabel(objective)}: {objectiveProgress(state, objective)}/{objective.target}</span>)}</div>
     <p className={styles.sr} aria-live="polite">{summary}{selected ? ` Selected row ${selected.r + 1}, column ${selected.c + 1}.` : ''}{presentation?.label ? ` ${presentation.label} Plus ${presentation.scoreGained} points.` : ''}</p>
-    <div className={styles.boardShell} style={{ '--board-rows': rows, '--board-columns': columns }}>
+    <div className={styles.boardShell} style={{ '--board-rows': rows, '--board-columns': columns, '--animation-scale': slowAnimations ? 4 : 1 }}>
       {presentation?.invalidSwap && <div className={styles.invalidBanner} aria-live="polite">Try another swap</div>}
       {presentation?.label && <div className={styles.comboBanner} aria-hidden="true"><strong>{presentation.label}</strong>{presentation.cascadeCount > 1 && <span>×{presentation.cascadeCount} cascade</span>}</div>}
       {presentation?.scoreGained > 0 && <div className={styles.scoreBurst} aria-hidden="true">+{presentation.scoreGained.toLocaleString()}</div>}
       <div className={boardClass} role="grid" aria-label={summary} aria-busy={locked} data-input-locked={locked ? 'true' : 'false'}>
-        {state.board.map((row, rowIndex) => row.map((cell, columnIndex) => <Tile key={`${rowIndex}:${columnIndex}`} cell={cell} row={rowIndex} column={columnIndex} columns={columns} selected={selected?.r === rowIndex && selected?.c === columnIndex} presentation={presentation} onChoose={choose} onKeyDown={keyDown} onPointerDown={event => { drag.current = { x: event.clientX, y: event.clientY } }} onPointerUp={event => dragEnd(event, rowIndex, columnIndex)} onPointerCancel={() => { drag.current = null }} />))}
+        {state.board.map((row, rowIndex) => row.map((cell, columnIndex) => <Tile key={`${rowIndex}:${columnIndex}`} cell={cell} row={rowIndex} column={columnIndex} columns={columns} selected={selected?.r === rowIndex && selected?.c === columnIndex} presentation={presentation} onChoose={choose} onKeyDown={keyDown} onPointerDown={event => { event.currentTarget.setPointerCapture?.(event.pointerId); drag.current = { x: event.clientX, y: event.clientY } }} onPointerUp={event => dragEnd(event, rowIndex, columnIndex)} onPointerCancel={() => { drag.current = null }} />))}
       </div>
       <BoardEffects presentation={presentation} rows={rows} columns={columns} />
     </div>
@@ -249,6 +252,7 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
     <p role="alert">{error}</p>
     {state.status === 'lost' && <div className={styles.modal}><div><h2>Out of moves</h2><p>Use Extra Moves if available, or retry the level.</p><button onClick={() => { recordMatch3Event('continue-used', { method: 'extra-moves' }); onPower('extra-moves', null).catch(() => {}) }}>Continue with Extra Moves</button><button onClick={onRestart}>Retry</button><button onClick={onQuit}>Level map</button></div></div>}
     {paused && <div className={styles.modal}><div><h2>Paused</h2><button onClick={() => setPaused(false)}>Resume</button><button onClick={onRestart}>Restart</button><button onClick={onQuit}>Quit</button></div></div>}
+    {import.meta.env.DEV && <aside className={styles.diagnostics} aria-label="Match-3 diagnostics"><strong>DEV DIAGNOSTICS</strong><span>Phase: {presentation?.phase ?? 'idle'}</span><span>Lock: {locked ? lockReason : 'none'}</span><span>Selected: {selected ? `${selected.r}:${selected.c}` : 'none'}</span><span>Duration: {presentation?.durationMs ?? 0}ms</span><span>Motion: {motionMode}</span><span>Revision: {state.revision ?? state.movesRemaining}</span><button onClick={() => setSlowAnimations(value => !value)}>{slowAnimations ? 'Normal speed' : 'Slow to 25%'}</button></aside>}
   </main>
 }
 
@@ -281,7 +285,14 @@ function Tile({ cell, row, column, columns, selected, presentation, onChoose, on
     cellIsInPresentation(presentation, 'triggered', row, column) ? styles.triggeredTile : '',
     cellIsInPresentation(presentation, 'created', row, column) ? styles.createdTile : '',
   ].filter(Boolean).join(' ')
-  return <button type="button" data-cell={`${row}:${column}`} role="gridcell" aria-selected={selected} aria-label={`Row ${row + 1}, column ${column + 1}: ${parts.join(', ')}`} className={classes} style={{ '--tile-index': (row * columns) + column }} onClick={() => onChoose(row, column)} onKeyDown={event => onKeyDown(event, row, column)} {...events}>
+  const swap = presentation?.swapped?.find(position => position.r === row && position.c === column)
+  const other = swap ? presentation.swapped.find(position => position.r !== row || position.c !== column) : null
+  const style = { '--tile-index': (row * columns) + column }
+  if (other) {
+    style['--swap-x'] = `${(other.c - column) * 100}%`
+    style['--swap-y'] = `${(other.r - row) * 100}%`
+  }
+  return <button type="button" data-cell={`${row}:${column}`} role="gridcell" aria-selected={selected} aria-label={`Row ${row + 1}, column ${column + 1}: ${parts.join(', ')}`} className={classes} style={style} onClick={() => onChoose(row, column)} onKeyDown={event => onKeyDown(event, row, column)} {...events}>
     <Match3TokenImage tokenId={cell.token} className={styles.tokenImage} decorative />
     {cell.drop && <span className={styles.dropObject}>⬇</span>}
     {special && <span className={styles.special} aria-hidden="true">{special === 'row' ? '↔' : special === 'col' ? '↕' : special === 'color' ? '◉' : '✹'}</span>}

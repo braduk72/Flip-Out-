@@ -158,3 +158,7 @@ The gameplay completion pass added 2x2-square matches, complete T/L/cross handli
 ## Gameplay animation correction addendum — 19 July 2026
 
 No level balance, objectives, move budgets or economy values were changed. The pass adds presentation-only phases and effects over the existing authoritative outcomes; reduced-motion timing changes display duration only. Verification passed 37/37 Node tests and 8/8 UI/token tests; Preview deployment is Ready at `https://flip-azm52xj8g-chattocal.vercel.app`.
+
+## Real-device repair revision — 19 July 2026
+
+No balance values changed. Preview `https://flip-4lw572b7k-chattocal.vercel.app` is Ready. Automated checks passed, but visual coordinate traces and iPhone Safari/manual acceptance are still required before the animation correction can be considered complete.
