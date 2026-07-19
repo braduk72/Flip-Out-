@@ -55,7 +55,16 @@ npx vercel inspect https://dev.flipout.gizmogames.uk --scope chattocal
 npx vercel ls flip-out --scope chattocal
 ```
 
-The application currently reports `v1.1.0-ui4d` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+The application currently reports `1.1.1-card-tokens` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+
+## Verification record — Match-3 card-art tokens, 19 July 2026
+
+- Git commit `9ad2af5` was pushed from `dev`; `main` and production were not changed.
+- Vercel Ready Preview: `dpl_FdZJ9q6EkfNTtR3nJ6pwQKxZHa3X`, generated URL `https://flip-e39n6phzr-chattocal.vercel.app`, target `preview`.
+- Vercel domain verification returns `configured_correctly`, attached and verified, with no issues or conflicts.
+- The permanent and generated URLs return HTTP 200, identical HTML and ETag `"34270eb23741281a64afe26aa2003532"`.
+- The permanent URL serves `/assets/index-DCscBX58.js` (415,549 bytes) containing version `1.1.1-card-tokens`.
+- All six card-derived token WebPs and `quality-report.json` return HTTP 200. The removed geometric `token-sun.svg` returns Vercel `NOT_FOUND`, confirming it is not retained as a deployed fallback.
 
 ## Verification record — 19 July 2026
 

@@ -6,7 +6,7 @@
 
 The six geometric Match-3 placeholders were replaced across both the real board and Home engine preview by hand-framed circular crops of existing card artwork. Explicit metadata preserves each source card ID/path, focal point, zoom, rotation, accessible label, fallback and review status; a deterministic Sharp script produces the 256 px transparent WebPs and 32 px quality signals. The gated development review route `/?dev=match3-tokens` presents all assets at full, board, smallest-phone and reduced-vision sizes.
 
-All six crops passed actual-size visual inspection. Regeneration was byte-stable; token Node tests passed **3/3**, focused token/preview UI tests **6/6**, full Node tests **82 passed / 0 failed / 8 Preview-only skipped**, full UI tests **19/19**, focused lint passed, and both production and Preview builds passed. No Match-3 rules, progression, economy, database or production environment was changed.
+All six crops passed actual-size visual inspection. Regeneration was byte-stable; token Node tests passed **3/3**, focused token/preview UI tests **6/6**, full Node tests **82 passed / 0 failed / 8 Preview-only skipped**, full UI tests **19/19**, focused lint passed, and both production and Preview builds passed. Commit `9ad2af5` deployed as Ready Preview `dpl_FdZJ9q6EkfNTtR3nJ6pwQKxZHa3X`; `https://dev.flipout.gizmogames.uk` returned 200, served the same HTML/ETag as the generated deployment, exposed all six token assets and the quality report at 200, and reported `1.1.1-card-tokens`. No Match-3 rules, progression, economy, database or production environment was changed.
 
 ## Concept 4D Home implementation — 19 July 2026
 
