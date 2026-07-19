@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { normaliseRecyclerItems, recyclerFingerprint, validateRecyclerSelection } from '../api/_recycler.js'
 
-const recipe = { recipe_id: 'common-stars-v1', rarity: 'common', batch_size: 5, reward: { currencyId: 'stars', amount: 5 }, enabled: true }
+const recipe = { recipe_id: 'common-stars-v1', rarity: 'common', batch_size: 5, reward: { currencyId: 'stars', amount: 1 }, enabled: true }
 const catalog = new Map([
   ['card:test:1', { id: 'card:test:1', type: 'card', rarity: 'common' }],
   ['card:test:2', { id: 'card:test:2', type: 'card', rarity: 'common' }],
@@ -34,6 +34,12 @@ test('recycler accepts complete same-rarity batches and reports batch count', ()
     cardsConsumed: 10,
     batches: 2,
   })
+})
+
+test('exactly five eligible common duplicates calculate exactly one Star', () => {
+  const result = validateRecyclerSelection([{ itemId: 'card:test:1', quantity: 5 }], recipe, catalog)
+  assert.equal(result.cardsConsumed, 5)
+  assert.equal(result.batches * recipe.reward.amount, 1)
 })
 
 test('recycler rejects incomplete, wrong-rarity and non-card selections', () => {

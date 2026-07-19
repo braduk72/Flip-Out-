@@ -1,0 +1,5 @@
+{
+  "framework": "vite",
+  "buildCommand": "node scripts/run-economy-migration.mjs --apply && node --test tests/recycler.test.js tests/recycler-db.test.js tests/collection-data.test.js && vite build",
+  "outputDirectory": "dist"
+}

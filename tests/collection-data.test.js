@@ -61,7 +61,7 @@ test('recycler model exposes only copies above the protected final copy and comp
     { item_id: 'card:cats:1', quantity: 3, bound_quantity: 2 },
     { item_id: 'card:woof:1', quantity: 2, bound_quantity: 0 },
   ] })
-  const recipe = { recipeId: 'common-stars-v1', rarity: 'common', batchSize: 5, reward: { currencyId: 'stars', amount: 5 } }
+  const recipe = { recipeId: 'common-stars-v1', rarity: 'common', batchSize: 5, reward: { currencyId: 'stars', amount: 1 } }
   assert.equal(model.cards.find(card => card.id === 'card:sportscars:1').recyclableQuantity, 3)
   assert.equal(model.cards.find(card => card.id === 'card:cats:1').recyclableQuantity, 1)
   const incomplete = buildRecyclerModel(model.cards, recipe, { 'card:sportscars:1': 3, 'card:cats:1': 1 })
@@ -70,5 +70,5 @@ test('recycler model exposes only copies above the protected final copy and comp
   const complete = buildRecyclerModel(model.cards, recipe, { 'card:sportscars:1': 3, 'card:cats:1': 1, 'card:woof:1': 1 })
   assert.equal(complete.complete, true)
   assert.equal(complete.cardsSelected, 5)
-  assert.deepEqual(complete.reward, { currencyId: 'stars', amount: 5 })
+  assert.deepEqual(complete.reward, { currencyId: 'stars', amount: 1 })
 })

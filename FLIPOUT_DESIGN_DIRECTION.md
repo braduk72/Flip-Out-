@@ -92,7 +92,7 @@ Final Preview verification: migration 008 committed at `2026-07-18T17:52:39.594Z
 
 - Duplicate cards may be permanently recycled in server-authoritative batches; the final copy of every card can never be recycled.
 - Recycling is a guaranteed floor value for unwanted duplicates and must remain less profitable than trading or normal play.
-- The first Preview recipe is provisional: five common duplicates grant five Stars. Coins are not a Recycler reward.
+- The first Preview recipe is provisional: five common duplicates grant one Star. Coins are not a Recycler reward.
 - Recipes are versioned server data, so input batch size and reward can be balanced without changing transaction code.
 - The destruction and reward commit atomically before presentation. Animation never decides, rerolls or alters the reward.
 - Transaction IDs, input fingerprints and stored receipts make interrupted and concurrent retries safe. Cross-account reuse is rejected.

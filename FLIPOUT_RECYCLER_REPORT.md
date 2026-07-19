@@ -12,7 +12,7 @@ The first development recipe is intentionally provisional and data-driven:
 
 - Recipe: `common-stars-v1`
 - Input: 5 common duplicate cards, which may be mixed across card IDs
-- Reward: 5 Stars
+- Reward: 1 Star
 - Coins are never created, granted or moved by the Recycler
 
 Changing the future reward does not require changing transaction logic. It requires an approved recipe/config update and balancing review.
@@ -93,7 +93,7 @@ The first full Preview migration build applied migration 010 and passed **115 of
 
 ## Remaining risks and decisions
 
-- The 5-common-to-5-Stars recipe is a provisional development value, not approved final economy balance. It needs simulation against duplicate acquisition rates, Exchange prices and normal play rewards.
+- The 5-common-to-1-Star recipe is a provisional development value, not approved final economy balance. It needs simulation against duplicate acquisition rates, Exchange prices and normal play rewards.
 - Only the common recipe is enabled. Higher rarities, Gold Collector and future Foil cards must not be recycled until separate rules and values are approved.
 - The Recycler records permanent receipts and source transactions, but an operational admin trace/export UI has not been added.
 - The visual machine uses reusable CSS/SVG primitives. Final audio and haptic patterns need physical-device review; no new audio asset was invented.

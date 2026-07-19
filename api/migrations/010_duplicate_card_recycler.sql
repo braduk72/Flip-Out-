@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS fo_recycler_recipes (
 -- Provisional development recipe. Its value is deliberately data-driven so it can
 -- be balanced without changing the recycling transaction code.
 INSERT INTO fo_recycler_recipes(recipe_id,rarity,batch_size,reward,enabled,config_version)
-VALUES('common-stars-v1','common',5,'{"currencyId":"stars","amount":5}'::jsonb,TRUE,1)
+VALUES('common-stars-v1','common',5,'{"currencyId":"stars","amount":1}'::jsonb,TRUE,1)
 ON CONFLICT(recipe_id) DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS fo_recycler_transactions (
