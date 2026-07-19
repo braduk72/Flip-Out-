@@ -447,3 +447,10 @@ Focused lint for the newly added transaction service, backend helper/endpoints, 
 - Collection and Exchange were rebuilt from plain prototypes; More is now the durable secondary-destination hub. Mechanic-specific game boards remain intact inside the shared visual shell.
 - Version: `1.3.0-ui-consolidation`. Local verification: 100 Node tests passed with 8 expected Preview-only skips; 25/25 UI tests passed; build passed; focused lint reported 0 errors and 4 pre-existing gameplay hook warnings.
 - Full route matrix, removals and remaining risks: `FLIPOUT_UI_CONSOLIDATION_REPORT.md`.
+
+## Collection 2.0 update — 19 July 2026
+
+- **Status: Working, pending physical-device accessibility review.** The prototype Collection list is replaced by a premium album/set/card catalogue with search, filters, missing and owned states, account-scoped favourites, recent acquisitions, statistics, completion and milestone progress.
+- It reads canonical catalogue metadata and authoritative player inventory/transactions. The existing lockbox and non-card inventory flow remains available in a secondary Items view.
+- The route does not fabricate unavailable systems: there are currently no authoritative Foil definitions and no milestone reward catalogue/grant endpoint.
+- Version: `1.4.0-collection2`. Full implementation, verification and remaining risks: `FLIPOUT_COLLECTION_2_REPORT.md`.

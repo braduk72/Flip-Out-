@@ -587,7 +587,7 @@ export default function App() {
   if (screen === 'match3') return <Match3 onBack={() => setScreen('home')} />
   if (screen === 'match3-token-review') return <Match3TokenReview onBack={() => { window.history.replaceState({}, '', window.location.pathname); setScreen('home') }} />
   if (screen === 'inventory') {
-    return <Inventory onBack={() => setScreen('shop')} navProps={navProps} />
+    return <Inventory onBack={() => setScreen('home')} navProps={navProps} />
   }
   if (screen === 'marketplace') {
     return <Marketplace onBack={() => setScreen('shop')} navProps={navProps} />

@@ -110,3 +110,7 @@ No additional screen was redesigned. The design-system implementation is now rea
 ## Consolidation completion — 19 July 2026
 
 The former next-screen boundary has now been superseded by Brad's approved full consolidation pass. Every reachable route uses the Concept 4D language, Collection and Exchange are no longer plain prototypes, More is the canonical secondary hub, and the old Season map is removed. The shared route contract is in `src/ui/route-consolidation.css`; route regression coverage is in `tests-ui/route-consolidation.test.js`. Full details and verification are recorded in `FLIPOUT_UI_CONSOLIDATION_REPORT.md`.
+
+## Collection 2.0 — 19 July 2026
+
+The Collection route has moved beyond the consolidation shell into its permanent core experience. Albums, sets, cards, search, filters, missing/owned states, account-scoped favourites, recent acquisitions, statistics and milestone progress now use the shared Concept 4D primitives. The supporting pure presentation model is `src/ui/collectionData.js`; the full record is `FLIPOUT_COLLECTION_2_REPORT.md`.

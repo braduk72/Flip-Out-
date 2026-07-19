@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.3.0-ui-consolidation'
+export const APP_VERSION = '1.4.0-collection2'

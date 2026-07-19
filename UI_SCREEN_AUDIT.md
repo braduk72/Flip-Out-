@@ -117,3 +117,7 @@ Bottom navigation is present on only some screens. Other screens use one-off bac
 ## Consolidation status — 19 July 2026
 
 All routes in this inventory have been reviewed and consolidated. The Season map is deleted and inaccessible. Home is the canonical reference; Collection, Rewards, More, Shop, Exchange, Leaderboard, information routes, selection routes and game shells now use one Concept 4D language. See `FLIPOUT_UI_CONSOLIDATION_REPORT.md` for the final route-by-route result.
+
+## Collection 2.0 status — 19 July 2026
+
+Collection is no longer a prototype list. It is now the permanent album/set/card browser with catalogue search, compound filters, ownership visibility, favourites, recent acquisitions, statistics and milestones. Non-card inventory remains available as a secondary view. Foil and reward-grant unavailability is represented explicitly rather than with fake content.

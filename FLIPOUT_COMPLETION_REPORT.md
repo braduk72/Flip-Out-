@@ -178,3 +178,7 @@ Gameplay commit `5a22617` is Ready in Vercel Preview as `dpl_L161cZ7Cqze89qSuKWj
 ## UI consolidation addendum — 19 July 2026
 
 The UI consolidation package replaced every reachable legacy/prototype route shell with the approved Concept 4D design language and removed the Season map completely. Shared safe-area, typography, panel, control, dialog and navigation contracts now cover the application while preserving game mechanics and economy balance. Local verification passed 100 Node tests and 25 UI tests with no failures; eight database tests skipped without local Preview credentials. Build passed and focused lint has zero errors. See `FLIPOUT_UI_CONSOLIDATION_REPORT.md` for the audited route matrix and exact remaining risks.
+
+## Collection 2.0 addendum — 19 July 2026
+
+Collection now provides the production album/set/card experience over the real 653-card catalogue and seven Gold Collector variants. Search, filters, missing/owned states, favourites, recent acquisitions, statistics and milestone progress are implemented without changing ownership or economy rules. Foils and milestone reward claims remain deliberately unavailable until authoritative definitions exist. See `FLIPOUT_COLLECTION_2_REPORT.md`.
