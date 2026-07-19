@@ -95,3 +95,12 @@ The application currently reports `1.2.1-mobile-ux` from `src/version.js`. Repor
 - The permanent hostname and generated Preview hostname return ETag `"dcd93590b11bf3077955f1427fb9f43d"` and load the same `/assets/index-qT1Bc9CI.js` bundle.
 - The deployed bundle contains the reported application version `1.0.0`.
 - No production domain, production deployment, root DNS record or nameserver was changed.
+
+## Verification record — UI consolidation, 19 July 2026
+
+- Commit `0aea330` was pushed from `dev`; `main` remained at `157344e5f6deaaa6540418c514448a976753688c`.
+- Vercel Ready Preview: `dpl_GhFqJfGYz7THYAPYiCankgZxpQKX`, generated URL `https://flip-b8g7olmaq-chattocal.vercel.app`, target `preview`.
+- `https://dev.flipout.gizmogames.uk` and the generated URL returned HTTP 200, identical HTML and ETag `"150f8c376c132b013ed793ed2049bc2a"`.
+- The permanent URL served `/assets/index-BEnrUUXJ.js` at HTTP 200 (404,621 bytes), containing application version `1.3.0-ui-consolidation`.
+- Domain verification returned `configured_correctly`, attached and verified, with the expected CNAME and no issues or conflicts.
+- No production branch, production domain, production deployment, root DNS record, nameserver or database was changed.

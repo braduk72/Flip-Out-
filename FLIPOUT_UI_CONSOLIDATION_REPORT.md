@@ -58,6 +58,15 @@ All production screen roots are covered by the consolidation contract. Static UI
 - Some information/legal copy reflects earlier product wording. That is content review debt, not a remaining legacy visual system.
 - The four hook warnings belong to existing gameplay effect orchestration. They were not changed during this UI-only consolidation because doing so could alter mechanics.
 
+## Preview deployment
+
+- Commit `0aea330` was pushed from `dev`; `main` remained unchanged at `157344e5f6deaaa6540418c514448a976753688c`.
+- Vercel deployment `dpl_GhFqJfGYz7THYAPYiCankgZxpQKX` reached Ready with target `preview`.
+- `https://dev.flipout.gizmogames.uk` returned HTTP 200 from Vercel and served HTML identical to the generated Preview deployment.
+- The permanent URL served `/assets/index-BEnrUUXJ.js` (404,621 bytes) containing `1.3.0-ui-consolidation`.
+- Vercel domain verification returned `configured_correctly`, attached and verified with no issues or conflicts.
+- No database migration, production branch, production domain or production deployment was changed.
+
 ## Files affected
 
 The detailed diff covers `src/App.jsx`, the reachable `src/screens/*` route components and modules, shared overlays/navigation in `src/components/*`, global route styling in `src/ui/route-consolidation.css`, `src/version.js`, and UI contract tests in `tests-ui/*`.
