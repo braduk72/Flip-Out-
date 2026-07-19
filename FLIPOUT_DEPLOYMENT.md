@@ -61,7 +61,7 @@ The application currently reports `1.2.1-mobile-ux` from `src/version.js`. Repor
 
 - Commits `6aa2916` and `2c76e42` were pushed from `dev`; `main` and `origin/main` remained at `157344e5f6deaaa6540418c514448a976753688c`.
 - Vercel Ready Preview: `dpl_JAn3NGNQJSLttPuV2x5krL5JwWD2`, generated URL `https://flip-dfex0oe42-chattocal.vercel.app`, target `preview`.
-- `https://dev.flipout.gizmogames.uk` maps to that deployment and returns HTTP 200 from Vercel.
+- At application/API verification time, `https://dev.flipout.gizmogames.uk` mapped to that deployment and returned HTTP 200 from Vercel. Subsequent report-only commits do not change the verified bundle/API.
 - Permanent and generated URLs returned byte-identical HTML and ETag `"4e722771f70cac7ee939a5bf1260c5d4"`.
 - The permanent URL serves `/assets/index-VU0UgckH.js` at HTTP 200 (425,095 bytes), containing `1.2.1-mobile-ux`.
 - A disposable development guest claimed the authoritative Daily Reward: 0 to 50 Stars, first response non-duplicate, immediate retry duplicate with the same account-scoped claim ID, final availability false.
