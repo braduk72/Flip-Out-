@@ -120,4 +120,5 @@ The application currently reports `1.2.1-mobile-ux` from `src/version.js`. Repor
 - The Vercel Preview build targeted Railway `railway/public` at `yamanote.proxy.rlwy.net` with `VERCEL_ENV=preview`; migration `012_player_display_name.sql` committed at `2026-07-19T14:54:07.959Z`.
 - The nullable `fo_accounts.display_name` column and its 3–12 alphanumeric database constraint were verified after migration.
 - Preview verification passed 7/7 server/database tests, including duplicate display-name allowance and one-time retry/no-overwrite behavior, plus 9/9 focused UI tests. The 142-module Vite production build passed.
+- `https://dev.flipout.gizmogames.uk` inspected as the same Ready Preview deployment and returned HTTP 200. Its `/assets/index-BzRAlMbJ.js` bundle contains both the nickname screen text and the `set-display-name` API action.
 - This was a Preview deployment only. The production domain, root DNS records, nameservers and Production deployment were not changed.
