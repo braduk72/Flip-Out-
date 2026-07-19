@@ -104,3 +104,12 @@ The application currently reports `1.2.1-mobile-ux` from `src/version.js`. Repor
 - The permanent URL served `/assets/index-BEnrUUXJ.js` at HTTP 200 (404,621 bytes), containing application version `1.3.0-ui-consolidation`.
 - Domain verification returned `configured_correctly`, attached and verified, with the expected CNAME and no issues or conflicts.
 - No production branch, production domain, production deployment, root DNS record, nameserver or database was changed.
+
+## Verification record — Collection 2.0, 19 July 2026
+
+- Final UI commit `2107ebf` was pushed from `dev`; `main` remained at `157344e5f6deaaa6540418c514448a976753688c`.
+- Vercel Ready Preview: `dpl_GSupG15aohkMJ5b7s9V54AzSsKRc`, generated URL `https://flip-e250izsku-chattocal.vercel.app`, target `preview`.
+- The generated and permanent development URLs returned HTTP 200, byte-identical HTML and ETag `"8f87cb8b050d9740c6a34d8b38f8dbca"`.
+- The permanent URL served `/assets/index-C1HtgBKc.js` (405,111 bytes) containing `1.4.0-collection2` and `/assets/Inventory-l_c7LhSB.js` (23,563 bytes) at HTTP 200.
+- Deployed browser checks passed at 320×568, 390×844 and 1024×768 with no horizontal overflow or undersized visible interactions.
+- No production deployment, production domain, DNS, root records, nameservers, database or economy balance was changed.

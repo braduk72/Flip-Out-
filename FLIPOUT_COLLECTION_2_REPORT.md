@@ -52,3 +52,20 @@ The three album groupings are navigation metadata only. Sets remain the canonica
 - Recent acquisitions are limited to the 100 transactions returned by the existing player-state API.
 - Physical-device checks remain required for VoiceOver, TalkBack, real cut-outs and long translated labels.
 - Authoritative Foil definitions, rarity balancing and reward milestone grants require separate approved data/economy packages.
+
+## Responsive visual verification
+
+- Deployed browser checks passed at 320×568, 390×844 and 1024×768.
+- All five Collection destinations remain visible at 320px; Saved and Stats use short visual labels with full accessible names.
+- No horizontal overflow or visible interaction below 44×44 CSS pixels was found.
+- Album, card-catalogue and statistics views were exercised against a real development guest.
+- The first deployed visual pass exposed a shrinking CSS-grid summary panel. `grid-auto-rows: max-content` fixed it, and a regression contract now protects the behaviour. The corrected summary measures 233px at 390×844 and 264px at 320×568.
+
+## Preview deployment
+
+- Final UI commit `2107ebf` was pushed from `dev`; production `main` remained at `157344e5f6deaaa6540418c514448a976753688c`.
+- Vercel deployment `dpl_GSupG15aohkMJ5b7s9V54AzSsKRc` reached Ready with target `preview`.
+- `https://dev.flipout.gizmogames.uk` returned HTTP 200 and byte-identical HTML to `https://flip-e250izsku-chattocal.vercel.app`, with ETag `"8f87cb8b050d9740c6a34d8b38f8dbca"`.
+- Entry bundle `/assets/index-C1HtgBKc.js` was 405,111 bytes and contained `1.4.0-collection2`.
+- Collection bundle `/assets/Inventory-l_c7LhSB.js` returned HTTP 200 and was 23,563 bytes.
+- No production deployment, domain, DNS, database, economy balance or migration was changed.
