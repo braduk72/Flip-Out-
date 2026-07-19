@@ -2,6 +2,12 @@
 
 > **Development deployment URL:** Future verification and handover reports use `https://dev.flipout.gizmogames.uk`. Vercel-generated `*.vercel.app` addresses below are preserved only as historical deployment evidence, not as user-facing development URLs.
 
+## Match-3 card-art token package — 19 July 2026
+
+The six geometric Match-3 placeholders were replaced across both the real board and Home engine preview by hand-framed circular crops of existing card artwork. Explicit metadata preserves each source card ID/path, focal point, zoom, rotation, accessible label, fallback and review status; a deterministic Sharp script produces the 256 px transparent WebPs and 32 px quality signals. The gated development review route `/?dev=match3-tokens` presents all assets at full, board, smallest-phone and reduced-vision sizes.
+
+All six crops passed actual-size visual inspection. Regeneration was byte-stable; token Node tests passed **3/3**, focused token/preview UI tests **6/6**, full Node tests **82 passed / 0 failed / 8 Preview-only skipped**, full UI tests **19/19**, focused lint passed, and both production and Preview builds passed. No Match-3 rules, progression, economy, database or production environment was changed.
+
 ## Concept 4D Home implementation — 19 July 2026
 
 The approved permanent Home direction is implemented in one pass: original layered SVG/WebP assets, a tokenised reusable React component system, data-driven/swipeable promotions, safe-area fixed player/economy header, real-engine animated Match-3 preview, signature purple Play control, contextual Daily Reward, collection/Foil/season progress, modal/loading/error/empty states and four-item navigation. Existing game modes and economy/authentication boundaries were retained.

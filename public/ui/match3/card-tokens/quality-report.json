@@ -1,0 +1,191 @@
+{
+  "outputSize": 256,
+  "smallestReviewSize": 32,
+  "tokens": [
+    {
+      "id": "sun",
+      "output": "/ui/match3/card-tokens/golden-retriever.webp",
+      "crop": {
+        "left": 419,
+        "top": 305,
+        "size": 398
+      },
+      "signalsAt32px": {
+        "averageLuminance": 111.53,
+        "luminanceDeviation": 66.26
+      }
+    },
+    {
+      "id": "moon",
+      "output": "/ui/match3/card-tokens/maine-coon.webp",
+      "crop": {
+        "left": 506,
+        "top": 143,
+        "size": 392
+      },
+      "signalsAt32px": {
+        "averageLuminance": 111.09,
+        "luminanceDeviation": 63.46
+      }
+    },
+    {
+      "id": "leaf",
+      "output": "/ui/match3/card-tokens/tyrannosaurus-rex.webp",
+      "crop": {
+        "left": 504,
+        "top": 153,
+        "size": 421
+      },
+      "signalsAt32px": {
+        "averageLuminance": 98.67,
+        "luminanceDeviation": 60.68
+      }
+    },
+    {
+      "id": "drop",
+      "output": "/ui/match3/card-tokens/saturn-v.webp",
+      "crop": {
+        "left": 87,
+        "top": 23,
+        "size": 250
+      },
+      "signalsAt32px": {
+        "averageLuminance": 90.26,
+        "luminanceDeviation": 51.46
+      }
+    },
+    {
+      "id": "star",
+      "output": "/ui/match3/card-tokens/strawberry.webp",
+      "crop": {
+        "left": 42,
+        "top": 38,
+        "size": 237
+      },
+      "signalsAt32px": {
+        "averageLuminance": 110.29,
+        "luminanceDeviation": 69.13
+      }
+    },
+    {
+      "id": "gem",
+      "output": "/ui/match3/card-tokens/bald-eagle.webp",
+      "crop": {
+        "left": 94,
+        "top": 33,
+        "size": 133
+      },
+      "signalsAt32px": {
+        "averageLuminance": 127.79,
+        "luminanceDeviation": 80.96
+      }
+    }
+  ],
+  "pairwiseDifferences": [
+    {
+      "tokens": [
+        "leaf",
+        "drop"
+      ],
+      "differenceAt32px": 0.1809
+    },
+    {
+      "tokens": [
+        "moon",
+        "drop"
+      ],
+      "differenceAt32px": 0.2065
+    },
+    {
+      "tokens": [
+        "sun",
+        "star"
+      ],
+      "differenceAt32px": 0.2152
+    },
+    {
+      "tokens": [
+        "sun",
+        "leaf"
+      ],
+      "differenceAt32px": 0.2207
+    },
+    {
+      "tokens": [
+        "moon",
+        "star"
+      ],
+      "differenceAt32px": 0.2349
+    },
+    {
+      "tokens": [
+        "sun",
+        "gem"
+      ],
+      "differenceAt32px": 0.2427
+    },
+    {
+      "tokens": [
+        "moon",
+        "leaf"
+      ],
+      "differenceAt32px": 0.2472
+    },
+    {
+      "tokens": [
+        "moon",
+        "gem"
+      ],
+      "differenceAt32px": 0.2496
+    },
+    {
+      "tokens": [
+        "leaf",
+        "gem"
+      ],
+      "differenceAt32px": 0.2624
+    },
+    {
+      "tokens": [
+        "drop",
+        "gem"
+      ],
+      "differenceAt32px": 0.2658
+    },
+    {
+      "tokens": [
+        "sun",
+        "moon"
+      ],
+      "differenceAt32px": 0.2682
+    },
+    {
+      "tokens": [
+        "star",
+        "gem"
+      ],
+      "differenceAt32px": 0.2733
+    },
+    {
+      "tokens": [
+        "leaf",
+        "star"
+      ],
+      "differenceAt32px": 0.2751
+    },
+    {
+      "tokens": [
+        "sun",
+        "drop"
+      ],
+      "differenceAt32px": 0.2827
+    },
+    {
+      "tokens": [
+        "drop",
+        "star"
+      ],
+      "differenceAt32px": 0.324
+    }
+  ]
+}

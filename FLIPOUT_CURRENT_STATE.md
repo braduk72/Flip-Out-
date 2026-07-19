@@ -2,6 +2,13 @@
 
 > **Development deployment URL:** Future verification and handover reports use `https://dev.flipout.gizmogames.uk`. Vercel-generated `*.vercel.app` addresses below are preserved only as historical deployment evidence, not as user-facing development URLs.
 
+## Match-3 card-art tokens — 19 July 2026
+
+- **Status: Implemented; Preview deployment pending final verification.** All six temporary geometric tokens have been removed from the Home preview and real Match-3 board. They now use deterministic circular crops of existing Golden Retriever, Maine Coon, Tyrannosaurus rex, Saturn V, Strawberry and Bald Eagle card artwork.
+- `src/match3/tokenCrops.js` records the source card ID/path, hand-authored focal point, zoom, rotation, accessible label, fallback and review decision for every token. `scripts/generate-match3-tokens.mjs` regenerates the 256 px transparent WebP derivatives and a machine-readable 32 px contrast/similarity report without altering source pixels.
+- The development-only review surface is available at `https://dev.flipout.gizmogames.uk/?dev=match3-tokens`. It shows source artwork plus every crop at 256 px, 48 px board size, conservative 32 px phone size and a reduced-vision simulation. All six passed visual review; automated 32 px luminance deviation is **51.46–80.96**, and the closest pair difference is **0.1809** against the **0.16** rejection floor.
+- Verification: deterministic regeneration passed; token Node tests **3/3**; focused token/preview UI tests **6/6**; full Node suite **82 passed, 0 failed, 8 Preview-only skipped**; full UI suite **19/19**; focused lint clean; production and Preview builds pass with the review route kept in its own lazy chunk. No gameplay rules, economy, database or production system changed.
+
 ## Concept 4D design-system Home — 19 July 2026
 
 - **Status: Implemented and deployed to development Preview.** The prototype Home has been replaced by the approved Concept 4D hierarchy using reusable React primitives and independent SVG/WebP layers. It has a safe-area fixed identity/economy header, data-driven promotional carousel, real-engine Match-3 preview, signature purple Play action, meaningful collection/Foil/season states and four-item bottom navigation.

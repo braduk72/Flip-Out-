@@ -22,6 +22,7 @@ import { setSfxVol } from './hooks/useSfx'
 import { snapshotToCookie } from './utils/gameStorage.js'
 import { createTransactionId, economy } from './utils/economyService.js'
 import CookieBanner, { consentAnswered, hasConsent } from './components/CookieBanner.jsx'
+import { isMatch3TokenReviewRequest } from './match3/tokenReviewAccess.js'
 
 const Shop=lazy(()=>import('./screens/Shop'))
 const Game=lazy(()=>import('./screens/Game'))
@@ -30,6 +31,7 @@ const Inventory=lazy(()=>import('./screens/Inventory'))
 const Marketplace=lazy(()=>import('./screens/Marketplace'))
 const RevealGame=lazy(()=>import('./screens/RevealGame'))
 const Match3=lazy(()=>import('./screens/Match3'))
+const Match3TokenReview=lazy(()=>import('./screens/Match3TokenReview'))
 
 // ── Music pools ───────────────────────────────────────────────────────────────
 const HOME_TRACKS = [
@@ -73,7 +75,7 @@ const SPIN_TRACKS     = [
 const GAME_SCREENS = new Set(['game','mpgame','roundstart','seasongame','seasonroundstart'])
 
 export default function App() {
-  const [screen,     setScreen]     = useState('home')
+  const [screen,     setScreen]     = useState(() => isMatch3TokenReviewRequest() ? 'match3-token-review' : 'home')
   const [cookieBannerDone, setCookieBannerDone] = useState(consentAnswered)
   const [deck,       setDeck]       = useState(null)
   const [portrait,   setPortrait]   = useState(() => parseInt(localStorage.getItem('fo_portrait')   || '1'))
@@ -673,6 +675,7 @@ export default function App() {
     return <LuckySpin onBack={() => setScreen('shop')} navProps={navProps} />
   }
   if (screen === 'match3') return <Match3 onBack={() => setScreen('home')} />
+  if (screen === 'match3-token-review') return <Match3TokenReview onBack={() => { window.history.replaceState({}, '', window.location.pathname); setScreen('home') }} />
   if (screen === 'inventory') {
     return <Inventory onBack={() => setScreen('shop')} navProps={navProps} />
   }

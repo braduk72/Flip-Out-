@@ -33,18 +33,19 @@ The three generated backgrounds contain no baked copy, prices, logos or characte
 
 The Stars and Coins symbols are display marks only; all values come from server-backed player state. The Coin Store icon opens the existing Shop route and cannot alter a balance.
 
-## Match-3 temporary token set
+## Match-3 card-art token set
 
-| Asset | Size/type | Purpose | Status |
-|---|---|---|---|
-| `match3/token-sun.svg` | 128×128 SVG | `sun` engine token | **READY** |
-| `match3/token-moon.svg` | 128×128 SVG | `moon` engine token | **READY** |
-| `match3/token-leaf.svg` | 128×128 SVG | `leaf` engine token | **READY** |
-| `match3/token-drop.svg` | 128×128 SVG | `drop` engine token | **READY** |
-| `match3/token-star.svg` | 128×128 SVG | `star` engine token | **READY** |
-| `match3/token-gem.svg` | 128×128 SVG | `gem` engine token | **READY** |
+| Runtime asset | Existing source card | Subject / engine ID | Size/type | Status |
+|---|---|---|---|---|
+| `match3/card-tokens/golden-retriever.webp` | `woof:1` | Golden Retriever / `sun` | 256×256 transparent WebP | **READY** |
+| `match3/card-tokens/maine-coon.webp` | `cats:1` | Maine Coon / `moon` | 256×256 transparent WebP | **READY** |
+| `match3/card-tokens/tyrannosaurus-rex.webp` | `mastersOfTheLostWorld:1` | Tyrannosaurus rex / `leaf` | 256×256 transparent WebP | **READY** |
+| `match3/card-tokens/saturn-v.webp` | `conquestOfSpace:5` | Saturn V / `drop` | 256×256 transparent WebP | **READY** |
+| `match3/card-tokens/strawberry.webp` | `fruits:2` | Strawberry / `star` | 256×256 transparent WebP | **READY** |
+| `match3/card-tokens/bald-eagle.webp` | `birdsOfPrey:1` | Bald Eagle / `gem` | 256×256 transparent WebP | **READY** |
+| `match3/card-tokens/quality-report.json` | Generated from all six outputs | 32 px contrast and pairwise-distinction signals | JSON | **READY** |
 
-These replace the early Unicode/CSS token substitutes. They are deliberately labelled temporary because final Match-3 art direction is outside this package, but they are original, separated, responsive vector assets and map one-to-one to real engine tokens.
+`src/match3/tokenCrops.js` is the authoritative crop manifest. Each entry records its existing source asset, individual focal point, zoom, rotation, accessible label, shared branded-card fallback, accent ring and actual-size review decision. `npm run assets:match3-tokens` reproduces the assets without generative alteration. The removed geometric SVGs are not retained as fallbacks.
 
 ## Component-rendered assets
 

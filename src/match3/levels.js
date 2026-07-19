@@ -1,17 +1,19 @@
-export const MATCH3_TOKENS = Object.freeze([
-  { id: 'sun', label: 'Sun', symbol: '●', pattern: 'solid' },
-  { id: 'moon', label: 'Moon', symbol: '◆', pattern: 'diamond' },
-  { id: 'leaf', label: 'Leaf', symbol: '▲', pattern: 'stripe' },
-  { id: 'drop', label: 'Water drop', symbol: '▼', pattern: 'dots' },
-  { id: 'star', label: 'Star', symbol: '★', pattern: 'star' },
-  { id: 'gem', label: 'Gem', symbol: '⬟', pattern: 'grid' },
-])
+import { MATCH3_TOKEN_CROPS } from './tokenCrops.js'
+
+export const MATCH3_TOKENS = Object.freeze(MATCH3_TOKEN_CROPS.map(token => ({
+  id: token.id,
+  label: token.label,
+  accessibleLabel: token.accessibleLabel,
+  asset: token.asset,
+  fallbackAsset: token.fallbackAsset,
+  accent: token.accent,
+})))
 
 export const PROVISIONAL_LEVEL_BANDS=Object.freeze({1:'Tutorial',2:'Tutorial',3:'Tutorial',4:'Easy',5:'Easy',6:'Easy',7:'Easy',8:'Medium',9:'Medium',10:'Medium',11:'Medium',12:'Medium',13:'Medium',14:'Hard',15:'Hard',16:'Hard',17:'Hard',18:'Hard',19:'Hard',20:'Showcase'})
 const level = (id, moves, objectives, extras = {}) => ({ id, name: `Level ${id}`, rows: 8, cols: 8, moves, objectives, provisionalBand:PROVISIONAL_LEVEL_BANDS[id], ...extras })
 export const MATCH3_LEVELS = Object.freeze([
   level(1, 18, [{ type: 'score', target: 1500 }], { teaching: 'Make matches of three.' }),
-  level(2, 20, [{ type: 'collect', token: 'sun', target: 12 }], { teaching: 'Collect Sun tokens.' }),
+  level(2, 20, [{ type: 'collect', token: 'sun', target: 12 }], { teaching: 'Collect Golden Retriever tokens.' }),
   level(3, 19, [{ type: 'collect', token: 'moon', target: 10 }, { type: 'score', target: 1000 }]),
   level(4, 14, [{ type: 'blockers', target: 6 }], { blockers: [{ type: 'crate', layer: 1, cells: [[2,2],[2,5],[4,2],[4,5],[6,2],[6,5]] }] }),
   level(5, 18, [{ type: 'blockers', target: 8 }], { blockers: [{ type: 'ice', layer: 1, cells: [[1,2],[1,5],[3,2],[3,5],[5,2],[5,5],[6,3],[6,4]] }] }),

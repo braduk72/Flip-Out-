@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <defs>
-    <linearGradient id="gem" x1=".18" y1=".08" x2=".82" y2=".92"><stop stop-color="#ffd6ff"/><stop offset=".3" stop-color="#ff6ee8"/><stop offset=".7" stop-color="#bc2bd4"/><stop offset="1" stop-color="#671189"/></linearGradient>
-    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="7" stdDeviation="6" flood-color="#300036" flood-opacity=".74"/></filter>
-  </defs>
-  <path d="M30 16h68l24 45-58 59L6 61Z" fill="url(#gem)" stroke="#f6abff" stroke-width="6" stroke-linejoin="round" filter="url(#shadow)"/>
-  <path d="m30 16 34 104 34-104M6 61h116M30 16 6 61l58-20 58 20-24-45" fill="none" stroke="#fff" stroke-width="4" opacity=".32"/>
-  <path d="M32 30h25" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="7" opacity=".72"/>
-</svg>

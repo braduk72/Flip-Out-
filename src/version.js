@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.1.0-ui4d'
+export const APP_VERSION = '1.1.1-card-tokens'

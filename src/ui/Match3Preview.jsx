@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react'
 import Icon from './Icon.jsx'
 import { useMotionMode, usePageVisibility } from './motion.js'
 import { advanceMatch3Demo, createMatch3Demo } from './match3Demo.js'
+import Match3TokenImage from '../match3/Match3TokenImage.jsx'
 import styles from './components.module.css'
-
-const tokenAsset = Object.fromEntries(['sun', 'moon', 'leaf', 'drop', 'star', 'gem'].map(name => [name, `/ui/match3/token-${name}.svg`]))
 
 export default function Match3Preview({ seed = 20260719, paused = false }) {
   const [demo, setDemo] = useState(() => createMatch3Demo(seed))
@@ -26,7 +25,7 @@ export default function Match3Preview({ seed = 20260719, paused = false }) {
       <div className={styles.previewBoard} aria-hidden="true">
         {demo.game.board.flatMap((row, r) => row.map((cell, c) => {
           const moved = demo.lastMove && ((demo.lastMove.from.r === r && demo.lastMove.from.c === c) || (demo.lastMove.to.r === r && demo.lastMove.to.c === c))
-          return <span key={`${r}:${c}`} className={`${styles.previewTile} ${moved ? styles.previewMoved : ''} ${cell.special ? styles.previewSpecial : ''}`}><img src={tokenAsset[cell.token]} alt=""/>{cell.drop && <b className={styles.previewDrop}>↓</b>}{cell.special && <Icon name="star" size={10}/>}</span>
+          return <span key={`${r}:${c}`} className={`${styles.previewTile} ${moved ? styles.previewMoved : ''} ${cell.special ? styles.previewSpecial : ''}`}><Match3TokenImage tokenId={cell.token} decorative/>{cell.drop && <b className={styles.previewDrop}>↓</b>}{cell.special && <Icon name="star" size={10}/>}</span>
         }))}
       </div>
       <div className={styles.previewStatus} aria-hidden="true"><span>Level {demo.levelId}</span><span>{cascades ? `${cascades}× cascade` : 'Make a match'}</span></div>
