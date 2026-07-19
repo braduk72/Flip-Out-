@@ -8,11 +8,11 @@ import { playerGameApi } from '../utils/gameApi.js'
 import styles from './Collection.module.css'
 
 const VIEWS = [
-  ['albums', 'Albums'],
-  ['cards', 'Cards'],
-  ['favourites', 'Favourites'],
-  ['stats', 'Statistics'],
-  ['items', 'Items'],
+  ['albums', 'Albums', 'Albums'],
+  ['cards', 'Cards', 'Cards'],
+  ['favourites', 'Saved', 'Favourite cards'],
+  ['stats', 'Stats', 'Collection statistics'],
+  ['items', 'Items', 'Items'],
 ]
 const PAGE_SIZE = 30
 
@@ -145,7 +145,7 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
     </header>
 
     <nav className={styles.viewTabs} aria-label="Collection views">
-      {VIEWS.map(([id, label]) => <button key={id} type="button" aria-current={view === id ? 'page' : undefined} onClick={() => selectView(id)}>{label}</button>)}
+      {VIEWS.map(([id, label, accessibleLabel]) => <button key={id} type="button" aria-label={accessibleLabel} aria-current={view === id ? 'page' : undefined} onClick={() => selectView(id)}>{label}</button>)}
     </nav>
 
     <div ref={scrollRef} className={styles.scroll}>

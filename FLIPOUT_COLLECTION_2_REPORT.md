@@ -43,7 +43,7 @@ The three album groupings are navigation metadata only. Sets remain the canonica
 - UI suite: 31 passed, 0 failed across 8 files.
 - New focused model tests cover album/set aggregation, ownership, recency, statistics, compound filtering, Foil absence and account-isolated favourites.
 - New component tests cover set navigation, search, favourites, Foil status and retained non-card inventory.
-- Preview build: passed; 139 modules; main JS 405.11 kB / 128.02 kB gzip; main CSS 87.46 kB / 17.92 kB gzip; Collection JS 23.48 kB / 7.14 kB gzip; Collection CSS 16.81 kB / 4.09 kB gzip.
+- Production and Preview builds: passed; 139 modules; main JS 405.11 kB / 128.01 kB gzip; main CSS 87.46 kB / 17.92 kB gzip; Collection JS 23.56 kB / 7.15 kB gzip; Collection CSS 16.82 kB / 4.10 kB gzip.
 - Focused JavaScript lint: passed with no findings.
 
 ## Remaining risks

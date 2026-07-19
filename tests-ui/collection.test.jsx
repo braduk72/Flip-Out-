@@ -44,7 +44,7 @@ describe('Collection 2.0', () => {
     await user.type(screen.getByRole('searchbox', { name: 'Search cards and sets' }), 'Ferrari 488 GTB')
     expect(screen.getByText('Showing 1 of 1 cards')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Add Ferrari 488 GTB to favourites' }))
-    await user.click(screen.getByRole('button', { name: 'Favourites' }))
+    await user.click(screen.getByRole('button', { name: 'Favourite cards' }))
     expect(screen.getByText('Ferrari 488 GTB')).toBeInTheDocument()
     expect(JSON.parse(localStorage.getItem('fo_collection_favourites:ui-collector'))).toEqual(['card:sportscars:1'])
   })
