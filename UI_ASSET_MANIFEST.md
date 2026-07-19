@@ -16,6 +16,17 @@ Status meanings: **READY** is an original reusable runtime asset; **GENERATED** 
 | `progress-frame.svg` | Scalable progress-track rim | 600×40 SVG | Independent from coloured fill and value | **READY** |
 | `sparkles.svg` | Controlled Play/hero particle layer | 720×320 SVG | Opacity/scale loop; static in Reduced/Off | **READY** |
 
+## Player avatar catalogue
+
+`src/data/avatarCatalog.js` is the single reusable registry for player-facing portrait assets. It stores opaque IDs, accessible labels, category and availability metadata, plus the legacy portrait number needed only by retained legacy game routes. Player profiles persist `selected_avatar_id` (for example `starter-1`), never an image path.
+
+| Asset IDs | Existing runtime source | Purpose | Size/type | Status |
+|---|---|---|---|---|
+| `starter-1` through `starter-11`, `starter-13`, `starter-14` | `public/images/a1.webp`…`a11.webp`, `a13.webp`, `a14.webp` | First-time selectable player avatars; responsive circular crop | Existing WebP portraits | **READY** |
+| `beta-tester` | `public/images/a99.webp` | Existing promo-unlocked avatar; registered but unavailable during onboarding | Existing WebP portrait | **READY / LOCKED** |
+
+The source search also found card-set avatar artwork under `public/images/cards/oceanLiners/avatars/`; those assets remain card-set content and are deliberately not duplicated into player avatars. Legacy mascot/profile images remain unused by this player-avatar flow.
+
 ## Promotional carousel artwork
 
 | Asset | Runtime purpose | Size/type | Animation | Reuse | Status |
@@ -55,7 +66,7 @@ The following graphics are deliberately produced by reusable vector/CSS componen
 
 | Item | Current treatment | Status / next requirement |
 |---|---|---|
-| Player portrait | Original neutral star/avatar frame; no mascot dependency | **PLACEHOLDER** — connect approved player-created avatars later |
+| Player portrait | Selected registered avatar inside the reusable neutral `avatar-frame.svg` rim | **READY** — persisted by opaque catalogue ID; future unlocks register new entries only |
 | XP and account level | Component supports both, but backend currently has no authoritative XP/level fields | **PLACEHOLDER DATA** — add schema/service before display becomes numeric |
 | Foil catalogue art | Foil progress openly reports unavailable when no authoritative foil items exist | **NEEDS CREATION** — approve item definitions and assets first |
 | Audio | Named Web Audio tones behind one abstraction | **PLACEHOLDER** — replace with licensed/approved SFX without changing components |

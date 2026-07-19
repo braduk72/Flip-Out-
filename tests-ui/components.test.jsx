@@ -20,13 +20,14 @@ const promotions = [
 
 describe('Flip-Out design-system components', () => {
   test('safe-area header exposes player, exact currency values and Coin Store access', () => {
-    render(<SafeAreaHeader player={{ playerName: 'Guest Player', accountKind: 'guest', level: null }} currencies={{ stars: 1275, coins: 6540 }} onCoinStore={() => {}}/>)
+    const { container } = render(<SafeAreaHeader player={{ playerName: 'Guest Player', avatarId: 'starter-1', accountKind: 'guest', level: null }} currencies={{ stars: 1275, coins: 6540 }} onCoinStore={() => {}}/>)
     expect(screen.getByRole('banner')).toHaveAttribute('data-safe-area', 'runtime')
     expect(screen.getByAltText('Flip-Out!')).toBeInTheDocument()
     expect(screen.getByText('Guest Player')).toBeInTheDocument()
     expect(screen.getByLabelText('1,275 Stars')).toBeInTheDocument()
     expect(screen.getByLabelText('6,540 Coins')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Open Coin Store' })).toBeInTheDocument()
+    expect(container.querySelector('[data-avatar-id="starter-1"] img[src="/images/a1.webp"]')).toBeInTheDocument()
   })
 
   test('currency counter has deliberate loading and unavailable states', () => {

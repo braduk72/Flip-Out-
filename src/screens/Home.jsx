@@ -15,6 +15,7 @@ import {
 } from '../ui/components.jsx'
 import Match3Preview from '../ui/Match3Preview.jsx'
 import NicknameOnboarding from '../components/NicknameOnboarding.jsx'
+import AvatarOnboarding from '../components/AvatarOnboarding.jsx'
 import { useMotionMode } from '../ui/motion.js'
 import { claimHomeDailyReward, fetchHomeData } from '../ui/homeData.js'
 import { playerGameApi } from '../utils/gameApi.js'
@@ -51,6 +52,7 @@ export default function Home({
   dataLoader = fetchHomeData,
   dailyClaimer = claimHomeDailyReward,
   nicknameSaver = playerGameApi.setDisplayName,
+  avatarSaver = playerGameApi.setAvatar,
 }) {
   const [data, setData] = useState(EMPTY_HOME)
   const [status, setStatus] = useState('loading')
@@ -175,6 +177,13 @@ export default function Home({
         ...current,
         profile: { ...current.profile, displayName: result.displayName, playerName: result.displayName },
       }))
+    }}/>
+  }
+
+  if (status === 'ready' && !data.profile?.avatarId) {
+    return <AvatarOnboarding onSubmit={async avatarId => {
+      const result = await avatarSaver(avatarId)
+      setData(current => ({ ...current, profile: { ...current.profile, avatarId: result.avatarId } }))
     }}/>
   }
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Icon from './Icon.jsx'
 import { useMotionMode, usePageVisibility } from './motion.js'
 import { useUiAudio } from './audio.js'
+import { getAvatarById } from '../data/avatarCatalog.js'
 import styles from './components.module.css'
 
 export function CardPanel({ as: Element = 'section', variant = 'standard', className = '', children, ...props }) {
@@ -128,9 +129,11 @@ export function CoinStoreButton({ onClick, sfxOn = true }) {
 export function PlayerSummary({ player, loading = false, onClick }) {
   const Element = onClick ? 'button' : 'div'
   const xpAvailable = player?.xp != null && player?.xpTarget != null
+  const avatar = getAvatarById(player?.avatarId)
+  const label = onClick ? `Open player profile${avatar ? `. Avatar: ${avatar.label}` : ''}` : undefined
   return (
-    <Element type={onClick ? 'button' : undefined} className={styles.playerSummary} onClick={onClick} aria-label={onClick ? 'Open player profile' : undefined}>
-      <span className={styles.avatar} aria-hidden="true"><img src="/ui/avatar-frame.svg" alt=""/></span>
+    <Element type={onClick ? 'button' : undefined} className={styles.playerSummary} onClick={onClick} aria-label={label}>
+      <span className={styles.avatar} data-avatar-id={avatar?.id ?? ''} aria-hidden="true">{avatar && <img className={styles.avatarPortrait} src={avatar.asset} alt=""/>}<img className={styles.avatarFrame} src="/ui/avatar-frame.svg" alt=""/></span>
       <span className={styles.playerText}>
         <strong>{loading ? 'Loading…' : player?.playerName || 'Guest Player'}</strong>
         <span>{player?.level ? `Level ${player.level}` : 'Level not set'}{player?.accountKind === 'guest' && <Badge tone="guest">Guest</Badge>}</span>

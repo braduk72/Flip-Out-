@@ -41,6 +41,7 @@ export function normaliseHomeData({ playerPayload, match3Payload, liveOpsPayload
       accountKind,
       playerId: profile.player_id ?? null,
       displayName: profile.display_name ?? null,
+      avatarId: profile.selected_avatar_id ?? null,
       playerName: profile.display_name ?? (accountKind === 'guest' ? 'Guest Player' : shortId ? `Player ${shortId}` : 'Player'),
       level: overrides.level,
       xp: overrides.xp,

@@ -14,7 +14,7 @@ export function validateAmount(value) {
 
 export async function getPlayerState(db, playerId) {
   const [profile, balances, inventory, transactions, recyclerRecipes] = await Promise.all([
-    db.query(`SELECT player_id, account_kind, display_name FROM fo_accounts WHERE player_id=$1`, [playerId]),
+    db.query(`SELECT player_id, account_kind, display_name, selected_avatar_id FROM fo_accounts WHERE player_id=$1`, [playerId]),
     db.query(`SELECT currency_id, balance FROM fo_player_balances WHERE player_id=$1 ORDER BY currency_id`, [playerId]),
     db.query(`SELECT item_id, quantity, bound_quantity FROM fo_player_inventory WHERE player_id=$1 AND quantity > 0 ORDER BY item_id`, [playerId]),
     db.query(`SELECT transaction_id, source, item_id, currency_id, amount, metadata, created_at FROM fo_player_transactions WHERE player_id=$1 ORDER BY created_at DESC LIMIT 100`, [playerId]),

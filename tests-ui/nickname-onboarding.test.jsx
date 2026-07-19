@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { expect, test, vi } from 'vitest'
 import Home from '../src/screens/Home.jsx'
 import NicknameOnboarding from '../src/components/NicknameOnboarding.jsx'
+import AvatarOnboarding from '../src/components/AvatarOnboarding.jsx'
 
 const onboardingData = {
   profile: { accountKind: 'guest', displayName: null, playerName: 'Guest Player', level: null, xp: null, xpTarget: null },
@@ -37,20 +38,42 @@ test('nickname onboarding gives immediate client feedback for invalid names', as
   expect(screen.getByText(/use letters and numbers only/i)).toBeInTheDocument()
 })
 
-test('Home shows onboarding only for a player without a nickname and persists it once', async () => {
+test('avatar grid selects a starter avatar and enables Continue', async () => {
+  const submit = vi.fn().mockResolvedValue({ avatarId: 'starter-1' })
+  render(<AvatarOnboarding onSubmit={submit}/>)
+  const continueButton = screen.getByRole('button', { name: 'Continue' })
+  expect(continueButton).toBeDisabled()
+  await userEvent.click(screen.getByRole('button', { name: 'Select Starter avatar 1' }))
+  expect(continueButton).toBeEnabled()
+  await userEvent.click(continueButton)
+  expect(submit).toHaveBeenCalledWith('starter-1')
+})
+
+test('Home resumes nickname then avatar onboarding and persists each step once', async () => {
   const saver = vi.fn().mockResolvedValue({ displayName: 'Gizmo' })
-  render(<Home dataLoader={vi.fn().mockResolvedValue(onboardingData)} nicknameSaver={saver} onMatch3={() => {}} sfxOn={false}/>)
+  const avatarSaver = vi.fn().mockResolvedValue({ avatarId: 'starter-1' })
+  render(<Home dataLoader={vi.fn().mockResolvedValue(onboardingData)} nicknameSaver={saver} avatarSaver={avatarSaver} onMatch3={() => {}} sfxOn={false}/>)
   await screen.findByRole('heading', { name: 'Choose your nickname' })
   expect(screen.queryByRole('heading', { name: 'MATCH-3' })).not.toBeInTheDocument()
   await userEvent.type(screen.getByLabelText('Nickname'), 'Gizmo')
   await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
   expect(saver).toHaveBeenCalledTimes(1)
+  expect(await screen.findByRole('heading', { name: 'Choose your avatar' })).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'Select Starter avatar 1' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+  expect(avatarSaver).toHaveBeenCalledWith('starter-1')
   expect(await screen.findByRole('heading', { name: 'MATCH-3' })).toBeInTheDocument()
   expect(screen.queryByRole('heading', { name: 'Choose your nickname' })).not.toBeInTheDocument()
 })
 
 test('existing players bypass nickname onboarding', async () => {
-  render(<Home dataLoader={vi.fn().mockResolvedValue({ ...onboardingData, profile: { ...onboardingData.profile, displayName: 'Brad', playerName: 'Brad' } })} onMatch3={() => {}} sfxOn={false}/>)
+  render(<Home dataLoader={vi.fn().mockResolvedValue({ ...onboardingData, profile: { ...onboardingData.profile, displayName: 'Brad', avatarId: 'starter-2', playerName: 'Brad' } })} onMatch3={() => {}} sfxOn={false}/>)
   expect(await screen.findByRole('heading', { name: 'MATCH-3' })).toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'Choose your nickname' })).not.toBeInTheDocument()
+})
+
+test('nickname-only players resume directly at avatar selection', async () => {
+  render(<Home dataLoader={vi.fn().mockResolvedValue({ ...onboardingData, profile: { ...onboardingData.profile, displayName: 'Brad', playerName: 'Brad' } })} onMatch3={() => {}} sfxOn={false}/>)
+  expect(await screen.findByRole('heading', { name: 'Choose your avatar' })).toBeInTheDocument()
   expect(screen.queryByRole('heading', { name: 'Choose your nickname' })).not.toBeInTheDocument()
 })
