@@ -159,3 +159,6 @@ The authoritative match-session API now exists and is Preview-verified. The next
 - Preview result: **48 passed, 0 failed, 0 skipped**, including replay/tamper/account-isolation and concurrent-completion verification.
 - Preview deployment: `https://flip-ms2y25ven-chattocal.vercel.app`.
 - Backend regular-match sessions are working. Live UI integration remains blocked on exact special-card reducer parity; this is a correctness/security boundary, not an external-service blocker.
+## Match-3 gameplay completion addendum — 19 July 2026
+
+Match-3's shared rules and board presentation have completed the requested modern-mechanics pass: full shape/special creation, seven special pairings, recursive chain reactions, cascade multipliers, event-rich server state, bounded move timing and motion-aware visual/haptic feedback. No economy value or level definition changed. Focused tests passed 39/39; the full local suite passed 95 Node tests plus 19 UI tests with only 8 expected Preview-database skips. A 20,000-board seeded sweep found no starting matches or dead starts. Full details: `MATCH3_GAMEPLAY_COMPLETION_REPORT.md`.

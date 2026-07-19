@@ -1,5 +1,11 @@
 # Flip-Out Match-3 vertical slice
 
+## Gameplay completion addendum — 19 July 2026
+
+The engine now supports four/five, T, L, cross and enabled 2x2-square special creation; all single-special activations; seven distinct special pairings; recursive chain reactions; richer deterministic cascade/combo scoring; and legacy `bomb` compatibility. The server-authoritative React board now renders bounded swap/resolution timing, combo labels, particles, beams, explosion rings, colour effects, special/idle animations and motion-aware haptics without client prediction. All 20 level definitions and the 30/60-Star reward path are unchanged. Exact results and files are in `MATCH3_GAMEPLAY_COMPLETION_REPORT.md`.
+
+The prior difficulty percentages below predate square matching and the expanded scoring/combination rules. They remain historical evidence, not current balance claims; no silent level retuning was performed in this pass.
+
 ## Balancing-tool follow-up — 18 July 2026
 
 The next development package added deterministic random, greedy-score and objective-aware full-level players; reproducible aggregation; provisional band comparison; 14,000 baseline/intermediate/final simulation games; a development-only local feedback export; a real-device checklist; engine/memory/API performance tools; and route-level code splitting. Small one-field level adjustments were recorded rather than replacing the level set. Drop levels remain the principal unresolved bottleneck. Final balancing Preview: `https://flip-ocz8184ts-chattocal.vercel.app`. See `MATCH3_BALANCING_REPORT.md` and `MATCH3_REAL_DEVICE_CHECKLIST.md`.

@@ -1,35 +1,266 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { MATCH3_LEVELS, MATCH3_TOKENS, getMatch3Level } from '../match3/levels.js'
+import Match3FeedbackPanel from '../components/Match3FeedbackPanel.jsx'
 import { objectiveProgress } from '../match3/engine.js'
+import { MATCH3_LEVELS, MATCH3_TOKENS, getMatch3Level } from '../match3/levels.js'
+import { cellIsInPresentation, createMatch3Presentation } from '../match3/presentation.js'
+import Match3TokenImage from '../match3/Match3TokenImage.jsx'
+import { useMotionMode } from '../ui/motion.js'
 import { playerGameApi } from '../utils/gameApi.js'
 import { haptic, recordMatch3Event } from '../utils/match3Analytics.js'
 import { loadMatch3Progress, loadMatch3Resume, resetMatch3Development, saveMatch3Progress, saveMatch3Resume } from '../utils/match3Storage.js'
 import styles from './Match3.module.css'
-import Match3FeedbackPanel from '../components/Match3FeedbackPanel.jsx'
-import Match3TokenImage from '../match3/Match3TokenImage.jsx'
 
-const uid=p=>`${p}:${crypto.randomUUID()}`
-const TOKEN=new Map(MATCH3_TOKENS.map(t=>[t.id,t]))
-const objectiveLabel=o=>o.type==='score'?`Score ${o.target}`:o.type==='collect'?`Collect ${o.target} ${TOKEN.get(o.token)?.label}`:o.type==='blockers'?`Clear ${o.target} blocker layers`:`Drop ${o.target} objects`
+const uid = prefix => `${prefix}:${crypto.randomUUID()}`
+const TOKEN = new Map(MATCH3_TOKENS.map(token => [token.id, token]))
+const objectiveLabel = objective => objective.type === 'score'
+  ? `Score ${objective.target}`
+  : objective.type === 'collect'
+    ? `Collect ${objective.target} ${TOKEN.get(objective.token)?.label}`
+    : objective.type === 'blockers' ? `Clear ${objective.target} blocker layers` : `Drop ${objective.target} objects`
 
-export default function Match3({onBack}){
- const [view,setView]=useState('map'),[selectedLevel,setSelectedLevel]=useState(1),[session,setSession]=useState(null),[progress,setProgress]=useState(loadMatch3Progress),[busy,setBusy]=useState(false),[error,setError]=useState(''),[stars,setStars]=useState(0)
- useEffect(()=>{let live=true;playerGameApi.match3State().then(data=>{if(!live)return;const p={highestUnlockedLevel:Number(data.progress?.highest_unlocked_level??1),completedLevels:data.progress?.completed_levels??{}};setProgress(p);saveMatch3Progress(p);if(data.resume){setSession(data.resume);setSelectedLevel(data.resume.levelId);setView('game')}}).catch(()=>{const resume=loadMatch3Resume();if(resume){setSession(resume);setSelectedLevel(resume.levelId);setView('game')}});return()=>{live=false}},[])
- async function start(){setBusy(true);setError('');try{const r=await playerGameApi.match3({action:'start',levelId:selectedLevel,requestId:uid('match3')});setSession(r.session);saveMatch3Resume(r.session);setView('game');recordMatch3Event('level-start',{levelId:selectedLevel})}catch(e){setError(e.message)}finally{setBusy(false)}}
- async function action(body){setBusy(true);setError('');try{const r=await playerGameApi.match3({...body,sessionId:session.sessionId});if(r.session){setSession(r.session);saveMatch3Resume(r.session)}return r}catch(e){setError(e.message);throw e}finally{setBusy(false)}}
- async function finish(){try{const r=await action({action:'complete'});setStars(r.totalStars);const p={highestUnlockedLevel:Math.min(20,Math.max(progress.highestUnlockedLevel,selectedLevel+1)),completedLevels:{...progress.completedLevels,[selectedLevel]:{stars:30,score:session.state.score}}};setProgress(p);saveMatch3Progress(p);saveMatch3Resume(null);recordMatch3Event('level-completion',{levelId:selectedLevel,movesUsed:getMatch3Level(selectedLevel).moves-session.state.movesRemaining,starsGranted:30});setView('win')}catch{/* status shown */}}
- // Completion is an external server synchronization triggered by a server-returned state transition.
- // eslint-disable-next-line react-hooks/set-state-in-effect
- useEffect(()=>{if(session?.state?.status==='won'&&view==='game')finish();if(session?.state?.status==='lost'&&view==='game')recordMatch3Event('level-failure',{levelId:selectedLevel})},[session?.state?.status]) // eslint-disable-line react-hooks/exhaustive-deps
- if(view==='map')return <LevelMap progress={progress} onBack={onBack} onSelect={id=>{setSelectedLevel(id);setView('brief')}} onReset={()=>{if(confirm('Reset Match-3 development progress?')){resetMatch3Development();setProgress({highestUnlockedLevel:1,completedLevels:{}})}}}/>
- if(view==='brief')return <Brief level={getMatch3Level(selectedLevel)} busy={busy} error={error} onBack={()=>setView('map')} onStart={start}/>
- if(view==='win')return <Result win stars={stars} level={selectedLevel} movesUsed={session.state.level.moves-session.state.movesRemaining} error={error} onDouble={async()=>{try{const ad=await playerGameApi.verifyAdvert({provider:'configured-provider',receipt:uid('receipt'),placement:'match3-double',matchId:session.sessionId});const r=await action({action:'double',advertCompletionId:ad.completionId});setStars(r.totalStars);recordMatch3Event('stars-granted',{stars:30,reason:'advert-double'})}catch{return null}}} onMap={()=>setView('map')} onNext={()=>{setSelectedLevel(Math.min(20,selectedLevel+1));setView('brief')}}/>
- return <><GameBoard session={session} busy={busy} error={error} onMove={(from,to)=>action({action:'move',actionId:uid('move'),from,to})} onPower={(powerUp,target)=>action({action:'power-up',actionId:uid('power'),powerUp,target}).then(()=>recordMatch3Event('power-up-used',{powerUp}))} onRestart={()=>action({action:'restart',actionId:uid('restart')})} onQuit={()=>{if(confirm('Quit this level? Your current board will remain available to resume.'))setView('map')}} onLost={()=>{}}/>{import.meta.env.DEV&&<Match3FeedbackPanel level={selectedLevel} result={session.state.status==='won'?'won':session.state.status==='lost'?'lost':'quit'} movesUsed={session.state.level.moves-session.state.movesRemaining}/>}</>
+export default function Match3({ onBack }) {
+  const [view, setView] = useState('map')
+  const [selectedLevel, setSelectedLevel] = useState(1)
+  const [session, setSession] = useState(null)
+  const [progress, setProgress] = useState(loadMatch3Progress)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [stars, setStars] = useState(0)
+  const [presentation, setPresentation] = useState(null)
+  const presentationTimer = useRef(null)
+  const motionMode = useMotionMode()
+
+  useEffect(() => {
+    let live = true
+    playerGameApi.match3State().then(data => {
+      if (!live) return
+      const saved = { highestUnlockedLevel: Number(data.progress?.highest_unlocked_level ?? 1), completedLevels: data.progress?.completed_levels ?? {} }
+      setProgress(saved)
+      saveMatch3Progress(saved)
+      if (data.resume) {
+        setSession(data.resume)
+        setSelectedLevel(data.resume.levelId)
+        setView('game')
+      }
+    }).catch(() => {
+      const resume = loadMatch3Resume()
+      if (resume) {
+        setSession(resume)
+        setSelectedLevel(resume.levelId)
+        setView('game')
+      }
+    })
+    return () => {
+      live = false
+      clearTimeout(presentationTimer.current)
+    }
+  }, [])
+
+  async function start() {
+    setBusy(true)
+    setError('')
+    try {
+      const response = await playerGameApi.match3({ action: 'start', levelId: selectedLevel, requestId: uid('match3') })
+      setSession(response.session)
+      saveMatch3Resume(response.session)
+      setView('game')
+      recordMatch3Event('level-start', { levelId: selectedLevel })
+    } catch (caught) {
+      setError(caught.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function action(body) {
+    const previousState = session?.state
+    clearTimeout(presentationTimer.current)
+    if (body.action === 'move') setPresentation({ swapped: [body.from, body.to], cleared: [], triggered: [], created: [], cascades: [], cascadeCount: 0, durationMs: 0, phase: 'swap' })
+    setBusy(true)
+    setError('')
+    try {
+      const response = await playerGameApi.match3({ ...body, sessionId: session.sessionId })
+      if (response.session) {
+        const nextPresentation = createMatch3Presentation(previousState, response.session.state, body, motionMode)
+        setSession(response.session)
+        saveMatch3Resume(response.session)
+        setPresentation(nextPresentation)
+        if (nextPresentation.cascadeCount) {
+          haptic(nextPresentation.comboType ? 'special' : nextPresentation.cascadeCount > 1 ? 'cascade' : 'medium')
+          recordMatch3Event('move-resolution', {
+            levelId: selectedLevel,
+            cascades: nextPresentation.cascadeCount,
+            comboType: nextPresentation.comboType,
+            scoreGained: nextPresentation.scoreGained,
+          })
+        }
+        presentationTimer.current = setTimeout(() => setPresentation(null), nextPresentation.durationMs)
+        if (response.session.state.status === 'lost' && previousState?.status !== 'lost') recordMatch3Event('level-failure', { levelId: selectedLevel })
+        if (response.session.state.status === 'won' && body.action !== 'complete') queueMicrotask(() => finish(response.session))
+      }
+      return response
+    } catch (caught) {
+      setPresentation(null)
+      setError(caught.message)
+      throw caught
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function finish(completedSession = session) {
+    try {
+      const response = await action({ action: 'complete' })
+      setStars(response.totalStars)
+      const saved = {
+        highestUnlockedLevel: Math.min(20, Math.max(progress.highestUnlockedLevel, selectedLevel + 1)),
+        completedLevels: { ...progress.completedLevels, [selectedLevel]: { stars: 30, score: completedSession.state.score } },
+      }
+      setProgress(saved)
+      saveMatch3Progress(saved)
+      saveMatch3Resume(null)
+      recordMatch3Event('level-completion', { levelId: selectedLevel, movesUsed: getMatch3Level(selectedLevel).moves - completedSession.state.movesRemaining, starsGranted: 30 })
+      setView('win')
+    } catch {
+      // The action handler exposes the server error in the game UI.
+    }
+  }
+
+  if (view === 'map') return <LevelMap progress={progress} onBack={onBack} onSelect={id => { setSelectedLevel(id); setView('brief') }} onReset={() => { if (confirm('Reset Match-3 development progress?')) { resetMatch3Development(); setProgress({ highestUnlockedLevel: 1, completedLevels: {} }) } }} />
+  if (view === 'brief') return <Brief level={getMatch3Level(selectedLevel)} busy={busy} error={error} onBack={() => setView('map')} onStart={start} />
+  if (view === 'win') return <Result stars={stars} level={selectedLevel} movesUsed={session.state.level.moves - session.state.movesRemaining} error={error} onDouble={async () => { try { const advert = await playerGameApi.verifyAdvert({ provider: 'configured-provider', receipt: uid('receipt'), placement: 'match3-double', matchId: session.sessionId }); const response = await action({ action: 'double', advertCompletionId: advert.completionId }); setStars(response.totalStars); recordMatch3Event('stars-granted', { stars: 30, reason: 'advert-double' }) } catch { return null } }} onMap={() => setView('map')} onNext={() => { setSelectedLevel(Math.min(20, selectedLevel + 1)); setView('brief') }} />
+  return <><GameBoard session={session} busy={busy} error={error} presentation={presentation} onMove={(from, to) => action({ action: 'move', actionId: uid('move'), from, to })} onPower={(powerUp, target) => action({ action: 'power-up', actionId: uid('power'), powerUp, target }).then(() => recordMatch3Event('power-up-used', { powerUp }))} onRestart={() => action({ action: 'restart', actionId: uid('restart') })} onQuit={() => { if (confirm('Quit this level? Your current board will remain available to resume.')) setView('map') }} />{import.meta.env.DEV && <Match3FeedbackPanel level={selectedLevel} result={session.state.status === 'won' ? 'won' : session.state.status === 'lost' ? 'lost' : 'quit'} movesUsed={session.state.level.moves - session.state.movesRemaining} />}</>
 }
 
-function LevelMap({progress,onBack,onSelect,onReset}){return <main className={styles.page}><header className={styles.header}><button onClick={onBack}>← Memory & modes</button><h1>Match-3 Journey</h1></header><p className={styles.lead}>Earn Stars by completing levels. Memory Match remains available from the main screen.</p><div className={styles.levels}>{MATCH3_LEVELS.map(l=>{const unlocked=l.id<=progress.highestUnlockedLevel||import.meta.env.DEV;return <button key={l.id} disabled={!unlocked} className={progress.completedLevels?.[l.id]?styles.complete:''} onClick={()=>onSelect(l.id)} aria-label={`${l.name}, ${unlocked?'unlocked':'locked'}`}><strong>{l.id}</strong><span>{progress.completedLevels?.[l.id]?'★':'○'}</span></button>})}</div>{import.meta.env.DEV&&<button className={styles.dev} onClick={onReset}>Reset development progress</button>}</main>}
-function Brief({level,busy,error,onBack,onStart}){return <main className={styles.page}><header className={styles.header}><button onClick={onBack}>← Levels</button><h1>{level.name}</h1></header>{level.teaching&&<p className={styles.teach}>{level.teaching}</p>}<section className={styles.card}><h2>Objectives</h2><ul>{level.objectives.map((o,i)=><li key={i}>{objectiveLabel(o)}</li>)}</ul><p>{level.moves} moves</p></section><button className={styles.primary} disabled={busy} onClick={onStart}>{busy?'Preparing…':'Play'}</button><p role="alert">{error}</p></main>}
-function Result({win,stars,level,movesUsed,error,onDouble,onMap,onNext}){return <main className={styles.result}><div aria-hidden="true" className={styles.resultIcon}>{win?'★':'×'}</div><h1>{win?'Level complete!':'Out of moves'}</h1>{win&&<p className={styles.starAward}>+{stars} Stars</p>}<p role="alert">{error}</p>{win&&stars===30&&<button onClick={onDouble}>Watch verified advert to double</button>}<button className={styles.primary} onClick={onNext}>Next level</button><button onClick={onMap}>Level map</button>{import.meta.env.DEV&&<Match3FeedbackPanel level={level} result="won" movesUsed={movesUsed}/>}</main>}
+function LevelMap({ progress, onBack, onSelect, onReset }) {
+  return <main className={styles.page}><header className={styles.header}><button onClick={onBack}>← Memory &amp; modes</button><h1>Match-3 Journey</h1></header><p className={styles.lead}>Earn Stars by completing levels. Memory Match remains available from the main screen.</p><div className={styles.levels}>{MATCH3_LEVELS.map(level => { const unlocked = level.id <= progress.highestUnlockedLevel || import.meta.env.DEV; return <button key={level.id} disabled={!unlocked} className={progress.completedLevels?.[level.id] ? styles.complete : ''} onClick={() => onSelect(level.id)} aria-label={`${level.name}, ${unlocked ? 'unlocked' : 'locked'}`}><strong>{level.id}</strong><span>{progress.completedLevels?.[level.id] ? '★' : '○'}</span></button> })}</div>{import.meta.env.DEV && <button className={styles.dev} onClick={onReset}>Reset development progress</button>}</main>
+}
 
-function GameBoard({session,busy,error,onMove,onPower,onRestart,onQuit}){const state=session.state,[selected,setSelected]=useState(null),[power,setPower]=useState(null),[paused,setPaused]=useState(false),drag=useRef(null),level=state.level;const summary=useMemo(()=>`Level ${level.id}. ${state.movesRemaining} moves left. Score ${state.score}.`,[level.id,state.movesRemaining,state.score]);function choose(r,c){if(paused||busy)return;if(power){onPower(power,{r,c}).then(()=>{setPower(null);haptic()}).catch(()=>{});return}const next={r,c};if(selected&&Math.abs(selected.r-r)+Math.abs(selected.c-c)===1){onMove(selected,next).then(()=>haptic()).catch(()=>{});setSelected(null)}else setSelected(next)}function keyDown(e,r,c){let next;if(e.key==='ArrowLeft')next={r,c:Math.max(0,c-1)};if(e.key==='ArrowRight')next={r,c:Math.min(7,c+1)};if(e.key==='ArrowUp')next={r:Math.max(0,r-1),c};if(e.key==='ArrowDown')next={r:Math.min(7,r+1),c};if(next){e.preventDefault();e.currentTarget.parentElement?.querySelector(`[data-cell="${next.r}:${next.c}"]`)?.focus()}if(e.key==='Enter'||e.key===' '){e.preventDefault();choose(r,c)}}function dragEnd(e,r,c){const d=drag.current;drag.current=null;if(!d)return;const dx=e.clientX-d.x,dy=e.clientY-d.y;if(Math.max(Math.abs(dx),Math.abs(dy))>18){const to=Math.abs(dx)>Math.abs(dy)?{r,c:c+Math.sign(dx)}:{r:r+Math.sign(dy),c};if(to.r>=0&&to.r<8&&to.c>=0&&to.c<8){onMove({r,c},to).catch(()=>{});return}}choose(r,c)}return <main className={styles.game}><div className={styles.gameTop}><button onClick={onQuit}>Quit</button><button onClick={()=>setPaused(true)}>Pause</button></div><div className={styles.stats}><span>Score <strong>{state.score}</strong></span><span>Moves <strong>{state.movesRemaining}</strong></span></div><div className={styles.objectives}>{level.objectives.map((o,i)=><span key={i}>{objectiveLabel(o)}: {objectiveProgress(state,o)}/{o.target}</span>)}</div><p className={styles.sr} aria-live="polite">{summary}{selected?` Selected row ${selected.r+1}, column ${selected.c+1}.`:''}</p><div className={styles.board} role="grid" aria-label={summary}>{state.board.map((row,r)=>row.map((cell,c)=><Tile key={`${r}:${c}`} cell={cell} r={r} c={c} selected={selected?.r===r&&selected?.c===c} onChoose={choose} onKeyDown={keyDown} onPointerDown={e=>{drag.current={r,c,x:e.clientX,y:e.clientY}}} onPointerUp={e=>dragEnd(e,r,c)}/>))}</div><div className={styles.powers}>{['hammer','shuffle','line-blast','color-clear','extra-moves'].map(p=><button key={p} className={power===p?styles.active:''} onClick={()=>{if(p==='shuffle'||p==='extra-moves')onPower(p,null).catch(()=>{});else setPower(power===p?null:p)}}>{p.replaceAll('-',' ')}</button>)}</div>{busy&&<p aria-live="polite">Resolving…</p>}<p role="alert">{error}</p>{state.status==='lost'&&<div className={styles.modal}><div><h2>Out of moves</h2><p>Use Extra Moves if available, or retry the level.</p><button onClick={()=>{recordMatch3Event('continue-used',{method:'extra-moves'});onPower('extra-moves',null).catch(()=>{})}}>Continue with Extra Moves</button><button onClick={onRestart}>Retry</button><button onClick={onQuit}>Level map</button></div></div>}{paused&&<div className={styles.modal}><div><h2>Paused</h2><button onClick={()=>setPaused(false)}>Resume</button><button onClick={onRestart}>Restart</button><button onClick={onQuit}>Quit</button></div></div>}</main>}
-function Tile({cell,r,c,selected,onChoose,onKeyDown,...events}){if(cell.hole)return <span className={`${styles.tile} ${styles.hole}`} role="gridcell" aria-label={`Row ${r+1}, column ${c+1}, unusable`}/>;const t=TOKEN.get(cell.token),parts=[t?.label??'empty'];if(cell.drop)parts.push('drop object');if(cell.special)parts.push(`${cell.special} special`);if(cell.crate)parts.push(`${cell.crate} layer crate`);if(cell.ice)parts.push('ice');if(cell.chain)parts.push('chained');return <button type="button" data-cell={`${r}:${c}`} role="gridcell" aria-selected={selected} aria-label={`Row ${r+1}, column ${c+1}: ${parts.join(', ')}`} className={`${styles.tile} ${selected?styles.selected:''}`} onClick={()=>onChoose(r,c)} onKeyDown={e=>onKeyDown(e,r,c)} {...events}><Match3TokenImage tokenId={cell.token} className={styles.tokenImage} decorative/>{cell.drop&&<span className={styles.dropObject}>⬇</span>}{cell.special&&<span className={styles.special}>{cell.special==='row'?'↔':cell.special==='col'?'↕':cell.special==='color'?'◉':'✹'}</span>}{cell.crate>0&&<span className={styles.blocker}>▦{cell.crate}</span>}{cell.ice>0&&<span className={styles.ice}>❄</span>}{cell.chain>0&&<span className={styles.chain}>⌁</span>}</button>}
+function Brief({ level, busy, error, onBack, onStart }) {
+  return <main className={styles.page}><header className={styles.header}><button onClick={onBack}>← Levels</button><h1>{level.name}</h1></header>{level.teaching && <p className={styles.teach}>{level.teaching}</p>}<section className={styles.card}><h2>Objectives</h2><ul>{level.objectives.map((objective, index) => <li key={index}>{objectiveLabel(objective)}</li>)}</ul><p>{level.moves} moves</p></section><button className={styles.primary} disabled={busy} onClick={onStart}>{busy ? 'Preparing…' : 'Play'}</button><p role="alert">{error}</p></main>
+}
+
+function Result({ stars, level, movesUsed, error, onDouble, onMap, onNext }) {
+  return <main className={styles.result}><div aria-hidden="true" className={styles.resultIcon}>★</div><h1>Level complete!</h1><p className={styles.starAward}>+{stars} Stars</p><p role="alert">{error}</p>{stars === 30 && <button onClick={onDouble}>Watch verified advert to double</button>}<button className={styles.primary} onClick={onNext}>Next level</button><button onClick={onMap}>Level map</button>{import.meta.env.DEV && <Match3FeedbackPanel level={level} result="won" movesUsed={movesUsed} />}</main>
+}
+
+function GameBoard({ session, busy, error, presentation, onMove, onPower, onRestart, onQuit }) {
+  const state = session.state
+  const [selected, setSelected] = useState(null)
+  const [power, setPower] = useState(null)
+  const [paused, setPaused] = useState(false)
+  const drag = useRef(null)
+  const level = state.level
+  const locked = paused || busy || Boolean(presentation)
+  const rows = state.board.length
+  const columns = state.board[0].length
+  const summary = useMemo(() => `Level ${level.id}. ${state.movesRemaining} moves left. Score ${state.score}.`, [level.id, state.movesRemaining, state.score])
+
+  function choose(row, column) {
+    if (locked) return
+    if (power) {
+      onPower(power, { r: row, c: column }).then(() => setPower(null)).catch(() => {})
+      return
+    }
+    const next = { r: row, c: column }
+    if (selected && Math.abs(selected.r - row) + Math.abs(selected.c - column) === 1) {
+      onMove(selected, next).catch(() => {})
+      setSelected(null)
+    } else {
+      setSelected(next)
+      haptic('light')
+    }
+  }
+
+  function keyDown(event, row, column) {
+    let next
+    if (event.key === 'ArrowLeft') next = { r: row, c: Math.max(0, column - 1) }
+    if (event.key === 'ArrowRight') next = { r: row, c: Math.min(columns - 1, column + 1) }
+    if (event.key === 'ArrowUp') next = { r: Math.max(0, row - 1), c: column }
+    if (event.key === 'ArrowDown') next = { r: Math.min(rows - 1, row + 1), c: column }
+    if (next) {
+      event.preventDefault()
+      event.currentTarget.parentElement?.querySelector(`[data-cell="${next.r}:${next.c}"]`)?.focus()
+    }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      choose(row, column)
+    }
+  }
+
+  function dragEnd(event, row, column) {
+    const start = drag.current
+    drag.current = null
+    if (!start || locked) return
+    const deltaX = event.clientX - start.x
+    const deltaY = event.clientY - start.y
+    if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 18) {
+      const to = Math.abs(deltaX) > Math.abs(deltaY) ? { r: row, c: column + Math.sign(deltaX) } : { r: row + Math.sign(deltaY), c: column }
+      if (to.r >= 0 && to.r < rows && to.c >= 0 && to.c < columns) {
+        onMove({ r: row, c: column }, to).catch(() => {})
+        return
+      }
+    }
+    choose(row, column)
+  }
+
+  const boardClass = [styles.board, presentation?.phase === 'swap' ? styles.swapping : '', presentation?.cascadeCount ? styles.resolving : '', presentation?.comboType ? styles.specialResolution : ''].filter(Boolean).join(' ')
+  return <main className={styles.game}>
+    <div className={styles.gameTop}><button onClick={onQuit}>Quit</button><strong>Level {level.id}</strong><button onClick={() => setPaused(true)}>Pause</button></div>
+    <div className={styles.stats}><span>Score <strong>{state.score.toLocaleString()}</strong></span><span>Moves <strong>{state.movesRemaining}</strong></span></div>
+    <div className={styles.objectives}>{level.objectives.map((objective, index) => <span key={index}>{objectiveLabel(objective)}: {objectiveProgress(state, objective)}/{objective.target}</span>)}</div>
+    <p className={styles.sr} aria-live="polite">{summary}{selected ? ` Selected row ${selected.r + 1}, column ${selected.c + 1}.` : ''}{presentation?.label ? ` ${presentation.label} Plus ${presentation.scoreGained} points.` : ''}</p>
+    <div className={styles.boardShell} style={{ '--board-rows': rows, '--board-columns': columns }}>
+      {presentation?.label && <div className={styles.comboBanner} aria-hidden="true"><strong>{presentation.label}</strong>{presentation.cascadeCount > 1 && <span>×{presentation.cascadeCount} cascade</span>}</div>}
+      {presentation?.scoreGained > 0 && <div className={styles.scoreBurst} aria-hidden="true">+{presentation.scoreGained.toLocaleString()}</div>}
+      <div className={boardClass} role="grid" aria-label={summary} aria-busy={locked}>
+        {state.board.map((row, rowIndex) => row.map((cell, columnIndex) => <Tile key={`${rowIndex}:${columnIndex}`} cell={cell} row={rowIndex} column={columnIndex} columns={columns} selected={selected?.r === rowIndex && selected?.c === columnIndex} presentation={presentation} onChoose={choose} onKeyDown={keyDown} onPointerDown={event => { drag.current = { x: event.clientX, y: event.clientY } }} onPointerUp={event => dragEnd(event, rowIndex, columnIndex)} onPointerCancel={() => { drag.current = null }} />))}
+      </div>
+      <BoardEffects presentation={presentation} rows={rows} columns={columns} />
+    </div>
+    <div className={styles.powers}>{['hammer', 'shuffle', 'line-blast', 'color-clear', 'extra-moves'].map(current => <button key={current} disabled={locked} className={power === current ? styles.active : ''} onClick={() => { if (current === 'shuffle' || current === 'extra-moves') onPower(current, null).catch(() => {}); else setPower(power === current ? null : current) }}>{current.replaceAll('-', ' ')}</button>)}</div>
+    {busy && <p className={styles.resolvingText} aria-live="polite">Resolving…</p>}
+    <p role="alert">{error}</p>
+    {state.status === 'lost' && <div className={styles.modal}><div><h2>Out of moves</h2><p>Use Extra Moves if available, or retry the level.</p><button onClick={() => { recordMatch3Event('continue-used', { method: 'extra-moves' }); onPower('extra-moves', null).catch(() => {}) }}>Continue with Extra Moves</button><button onClick={onRestart}>Retry</button><button onClick={onQuit}>Level map</button></div></div>}
+    {paused && <div className={styles.modal}><div><h2>Paused</h2><button onClick={() => setPaused(false)}>Resume</button><button onClick={onRestart}>Restart</button><button onClick={onQuit}>Quit</button></div></div>}
+  </main>
+}
+
+function BoardEffects({ presentation, rows, columns }) {
+  if (!presentation?.cascadeCount) return null
+  return <div className={styles.effects} aria-hidden="true">
+    {presentation.cleared.slice(0, 32).map((position, index) => <span key={`${position.r}:${position.c}`} className={styles.particleBurst} style={{ '--effect-x': `${((position.c + 0.5) / columns) * 100}%`, '--effect-y': `${((position.r + 0.5) / rows) * 100}%`, '--effect-delay': `${(index % 6) * 24}ms` }}>{Array.from({ length: 4 }, (_, particle) => <i key={particle} style={{ '--particle-angle': `${particle * 90 + (index % 3) * 15}deg` }} />)}</span>)}
+    {presentation.comboType?.includes('line') && <><span className={`${styles.blastBeam} ${styles.horizontalBeam}`} /><span className={`${styles.blastBeam} ${styles.verticalBeam}`} /></>}
+    {presentation.comboType?.includes('wrapped') && <span className={styles.explosionRing} />}
+    {presentation.comboType?.includes('color') && <span className={styles.rainbowWash} />}
+  </div>
+}
+
+function Tile({ cell, row, column, columns, selected, presentation, onChoose, onKeyDown, ...events }) {
+  if (cell.hole) return <span className={`${styles.tile} ${styles.hole}`} role="gridcell" aria-label={`Row ${row + 1}, column ${column + 1}, unusable`} />
+  const token = TOKEN.get(cell.token)
+  const special = cell.special === 'bomb' ? 'wrapped' : cell.special
+  const parts = [token?.label ?? 'empty']
+  if (cell.drop) parts.push('drop object')
+  if (special) parts.push(`${special} special`)
+  if (cell.crate) parts.push(`${cell.crate} layer crate`)
+  if (cell.ice) parts.push('ice')
+  if (cell.chain) parts.push('chained')
+  const classes = [
+    styles.tile,
+    selected ? styles.selected : '',
+    special ? styles[`special_${special}`] : '',
+    cellIsInPresentation(presentation, 'swapped', row, column) ? styles.swapTile : '',
+    cellIsInPresentation(presentation, 'cleared', row, column) ? styles.clearedTile : '',
+    cellIsInPresentation(presentation, 'triggered', row, column) ? styles.triggeredTile : '',
+    cellIsInPresentation(presentation, 'created', row, column) ? styles.createdTile : '',
+  ].filter(Boolean).join(' ')
+  return <button type="button" data-cell={`${row}:${column}`} role="gridcell" aria-selected={selected} aria-label={`Row ${row + 1}, column ${column + 1}: ${parts.join(', ')}`} className={classes} style={{ '--tile-index': (row * columns) + column }} onClick={() => onChoose(row, column)} onKeyDown={event => onKeyDown(event, row, column)} {...events}>
+    <Match3TokenImage tokenId={cell.token} className={styles.tokenImage} decorative />
+    {cell.drop && <span className={styles.dropObject}>⬇</span>}
+    {special && <span className={styles.special} aria-hidden="true">{special === 'row' ? '↔' : special === 'col' ? '↕' : special === 'color' ? '◉' : '✹'}</span>}
+    {cell.crate > 0 && <span className={styles.blocker}>◇{cell.crate}</span>}
+    {cell.ice > 0 && <span className={styles.ice}>❄</span>}
+    {cell.chain > 0 && <span className={styles.chain}>⌁</span>}
+  </button>
+}

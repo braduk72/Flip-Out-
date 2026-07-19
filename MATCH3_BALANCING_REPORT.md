@@ -152,3 +152,6 @@ VoiceOver and TalkBack reading order/activation, 200% text scaling, modal focus/
 ## 12. Single best next task
 
 Run the real-device checklist on at least one iPhone and one Android phone while concentrating on drop levels 9, 12, 16, 19 and 20. Use exported feedback plus recorded move traces to determine whether the problem is layout/rules or solver planning. Only then make a second, focused drop-object tuning pass.
+## Gameplay-rules baseline notice — 19 July 2026
+
+The gameplay completion pass added 2x2-square matches, complete T/L/cross handling, recursive special combinations and revised combo scoring without changing any level definition. The simulation tables in this report therefore describe the previous engine and must not be treated as current difficulty measurements. A fresh full-level simulation should be the next data step before any level tuning. See `MATCH3_GAMEPLAY_COMPLETION_REPORT.md` for exact implementation and verification results.
