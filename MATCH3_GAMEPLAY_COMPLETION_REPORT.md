@@ -50,6 +50,14 @@ Date: 19 July 2026. Scope: Match-3 rules, presentation and verification only. No
 - The new mechanics change solver outcomes. Rerun full per-level objective-aware balancing batches before making any further level-data adjustments.
 - Server round-trip time remains the main source of perceptible input delay. This pass masks it with a swap-intent animation but intentionally does not predict board results.
 
+## Development deployment
+
+- Gameplay commit: `5a22617` on `dev`; pushed to `origin/dev`.
+- Vercel Preview: `dpl_L161cZ7Cqze89qSuKWj9dhkbJmwZ`, status **Ready**, generated URL `https://flip-2eu7zba78-chattocal.vercel.app`.
+- Permanent development URL: `https://dev.flipout.gizmogames.uk` returned HTTP 200 and exactly matched the generated deployment HTML and ETag `"212649fb4030ca11368d5d1bd3488c6c"`.
+- The served entry bundle reported `1.2.0-match3-gameplay` and contained the deployed square, Rainbow Nova and Triple Cross rules. The lazy Match-3 chunk returned HTTP 200.
+- Vercel target was `preview`. No database migration ran, `origin/main` remained `157344e5f6deaaa6540418c514448a976753688c`, and no production deployment was changed.
+
 ## Files affected
 
 - `src/match3/engine.js`

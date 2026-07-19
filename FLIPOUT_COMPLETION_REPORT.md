@@ -162,3 +162,5 @@ The authoritative match-session API now exists and is Preview-verified. The next
 ## Match-3 gameplay completion addendum — 19 July 2026
 
 Match-3's shared rules and board presentation have completed the requested modern-mechanics pass: full shape/special creation, seven special pairings, recursive chain reactions, cascade multipliers, event-rich server state, bounded move timing and motion-aware visual/haptic feedback. No economy value or level definition changed. Focused tests passed 39/39; the full local suite passed 95 Node tests plus 19 UI tests with only 8 expected Preview-database skips. A 20,000-board seeded sweep found no starting matches or dead starts. Full details: `MATCH3_GAMEPLAY_COMPLETION_REPORT.md`.
+
+Gameplay commit `5a22617` is Ready in Vercel Preview as `dpl_L161cZ7Cqze89qSuKWj9dhkbJmwZ`. The permanent development URL returned HTTP 200, matched the generated deployment and reported `1.2.0-match3-gameplay`. No migration or production change occurred.

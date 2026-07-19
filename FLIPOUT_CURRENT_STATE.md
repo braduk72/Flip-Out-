@@ -427,3 +427,4 @@ Focused lint for the newly added transaction service, backend helper/endpoints, 
 - Existing levels and economy values were preserved. The completion remains exactly 30 Stars, or 60 after one verified advert; Match-3 grants no Coins.
 - Verification: focused gameplay **39/39**; full local Node **95 passed + 8 expected Preview skips**; UI **19/19**; 20,000 seeded boards with zero invalid starts; production and Preview builds passed; local HTTP smoke returned 200.
 - Full-project lint still has 38 errors and 8 warnings in unrelated prototype files. Every changed file passes focused lint. See `MATCH3_GAMEPLAY_COMPLETION_REPORT.md`.
+- Gameplay commit `5a22617` deployed Ready as Preview `dpl_L161cZ7Cqze89qSuKWj9dhkbJmwZ`. `https://dev.flipout.gizmogames.uk` returned 200, matched the generated deployment's HTML/ETag and served version `1.2.0-match3-gameplay`. Production and the database were untouched.
