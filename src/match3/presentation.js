@@ -11,6 +11,11 @@ export function match3ResolutionDuration(cascades = [], motionMode = 'full') {
   return Math.min(1500, 260 + (Math.max(1, cascades.length) * 170) + (Math.min(4, specialCount) * 70))
 }
 
+export function match3SwapDuration(motionMode = 'full') {
+  if (motionMode === 'off') return 0
+  return motionMode === 'reduced' ? 100 : 280
+}
+
 export function createMatch3Presentation(previousState, nextState, action = {}, motionMode = 'full') {
   const cascades = nextState?.cascades ?? []
   const cleared = uniquePositions(cascades.flatMap(cascade => cascade.clearedCells ?? []))
@@ -22,6 +27,9 @@ export function createMatch3Presentation(previousState, nextState, action = {}, 
   const scoreGained = Number(nextState?.score ?? 0) - Number(previousState?.score ?? 0)
   const specialCount = cascades.reduce((total, cascade) => total + (cascade.triggeredSpecials?.length ?? 0) + (cascade.createdSpecials?.length ?? 0), 0)
 
+  const isMove = action.action === 'move'
+  const hasResolution = cascades.length > 0
+  const phase = hasResolution ? 'resolve' : isMove ? 'invalid-swap' : action.action === 'shuffle' ? 'shuffle' : 'settled'
   return {
     swapped: action.from && action.to ? [action.from, action.to] : [],
     cleared,
@@ -33,7 +41,9 @@ export function createMatch3Presentation(previousState, nextState, action = {}, 
     label,
     comboType: specialEvent?.comboType ?? cascades[0]?.comboType ?? null,
     intensity: Math.min(5, Math.max(1, cascades.length + Math.ceil(specialCount / 2))),
-    durationMs: match3ResolutionDuration(cascades, motionMode),
+    phase,
+    invalidSwap: phase === 'invalid-swap',
+    durationMs: hasResolution ? match3ResolutionDuration(cascades, motionMode) : match3SwapDuration(motionMode),
   }
 }
 

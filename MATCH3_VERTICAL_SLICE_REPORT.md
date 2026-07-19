@@ -91,3 +91,6 @@ Test pointer capture/swipes, 320 px portrait layout, landscape/tablet layout, Vo
 ## 14. Single best next task
 
 Run structured real-device playtesting and add a deterministic auto-player that estimates win rate and move pressure for every level. This should come before final art or more levels because it will expose rule/UI defects and turn the demonstration curve into measurable, testable balance data without changing the economy boundary.
+## Gameplay animation correction addendum — 19 July 2026
+
+The vertical slice now separates authoritative resolution from presentation. Server-returned cascades drive bounded swap, invalid-return, fall/refill, shuffle, special, clear, particle, combo and score effects. Input is guarded during only the necessary request/presentation window, with interruption recovery and reduced-motion timing. Verification passed 37/37 Node tests, 8/8 UI/token tests, focused lint and the 145-module production build. Preview: `https://flip-azm52xj8g-chattocal.vercel.app` (`dpl_922goAdpMUfRjaCig1WEL81n9gtc`).

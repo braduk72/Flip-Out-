@@ -27,7 +27,7 @@ test('every development level exposes an interactive board and selects a legal f
   }
 }, 20000)
 
-test('mouse, keyboard and pointer swipe paths reach the same legal move handler', () => {
+test('mouse, keyboard and pointer swipe paths reach the same legal move handler', async () => {
   const game = createGame(MATCH3_LEVELS[0], 42)
   const move = legalMoves(game.board)[0]
   const onMove = vi.fn(() => Promise.resolve())
@@ -37,9 +37,12 @@ test('mouse, keyboard and pointer swipe paths reach the same legal move handler'
   fireEvent.click(from)
   fireEvent.keyDown(to, { key: 'Enter' })
   expect(onMove).toHaveBeenCalled()
-  onMove.mockClear()
-  fireEvent.pointerDown(from, { clientX: 10, clientY: 10 })
-  fireEvent.pointerUp(from, { clientX: 10 + (move.to.c - move.from.c) * 40, clientY: 10 + (move.to.r - move.from.r) * 40 })
-  expect(onMove).toHaveBeenCalled()
   unmount()
+  const pointerMove = vi.fn(() => Promise.resolve())
+  const pointerRender = render(<GameBoard {...props} onMove={pointerMove} session={{ state: game }}/> )
+  const pointerFrom = screen.getByRole('gridcell', { name: new RegExp(`Row ${move.from.r + 1}, column ${move.from.c + 1}:`) })
+  fireEvent.pointerDown(pointerFrom, { clientX: 10, clientY: 10 })
+  fireEvent.pointerUp(pointerFrom, { clientX: 10 + (move.to.c - move.from.c) * 40, clientY: 10 + (move.to.r - move.from.r) * 40 })
+  expect(pointerMove).toHaveBeenCalled()
+  pointerRender.unmount()
 })

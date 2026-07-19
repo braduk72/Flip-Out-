@@ -57,6 +57,17 @@ export default function Match3({ onBack }) {
     }
   }, [])
 
+  useEffect(() => {
+    const settle = () => {
+      if (document.visibilityState === 'hidden') {
+        clearTimeout(presentationTimer.current)
+        setPresentation(null)
+      }
+    }
+    document.addEventListener('visibilitychange', settle)
+    return () => document.removeEventListener('visibilitychange', settle)
+  }, [])
+
   async function start() {
     setBusy(true)
     setError('')
@@ -160,6 +171,7 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
   const [power, setPower] = useState(null)
   const [paused, setPaused] = useState(false)
   const drag = useRef(null)
+  const moveInFlight = useRef(false)
   const level = state.level
   const locked = isMatch3BoardInputLocked({ status: state.status, paused, busy, presentation })
   const rows = state.board.length
@@ -167,14 +179,15 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
   const summary = useMemo(() => `Level ${level.id}. ${state.movesRemaining} moves left. Score ${state.score}.`, [level.id, state.movesRemaining, state.score])
 
   function choose(row, column) {
-    if (locked) return
+    if (locked || moveInFlight.current) return
     if (power) {
       onPower(power, { r: row, c: column }).then(() => setPower(null)).catch(() => {})
       return
     }
     const next = { r: row, c: column }
     if (selected && Math.abs(selected.r - row) + Math.abs(selected.c - column) === 1) {
-      onMove(selected, next).catch(() => {})
+      moveInFlight.current = true
+      onMove(selected, next).catch(() => {}).finally(() => { moveInFlight.current = false })
       setSelected(null)
     } else {
       setSelected(next)
@@ -207,20 +220,23 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
     if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 18) {
       const to = Math.abs(deltaX) > Math.abs(deltaY) ? { r: row, c: column + Math.sign(deltaX) } : { r: row + Math.sign(deltaY), c: column }
       if (to.r >= 0 && to.r < rows && to.c >= 0 && to.c < columns) {
-        onMove({ r: row, c: column }, to).catch(() => {})
+        if (moveInFlight.current) return
+        moveInFlight.current = true
+        onMove({ r: row, c: column }, to).catch(() => {}).finally(() => { moveInFlight.current = false })
         return
       }
     }
     choose(row, column)
   }
 
-  const boardClass = [styles.board, presentation?.phase === 'swap' ? styles.swapping : '', presentation?.cascadeCount ? styles.resolving : '', presentation?.comboType ? styles.specialResolution : ''].filter(Boolean).join(' ')
+  const boardClass = [styles.board, presentation?.phase === 'swap' ? styles.swapping : '', presentation?.invalidSwap ? styles.invalidSwap : '', presentation?.phase === 'shuffle' ? styles.shuffling : '', presentation?.cascadeCount ? styles.resolving : '', presentation?.comboType ? styles.specialResolution : ''].filter(Boolean).join(' ')
   return <main className={`${styles.game} foTheme`} data-concept-screen="gameplay" data-screen="match3-game">
     <div className={styles.gameTop}><button onClick={onQuit}>Quit</button><strong>Level {level.id}</strong><button onClick={() => setPaused(true)}>Pause</button></div>
     <div className={styles.stats}><span>Score <strong>{state.score.toLocaleString()}</strong></span><span>Moves <strong>{state.movesRemaining}</strong></span></div>
     <div className={styles.objectives}>{level.objectives.map((objective, index) => <span key={index}>{objectiveLabel(objective)}: {objectiveProgress(state, objective)}/{objective.target}</span>)}</div>
     <p className={styles.sr} aria-live="polite">{summary}{selected ? ` Selected row ${selected.r + 1}, column ${selected.c + 1}.` : ''}{presentation?.label ? ` ${presentation.label} Plus ${presentation.scoreGained} points.` : ''}</p>
     <div className={styles.boardShell} style={{ '--board-rows': rows, '--board-columns': columns }}>
+      {presentation?.invalidSwap && <div className={styles.invalidBanner} aria-live="polite">Try another swap</div>}
       {presentation?.label && <div className={styles.comboBanner} aria-hidden="true"><strong>{presentation.label}</strong>{presentation.cascadeCount > 1 && <span>×{presentation.cascadeCount} cascade</span>}</div>}
       {presentation?.scoreGained > 0 && <div className={styles.scoreBurst} aria-hidden="true">+{presentation.scoreGained.toLocaleString()}</div>}
       <div className={boardClass} role="grid" aria-label={summary} aria-busy={locked} data-input-locked={locked ? 'true' : 'false'}>

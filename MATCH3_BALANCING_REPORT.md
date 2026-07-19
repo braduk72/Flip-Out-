@@ -155,3 +155,6 @@ Run the real-device checklist on at least one iPhone and one Android phone while
 ## Gameplay-rules baseline notice — 19 July 2026
 
 The gameplay completion pass added 2x2-square matches, complete T/L/cross handling, recursive special combinations and revised combo scoring without changing any level definition. The simulation tables in this report therefore describe the previous engine and must not be treated as current difficulty measurements. A fresh full-level simulation should be the next data step before any level tuning. See `MATCH3_GAMEPLAY_COMPLETION_REPORT.md` for exact implementation and verification results.
+## Gameplay animation correction addendum — 19 July 2026
+
+No level balance, objectives, move budgets or economy values were changed. The pass adds presentation-only phases and effects over the existing authoritative outcomes; reduced-motion timing changes display duration only. Verification passed 37/37 Node tests and 8/8 UI/token tests; Preview deployment is Ready at `https://flip-azm52xj8g-chattocal.vercel.app`.

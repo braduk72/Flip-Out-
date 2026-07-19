@@ -203,3 +203,9 @@ The blocked-board defect was a stale presentation lock: the previous move’s pr
 The T-Rex crop remains `mastersOfTheLostWorld:1`, with focal point `(0.56, 0.26)` and zoom `4.2`. The regenerated token keeps the eye, brow, open mouth and teeth legible at gameplay sizes. Actual-size review and pairwise quality checks passed; closest 32px pair `leaf / drop` measured `0.1856` against the `0.16` minimum.
 
 Verification passed: 32/32 focused Node engine/token tests, 8/8 focused Match-3 UI/token tests, focused lint and the 145-module production build. Preview `https://flip-6gkw201j4-chattocal.vercel.app` (`dpl_2iLM8jScemputLVFeE6zkwRs2bhj`) reached Ready. Production was not touched.
+
+## Match-3 gameplay animation correction — 19 July 2026
+
+Animation is now a deterministic view of the authoritative response. The board presents invalid swaps returning, token fall/refill and cascade sequencing, shuffle motion, special creation highlights, match clearing, combo banners, score pops, particles and special blast effects. A guarded in-flight move ref prevents duplicate submissions; visibility changes clear stale presentation, and reduced motion shortens timings without removing semantic feedback.
+
+The prior level-start defect remains fixed: stale presentation state was the lock cause. T-Rex remains sourced from `mastersOfTheLostWorld:1` at focal `(0.56, 0.26)`, zoom `4.2`. Verification passed: 37/37 Node tests, 8/8 UI/token tests, focused lint and the 145-module production build. Preview `https://flip-azm52xj8g-chattocal.vercel.app` (`dpl_922goAdpMUfRjaCig1WEL81n9gtc`) reached Ready; production was not touched.

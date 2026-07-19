@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { cellIsInPresentation, createMatch3Presentation, match3ResolutionDuration } from '../src/match3/presentation.js'
+import { cellIsInPresentation, createMatch3Presentation, match3ResolutionDuration, match3SwapDuration } from '../src/match3/presentation.js'
 
 const previous = { score: 100 }
 const next = {
@@ -35,4 +35,19 @@ test('resolution timing is bounded and respects motion preferences', () => {
   assert.equal(match3ResolutionDuration(next.cascades, 'reduced'), 180)
   assert.ok(match3ResolutionDuration(next.cascades, 'full') > 500)
   assert.ok(match3ResolutionDuration(Array(100).fill(next.cascades[0]), 'full') <= 1500)
+})
+
+test('invalid swaps have a bounded return animation without changing authoritative state', () => {
+  const presentation = createMatch3Presentation({ score: 100 }, { score: 100, cascades: [] }, { action: 'move', from: { r: 0, c: 0 }, to: { r: 0, c: 1 } })
+  assert.equal(presentation.phase, 'invalid-swap')
+  assert.equal(presentation.invalidSwap, true)
+  assert.equal(presentation.cascadeCount, 0)
+  assert.equal(presentation.durationMs, match3SwapDuration('full'))
+})
+
+test('reduced motion preserves semantic phases with shorter timings', () => {
+  const presentation = createMatch3Presentation(previous, next, { action: 'move', from: { r: 1, c: 1 }, to: { r: 1, c: 2 } }, 'reduced')
+  assert.equal(presentation.phase, 'resolve')
+  assert.ok(presentation.durationMs < match3ResolutionDuration(next.cascades, 'full'))
+  assert.ok(presentation.label)
 })
