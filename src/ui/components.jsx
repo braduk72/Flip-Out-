@@ -324,6 +324,7 @@ const navItems = [
   { id: 'home', label: 'Home', icon: 'home' },
   { id: 'collection', label: 'Collection', icon: 'collection' },
   { id: 'rewards', label: 'Rewards', icon: 'rewards' },
+  { id: 'shop', label: 'Store', icon: 'cart' },
   { id: 'more', label: 'More', icon: 'more' },
 ]
 

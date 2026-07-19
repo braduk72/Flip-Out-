@@ -210,6 +210,10 @@ Animation is now a deterministic view of the authoritative response. The board p
 
 The prior level-start defect remains fixed: stale presentation state was the lock cause. T-Rex remains sourced from `mastersOfTheLostWorld:1` at focal `(0.56, 0.26)`, zoom `4.2`. Verification passed: 37/37 Node tests, 8/8 UI/token tests, focused lint and the 145-module production build. Preview `https://flip-azm52xj8g-chattocal.vercel.app` (`dpl_922goAdpMUfRjaCig1WEL81n9gtc`) reached Ready; production was not touched.
 
+## Booster Store and special-art package — 19 July 2026
+
+The supplied booster comparison image is bundled as an optimised WebP and shown on Shop. Both product panels are labelled exactly 500 Coins and five cards, but purchasing is disabled pending a server-authoritative booster receipt boundary and approved foil probabilities. Store navigation is global and Shop scroll padding respects safe areas. No production deployment was performed.
+
 ## Real-device gameplay repair revision — 19 July 2026
 
 The prior animation pass was not accepted as visually proven. This revision makes swap motion explicit from opposite-cell offsets, adds pointer capture and drag handling, and adds diagnostics for phase, lock reason, duration and reduced motion. Preview `https://flip-4lw572b7k-chattocal.vercel.app` (`dpl_3tH1ZE26TtJ7ugCUA4pbQ1F5dy7H`) is Ready. Automated verification passed 37/37 Node tests, 8/8 UI/token tests and the 145-module build. Manual iPhone Safari, desktop visual observation and browser coordinate/trace tests remain unverified here; no completion claim is made until those checks pass.

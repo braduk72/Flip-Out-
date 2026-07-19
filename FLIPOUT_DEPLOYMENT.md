@@ -122,3 +122,7 @@ The application currently reports `1.2.1-mobile-ux` from `src/version.js`. Repor
 - Preview verification passed 7/7 server/database tests, including duplicate display-name allowance and one-time retry/no-overwrite behavior, plus 9/9 focused UI tests. The 142-module Vite production build passed.
 - `https://dev.flipout.gizmogames.uk` inspected as the same Ready Preview deployment and returned HTTP 200. Its `/assets/index-BzRAlMbJ.js` bundle contains both the nickname screen text and the `set-display-name` API action.
 - This was a Preview deployment only. The production domain, root DNS records, nameservers and Production deployment were not changed.
+
+## Booster Store revision — 19 July 2026
+
+The supplied booster artwork is bundled as `public/ui/shop/booster-packs.webp`. Booster purchases remain disabled pending a server-authoritative receipt and approved foil configuration. Preview only.

@@ -295,7 +295,7 @@ function Tile({ cell, row, column, columns, selected, presentation, onChoose, on
   return <button type="button" data-cell={`${row}:${column}`} role="gridcell" aria-selected={selected} aria-label={`Row ${row + 1}, column ${column + 1}: ${parts.join(', ')}`} className={classes} style={style} onClick={() => onChoose(row, column)} onKeyDown={event => onKeyDown(event, row, column)} {...events}>
     <Match3TokenImage tokenId={cell.token} className={styles.tokenImage} decorative />
     {cell.drop && <span className={styles.dropObject}>⬇</span>}
-    {special && <span className={styles.special} aria-hidden="true">{special === 'row' ? '↔' : special === 'col' ? '↕' : special === 'color' ? '◉' : '✹'}</span>}
+    {special && <span className={`${styles.special} ${styles[`specialGraphic_${special}`]}`} aria-hidden="true">{special === 'row' || special === 'col' ? <img src="/images/cards/special/rocket.webp" alt="" /> : <span className={styles.sunGraphic} />}</span>}
     {cell.crate > 0 && <span className={styles.blocker}>◇{cell.crate}</span>}
     {cell.ice > 0 && <span className={styles.ice}>❄</span>}
     {cell.chain > 0 && <span className={styles.chain}>⌁</span>}

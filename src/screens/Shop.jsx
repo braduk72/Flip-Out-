@@ -108,6 +108,23 @@ export default function Shop({ onBack, onInventory, onMarketplace, navProps }) {
           <h1 className={styles.title}>Shop</h1>
         </div>
 
+        <section className={styles.boosterStore} aria-labelledby="booster-store-title">
+          <h2 id="booster-store-title" className={styles.sectionTitle}>Booster Packs</h2>
+          <img className={styles.boosterHero} src="/ui/shop/booster-packs.webp" alt="Themed Booster Pack and Random Booster Pack comparison" />
+          <div className={styles.boosterGrid}>
+            <article className={styles.boosterCard}>
+              <h3>Themed Booster Pack</h3><p>Choose an active deck and receive 5 random cards from that deck.</p>
+              <strong>Standard foil chance</strong><span>5 Random Cards · 500 Coins</span>
+              <button type="button" disabled aria-disabled="true">Coming soon in Preview</button>
+            </article>
+            <article className={styles.boosterCard}>
+              <h3>Random Booster Pack</h3><p>Receive 5 cards drawn across all eligible active decks.</p>
+              <strong>Higher foil chance</strong><span>5 Random Cards · 500 Coins</span>
+              <button type="button" disabled aria-disabled="true">Coming soon in Preview</button>
+            </article>
+          </div>
+        </section>
+
         {/* Lucky Spin entry */}
         <h2 className={styles.sectionTitle}>Lucky Spin</h2>
         <button className={`${styles.removeAdsCard} ${styles.spinCard}`} onClick={navProps?.onSpin}>

@@ -12,11 +12,24 @@
   overflow-y: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  min-height: 0;
+  padding-bottom: calc(96px + var(--fo-safe-bottom));
   display: flex;
   flex-direction: column;
   position: relative;
   z-index: 2;
 }
+
+.boosterStore { display: grid; gap: 10px; }
+.boosterHero { display: block; width: calc(100% - 32px); max-width: 900px; margin: 0 auto; border: 1px solid var(--fo-border); border-radius: var(--fo-radius-panel); box-shadow: 0 0 24px rgb(168 85 247 / .2); }
+.boosterGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 16px; }
+.boosterCard { display: grid; gap: 8px; padding: 16px; border: 1px solid var(--fo-border); border-radius: var(--fo-radius-panel); background: linear-gradient(145deg, var(--fo-surface-elevated), var(--fo-surface)); }
+.boosterCard h3, .boosterCard p { margin: 0; }
+.boosterCard p { color: var(--fo-text-secondary); font-size: .84rem; }
+.boosterCard strong { color: #f9a8d4; }
+.boosterCard span { color: var(--fo-gold); font-weight: 800; }
+.boosterCard button { min-height: 44px; }
+@media (max-width: 560px) { .boosterGrid { grid-template-columns: 1fr; } }
 
 .scroll::-webkit-scrollbar { display: none; }
 

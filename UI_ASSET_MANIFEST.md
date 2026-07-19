@@ -80,3 +80,7 @@ The following graphics are deliberately produced by reusable vector/CSS componen
 - SVG frames and effects are separate layers so they can resize, pause or be replaced independently.
 - Reduced Motion and hidden-page states stop or substantially reduce nonessential motion.
 - The approved Home mock-up remains a visual reference only and is not bundled as a runtime asset.
+
+## Booster Store additions — 19 July 2026
+
+`public/ui/shop/booster-packs.webp` is the supplied Themed/Random Booster comparison artwork converted to WebP. `/images/cards/special/rocket.webp` is ready line-special artwork; the Match-3 Sun is a reusable CSS graphic.

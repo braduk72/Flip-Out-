@@ -493,6 +493,10 @@ Focused lint for the newly added transaction service, backend helper/endpoints, 
 - Input remains locked only for busy requests, genuine presentation duration, pause, blocking dialogs or non-active state. Duplicate move submission is guarded in `GameBoard`; visibility changes clear presentation safely. Reduced motion preserves labels/effects with shortened timing.
 - Focused verification passes 37/37 Node tests and 8/8 UI/token tests; focused lint and the 145-module production build pass. Preview `https://flip-azm52xj8g-chattocal.vercel.app` (`dpl_922goAdpMUfRjaCig1WEL81n9gtc`) reached Ready. T-Rex metadata remains `(0.56, 0.26)`, zoom `4.2`, source `mastersOfTheLostWorld:1`.
 
+## Booster Store and special-art package — 19 July 2026
+
+Supplied booster artwork is bundled as `public/ui/shop/booster-packs.webp` and displayed on Shop. Themed and Random panels show five cards and 500 Coins, but purchase controls remain disabled because no approved server-authoritative booster endpoint or foil probability configuration exists. Store is in global bottom navigation with safe-area scroll padding. Match-3 line specials now use Rocket artwork and wrapped/colour specials use a Sun graphic.
+
 ## Real-device gameplay repair revision — 19 July 2026
 
 - **Status: Preview deployed; manual acceptance still required.** Added per-token swap geometry, pointer capture, touch-action control, drag threshold handling, invalid swap return motion, and a development diagnostics overlay with a 25% slow-motion control.
