@@ -13,12 +13,11 @@ test('Preview avatar onboarding persists an avatar ID once per account', { skip:
   try {
     const account = await pool.query(`INSERT INTO fo_accounts(email,password_hash,account_kind,display_name) VALUES($1,'!test','guest','AvatarTest') RETURNING player_id`, [`avatar-${suffix}@guest.invalid`])
     playerId = account.rows[0].player_id
-    assert.deepEqual(await setInitialAvatar(pool, { playerId, avatarId: 'starter-1' }), { avatarId: 'starter-1', alreadySet: false })
-    assert.deepEqual(await setInitialAvatar(pool, { playerId, avatarId: 'starter-1' }), { avatarId: 'starter-1', alreadySet: true })
-    await assert.rejects(setInitialAvatar(pool, { playerId, avatarId: 'starter-2' }), error => error.code === 'AVATAR_ALREADY_SET')
+    assert.deepEqual(await setInitialAvatar(pool, { playerId, avatarId: 'clash-badger' }), { avatarId: 'clash-badger', alreadySet: false })
+    assert.deepEqual(await setInitialAvatar(pool, { playerId, avatarId: 'clash-badger' }), { avatarId: 'clash-badger', alreadySet: true })
+    await assert.rejects(setInitialAvatar(pool, { playerId, avatarId: 'clash-blackhole' }), error => error.code === 'AVATAR_ALREADY_SET')
   } finally {
     if (playerId) await pool.query(`DELETE FROM fo_accounts WHERE player_id=$1`, [playerId])
     await pool.end()
   }
 })
-

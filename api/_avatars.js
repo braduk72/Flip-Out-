@@ -1,9 +1,9 @@
-import { ONBOARDING_AVATARS, getAvatarById } from '../src/data/avatarCatalog.js'
+import { ONBOARDING_AVATARS, getAvatarById, isCuratedAvatarId } from '../src/data/avatarCatalog.js'
 
 export function validateAvatarId(value) {
   const avatarId = String(value ?? '')
+  if (!isCuratedAvatarId(avatarId)) throw Object.assign(new Error('That avatar is unavailable'), { status: 400, code: 'INVALID_AVATAR' })
   const avatar = getAvatarById(avatarId)
-  if (!avatar || avatar.availability !== 'starter') throw Object.assign(new Error('That avatar is unavailable'), { status: 400, code: 'INVALID_AVATAR' })
   return avatar.id
 }
 
@@ -25,4 +25,3 @@ export async function setInitialAvatar(db, { playerId, avatarId }) {
 }
 
 export { ONBOARDING_AVATARS }
-

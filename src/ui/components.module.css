@@ -343,16 +343,21 @@ button.progressCard:active { transform: translateY(2px); }
   z-index: 50;
   flex: 0 0 auto;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   gap: 2px;
+  width: 100%;
+  overflow: hidden;
   min-height: calc(68px + env(safe-area-inset-bottom));
   padding: 6px max(8px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
   background: linear-gradient(180deg, rgb(21 29 51 / .98), rgb(8 13 29 / .99));
   border-top: 1px solid rgb(125 211 252 / .2);
   box-shadow: 0 -10px 28px rgb(0 0 0 / .32);
 }
-.bottomNav button { position: relative; display: grid; place-items: center; align-content: center; gap: 2px; min-width: 0; min-height: 56px; padding: 4px; color: var(--fo-text-secondary); background: transparent; border: 1px solid transparent; border-radius: 14px; }
-.bottomNav button span { overflow: hidden; max-width: 100%; font-size: clamp(.72rem, 2.6vw, .88rem); font-weight: 800; text-overflow: ellipsis; }
+.bottomNav button { position: relative; display: grid; place-items: center; align-content: center; gap: 2px; min-width: 0; min-height: 56px; padding: 4px 1px; color: var(--fo-text-secondary); background: transparent; border: 1px solid transparent; border-radius: 14px; }
+.bottomNav button > svg { width: clamp(21px, 6vw, 27px); height: clamp(21px, 6vw, 27px); flex: none; }
+.bottomNav button span { overflow: hidden; max-width: 100%; font-size: clamp(.62rem, 2.25vw, .88rem); font-weight: 800; line-height: 1.05; text-overflow: ellipsis; white-space: nowrap; }
 .bottomNav .navActive { color: #fff3b7; background: radial-gradient(circle at 50% 25%, rgb(245 185 11 / .22), transparent 72%); border-color: rgb(245 185 11 / .52); box-shadow: 0 0 15px rgb(245 185 11 / .15); }
 .bottomNav .navActive::after { content: ''; position: absolute; bottom: 2px; width: 22px; height: 3px; border-radius: 999px; background: var(--fo-coin); box-shadow: 0 0 8px var(--fo-coin); }
 
@@ -416,6 +421,11 @@ button.progressCard:active { transform: translateY(2px); }
   .safeHeader { padding-bottom: 12px; }
   .promoSlide { min-height: 250px; }
   .bottomNav { width: min(100%, 760px); margin: 0 auto; border: 1px solid rgb(125 211 252 / .2); border-bottom: 0; border-radius: 22px 22px 0 0; }
+}
+
+@media (max-width: 360px) {
+  .bottomNav { gap: 0; padding-left: max(4px, env(safe-area-inset-left)); padding-right: max(4px, env(safe-area-inset-right)); }
+  .bottomNav button { min-height: 52px; padding: 3px 0; border-radius: 11px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

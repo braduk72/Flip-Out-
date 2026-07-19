@@ -18,6 +18,7 @@ import { buildBoard } from './hooks/useGame'
 import { verifySession, applyPurchase, syncStats } from './utils/foShop.js'
 import { setSfxVol } from './hooks/useSfx'
 import { snapshotToCookie } from './utils/gameStorage.js'
+import { isAutomatedAudioDisabled } from './utils/audioSafety.js'
 import { createTransactionId, economy } from './utils/economyService.js'
 import CookieBanner, { consentAnswered, hasConsent } from './components/CookieBanner.jsx'
 import { isMatch3TokenReviewRequest } from './match3/tokenReviewAccess.js'
@@ -79,8 +80,8 @@ export default function App() {
   const [deck,       setDeck]       = useState(null)
   const [portrait,   setPortrait]   = useState(() => parseInt(localStorage.getItem('fo_portrait')   || '1'))
   const [difficulty, setDifficulty] = useState(() => localStorage.getItem('fo_difficulty')          || 'Medium')
-  const [musicOn,    setMusicOn]    = useState(() => localStorage.getItem('fo_music')               !== 'off')
-  const [sfxOn,      setSfxOn]      = useState(() => localStorage.getItem('fo_sfx')                 !== 'off')
+  const [musicOn,    setMusicOn]    = useState(() => !isAutomatedAudioDisabled() && localStorage.getItem('fo_music') !== 'off')
+  const [sfxOn,      setSfxOn]      = useState(() => !isAutomatedAudioDisabled() && localStorage.getItem('fo_sfx') !== 'off')
   const [musicVol,   setMusicVol]   = useState(() => parseFloat(localStorage.getItem('fo_music_vol') ?? '0.45'))
   const [sfxVol,     setSfxVolState]= useState(() => parseFloat(localStorage.getItem('fo_sfx_vol')   ?? '0.7'))
   const [mode,       setMode]       = useState('vs')

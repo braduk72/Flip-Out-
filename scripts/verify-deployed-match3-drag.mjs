@@ -18,6 +18,12 @@ await mkdir(outputDirectory, { recursive: true })
 
 const browser = await chromium.launch({ executablePath: edgePath, headless: process.env.HEADED !== '1' })
 const context = await browser.newContext({ viewport: { width: 1180, height: 900 }, reducedMotion: 'no-preference' })
+await context.addInitScript(() => {
+  // Isolated automation storage only: the app guard suppresses all test audio.
+  window.__FLIPOUT_TEST_AUDIO_DISABLED__ = true
+  localStorage.setItem('fo_music', 'off')
+  localStorage.setItem('fo_sfx', 'off')
+})
 await context.tracing.start({ screenshots: true, snapshots: true })
 const page = await context.newPage()
 let delayMoveRequest = false
@@ -47,7 +53,7 @@ try {
     await page.getByRole('button', { name: 'Continue', exact: true }).click()
   }
   if (await page.getByRole('heading', { name: 'Choose your avatar', exact: true }).isVisible().catch(() => false)) {
-    await page.getByRole('button', { name: 'Select Starter avatar 1', exact: true }).click()
+    await page.getByRole('button', { name: 'Select Badger', exact: true }).click()
     await page.getByRole('button', { name: 'Continue', exact: true }).click()
   }
 
@@ -239,6 +245,9 @@ try {
   await writeFile(resolve(outputDirectory, 'drag-verification.json'), `${JSON.stringify(result, null, 2)}\n`)
   console.log(JSON.stringify(result, null, 2))
 } finally {
+  await page.evaluate(() => document.querySelectorAll('audio, video').forEach(media => {
+    try { media.pause(); media.currentTime = 0 } catch { /* already detached */ }
+  })).catch(() => {})
   await context.tracing.stop({ path: resolve(outputDirectory, 'browser-trace.zip') })
   await context.close()
   await browser.close()

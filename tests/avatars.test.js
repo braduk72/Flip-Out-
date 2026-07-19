@@ -26,18 +26,17 @@ test('avatar catalogue registers reusable existing portrait assets once', () => 
   assert.ok(ONBOARDING_AVATARS.length >= 10)
   assert.equal(new Set(AVATAR_CATALOG.map(avatar => avatar.id)).size, AVATAR_CATALOG.length)
   assert.equal(new Set(AVATAR_CATALOG.map(avatar => avatar.asset)).size, AVATAR_CATALOG.length)
-  assert.equal(getAvatarById('starter-1')?.asset, '/images/a1.webp')
+  assert.equal(getAvatarById('starter-1')?.asset, '/images/avatars/clash-badger.webp')
 })
 
 test('valid starter avatar selection persists by ID and is retry-safe', async () => {
   const db = createAvatarDb(new Map([['player-a', { avatarId: null }]]))
-  assert.deepEqual(await setInitialAvatar(db, { playerId: 'player-a', avatarId: 'starter-1' }), { avatarId: 'starter-1', alreadySet: false })
-  assert.deepEqual(await setInitialAvatar(db, { playerId: 'player-a', avatarId: 'starter-1' }), { avatarId: 'starter-1', alreadySet: true })
-  await assert.rejects(setInitialAvatar(db, { playerId: 'player-a', avatarId: 'starter-2' }), error => error.code === 'AVATAR_ALREADY_SET')
+  assert.deepEqual(await setInitialAvatar(db, { playerId: 'player-a', avatarId: 'clash-badger' }), { avatarId: 'clash-badger', alreadySet: false })
+  assert.deepEqual(await setInitialAvatar(db, { playerId: 'player-a', avatarId: 'clash-badger' }), { avatarId: 'clash-badger', alreadySet: true })
+  await assert.rejects(setInitialAvatar(db, { playerId: 'player-a', avatarId: 'clash-blackhole' }), error => error.code === 'AVATAR_ALREADY_SET')
 })
 
 test('server rejects unavailable or unknown avatar IDs', () => {
   assert.throws(() => validateAvatarId('beta-tester'), error => error.code === 'INVALID_AVATAR')
-  assert.throws(() => validateAvatarId('/images/a1.webp'), error => error.code === 'INVALID_AVATAR')
+  assert.throws(() => validateAvatarId('/images/avatars/clash-badger.webp'), error => error.code === 'INVALID_AVATAR')
 })
-

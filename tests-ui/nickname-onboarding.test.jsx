@@ -39,19 +39,19 @@ test('nickname onboarding gives immediate client feedback for invalid names', as
 })
 
 test('avatar grid selects a starter avatar and enables Continue', async () => {
-  const submit = vi.fn().mockResolvedValue({ avatarId: 'starter-1' })
+  const submit = vi.fn().mockResolvedValue({ avatarId: 'clash-badger' })
   render(<AvatarOnboarding onSubmit={submit}/>)
   const continueButton = screen.getByRole('button', { name: 'Continue' })
   expect(continueButton).toBeDisabled()
-  await userEvent.click(screen.getByRole('button', { name: 'Select Starter avatar 1' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Select Badger' }))
   expect(continueButton).toBeEnabled()
   await userEvent.click(continueButton)
-  expect(submit).toHaveBeenCalledWith('starter-1')
+  expect(submit).toHaveBeenCalledWith('clash-badger')
 })
 
 test('Home resumes nickname then avatar onboarding and persists each step once', async () => {
   const saver = vi.fn().mockResolvedValue({ displayName: 'Gizmo' })
-  const avatarSaver = vi.fn().mockResolvedValue({ avatarId: 'starter-1' })
+  const avatarSaver = vi.fn().mockResolvedValue({ avatarId: 'clash-badger' })
   render(<Home dataLoader={vi.fn().mockResolvedValue(onboardingData)} nicknameSaver={saver} avatarSaver={avatarSaver} onMatch3={() => {}} sfxOn={false}/>)
   await screen.findByRole('heading', { name: 'Choose your nickname' })
   expect(screen.queryByRole('heading', { name: 'MATCH-3' })).not.toBeInTheDocument()
@@ -59,15 +59,15 @@ test('Home resumes nickname then avatar onboarding and persists each step once',
   await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
   expect(saver).toHaveBeenCalledTimes(1)
   expect(await screen.findByRole('heading', { name: 'Choose your avatar' })).toBeInTheDocument()
-  await userEvent.click(screen.getByRole('button', { name: 'Select Starter avatar 1' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Select Badger' }))
   await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
-  expect(avatarSaver).toHaveBeenCalledWith('starter-1')
+  expect(avatarSaver).toHaveBeenCalledWith('clash-badger')
   expect(await screen.findByRole('heading', { name: 'MATCH-3' })).toBeInTheDocument()
   expect(screen.queryByRole('heading', { name: 'Choose your nickname' })).not.toBeInTheDocument()
 })
 
 test('existing players bypass nickname onboarding', async () => {
-  render(<Home dataLoader={vi.fn().mockResolvedValue({ ...onboardingData, profile: { ...onboardingData.profile, displayName: 'Brad', avatarId: 'starter-2', playerName: 'Brad' } })} onMatch3={() => {}} sfxOn={false}/>)
+  render(<Home dataLoader={vi.fn().mockResolvedValue({ ...onboardingData, profile: { ...onboardingData.profile, displayName: 'Brad', avatarId: 'clash-blackhole', playerName: 'Brad' } })} onMatch3={() => {}} sfxOn={false}/>)
   expect(await screen.findByRole('heading', { name: 'MATCH-3' })).toBeInTheDocument()
   expect(screen.queryByRole('heading', { name: 'Choose your nickname' })).not.toBeInTheDocument()
 })

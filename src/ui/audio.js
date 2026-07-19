@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { isAutomatedAudioDisabled } from '../utils/audioSafety.js'
 
 export const UI_AUDIO_EVENTS = Object.freeze({
   BUTTON_PRESS: 'button-press',
@@ -20,7 +21,7 @@ const PLACEHOLDER_TONES = Object.freeze({
 })
 
 export function playUiAudio(eventName, { enabled = true } = {}) {
-  if (!enabled || typeof window === 'undefined') return false
+  if (!enabled || isAutomatedAudioDisabled() || typeof window === 'undefined') return false
   const tone = PLACEHOLDER_TONES[eventName]
   const AudioContext = window.AudioContext || window.webkitAudioContext
   if (!tone || !AudioContext) return false

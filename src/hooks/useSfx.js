@@ -1,8 +1,8 @@
 import { useRef, useCallback } from 'react'
+import { isAutomatedAudioDisabled } from '../utils/audioSafety.js'
 
 // Module-level set so stopAll() can reach sounds fired from any instance
 const _active = new Set()
-let _specialAudio = null
 
 // Module-level SFX volume (0-1) — set via setSfxVol() from App.jsx
 let _sfxVol = parseFloat(localStorage.getItem('fo_sfx_vol') ?? '0.7')
@@ -10,12 +10,14 @@ export function setSfxVol(v) { _sfxVol = Math.max(0, Math.min(1, v)) }
 
 let _dingCtx = null
 function getDingCtx() {
+  if (isAutomatedAudioDisabled()) return null
   if (!_dingCtx) _dingCtx = new (window.AudioContext || window.webkitAudioContext)()
   if (_dingCtx.state === 'suspended') _dingCtx.resume()
   return _dingCtx
 }
 
 function playSpecial() {
+  if (isAutomatedAudioDisabled()) return
   // Synthesised bell ding — two sine partials for warmth, natural decay
   try {
     const ctx  = getDingCtx()
@@ -35,10 +37,11 @@ function playSpecial() {
 
     partial(880,  0.30 * _sfxVol)   // fundamental
     partial(2637, 0.12 * _sfxVol)   // bright overtone (E7)
-  } catch (_) {}
+  } catch { /* Audio is optional. */ }
 }
 
 export function playHoverTick() {
+  if (isAutomatedAudioDisabled()) return
   try {
     const ctx  = getDingCtx()
     const now  = ctx.currentTime
@@ -51,10 +54,11 @@ export function playHoverTick() {
     gain.gain.setValueAtTime(0.10 * _sfxVol, now)
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04)
     osc.start(now); osc.stop(now + 0.04)
-  } catch (_) {}
+  } catch { /* Audio is optional. */ }
 }
 
 export function playFile(src, volume = 0.65) {
+  if (isAutomatedAudioDisabled()) return
   try {
     const a = new Audio(src)
     a.volume = volume * _sfxVol
@@ -62,7 +66,7 @@ export function playFile(src, volume = 0.65) {
     a.addEventListener('ended',  () => _active.delete(a))
     a.addEventListener('error',  () => _active.delete(a))
     a.play().catch(() => {})
-  } catch (_) {}
+  } catch { /* Audio is optional. */ }
 }
 
 export function useSfx(sfxOn) {
@@ -77,7 +81,7 @@ export function useSfx(sfxOn) {
   }
 
   const play = useCallback((type) => {
-    if (!sfxOn) return
+    if (!sfxOn || isAutomatedAudioDisabled()) return
 
     switch (type) {
 
@@ -94,7 +98,7 @@ export function useSfx(sfxOn) {
           gain.gain.setValueAtTime(0.28 * _sfxVol, ctx.currentTime)
           gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09)
           osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.09)
-        } catch (_) {}
+        } catch { /* Audio is optional. */ }
         break
       }
 
@@ -154,7 +158,7 @@ export function useSfx(sfxOn) {
             noiseBurst(t, d * 0.55, (0.22 + Math.random() * 0.18) * _sfxVol)
             t += d
           }
-        } catch (_) {}
+        } catch { /* Audio is optional. */ }
         break
       }
       case 'joker':    playFile('/sounds/used/Joker.mp3');               break
@@ -177,12 +181,11 @@ export function useSfx(sfxOn) {
 
       default: break
     }
-  }, [sfxOn]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sfxOn])
 
   const stopAll = useCallback(() => {
-    _active.forEach(a => { try { a.pause(); a.src = '' } catch (_) {} })
+    _active.forEach(a => { try { a.pause(); a.src = '' } catch { /* Audio is optional. */ } })
     _active.clear()
-    _specialAudio = null
   }, [])
 
   return { play, stopAll }
