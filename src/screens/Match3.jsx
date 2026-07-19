@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Match3FeedbackPanel from '../components/Match3FeedbackPanel.jsx'
 import { objectiveProgress } from '../match3/engine.js'
 import { MATCH3_LEVELS, MATCH3_TOKENS, getMatch3Level } from '../match3/levels.js'
-import { cellIsInPresentation, createMatch3Presentation } from '../match3/presentation.js'
+import { cellIsInPresentation, createMatch3Presentation, isMatch3BoardInputLocked } from '../match3/presentation.js'
 import Match3TokenImage from '../match3/Match3TokenImage.jsx'
 import { CardPanel } from '../ui/components.jsx'
 import { useMotionMode } from '../ui/motion.js'
@@ -60,6 +60,8 @@ export default function Match3({ onBack }) {
   async function start() {
     setBusy(true)
     setError('')
+    clearTimeout(presentationTimer.current)
+    setPresentation(null)
     try {
       const response = await playerGameApi.match3({ action: 'start', levelId: selectedLevel, requestId: uid('match3') })
       setSession(response.session)
@@ -85,7 +87,7 @@ export default function Match3({ onBack }) {
         const nextPresentation = createMatch3Presentation(previousState, response.session.state, body, motionMode)
         setSession(response.session)
         saveMatch3Resume(response.session)
-        setPresentation(nextPresentation)
+        setPresentation(nextPresentation.durationMs > 0 ? nextPresentation : null)
         if (nextPresentation.cascadeCount) {
           haptic(nextPresentation.comboType ? 'special' : nextPresentation.cascadeCount > 1 ? 'cascade' : 'medium')
           recordMatch3Event('move-resolution', {
@@ -95,7 +97,7 @@ export default function Match3({ onBack }) {
             scoreGained: nextPresentation.scoreGained,
           })
         }
-        presentationTimer.current = setTimeout(() => setPresentation(null), nextPresentation.durationMs)
+        if (nextPresentation.durationMs > 0) presentationTimer.current = setTimeout(() => setPresentation(null), nextPresentation.durationMs)
         if (response.session.state.status === 'lost' && previousState?.status !== 'lost') recordMatch3Event('level-failure', { levelId: selectedLevel })
         if (response.session.state.status === 'won' && body.action !== 'complete') queueMicrotask(() => finish(response.session))
       }
@@ -129,8 +131,8 @@ export default function Match3({ onBack }) {
 
   if (view === 'map') return <LevelMap progress={progress} onBack={onBack} onSelect={id => { setSelectedLevel(id); setView('brief') }} onReset={() => { if (confirm('Reset Match-3 development progress?')) { resetMatch3Development(); setProgress({ highestUnlockedLevel: 1, completedLevels: {} }) } }} />
   if (view === 'brief') return <Brief level={getMatch3Level(selectedLevel)} busy={busy} error={error} onBack={() => setView('map')} onStart={start} />
-  if (view === 'win') return <Result stars={stars} level={selectedLevel} movesUsed={session.state.level.moves - session.state.movesRemaining} error={error} onDouble={async () => { try { const advert = await playerGameApi.verifyAdvert({ provider: 'configured-provider', receipt: uid('receipt'), placement: 'match3-double', matchId: session.sessionId }); const response = await action({ action: 'double', advertCompletionId: advert.completionId }); setStars(response.totalStars); recordMatch3Event('stars-granted', { stars: 30, reason: 'advert-double' }) } catch { return null } }} onMap={() => setView('map')} onNext={() => { setSelectedLevel(Math.min(20, selectedLevel + 1)); setView('brief') }} />
-  return <><GameBoard session={session} busy={busy} error={error} presentation={presentation} onMove={(from, to) => action({ action: 'move', actionId: uid('move'), from, to })} onPower={(powerUp, target) => action({ action: 'power-up', actionId: uid('power'), powerUp, target }).then(() => recordMatch3Event('power-up-used', { powerUp }))} onRestart={() => action({ action: 'restart', actionId: uid('restart') })} onQuit={() => { if (confirm('Quit this level? Your current board will remain available to resume.')) setView('map') }} />{import.meta.env.DEV && <Match3FeedbackPanel level={selectedLevel} result={session.state.status === 'won' ? 'won' : session.state.status === 'lost' ? 'lost' : 'quit'} movesUsed={session.state.level.moves - session.state.movesRemaining} />}</>
+  if (view === 'win') return <Result stars={stars} level={selectedLevel} movesUsed={session.state.level.moves - session.state.movesRemaining} error={error} onDouble={async () => { try { const advert = await playerGameApi.verifyAdvert({ provider: 'configured-provider', receipt: uid('receipt'), placement: 'match3-double', matchId: session.sessionId }); const response = await action({ action: 'double', advertCompletionId: advert.completionId }); setStars(response.totalStars); recordMatch3Event('stars-granted', { stars: 30, reason: 'advert-double' }) } catch { return null } }} onMap={() => { clearTimeout(presentationTimer.current); setPresentation(null); setView('map') }} onNext={() => { clearTimeout(presentationTimer.current); setPresentation(null); setSelectedLevel(Math.min(20, selectedLevel + 1)); setView('brief') }} />
+  return <><GameBoard session={session} busy={busy} error={error} presentation={presentation} onMove={(from, to) => action({ action: 'move', actionId: uid('move'), from, to })} onPower={(powerUp, target) => action({ action: 'power-up', actionId: uid('power'), powerUp, target }).then(() => recordMatch3Event('power-up-used', { powerUp }))} onRestart={() => { clearTimeout(presentationTimer.current); setPresentation(null); action({ action: 'restart', actionId: uid('restart') }) }} onQuit={() => { clearTimeout(presentationTimer.current); setPresentation(null); if (confirm('Quit this level? Your current board will remain available to resume.')) setView('map') }} />{import.meta.env.DEV && <Match3FeedbackPanel level={selectedLevel} result={session.state.status === 'won' ? 'won' : session.state.status === 'lost' ? 'lost' : 'quit'} movesUsed={session.state.level.moves - session.state.movesRemaining} />}</>
 }
 
 function LevelMap({ progress, onBack, onSelect, onReset }) {
@@ -152,14 +154,14 @@ function Result({ stars, level, movesUsed, error, onDouble, onMap, onNext }) {
   return <main className={`${styles.result} foTheme`} data-concept-screen="route" data-screen="match3-result"><div aria-hidden="true" className={styles.resultIcon}>★</div><h1>Level complete!</h1><p className={styles.starAward}>+{stars} Stars</p><p role="alert">{error}</p>{stars === 30 && <button onClick={onDouble}>Watch verified advert to double</button>}<button className={styles.primary} onClick={onNext}>Next level</button><button onClick={onMap}>Level journey</button>{import.meta.env.DEV && <Match3FeedbackPanel level={level} result="won" movesUsed={movesUsed} />}</main>
 }
 
-function GameBoard({ session, busy, error, presentation, onMove, onPower, onRestart, onQuit }) {
+export function GameBoard({ session, busy, error, presentation, onMove, onPower, onRestart, onQuit }) {
   const state = session.state
   const [selected, setSelected] = useState(null)
   const [power, setPower] = useState(null)
   const [paused, setPaused] = useState(false)
   const drag = useRef(null)
   const level = state.level
-  const locked = paused || busy || Boolean(presentation)
+  const locked = isMatch3BoardInputLocked({ status: state.status, paused, busy, presentation })
   const rows = state.board.length
   const columns = state.board[0].length
   const summary = useMemo(() => `Level ${level.id}. ${state.movesRemaining} moves left. Score ${state.score}.`, [level.id, state.movesRemaining, state.score])
@@ -221,7 +223,7 @@ function GameBoard({ session, busy, error, presentation, onMove, onPower, onRest
     <div className={styles.boardShell} style={{ '--board-rows': rows, '--board-columns': columns }}>
       {presentation?.label && <div className={styles.comboBanner} aria-hidden="true"><strong>{presentation.label}</strong>{presentation.cascadeCount > 1 && <span>×{presentation.cascadeCount} cascade</span>}</div>}
       {presentation?.scoreGained > 0 && <div className={styles.scoreBurst} aria-hidden="true">+{presentation.scoreGained.toLocaleString()}</div>}
-      <div className={boardClass} role="grid" aria-label={summary} aria-busy={locked}>
+      <div className={boardClass} role="grid" aria-label={summary} aria-busy={locked} data-input-locked={locked ? 'true' : 'false'}>
         {state.board.map((row, rowIndex) => row.map((cell, columnIndex) => <Tile key={`${rowIndex}:${columnIndex}`} cell={cell} row={rowIndex} column={columnIndex} columns={columns} selected={selected?.r === rowIndex && selected?.c === columnIndex} presentation={presentation} onChoose={choose} onKeyDown={keyDown} onPointerDown={event => { drag.current = { x: event.clientX, y: event.clientY } }} onPointerUp={event => dragEnd(event, rowIndex, columnIndex)} onPointerCancel={() => { drag.current = null }} />))}
       </div>
       <BoardEffects presentation={presentation} rows={rows} columns={columns} />

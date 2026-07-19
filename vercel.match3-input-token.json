@@ -1,0 +1,5 @@
+{
+  "framework": "vite",
+  "buildCommand": "node scripts/verify-match3-input-token.mjs && vite build",
+  "outputDirectory": "dist"
+}

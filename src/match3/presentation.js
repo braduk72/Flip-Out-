@@ -40,3 +40,7 @@ export function createMatch3Presentation(previousState, nextState, action = {}, 
 export function cellIsInPresentation(presentation, group, row, column) {
   return Boolean(presentation?.[group]?.some(position => position.r === row && position.c === column))
 }
+
+export function isMatch3BoardInputLocked({ status = 'active', paused = false, busy = false, presentation = null } = {}) {
+  return status !== 'active' || paused || busy || Number(presentation?.durationMs ?? 0) > 0
+}

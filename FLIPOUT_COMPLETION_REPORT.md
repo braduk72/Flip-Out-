@@ -195,3 +195,11 @@ First-time players now choose a case-preserving display nickname before Home; th
 ## One-time avatar onboarding â€” 19 July 2026
 
 The nickname flow now continues to a required avatar choice before Home. Existing portrait artwork is registered once in `src/data/avatarCatalog.js`; profiles persist only an opaque `selected_avatar_id`, while UUID `player_id` remains the identity. The server permits starter IDs, blocks locked/unknown IDs, never overwrites a selected avatar and treats a same-ID retry safely. The Home header displays the selected asset. Migration 013 committed to Preview Railway at `2026-07-19T15:06:07.320Z`; Preview verification passed 11/11 server/database tests and 19/19 focused UI tests, focused lint passed and the 145-module production build passed. Ready Preview: `https://flip-9ul60548p-chattocal.vercel.app` (`dpl_78BWjkMnTLa5ptny8a3KjHfqbk5E`). One initial run hit a transient Railway connection termination after migration; the immediate serialised rerun passed cleanly. No authentication, economy or production system changed.
+
+## Match-3 input and T-Rex token correction — 19 July 2026
+
+The blocked-board defect was a stale presentation lock: the previous move’s presentation survived level transitions, and restart created a truthy presentation even when its duration was zero. Start/restart/next/map/quit now clear that state, and the board locks only while active API work, a pause/blocking dialog, a non-active game state or a positive-duration resolution is present.
+
+The T-Rex crop remains `mastersOfTheLostWorld:1`, with focal point `(0.56, 0.26)` and zoom `4.2`. The regenerated token keeps the eye, brow, open mouth and teeth legible at gameplay sizes. Actual-size review and pairwise quality checks passed; closest 32px pair `leaf / drop` measured `0.1856` against the `0.16` minimum.
+
+Verification passed: 32/32 focused Node engine/token tests, 8/8 focused Match-3 UI/token tests, focused lint and the 145-module production build. Preview `https://flip-6gkw201j4-chattocal.vercel.app` (`dpl_2iLM8jScemputLVFeE6zkwRs2bhj`) reached Ready. Production was not touched.

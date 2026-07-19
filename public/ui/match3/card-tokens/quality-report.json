@@ -32,13 +32,13 @@
       "id": "leaf",
       "output": "/ui/match3/card-tokens/tyrannosaurus-rex.webp",
       "crop": {
-        "left": 504,
-        "top": 153,
-        "size": 421
+        "left": 553,
+        "top": 177,
+        "size": 299
       },
       "signalsAt32px": {
-        "averageLuminance": 98.67,
-        "luminanceDeviation": 60.68
+        "averageLuminance": 88.47,
+        "luminanceDeviation": 62.03
       }
     },
     {
@@ -87,7 +87,7 @@
         "leaf",
         "drop"
       ],
-      "differenceAt32px": 0.1809
+      "differenceAt32px": 0.1856
     },
     {
       "tokens": [
@@ -108,7 +108,7 @@
         "sun",
         "leaf"
       ],
-      "differenceAt32px": 0.2207
+      "differenceAt32px": 0.2162
     },
     {
       "tokens": [
@@ -129,7 +129,7 @@
         "moon",
         "leaf"
       ],
-      "differenceAt32px": 0.2472
+      "differenceAt32px": 0.2465
     },
     {
       "tokens": [
@@ -143,7 +143,7 @@
         "leaf",
         "gem"
       ],
-      "differenceAt32px": 0.2624
+      "differenceAt32px": 0.2648
     },
     {
       "tokens": [
@@ -168,15 +168,15 @@
     },
     {
       "tokens": [
-        "leaf",
-        "star"
+        "sun",
+        "drop"
       ],
-      "differenceAt32px": 0.2751
+      "differenceAt32px": 0.2827
     },
     {
       "tokens": [
-        "sun",
-        "drop"
+        "leaf",
+        "star"
       ],
       "differenceAt32px": 0.2827
     },
