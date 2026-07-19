@@ -33,6 +33,24 @@ test('collection model builds albums, sets, ownership, recency and statistics fr
   assert.equal(cars.goldOwned, true)
 })
 
+test('official Theme Album entries count as collected without remaining in Inventory', () => {
+  const model = buildCollectionData({
+    inventory: [],
+    themeAlbums: {
+      entries: [{ card_item_id: 'card:cats:1', theme_id: 'cats', variant: 'normal', stuck_at: '2026-07-20T10:00:00Z' }],
+      collectors: [{ theme_id: 'cats', collector_tier: 'bronze' }],
+    },
+  })
+  const card = model.cards.find(entry => entry.id === 'card:cats:1')
+  const cats = model.sets.find(set => set.id === 'cats')
+  assert.equal(card.owned, true)
+  assert.equal(card.quantity, 0)
+  assert.equal(card.stuckInThemeAlbum, true)
+  assert.equal(card.recyclableQuantity, 0)
+  assert.equal(cats.owned, 1)
+  assert.equal(cats.collectors.bronze, true)
+})
+
 test('card filters combine search, set, ownership, rarity, variants and deterministic sorting', () => {
   const model = buildCollectionData(state)
   const ownedCars = filterCollectionCards(model.cards, { query: 'Ferrari 488', setId: 'sportscars', ownership: 'owned' })

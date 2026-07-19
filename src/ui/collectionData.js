@@ -30,6 +30,8 @@ function timestamp(value) {
 
 export function buildCollectionData(state = {}, favouriteIds = []) {
   const inventoryById = new Map((state.inventory ?? []).map(row => [row.item_id, row]))
+  const stuckEntries = new Map((state.themeAlbums?.entries ?? []).map(row => [`${row.card_item_id}:${row.variant ?? 'normal'}`, row]))
+  const collectorEntries = new Map((state.themeAlbums?.collectors ?? []).map(row => [`${row.theme_id}:${row.collector_tier}`, row]))
   const favouriteSet = new Set(favouriteIds)
   const obtained = new Map()
   for (const row of state.transactions ?? []) {
@@ -44,6 +46,9 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
     const quantity = Number(inventory?.quantity) || 0
     const boundQuantity = Number(inventory?.bound_quantity) || 0
     const variant = item.variant ?? 'base'
+    const albumVariant = variant === 'base' ? 'normal' : variant
+    const stuckEntry = stuckEntries.get(`${item.id}:${albumVariant}`)
+    const stuckInThemeAlbum = Boolean(stuckEntry)
     return {
       ...item,
       setId,
@@ -51,9 +56,12 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
       setColour: deck?.borderColor ?? '#22d3ee',
       number: numberFor(item),
       quantity,
+      inventoryQuantity: quantity,
       boundQuantity,
       recyclableQuantity: Math.max(0, quantity - Math.max(1, boundQuantity)),
-      owned: quantity > 0,
+      stuckInThemeAlbum,
+      albumStuckAt: stuckEntry?.stuck_at ?? null,
+      owned: quantity > 0 || stuckInThemeAlbum,
       favourite: favouriteSet.has(item.id),
       obtainedAt: obtained.get(item.id) ?? null,
       variant,
@@ -80,6 +88,11 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
       favourites: setCards.filter(card => card.favourite).length,
       goldOwned: variants.some(card => card.isGold && card.owned),
       goldAvailable: variants.some(card => card.isGold),
+      collectors: {
+        bronze: collectorEntries.has(`${deck.id}:bronze`),
+        silver: collectorEntries.has(`${deck.id}:silver`),
+        gold: collectorEntries.has(`${deck.id}:gold`),
+      },
     }
   })
   const setById = new Map(sets.map(set => [set.id, set]))

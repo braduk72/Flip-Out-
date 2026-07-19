@@ -99,3 +99,63 @@ Final Preview verification: migration 008 committed at `2026-07-18T17:52:39.594Z
 - Exchange escrow naturally excludes listed cards from Recycler availability.
 - Higher rarity, Gold Collector and future Foil recycling is postponed until approved item-specific rules and values exist.
 - Full implementation and remaining balancing risks are recorded in `FLIPOUT_RECYCLER_REPORT.md`.
+
+## Economy, Theme Albums, Exchange, Rewards and Achievements update — 20 July 2026
+
+**Status: approved design direction only.** No code, schema, balance, migration or deployment work was performed for this update. It supersedes earlier design guidance where the rules conflict.
+
+### Canonical player ownership model
+
+- **Theme Albums replace the previous aggregated Collection albums.** Every booster card first enters Inventory. A player then chooses **“Stick in Album”** or leaves it in Inventory.
+- Sticking is an irreversible, server-authoritative transfer of one Inventory card into the official Theme Album. It cannot be traded, shredded, removed or counted against Inventory capacity. It permanently contributes to Theme completion.
+- Official themes have two independent completion tracks: normal cards and Foil cards. A completed normal Theme Album earns its account-bound Bronze Collector Card; a completed Foil Theme Album earns Silver; both earn Gold. Collector Cards are achievements, not booster drops, Inventory stock, tradeable cards or recyclable cards.
+- Theme sizes remain data-driven and may vary. Each Theme Album must show its actual total.
+- **Personal Albums** are different: up to ten, named with the same suitability filter as nicknames, 500 Coins each, and purely organisational. They do not create completion, lock ownership or transfer a card out of Inventory. Add/remove remains free. The pending data-model choice is whether membership is a card-SKU bookmark (recommended, allowing the same owned card type in more than one folder) or a quantity allocation; it must be decided before implementation.
+- Inventory capacity is intentionally not enforced until its size and overflow UX are approved. Official Theme Album cards are excluded from it.
+
+### Booster, rarity and opening direction
+
+- Themed Boosters contain cards from the chosen Theme only and never cosmetics. Random Boosters draw across Themes, retain the higher Foil chance and may include avatars, title prefixes/suffixes, profile backgrounds and future cosmetics.
+- Rarity and Foil status are orthogonal: Common, Uncommon, Rare, Epic and Legendary may each be Normal or Foil. Existing temporary Foil UI is not an authoritative item/reward definition.
+- The existing booster-opening presentation architecture remains the correct boundary: a server-confirmed receipt must exist before animation and must be replayable after interruption. Only its physical responsiveness and polish should improve later; animation must not select or alter rewards.
+
+### Economy, Match-3 and Reward Theatre direction
+
+- Every completed Match-3 level awards **10 Coins**, with one verified optional advert able to double that completion to **20 Coins**. Coin grants remain server-authoritative, idempotent and ledgered. No advert revive is permitted.
+- Reward Theatre occurs after every **five completed Match-3 levels**, not every level. Standard level Coin rewards happen immediately. Theatre awards bonus items using reels; every icon in the visible reward window is awarded. The outcome remains committed before the presentation, with a shared claim/transaction ID.
+- Revives replace the previous advert/continue path: attempt 1 costs 25 Coins at 75% success; attempt 2 costs 50 Coins at 50%; attempt 3 costs 100 Coins at 25%; then Game Over. Players spin the pointer and the odds must be shown. This requires a committed server outcome before the wheel animation.
+- The Daily Wheel and Reward Theatre must use responsive presentation sizing on phone, tablet and desktop.
+
+### Exchange, Recycler and Achievements direction
+
+- Exchange commission is **20%**, superseding the previous exact 10% rule. It is player-driven after launch, with developer seed listings only at launch, a minimum listing price, a maximum active-listing limit, expiry and automatic Inventory return. There is no maximum price.
+- Shredding replaces the current duplicate-only Recycler policy: any five normal Inventory cards yield 10 Coins; one Foil Inventory card yields 25 Coins. Stuck Theme cards and Collector Cards are categorically unavailable. This is a future rewrite of the existing 5 Common duplicates → 1 Star Preview recipe, not a balance tweak.
+- Achievements become a major progression system with ledgered/server-authoritative grants for Coins, boosters, avatars, title parts, profile backgrounds, power-ups, cards and future cosmetics. Some cosmetics remain achievement-exclusive. Initial tone examples: **Unicorn Poop** (first Rare Foil) and **Raider of the Lost Arc-hive** (booster from a fifth different Theme).
+
+### Architecture assessment and conflicts
+
+The existing item catalogue, quantity inventory, idempotent transaction boundary, Coin ledger, Exchange escrow/history, player identity, match session IDs and receipt-first booster presenter support this direction **without a full rebuild**. Selected additive refactors are required:
+
+1. The current `buildCollectionData` treats an Inventory quantity as collection ownership and groups permanent albums into three broad categories. It cannot represent irreversible per-card Theme placement, separate normal/Foil completion, achievement Collector Cards or Personal Album membership.
+2. `fo_player_inventory` stores quantities, not individual card instances. Official sticking can still be correct by atomically decrementing one SKU quantity and inserting a unique account/theme/card/variant album entry. Personal Albums need the membership decision above before their tables are designed.
+3. Current Recycler validation deliberately preserves the final copy, accepts Common duplicates only and grants Stars. It directly conflicts with the new any-five normal / individual Foil / Coin-output rules and must not be partially altered before the official Album boundary exists.
+4. Current Match-3 completion grants Stars (with an advert double), while prior premium-Coin direction permitted Coin creation only from purchases or explicit server grants. The new 10/20 Coin rewards and Coin-producing shredder require an explicit revised Coin source-and-sink policy. Technically the ledger can record these as purpose-specific authorised server grants; product approval must confirm that this is the intended meaning of premium Coins.
+5. Current continuation rules allow an advert or a fixed Coin continuation. They conflict with the three paid, probability-disclosed revive spins and the no-advert-revive rule.
+6. Current marketplace settlement and Coin ledger use the prior 10% fee. The 20% fee, listing caps/minimum/expiry and launch seed account must be introduced atomically with an auditable migration; do not edit only UI copy.
+
+### Recommended implementation order
+
+1. **Approve the revised Coin source/sink matrix.** State explicitly that Match-3 10/20 awards and shredding Coin rewards are purpose-specific authorised server ledger grants; define how Daily Wheel, daily login, lockboxes and existing Coin sinks change. This is the only policy dependency that blocks the economy work.
+2. **Create the official Theme Album ownership boundary.** Add additive tables for immutable stuck card entries, normal/Foil completion and account-bound Collector achievements; implement a locked, idempotent “Stick in Album” mutation that decrements Inventory and grants collectors exactly once. Do not change the Collection UI first.
+3. **Add Personal Album data and APIs.** Reuse nickname suitability validation; enforce ten albums and a 500-Coin ledgered creation charge; add free membership mutations with the agreed bookmark/allocation semantics.
+4. **Refactor the read model and Collection UI.** Replace broad category albums with per-Theme normal/Foil progress, stuck/inventory state, Collector achievement display and Personal Album folders. Introduce capacity presentation only, not a hard limit, until a value is approved.
+5. **Implement authoritative booster receipts and post-open decision flow.** Define Themed versus Random loot tables, Rarity/Foil metadata and cosmetic eligibility. Grant to Inventory first, then offer idempotent Stick in Album choices. Keep the current opening component purely presentational and improve responsiveness/easing only after receipt wiring is correct.
+6. **Replace the Recycler with the approved shredding rules.** Build new versioned normal-five and Foil-one recipes, Coin-ledger grants and the existing retry/concurrency protections. Remove the duplicate/final-copy requirement only for Inventory cards, never for Theme entries or Collector achievements.
+7. **Upgrade Exchange settlement.** Add the 20% fee, listing constraints, expiry return, developer launch-seed mechanism and inventory eligibility checks. Preserve account identity, escrow, auditable ownership and Coin ledger provenance.
+8. **Implement Match-3 reward and revive changes.** Move completion to 10 Coins plus a verified one-time advert double; retire advert revive; add the disclosed 25/50/100 Coin probability revive sequence with a server-committed outcome.
+9. **Define the reward envelope, then Reward Theatre.** Create versioned multi-award outcomes and claim IDs, schedule every fifth completed level, then build responsive reels as a presentation adapter. Do not let reels determine eligibility or results.
+10. **Add achievement definitions and reward claims.** Start with the two named achievements after Foil/booster receipts exist, then grow the data-driven achievement catalogue.
+
+### First implementation task when development resumes
+
+**Implement the immutable official Theme Album ownership boundary (step 2).** It must come first because all other collection decisions depend on knowing whether a specific card is still Inventory stock or is permanently stuck. It protects Exchange, shredding, capacity, booster post-open choices and Collector Card grants from duplication or eligibility bugs. Expected scope: additive migration(s), an idempotent server mutation, catalogue/read-model support, focused transaction/concurrency tests and no presentation redesign.
