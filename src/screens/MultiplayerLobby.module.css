@@ -2,7 +2,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: radial-gradient(ellipse at top, #1a0040 0%, #050012 70%);
+  background:
+    radial-gradient(circle at 14% 10%, rgb(109 40 217 / .25), transparent 30%),
+    radial-gradient(circle at 88% 18%, rgb(34 211 238 / .16), transparent 28%),
+    linear-gradient(180deg, #0b1020, #070a14);
   color: #fff;
   overflow-y: auto;
 }
@@ -36,8 +39,8 @@
   font-size: 18px;
   font-weight: 900;
   letter-spacing: 3px;
-  color: #FFD700;
-  text-shadow: 0 0 12px rgba(255,215,0,0.5);
+  color: var(--fo-text);
+  text-shadow: none;
 }
 
 /* ── Tab bar ── */
@@ -46,7 +49,7 @@
   margin: 18px 16px 0;
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid rgba(255,215,0,0.2);
+  border: 1px solid var(--fo-border);
 }
 
 .tab {
@@ -64,8 +67,8 @@
 }
 
 .tabActive {
-  background: rgba(255,215,0,0.14);
-  color: #FFD700;
+  background: rgb(109 40 217 / .38);
+  color: var(--fo-cyan);
 }
 
 /* ── Panel ── */
@@ -159,9 +162,9 @@
 }
 
 .diffChipActive {
-  border-color: #FFD700;
-  background: rgba(255,215,0,0.14);
-  color: #FFD700;
+  border-color: var(--fo-cyan);
+  background: rgb(34 211 238 / .12);
+  color: var(--fo-cyan);
 }
 
 /* ── Action button ── */
@@ -170,8 +173,8 @@
   padding: 14px;
   border-radius: 12px;
   border: none;
-  background: linear-gradient(135deg, #C89C00 0%, #FFD700 50%, #C89C00 100%);
-  color: #000;
+  background: linear-gradient(180deg, var(--fo-violet), var(--fo-purple));
+  color: var(--fo-text);
   font-size: 15px;
   font-weight: 900;
   letter-spacing: 2px;
@@ -196,9 +199,9 @@
 .codeInput {
   padding: 14px;
   border-radius: 10px;
-  border: 2px solid rgba(255,215,0,0.4);
+  border: 2px solid var(--fo-border);
   background: rgba(0,0,0,0.4);
-  color: #FFD700;
+  color: var(--fo-text);
   font-size: 28px;
   font-weight: 900;
   letter-spacing: 8px;
@@ -207,8 +210,8 @@
   font-family: monospace;
 }
 
-.codeInput::placeholder { color: rgba(255,215,0,0.2); letter-spacing: 6px; }
-.codeInput:focus { border-color: #FFD700; }
+.codeInput::placeholder { color: var(--fo-text-disabled); letter-spacing: 6px; }
+.codeInput:focus { border-color: var(--fo-cyan); }
 
 /* ── Status / spinner ── */
 .statusWrap {

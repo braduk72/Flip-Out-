@@ -319,7 +319,7 @@
 
 /* ── Label ──────────────────────────────────────────────────────────── */
 .label {
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
   font-weight: 900;
   font-size: clamp(13px, 3.4vw, 18px);
   letter-spacing: 0.06em;

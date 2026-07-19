@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import BottomNav from '../components/BottomNav'
 import styles from './PatchNotes.module.css'
 
 const SECTIONS = [
@@ -8,7 +9,7 @@ const SECTIONS = [
   { key: 'soon',      label: 'Coming Soon',  icon: '🔮', color: '#aa44ff' },
 ]
 
-export default function PatchNotes({ onBack }) {
+export default function PatchNotes({ onBack, navProps }) {
   const [notes, setNotes] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -20,10 +21,10 @@ export default function PatchNotes({ onBack }) {
   }, [])
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="patch-notes">
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onBack} aria-label="Back">
-          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+          <span aria-hidden="true">‹</span>
         </button>
         <h1 className={styles.title}>What's New</h1>
       </div>
@@ -66,6 +67,7 @@ export default function PatchNotes({ onBack }) {
           )
         })}
       </div>
+      <BottomNav active="more" {...navProps} />
     </div>
   )
 }

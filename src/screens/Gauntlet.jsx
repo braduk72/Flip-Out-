@@ -16,12 +16,12 @@ export default function Gauntlet({ step, onFight, onBack, onReset, navProps }) {
   const tierColor  = TIER_COLORS[current.tier] || TIER_COLORS.Easy
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="gauntlet">
 
       {/* Header */}
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onBack} aria-label="Back">
-          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+          <span aria-hidden="true">‹</span>
         </button>
         <h1 className={styles.title}>KNOCKOUT<br />GAUNTLET</h1>
       </div>

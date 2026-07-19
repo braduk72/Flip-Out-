@@ -6,6 +6,7 @@ import styles from './Game.module.css'
 import { SPECIAL_CARDS, SPECIAL_POOL } from '../data/specialCards'
 import { getDeckBackImage, DECKS } from '../data/decks'
 import { createTransactionId, economy } from '../utils/economyService.js'
+import { Modal } from '../ui/components.jsx'
 
 // ── Joker daily pool helpers ───────────────────────────────────────────────────
 function todayKey() { return new Date().toISOString().slice(0, 10) }
@@ -39,14 +40,12 @@ function spendJoker(transactionId) {
   return result.applied ? getJokersRemaining() : null
 }
 
-const STAGE_COUNT = 4
 const CONTESTANT_COUNT = 4
 
 const SFX_ROBOT_COUNTDOWN = '/sounds/used/robot_countdown.mp3'
 const SFX_HEARTBEAT       = '/sounds/used/countdown-heartbeat.mp3'
 
 
-function randomStage() { return Math.floor(Math.random() * STAGE_COUNT) + 1 }
 function randomContestant(exclude) {
   let pick
   do { pick = Math.floor(Math.random() * CONTESTANT_COUNT) + 1 } while (pick === exclude)
@@ -96,7 +95,6 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const devSpecials = devEnabled && new URLSearchParams(window.location.search).has('specials')
   const [devToolsOpen, setDevToolsOpen] = useState(() => devEnabled && (devSpecials || localStorage.getItem('fo_dev_toolbar') === 'on'))
   const [jokersRemaining, setJokersRemaining] = useState(() => getJokersRemaining())
-  const stageRef   = useRef(randomStage())
   const aiContRef  = useRef(randomContestant(portrait))
   const aiTimerRef = useRef(null)
   const consecutiveAITurnRef = useRef(0)
@@ -250,7 +248,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   }, [gameOver, winner, onResult, opponentDefeatedImage])
 
   // Reset consecutive-turn counter on every turn change
-  useEffect(() => { consecutiveAITurnRef.current = 0 }, [turn]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { consecutiveAITurnRef.current = 0 }, [turn])
 
   // Spin both portraits on turn change
   useEffect(() => {
@@ -274,7 +272,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       pendingPassRef.current = turn === 'player' ? 1 : 2
     }
     localPrevTurnRef.current = turn
-  }, [turn, mode, gameOver]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [turn, mode, gameOver])
 
   // Local mode: show pass overlay once all cards are face-down AND no special is mid-flight
   useEffect(() => {
@@ -283,7 +281,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       setPassDevice(pendingPassRef.current)
       pendingPassRef.current = null
     }
-  }, [flipped.length, mode, gameOver, pendingSpecial, activeEffect]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [flipped.length, mode, gameOver, pendingSpecial, activeEffect])
 
   // Solo timer — start on first flip
   useEffect(() => {
@@ -931,14 +929,8 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   }
 
   return (
-    <div className={styles.page} style={{ '--breathe-duration': `${breatheDuration}s` }}>
-      {/* Gameshow stage background */}
-      <div
-        className={styles.stage}
-        style={{ backgroundImage: `url(/images/gameshowStages/${stageRef.current}.webp)` }}
-      />
-
-      {/* All game UI in a centred phone-width column; stage bleeds full-screen behind */}
+    <div className={`${styles.page} foTheme`} data-concept-screen="gameplay" data-screen="memory-game" style={{ '--breathe-duration': `${breatheDuration}s` }}>
+      {/* All game UI in a centred responsive column. */}
       <div className={styles.gameInner}>
 
 
@@ -1541,7 +1533,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
             setDevToolsOpen(next)
             localStorage.setItem('fo_dev_toolbar', next ? 'on' : 'off')
           }}
-          style={{ alignSelf:'center', margin:'4px 0 2px', padding:'2px 10px', background:'rgba(255,0,102,0.15)', border:'1px solid rgba(255,0,102,0.5)', borderRadius:'50px', color:'#ff0066', fontSize:'9px', fontFamily:'Arial', fontWeight:700, letterSpacing:'1px', cursor:'pointer' }}
+          style={{ alignSelf:'center', margin:'4px 0 2px', padding:'2px 10px', background:'rgba(255,0,102,0.15)', border:'1px solid rgba(255,0,102,0.5)', borderRadius:'50px', color:'#ff0066', fontSize:'9px', fontFamily:'Nunito Sans', fontWeight:700, letterSpacing:'1px', cursor:'pointer' }}
         >
           {devToolsOpen ? '▲ DEV' : '▼ DEV'}
         </button>
@@ -1555,7 +1547,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'2px', background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:'8px', padding:'4px 6px', cursor:'pointer' }}
               >
                 <img src={`/images/cards/special/${type}.webp`} alt={type} style={{ width:'32px', height:'32px', objectFit:'contain', display:'block' }} />
-                <span style={{ color:'#fff', fontSize:'8px', fontFamily:'Arial', textTransform:'uppercase' }}>{type}</span>
+                <span style={{ color:'#fff', fontSize:'8px', fontFamily:'Atkinson Hyperlegible', textTransform:'uppercase' }}>{type}</span>
               </button>
             ))}
             {onResult && (
@@ -1565,7 +1557,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                 style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'2px', background:'rgba(255,215,0,0.12)', border:'1px solid rgba(255,215,0,0.45)', borderRadius:'8px', padding:'4px 6px', cursor:'pointer' }}
               >
                 <span style={{ fontSize:'26px', lineHeight:'32px', display:'block', width:'32px', textAlign:'center' }}>🏆</span>
-                <span style={{ color:'#FFD700', fontSize:'8px', fontFamily:'Arial', textTransform:'uppercase', fontWeight:700 }}>WIN</span>
+                <span style={{ color:'#FFD700', fontSize:'8px', fontFamily:'Atkinson Hyperlegible', textTransform:'uppercase', fontWeight:700 }}>WIN</span>
               </button>
             )}
           </div>
@@ -1573,67 +1565,31 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       </div>}
 
       {/* Easy-win modal — player's lead is unassailable */}
-      {showEasyWin && (
-        <div className={styles.quitOverlay}>
-          <div className={styles.quitModal}>
-            <button className="modal-close-x" onClick={() => setShowEasyWin(false)} aria-label="Close">✕</button>
-            <div className={styles.quitIcon}>🏆</div>
-            <div className={styles.quitTitle}>YOU'VE GOT THIS!</div>
-            <div className={styles.quitBody}>Your opponent cannot catch you up. Keep playing or move on?</div>
-            <div className={styles.quitBtns}>
-              <button className={styles.quitStayBtn} onClick={() => setShowEasyWin(false)}>KEEP PLAYING</button>
-              <button className={styles.quitLeaveBtn} onClick={() => { setShowEasyWin(false); forceGameOver('player') }}>MOVE ON</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal open={showEasyWin} title="You've got this!" tone="success" onDismiss={() => setShowEasyWin(false)} actions={<><button className={styles.quitStayBtn} onClick={() => setShowEasyWin(false)}>Keep playing</button><button className={styles.quitLeaveBtn} onClick={() => { setShowEasyWin(false); forceGameOver('player') }}>Move on</button></>}>
+        <div className={styles.quitIcon} aria-hidden="true">🏆</div>
+        <p>Your opponent cannot catch you. Keep playing or move on?</p>
+      </Modal>
 
       {/* Cannot-win modal */}
-      {showEasyLose && (
-        <div className={styles.quitOverlay}>
-          <div className={styles.quitModal}>
-            <button className="modal-close-x" onClick={() => setShowEasyLose(false)} aria-label="Close">✕</button>
-            <div className={styles.quitIcon}>😔</div>
-            <div className={styles.quitTitle}>THAT'S TOUGH!</div>
-            <div className={styles.quitBody}>You cannot catch your opponent up. Keep trying or give up?</div>
-            <div className={styles.quitBtns}>
-              <button className={styles.quitStayBtn} onClick={() => setShowEasyLose(false)}>KEEP TRYING</button>
-              <button className={styles.quitLeaveBtn} onClick={() => { setShowEasyLose(false); withInterstitial(() => { addTrophies(1, 'early-give-up'); onBack() }) }}>GIVE UP</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal open={showEasyLose} title="That's tough" tone="error" onDismiss={() => setShowEasyLose(false)} actions={<><button className={styles.quitStayBtn} onClick={() => setShowEasyLose(false)}>Keep trying</button><button className={styles.quitLeaveBtn} onClick={() => { setShowEasyLose(false); withInterstitial(() => { addTrophies(1, 'early-give-up'); onBack() }) }}>Give up</button></>}>
+        <div className={styles.quitIcon} aria-hidden="true">😔</div>
+        <p>You cannot catch your opponent. Keep trying or give up?</p>
+      </Modal>
 
       {/* Quit confirmation modal — gauntlet / season */}
-      {showQuitModal && (
-        <div className={styles.quitOverlay}>
-          <div className={styles.quitModal}>
-            <button className="modal-close-x" onClick={() => setShowQuitModal(false)} aria-label="Close">✕</button>
-            <div className={styles.quitIcon}>{streakMode ? '🔥' : '⚠️'}</div>
-            <div className={styles.quitTitle}>
-              {streakMode ? 'END STREAK?' : gauntletStep !== undefined ? 'QUIT GAUNTLET?' : 'QUIT SEASON?'}
-            </div>
-            <div className={styles.quitBody}>
-              {streakMode
-                ? `Your current streak of ${currentStreak} will be lost.`
-                : gauntletStep !== undefined
-                  ? 'Leaving now counts as a loss — your gauntlet progress will reset to Round 1.'
-                  : 'Leaving now counts as a loss for this round.'}
-            </div>
-            <div className={styles.quitBtns}>
-              <button className={styles.quitStayBtn} onClick={() => setShowQuitModal(false)}>KEEP PLAYING</button>
-              <button className={styles.quitLeaveBtn} onClick={() => {
-                setShowQuitModal(false)
-                if (streakMode) { onStreakGiveUp?.() }
-                else if (onQuit) { onQuit() }
-                else { onResult?.('ai') }
-              }}>
-                {streakMode ? 'END STREAK' : 'QUIT & LOSE'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal open={showQuitModal} title={streakMode ? 'End streak?' : gauntletStep !== undefined ? 'Quit Gauntlet?' : 'Quit this round?'} tone="error" onDismiss={() => setShowQuitModal(false)} actions={<><button className={styles.quitStayBtn} onClick={() => setShowQuitModal(false)}>Keep playing</button><button className={styles.quitLeaveBtn} onClick={() => {
+        setShowQuitModal(false)
+        if (streakMode) { onStreakGiveUp?.() }
+        else if (onQuit) { onQuit() }
+        else { onResult?.('ai') }
+      }}>{streakMode ? 'End streak' : 'Quit and lose'}</button></>}>
+        <div className={styles.quitIcon} aria-hidden="true">{streakMode ? '🔥' : '⚠️'}</div>
+        <p>{streakMode
+          ? `Your current streak of ${currentStreak} will be lost.`
+          : gauntletStep !== undefined
+            ? 'Leaving now counts as a loss and resets Gauntlet progress to Round 1.'
+            : 'Leaving now counts as a loss for this round.'}</p>
+      </Modal>
     </div>
   )
 }

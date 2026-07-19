@@ -208,7 +208,7 @@
 }
 
 .modalDeckName {
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   font-size: 18px;
   font-weight: 900;
   color: #FFD700;
@@ -223,7 +223,7 @@
   font-weight: 900;
   color: #fff;
   margin: 0;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   display: flex;
   align-items: center;
   gap: 0;
@@ -267,7 +267,7 @@
   padding: 12px 0;
   background: linear-gradient(180deg, #FFE566 0%, #FFD700 40%, #CC8800 100%);
   color: #3A0060;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   font-size: 15px;
   font-weight: 900;
   border: none;
@@ -296,7 +296,7 @@
   padding: 12px 0;
   background: linear-gradient(180deg, #6effa0 0%, #22c55e 40%, #15803d 100%);
   color: #fff;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   font-size: 15px;
   font-weight: 900;
   border: none;
@@ -313,7 +313,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
   text-decoration: underline;
   position: relative;
   z-index: 1;
@@ -326,7 +326,7 @@
   padding: 12px 0;
   background: rgba(255,255,255,0.08);
   color: #fff;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   font-size: 15px;
   font-weight: 900;
   border: 1.5px solid rgba(255,255,255,0.25);
@@ -371,7 +371,7 @@
   border-radius: 50px;
   letter-spacing: 1px;
   z-index: 2;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
 }
 
 .hardBadge {
@@ -386,7 +386,7 @@
   border-radius: 50px;
   letter-spacing: 1px;
   z-index: 2;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
 }
 
 .playFreeBtn {
@@ -394,7 +394,7 @@
   padding: 12px 0;
   background: linear-gradient(180deg, #6effa0 0%, #22c55e 40%, #15803d 100%);
   color: #fff;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   font-size: 14px;
   font-weight: 900;
   border: none;
@@ -435,5 +435,5 @@
   font-weight: 700;
   color: rgba(255,255,255,0.55);
   margin-left: 4px;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
 }

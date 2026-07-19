@@ -72,10 +72,10 @@ export default function MultiplayerLobby({
   const isBusy      = isSearching || isWaiting || isCreating
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="multiplayer-lobby">
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={isBusy ? handleCancel : onBack} aria-label="Back">
-          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+          <span aria-hidden="true">‹</span>
         </button>
         <div className={styles.title}>PLAY ONLINE</div>
       </div>

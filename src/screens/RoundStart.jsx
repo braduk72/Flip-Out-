@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import styles from './RoundStart.module.css'
+import { Badge, CardPanel } from '../ui/components.jsx'
 
 const TIER_COLORS = {
   Easy:   '#afffb8',
@@ -15,7 +16,7 @@ function playTargetingSounds(sfxOn) {
   let ctx
   try {
     ctx = new (window.AudioContext || window.webkitAudioContext)()
-  } catch (e) { return }
+  } catch { return }
 
   // Resume in case browser suspended the context
   ctx.resume().catch(() => {})
@@ -104,7 +105,7 @@ function playTargetingSounds(sfxOn) {
   click.stop(lt + 0.04)
 
   // Clean up context after all sounds finish
-  setTimeout(() => { try { ctx.close() } catch (e) {} }, 4000)
+  setTimeout(() => { try { ctx.close() } catch { /* Context may already be closed. */ } }, 4000)
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -126,106 +127,35 @@ export default function RoundStart({ opponent, round, total, onStart, sfxOn = tr
   }, [sfxOn])
 
   return (
-    <div className={styles.page}>
-
-      {/* Portrait fills top half */}
-      <div className={styles.portraitWrap}>
-        <img src={opponent.image} alt="" className={styles.portrait} draggable="false" />
-        <div className={styles.scanLine} />
-        <div className={styles.gradient} />
-
-        {/* ── Crosshair targeting assembly ── */}
-        <div className={styles.crosshairWrap}>
-          <div className={styles.chRingOuter} />
-          <div className={styles.chRingInner} />
-          <div className={styles.chHLine} />
-          <div className={styles.chVLine} />
-          <div className={styles.chCenter} />
-          <div className={`${styles.chBracket} ${styles.chBrTL}`} />
-          <div className={`${styles.chBracket} ${styles.chBrTR}`} />
-          <div className={`${styles.chBracket} ${styles.chBrBL}`} />
-          <div className={`${styles.chBracket} ${styles.chBrBR}`} />
-        </div>
-
-        {/* Full-portrait flash on lock */}
-        <div className={styles.lockFlash} />
-
-        {/* Particle bursts — fire after lock */}
-        <div className={styles.particles}>
-          <div className={`${styles.pt} ${styles.pt1}`} />
-          <div className={`${styles.pt} ${styles.pt2}`} />
-          <div className={`${styles.pt} ${styles.pt3}`} />
-          <div className={`${styles.pt} ${styles.pt4}`} />
-          <div className={`${styles.pt} ${styles.pt5}`} />
-          <div className={`${styles.pt} ${styles.pt6}`} />
-        </div>
-
-        {/* HUD corners — tier-coloured */}
-        <div className={`${styles.corner} ${styles.tl}`} style={{ borderColor: tierColor }} />
-        <div className={`${styles.corner} ${styles.tr}`} style={{ borderColor: tierColor }} />
-        <div className={`${styles.corner} ${styles.bl}`} style={{ borderColor: tierColor }} />
-        <div className={`${styles.corner} ${styles.br}`} style={{ borderColor: tierColor }} />
-
-        {/* Round badge — top centre */}
-        <div className={styles.roundBadge} style={{ color: tierColor, borderColor: tierColor }}>
-          {opponent.isBoss ? '💀 FINAL BOSS' : `ROUND ${round} OF ${total}`}
-        </div>
-
-        {/* TARGET LOCKED — appears after crosshair locks */}
-        <div className={styles.targetLockedLabel}>
-          {opponent.isBoss ? '■ FINAL THREAT LOCKED' : '■ TARGET LOCKED'}
-        </div>
-      </div>
-
-      {/* Info panel */}
-      <div className={styles.infoPanel}>
-
-        <div className={styles.statusBar}>
-          <span className={styles.statusDot} />
-          <span className={styles.statusText}>
-            {opponent.isBoss ? 'FINAL BOSS DETECTED' : `${opponent.tier.toUpperCase()} TIER OPPONENT`}
-          </span>
-          <span className={styles.statusSpacer} />
-          <span className={styles.statusCode}>{opponent.model}</span>
-        </div>
-
-        <div className={styles.name} style={{ color: opponent.isBoss ? '#e060ff' : '#fff' }}>
-          {opponent.name || 'UNKNOWN'}
-        </div>
-
-        <div className={styles.threatRow}>
-          <div className={styles.threatCell}>
-            <span className={styles.threatLabel}>DIFFICULTY</span>
-            <span className={styles.threatValue} style={{ color: tierColor }}>{opponent.difficulty.toUpperCase()}</span>
+    <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="round-start">
+      <header className={styles.roundHeader}>
+        <span>Knockout Gauntlet</span>
+        <strong>{opponent.isBoss ? 'Final Boss' : `Round ${round} of ${total}`}</strong>
+      </header>
+      <main className={styles.content}>
+        <CardPanel as="article" className={styles.opponentCard}>
+          <div className={styles.portraitWrap} style={{ '--tier-colour': tierColor }}>
+            <img src={opponent.image} alt={opponent.name || 'Gauntlet opponent'} className={styles.portrait} draggable="false" />
+            <span className={styles.targetLockedLabel}>{opponent.isBoss ? 'Final threat ready' : 'Opponent ready'}</span>
           </div>
-          <div className={styles.threatCell}>
-            <span className={styles.threatLabel}>UNIT ID</span>
-            <span className={styles.threatValue}>{opponent.id.toUpperCase()}</span>
+          <div className={styles.opponentCopy}>
+            <Badge tone={opponent.isBoss ? 'foil' : 'neutral'}>{opponent.isBoss ? 'Final Boss' : `${opponent.tier} tier`}</Badge>
+            <h1 className={styles.name}>{opponent.name || 'Unknown opponent'}</h1>
+            <p>{opponent.model}</p>
+            <dl className={styles.threatRow}>
+              <div><dt>Difficulty</dt><dd style={{ color: tierColor }}>{opponent.difficulty}</dd></div>
+              <div><dt>Unit ID</dt><dd>{opponent.id.toUpperCase()}</dd></div>
+            </dl>
           </div>
-        </div>
-
-        <div className={styles.fightWrap}>
-          <div className={styles.fightLabel} style={{ color: opponent.isBoss ? '#e060ff' : '#FFD700' }}>
-            {opponent.isBoss ? '⚡ FACE THE CLAW ⚡' : '— FIGHT! —'}
-          </div>
-        </div>
-
-        {/* CONTINUE button — slides up after animations settle */}
+        </CardPanel>
         <button
           className={styles.continueBtn}
-          style={{
-            borderColor: tierColor,
-            color: tierColor,
-            boxShadow: `0 0 18px ${tierColor}40`,
-            pointerEvents: ready ? 'auto' : 'none',
-          }}
+          disabled={!ready}
           onClick={onStart}
         >
-          <span className={styles.continueBtnArrow}>▶</span> CONTINUE
+          {ready ? 'Continue' : 'Preparing round…'}
         </button>
-
-      </div>
-
+      </main>
     </div>
   )
 }

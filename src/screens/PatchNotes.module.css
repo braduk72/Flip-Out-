@@ -4,7 +4,7 @@
   height: 100dvh;
   background: var(--bg, #120028);
   color: #fff;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
 }
 
 .header {
@@ -34,7 +34,7 @@
   font-weight: 900;
   letter-spacing: 2px;
   color: var(--yellow, #FFD700);
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   margin: 0;
 }
 
@@ -78,7 +78,7 @@
   font-size: 18px;
   font-weight: 900;
   color: var(--yellow, #FFD700);
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
 }
 
 .latestBadge {
@@ -89,7 +89,7 @@
   border-radius: 20px;
   background: #FFD700;
   color: #120028;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
 }
 
 .date {
@@ -113,7 +113,7 @@
   font-weight: 900;
   letter-spacing: 2px;
   text-transform: uppercase;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   border-bottom: 1px solid currentColor;
   padding-bottom: 5px;
   opacity: 0.9;

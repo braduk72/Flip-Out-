@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import styles from './Shop.module.css'
 import BottomNav from '../components/BottomNav'
 import RemoveAdsModal from '../components/RemoveAdsModal'
@@ -31,14 +31,7 @@ const BUNDLES = [
   },
 ]
 
-const STAGE_BKGS = [1, 2, 3, 4].map(n => `/images/gameshowStages/${n}.webp`)
-
 export default function Shop({ onBack, onInventory, onMarketplace, navProps }) {
-  const [bgIdx, setBgIdx] = useState(0)
-  useEffect(() => {
-    const t = setInterval(() => setBgIdx(i => (i + 1) % STAGE_BKGS.length), 8000)
-    return () => clearInterval(t)
-  }, [])
   const [, setNoAds] = useState(() => !!localStorage.getItem('fo_no_ads'))
   const [showRemoveAdsModal, setShowRemoveAdsModal] = useState(false)
   const [buying, setBuying] = useState(null)
@@ -105,28 +98,18 @@ export default function Shop({ onBack, onInventory, onMarketplace, navProps }) {
     catch { setBuying(null) }
   }
   return (
-    <div className={styles.page}>
-      {STAGE_BKGS.map((src, i) => (
-        <img
-          key={src}
-          src={src}
-          aria-hidden="true"
-          draggable="false"
-          className={`${styles.stageBg} ${i === bgIdx ? styles.stageBgActive : ''}`}
-        />
-      ))}
-      <div className={styles.stageBgOverlay} />
+    <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="shop">
       <div className={styles.scroll}>
 
         <div className={styles.header}>
           <button className={styles.backBtn} onClick={onBack} aria-label="Back">
-            <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+            <span aria-hidden="true">‹</span>
           </button>
           <h1 className={styles.title}>Shop</h1>
         </div>
 
         {/* Lucky Spin entry */}
-        <h2 className={styles.sectionTitle}>🎡 Lucky Spin</h2>
+        <h2 className={styles.sectionTitle}>Lucky Spin</h2>
         <button className={`${styles.removeAdsCard} ${styles.spinCard}`} onClick={navProps?.onSpin}>
           <img src="/images/wheel.webp" alt="Lucky Spin" className={styles.spinWheelImg} />
           <div className={styles.removeAdsText}>
@@ -149,7 +132,7 @@ export default function Shop({ onBack, onInventory, onMarketplace, navProps }) {
         </button>
 
         {/* Promo code */}
-        <h2 className={styles.sectionTitle}>🎟️ Enter a Code</h2>
+        <h2 className={styles.sectionTitle}>Enter a Code</h2>
         <div className={styles.promoCard}>
           <input
             className={styles.promoInput}
@@ -182,7 +165,7 @@ export default function Shop({ onBack, onInventory, onMarketplace, navProps }) {
         </div>
 
         {/* Coins */}
-        <h2 className={styles.sectionTitle}>🪙 Coins</h2>
+        <h2 className={styles.sectionTitle}>Coins</h2>
         <div className={styles.coinGrid}>
           {COIN_PACKS.map(pack => (
             <button key={pack.id} className={styles.coinPackCard} onClick={() => setCoinModal(pack)} disabled={!!buying}>
@@ -196,7 +179,7 @@ export default function Shop({ onBack, onInventory, onMarketplace, navProps }) {
         {/* Remove Ads — hidden until ad network is live */}
 
         {/* Loot Box */}
-        <h2 className={styles.sectionTitle}>📦 Treasure Chest</h2>
+        <h2 className={styles.sectionTitle}>Treasure Chest</h2>
         <button className={`${styles.removeAdsCard} ${styles.chestCard}`} onClick={() => buy('chest')} disabled={!!buying}>
           <div className={styles.chestEmoji}>
             <img src="/images/chest.webp" alt="Chest" className={styles.chestImg} draggable="false" />
@@ -219,7 +202,7 @@ export default function Shop({ onBack, onInventory, onMarketplace, navProps }) {
         </div>
 
         {/* Power-ups */}
-        <h2 className={styles.sectionTitle}>⚡ Power-ups</h2>
+        <h2 className={styles.sectionTitle}>Power-ups</h2>
         <div className={styles.powerupGrid}>
           {POWERUPS.map(pu => (
             <button key={pu.id} className={styles.powerupCard}>
@@ -237,7 +220,7 @@ export default function Shop({ onBack, onInventory, onMarketplace, navProps }) {
         </div>
 
         {/* Bundles */}
-        <h2 className={styles.sectionTitle}>🎁 Bundles</h2>
+        <h2 className={styles.sectionTitle}>Bundles</h2>
         <div className={styles.bundleList}>
           {BUNDLES.map(b => (
             <button key={b.id} className={`${styles.bundleCard} ${b.highlight ? styles.highlighted : ''}`} onClick={() => buy(b.id)} disabled={!!buying}>

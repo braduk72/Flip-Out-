@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import styles from './RevealGame.module.css'
 import { useSfx, playFile } from '../hooks/useSfx'
 import confetti from 'canvas-confetti'
+import { CardPanel } from '../ui/components.jsx'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const BACK_SRC   = '/images/back.webp'
@@ -88,14 +89,13 @@ function SetupScreen({ onBack, onStart }) {
   // ── Step 1: pick a deck ───────────────────────────────────────────────────
   if (!chosenDeck) {
     return (
-      <div className={styles.page}>
+      <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="reveal-setup">
         <div className={styles.header}>
-          <button className={styles.backBtn} onClick={onBack}>← Back</button>
-          <span className={styles.title}>Peep-Oh!</span>
+          <button className={styles.backBtn} onClick={onBack} aria-label="Back to Home"><span aria-hidden="true">‹</span></button>
+          <h1 className={styles.title}>Peep-Oh!</h1>
         </div>
         <div className={styles.setupWrap}>
-          <div className={styles.setupHeading}>Choose a deck!</div>
-          <p className={styles.setupDesc}>Peep-oh! is for the young and the young at heart. A less challenging game that the whole family can play together. Look out for more special educational decks in the shop soon!</p>
+          <CardPanel className={styles.setupIntro}><span className={styles.setupEyebrow}>Family mode</span><h2 className={styles.setupHeading}>Choose a deck</h2><p className={styles.setupDesc}>A gentler matching game for young players and families. More educational decks will join the collection later.</p></CardPanel>
           {PEEP_DECKS.map(deck => (
             <button key={deck.id} className={styles.livesBtn} onClick={() => setChosenDeck(deck)}>
               <img src={deck.preview} className={styles.deckPreview} alt={deck.label} />
@@ -109,10 +109,10 @@ function SetupScreen({ onBack, onStart }) {
 
   // ── Step 2: pick lives ────────────────────────────────────────────────────
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="reveal-lives">
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={() => setChosenDeck(null)}>← Back</button>
-        <span className={styles.title}>Peep-Oh!</span>
+        <button className={styles.backBtn} onClick={() => setChosenDeck(null)} aria-label="Back to deck choice"><span aria-hidden="true">‹</span></button>
+        <h1 className={styles.title}>Peep-Oh!</h1>
       </div>
       <div className={styles.setupWrap}>
         <div className={styles.setupHeading}>How many lives?</div>
@@ -345,11 +345,11 @@ export default function RevealGame({ onBack, sfxOn }) {
     : Array.from({ length: maxLives }, (_, i) => i < lives ? '❤️' : '🖤').join('')
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} foTheme`} data-concept-screen="gameplay" data-screen="reveal-game">
 
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={quit}>← Back</button>
-        <span className={styles.title}>Peep-Oh!</span>
+        <button className={styles.backBtn} onClick={quit} aria-label="Back to Reveal setup"><span aria-hidden="true">‹</span></button>
+        <h1 className={styles.title}>Peep-Oh!</h1>
         <span className={styles.hearts}>{heartsDisplay}</span>
       </div>
 

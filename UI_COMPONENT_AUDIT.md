@@ -106,3 +106,7 @@ These are the principal source of inconsistency. They should become shared primi
 ## Retention rule for the redesign
 
 Preserve proven game behaviour, state, accessibility semantics and authoritative economy calls. Do not preserve a visual treatment merely because it is already implemented. No component should be rebuilt until a home wireframe and the design-system direction are approved.
+
+## Consolidation status — 19 July 2026
+
+The audit has been actioned. The canonical reusable set now includes the Concept 4D player/currency header, promotional carousel, primary and secondary buttons, card/progress panels, progress bars, bottom navigation, dialogs, badges and loading/error/empty states. The old bottom navigation, image back buttons, `AdBanner`, `DailyBonus`, `SpecialOffer` and Season-map-local component family have been removed. Game-specific board pieces remain intentionally local to their mechanics.

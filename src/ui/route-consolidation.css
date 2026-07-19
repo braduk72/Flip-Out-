@@ -1,0 +1,240 @@
+[data-concept-screen] {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-width: 0;
+  min-height: 100svh;
+  height: 100dvh;
+  overflow-x: hidden;
+  color: var(--fo-text);
+  background:
+    radial-gradient(circle at 14% 10%, rgb(109 40 217 / .25), transparent 30%),
+    radial-gradient(circle at 88% 18%, rgb(34 211 238 / .16), transparent 28%),
+    linear-gradient(180deg, #0b1020 0%, #090d1a 62%, #070a14 100%);
+  font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: dark;
+}
+
+[data-concept-screen]::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  content: '';
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgb(125 211 252 / .34) 0 1px, transparent 1.5px),
+    radial-gradient(circle, rgb(236 72 153 / .24) 0 1px, transparent 1.5px);
+  background-position: 0 0, 31px 47px;
+  background-size: 74px 74px, 96px 96px;
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 72%);
+  opacity: .52;
+}
+
+[data-concept-screen] h1,
+[data-concept-screen] h2,
+[data-concept-screen] h3,
+[data-concept-screen] button,
+[data-concept-screen] strong {
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+}
+
+[data-concept-screen] h1 {
+  color: var(--fo-text);
+  font-size: clamp(1.45rem, 5.5vw, 2.15rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -.02em;
+  text-shadow: 0 2px 12px rgb(34 211 238 / .18);
+}
+
+[data-concept-screen] h2 {
+  color: var(--fo-text);
+  font-size: clamp(1.05rem, 4vw, 1.4rem);
+  font-weight: 900;
+}
+
+[data-concept-screen] p,
+[data-concept-screen] li,
+[data-concept-screen] label {
+  line-height: 1.5;
+}
+
+[data-concept-screen] :focus-visible {
+  outline: 3px solid var(--fo-focus) !important;
+  outline-offset: 3px;
+}
+
+[data-concept-screen='route'] {
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-color: var(--fo-purple) var(--fo-surface-inset);
+}
+
+[data-concept-screen='route'] [class*='_stageBg_'],
+[data-concept-screen='route'] [class*='_stageBgOverlay_'] {
+  display: none !important;
+}
+
+[data-concept-screen='route'] > [class*='_header_'],
+[data-concept-screen='route'] [class*='_scroll_'] > [class*='_header_'] {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: center;
+  width: 100%;
+  min-height: calc(68px + var(--fo-safe-top));
+  padding: calc(10px + var(--fo-safe-top)) max(16px, var(--fo-safe-right)) 10px max(16px, var(--fo-safe-left));
+  color: var(--fo-text);
+  background: linear-gradient(180deg, rgb(8 12 27 / .98), rgb(10 15 31 / .9));
+  border-bottom: 1px solid rgb(125 211 252 / .18);
+  box-shadow: 0 8px 24px rgb(0 0 0 / .3);
+  backdrop-filter: blur(18px);
+}
+
+[data-concept-screen='route'] [class*='_header_'] > :only-child,
+[data-concept-screen='route'] [class*='_header_'] > [class*='_title_']:last-child {
+  grid-column: 2;
+}
+
+[data-concept-screen='route'] [class*='_title_'] {
+  margin: 0;
+  color: var(--fo-text) !important;
+  font-family: 'Nunito Sans', system-ui, sans-serif !important;
+  font-size: clamp(1.35rem, 5vw, 1.9rem) !important;
+  font-weight: 900 !important;
+  line-height: 1.05;
+  letter-spacing: -.01em !important;
+  text-align: center;
+  text-shadow: none !important;
+}
+
+[data-concept-screen='route'] [class*='_backBtn_'] {
+  position: relative !important;
+  inset: auto !important;
+  display: grid !important;
+  grid-column: 1;
+  width: 44px !important;
+  min-width: 44px;
+  height: 44px !important;
+  min-height: 44px;
+  padding: 0 !important;
+  place-items: center;
+  color: var(--fo-text) !important;
+  background: linear-gradient(180deg, rgb(37 49 79 / .98), rgb(18 27 49 / .98)) !important;
+  border: 1px solid var(--fo-border) !important;
+  border-radius: 50% !important;
+  box-shadow: var(--fo-shadow-1) !important;
+  transform: none !important;
+}
+
+[data-concept-screen='route'] [class*='_backBtn_'] > span {
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: .8;
+}
+
+[data-concept-screen='route'] [class*='_backBtn_'] img {
+  display: none !important;
+}
+
+[data-concept-screen='route'] [class*='_content_'],
+[data-concept-screen='route'] [class*='_list_'],
+[data-concept-screen='route'] [class*='_grid_'],
+[data-concept-screen='route'] [class*='_scroll_'] {
+  width: min(100%, 1120px);
+  margin-inline: auto;
+}
+
+[data-concept-screen='route'] [class*='_content_'],
+[data-concept-screen='route'] [class*='_list_'] {
+  gap: var(--fo-space-4) !important;
+  padding-inline: max(var(--fo-space-4), var(--fo-safe-left)) max(var(--fo-space-4), var(--fo-safe-right)) !important;
+}
+
+[data-concept-screen='route'] [class*='_grid_'] {
+  gap: var(--fo-space-4) !important;
+  padding-inline: max(var(--fo-space-4), var(--fo-safe-left)) max(var(--fo-space-4), var(--fo-safe-right)) !important;
+}
+
+[data-concept-screen='route'] [class*='_card_'],
+[data-concept-screen='route'] [class*='_row_'],
+[data-concept-screen='route'] [class*='_patch_'],
+[data-concept-screen='route'] [class*='_panel_'],
+[data-concept-screen='route'] [class*='_audioBlock_'],
+[data-concept-screen='route'] [class*='_onlinePlaceholder_'] {
+  color: var(--fo-text) !important;
+  background: linear-gradient(145deg, rgb(29 41 69 / .96), rgb(16 23 41 / .97)) !important;
+  border: 1px solid var(--fo-border) !important;
+  border-radius: var(--fo-radius-panel) !important;
+  box-shadow: var(--fo-shadow-1) !important;
+}
+
+[data-concept-screen='route'] button:not([role='gridcell']):not([class*='_backBtn_']) {
+  min-height: 44px;
+  color: var(--fo-text);
+  border-radius: var(--fo-radius-compact);
+  transition: transform var(--fo-motion-fast) var(--fo-ease-move), border-color var(--fo-motion-fast), filter var(--fo-motion-fast);
+  touch-action: manipulation;
+}
+
+[data-concept-screen='route'] button:not([role='gridcell']):not([class*='_backBtn_']):active {
+  transform: translateY(2px) scale(.98);
+}
+
+[data-concept-screen='route'] select,
+[data-concept-screen='route'] input:not([type='range']) {
+  min-height: 44px;
+  color: var(--fo-text);
+  background: var(--fo-surface-inset);
+  border: 1px solid var(--fo-border);
+  border-radius: var(--fo-radius-control);
+  font: inherit;
+}
+
+[data-concept-screen='route'] input[type='range'] {
+  accent-color: var(--fo-cyan);
+}
+
+[data-concept-screen='route'] [class*='_sectionTitle_'],
+[data-concept-screen='route'] [class*='_cardTitle_'],
+[data-concept-screen='route'] [class*='_setupHeading_'] {
+  color: var(--fo-cyan) !important;
+  font-family: 'Nunito Sans', system-ui, sans-serif !important;
+  font-weight: 900 !important;
+  letter-spacing: .02em !important;
+  text-shadow: none !important;
+}
+
+[data-concept-screen='route'] [class*='_badge_'],
+[data-concept-screen='route'] [class*='_Badge_'] {
+  border-radius: 999px !important;
+  font-family: 'Nunito Sans', system-ui, sans-serif !important;
+  font-weight: 900 !important;
+}
+
+[data-concept-screen='gameplay'] {
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
+}
+
+[data-concept-screen='gameplay'] button {
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+}
+
+@media (min-width: 768px) {
+  [data-concept-screen='route'] [class*='_content_'],
+  [data-concept-screen='route'] [class*='_list_'],
+  [data-concept-screen='route'] [class*='_grid_'] {
+    padding-inline: max(var(--fo-space-6), var(--fo-safe-left)) max(var(--fo-space-6), var(--fo-safe-right)) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-concept-screen]::before { opacity: .28; }
+  [data-concept-screen] *,
+  [data-concept-screen] *::before,
+  [data-concept-screen] *::after {
+    scroll-behavior: auto !important;
+  }
+}

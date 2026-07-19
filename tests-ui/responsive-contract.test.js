@@ -5,10 +5,11 @@ import { expect, test } from 'vitest'
 
 test('Home and shared components encode safe-area and representative responsive contracts', async () => {
   const fromWorkspace = (file) => join(process.cwd(), file)
-  const [home, components, index] = await Promise.all([
+  const [home, components, index, routes] = await Promise.all([
     readFile(fromWorkspace('src/screens/Home.module.css'), 'utf8'),
     readFile(fromWorkspace('src/ui/components.module.css'), 'utf8'),
     readFile(fromWorkspace('src/index.css'), 'utf8'),
+    readFile(fromWorkspace('src/ui/route-consolidation.css'), 'utf8'),
   ])
   expect(index).not.toMatch(/min\(390px/)
   expect(index).not.toMatch(/min\(844px/)
@@ -27,4 +28,8 @@ test('Home and shared components encode safe-area and representative responsive 
   expect(components).not.toMatch(/\.carouselArrow \{ position: absolute/)
   expect(components).toMatch(/min-height: 44px/)
   expect(components).toMatch(/min-height: 48px/)
+  expect(routes).toMatch(/var\(--fo-safe-top\)/)
+  expect(routes).toMatch(/var\(--fo-safe-left\)/)
+  expect(routes).toMatch(/var\(--fo-safe-right\)/)
+  expect(routes).toMatch(/@media \(min-width: 768px\)/)
 })

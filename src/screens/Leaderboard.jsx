@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import styles from './Leaderboard.module.css'
 import BottomNav from '../components/BottomNav'
-
-const STAGE_BKGS = [1, 2, 3, 4].map(n => `/images/gameshowStages/${n}.webp`)
 
 const TABS = [
   { label: '🔥 Longest Streak', key: 'streak',   icon: '🔥', unit: 'days' },
@@ -50,11 +48,6 @@ const MEDAL = ['🥇', '🥈', '🥉']
 
 export default function Leaderboard({ portrait = 1, onBack, navProps }) {
   const [tab, setTab] = useState(0)
-  const [bgIdx, setBgIdx] = useState(0)
-  useEffect(() => {
-    const t = setInterval(() => setBgIdx(i => (i + 1) % STAGE_BKGS.length), 8000)
-    return () => clearInterval(t)
-  }, [])
 
   const myStreak  = parseInt(localStorage.getItem('fo_streak_best') || '0')
   const myPvpWins = parseInt(localStorage.getItem('fo_pvp_wins') || '0')
@@ -71,16 +64,11 @@ export default function Leaderboard({ portrait = 1, onBack, navProps }) {
   const myRank   = board.indexOf(myEntry) + 1
 
   return (
-    <div className={styles.page}>
-      {STAGE_BKGS.map((src, i) => (
-        <img key={src} src={src} aria-hidden="true" draggable="false"
-          className={`${styles.stageBg} ${i === bgIdx ? styles.stageBgActive : ''}`} />
-      ))}
-      <div className={styles.stageBgOverlay} />
+    <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="leaderboard">
       <div className={styles.content}>
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onBack} aria-label="Back">
-          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+          <span aria-hidden="true">‹</span>
         </button>
         <h1 className={styles.title}>Leaderboard</h1>
       </div>

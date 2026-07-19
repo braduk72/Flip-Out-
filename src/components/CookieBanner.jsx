@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- App imports the consent helpers from this established component module. */
 import { useState } from 'react'
 import styles from './CookieBanner.module.css'
 
@@ -15,7 +16,7 @@ function writeConsentCookie(val) {
     const expires = new Date()
     expires.setFullYear(expires.getFullYear() + 2)
     document.cookie = `fo_consent=${val}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`
-  } catch {}
+  } catch { /* Cookie persistence is best-effort. */ }
 }
 
 export function hasConsent() {
@@ -48,7 +49,7 @@ export default function CookieBanner({ onAccept, onDecline }) {
   return (
     <div className={styles.banner}>
       <div className={styles.text}>
-        🍪 We use a cookie to save your game progress across sessions.
+        Flip-Out uses one cookie to save game progress across sessions.
         No tracking, no ads data, no third parties.{' '}
         <a href="/privacy.html" target="_blank" rel="noopener" className={styles.link}>Privacy Policy</a>
       </div>

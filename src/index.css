@@ -29,7 +29,7 @@ html, body {
 
 body {
   color: var(--white);
-  font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -48,7 +48,7 @@ body {
 }
 .phone-orientation-guard[hidden] { display: none; }
 .phone-orientation-guard strong { font-size: clamp(1.5rem, 6vw, 2.2rem); }
-.phone-orientation-guard p { max-width: 30ch; color: rgb(255 255 255 / .78); font-family: Arial, sans-serif; line-height: 1.45; }
+.phone-orientation-guard p { max-width: 30ch; color: rgb(255 255 255 / .78); font-family: 'Atkinson Hyperlegible', system-ui, sans-serif; line-height: 1.45; }
 .phone-orientation-icon { display: grid; width: 76px; aspect-ratio: 1; place-items: center; border: 2px solid #ffe466; border-radius: 22px; color: #ffe466; box-shadow: 0 0 24px rgb(168 85 247 / .7); font-size: 3rem; }
 
 #root {

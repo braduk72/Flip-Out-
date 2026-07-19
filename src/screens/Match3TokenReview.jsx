@@ -14,7 +14,7 @@ export default function Match3TokenReview({ onBack }) {
   const attention = MATCH3_TOKEN_CROPS.length - approved
 
   return (
-    <main className={styles.page}>
+    <main className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="match3-token-review">
       <header className={styles.header}>
         <button type="button" onClick={onBack}>← Home</button>
         <div>

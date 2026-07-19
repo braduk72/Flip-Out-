@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect, react-hooks/refs -- legacy app orchestration is outside the Home redesign */
+/* eslint-disable react-hooks/refs -- established app orchestration reads stable refs during render */
 import { lazy, useState, useEffect, useRef } from 'react'
 import Home from './screens/Home'
 import DeckPicker from './screens/DeckPicker'
@@ -11,9 +11,7 @@ import Gauntlet from './screens/Gauntlet'
 import RoundStart from './screens/RoundStart'
 import MultiplayerLobby from './screens/MultiplayerLobby'
 import Leaderboard from './screens/Leaderboard'
-import SeasonMap from './screens/SeasonMap'
 import { KNOCKOUT_OPPONENTS, pickStdOpponent } from './data/opponents'
-import { ACTIVE_SEASON, BOSS_STEP, GENERIC_OPPONENT, ROB_OPPONENTS, getRobNames } from './data/seasonalOpponents'
 import { DECKS } from './data/decks'
 import { useMultiplayer } from './hooks/useMultiplayer'
 import { buildBoard } from './hooks/useGame'
@@ -23,6 +21,8 @@ import { snapshotToCookie } from './utils/gameStorage.js'
 import { createTransactionId, economy } from './utils/economyService.js'
 import CookieBanner, { consentAnswered, hasConsent } from './components/CookieBanner.jsx'
 import { isMatch3TokenReviewRequest } from './match3/tokenReviewAccess.js'
+import { LoadingState, Modal } from './ui/components.jsx'
+import appStyles from './App.module.css'
 
 const Shop=lazy(()=>import('./screens/Shop'))
 const Game=lazy(()=>import('./screens/Game'))
@@ -66,13 +66,12 @@ const INGAME_TRACKS   = [
   '/music/game_4b.mp3',
   '/music/game_4b2.mp3',
 ]
-const SEASON_TRACKS   = []
 const ABOUT_TRACKS    = []
 const SPIN_TRACKS     = [
   '/music/spin_1.mp3',
   '/music/spin_2.mp3',
 ]
-const GAME_SCREENS = new Set(['game','mpgame','roundstart','seasongame','seasonroundstart'])
+const GAME_SCREENS = new Set(['game','mpgame','roundstart'])
 
 export default function App() {
   const [screen,     setScreen]     = useState(() => isMatch3TokenReviewRequest() ? 'match3-token-review' : 'home')
@@ -99,7 +98,6 @@ export default function App() {
   const [stdOpponent,    setStdOpponent]    = useState(() => pickStdOpponent())
   const [retryKey,       setRetryKey]       = useState(0)
   const [tryAgainUsed,   setTryAgainUsed]   = useState(false)
-  const [seasonRetryKey, setSeasonRetryKey] = useState(0)
 
   // Streak mode state
   const [showStreakIntro,    setShowStreakIntro]    = useState(false)
@@ -112,14 +110,9 @@ export default function App() {
   const [gauntletStep,    setGauntletStep]    = useState(() => parseInt(localStorage.getItem('fo_gauntlet_step') || '0'))
   const [gauntletActive,  setGauntletActive]  = useState(false)
 
-  // Season state — seasonStep 0..BOSS_STEP (0-indexed, 30 steps total)
-  const [seasonStep,   setSeasonStep]   = useState(() => parseInt(localStorage.getItem('fo_season1_step') || '0'))
-  const [, setSeasonActive] = useState(false)
-  const isBossStep  = seasonStep === BOSS_STEP
-  const [robNames]  = useState(getRobNames)
-  const isRobStep   = seasonStep < ROB_OPPONENTS.length && !isBossStep
+  // Legacy season progress is retained only for Home summary compatibility.
+  const [seasonStep] = useState(() => parseInt(localStorage.getItem('fo_season1_step') || '0'))
   // e-type checkpoint opponents at rounds 6,11,16,21,26,31 (steps 5,10,15,20,25,30)
-  const E_STEP_MAP  = { 5: 0, 10: 1, 15: 2, 20: 0, 25: 1, 30: 2 }
 
   const audioRef       = useRef(null)
   const activePoolRef  = useRef(null)   // which pool array is currently playing
@@ -275,12 +268,8 @@ export default function App() {
     prevScreenRef.current = screen
     const isGame = GAME_SCREENS.has(screen)
 
-    if (screen === 'seasongame' && isBossStep) {
-      switchToPool(BOSS_TRACKS)
-    } else if (isGame) {
+    if (isGame) {
       switchToPool(INGAME_TRACKS)
-    } else if (screen === 'seasonmap') {
-      switchToPool(SEASON_TRACKS)
     } else if (screen === 'home') {
       switchToPool(HOME_TRACKS)
     } else if (screen === 'gauntlet' || screen === 'roundstart') {
@@ -301,7 +290,7 @@ export default function App() {
       // Use home tracks as fallback for all menu screens (settings, shop, etc.)
       switchToPool(HOME_TRACKS)
     }
-  }, [screen, musicOn, seasonStep]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [screen, musicOn])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -566,49 +555,7 @@ export default function App() {
   }
 
   // ── Season flow ────────────────────────────────────────────────────────────
-  function handleSeasonMap() { setScreen('seasonmap') }
-
-  function handleSeasonFight() {
-    const ownedIds  = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
-    const available = DECKS.filter(d => d.free || ownedIds.includes(d.id))
-    const d         = available[Math.floor(Math.random() * available.length)]
-    setDeck(d)
-    setSeasonActive(true)
-    setSeasonRetryKey(0)
-    setScreen('seasongame')
-  }
-
-  function handleSeasonResult(winner) {
-    if (winner === 'player') {
-      if (seasonStep === BOSS_STEP) {
-        // Beat the final boss — award season gold card + coins, then reset for replay
-        const key = ACTIVE_SEASON.boss.rewardKey
-        economy.applyTransaction({
-          id: 'season1:first-completion',
-          source: 'season-completion',
-          changes: {
-            counters: { stars: 1500 },
-            flags: { [key]: new Date().toISOString().slice(0, 10) },
-          },
-        })
-        const completeStep = BOSS_STEP + 1
-        setSeasonStep(completeStep)
-        localStorage.setItem('fo_season1_step', String(completeStep))
-      } else {
-        const next = seasonStep + 1
-        setSeasonStep(next)
-        localStorage.setItem('fo_season1_step', String(next))
-      }
-    }
-    setDeck(null)
-    setSeasonActive(false)
-    setScreen('seasonmap')
-  }
-
-  // Dev helper — advance one season step (for testing levels)
-  function handleDevSeasonWin() {
-    handleSeasonResult('player')
-  }
+  // Season progression remains visible on Home, but its legacy map and fight route are retired.
 
   // ── Misc ──────────────────────────────────────────────────────────────────
   function handlePortrait(idx) { setPortrait(idx); localStorage.setItem('fo_portrait', idx) }
@@ -620,6 +567,9 @@ export default function App() {
     onSettings: () => setScreen('settings'),
     onRanks:    () => setScreen('leaderboard'),
     onSpin:     () => setScreen('luckyspin'),
+    onCollection: () => setScreen('inventory'),
+    onRewards: () => setScreen('luckyspin'),
+    onMore: () => setScreen('settings'),
   }
 
   // ── Gauntlet game props ────────────────────────────────────────────────────
@@ -628,46 +578,6 @@ export default function App() {
     : null
 
   // ── Screens ───────────────────────────────────────────────────────────────
-  if (screen === 'seasonmap') {
-    return (
-      <SeasonMap
-        seasonStep={seasonStep}
-        portrait={portrait}
-        onFight={handleSeasonFight}
-        onBack={() => setScreen('home')}
-        navProps={navProps}
-      />
-    )
-  }
-  if (screen === 'seasongame' && deck) {
-    const robOpp = isRobStep ? { ...ROB_OPPONENTS[seasonStep], name: robNames[seasonStep] } : null
-    const eIdx   = E_STEP_MAP[seasonStep]
-    const eOpp   = eIdx !== undefined ? KNOCKOUT_OPPONENTS[eIdx] : null
-    const opp = isBossStep ? ACTIVE_SEASON.boss : eOpp ?? robOpp ?? GENERIC_OPPONENT
-    return (
-      <Game
-        key={`season-${seasonStep}-${deck.id}-${seasonRetryKey}`}
-        deck={deck}
-        portrait={portrait}
-        mode="vs"
-        difficulty={isBossStep ? 'Lethal' : opp.difficulty ?? difficulty}
-        opponentImage={opp.image ?? undefined}
-        opponentDefeatedImage={opp.defeatedImage ?? undefined}
-        opponentName={opp.name}
-        opponentModel={opp.model ?? undefined}
-        opponentBio={opp.bio ?? undefined}
-        onBack={() => { setDeck(null); setSeasonActive(false); setScreen('seasonmap') }}
-        onResult={handleSeasonResult}
-        onRetry={() => setSeasonRetryKey(k => k + 1)}
-        onPlayerLost={handlePlayerLost}
-        onPlayerWon={handlePlayerWon}
-        musicOn={musicOn}
-        sfxOn={sfxOn}
-        onToggleMusic={toggleMusic}
-        onToggleSfx={toggleSfx}
-      />
-    )
-  }
   if (screen === 'shop') {
     return <Shop onBack={() => setScreen('home')} onInventory={() => setScreen('inventory')} onMarketplace={() => setScreen('marketplace')} navProps={navProps} />
   }
@@ -680,7 +590,7 @@ export default function App() {
     return <Inventory onBack={() => setScreen('shop')} navProps={navProps} />
   }
   if (screen === 'marketplace') {
-    return <Marketplace onBack={() => setScreen('shop')} />
+    return <Marketplace onBack={() => setScreen('shop')} navProps={navProps} />
   }
   if (screen === 'leaderboard') {
     return <Leaderboard portrait={portrait} onBack={() => setScreen('home')} navProps={navProps} />
@@ -689,7 +599,7 @@ export default function App() {
     return <AvatarPicker portrait={portrait} onPortrait={handlePortrait} onBack={() => setScreen('home')} navProps={navProps} />
   }
   if (screen === 'settings') {
-    return <Settings onBack={() => setScreen('home')} onSeason={handleSeasonMap} onAbout={() => setScreen('about')} onPrivacy={() => setScreen('privacy')} onPatchNotes={() => setScreen('patchnotes')} musicOn={musicOn} sfxOn={sfxOn} onToggleMusic={toggleMusic} onToggleSfx={toggleSfx} musicVol={musicVol} sfxVol={sfxVol} onMusicVol={handleMusicVol} onSfxVol={handleSfxVol} difficulty={difficulty} onDifficulty={handleDifficulty} onDevWin={handleDevSeasonWin} seasonStep={seasonStep} navProps={navProps} />
+    return <Settings onBack={() => setScreen('home')} onAbout={() => setScreen('about')} onPrivacy={() => setScreen('privacy')} onPatchNotes={() => setScreen('patchnotes')} musicOn={musicOn} sfxOn={sfxOn} onToggleMusic={toggleMusic} onToggleSfx={toggleSfx} musicVol={musicVol} sfxVol={sfxVol} onMusicVol={handleMusicVol} onSfxVol={handleSfxVol} difficulty={difficulty} onDifficulty={handleDifficulty} navProps={navProps} />
   }
   if (screen === 'about') {
     return <AboutUs onBack={() => setScreen('settings')} navProps={navProps} />
@@ -698,7 +608,7 @@ export default function App() {
     return <PrivacyPolicy onBack={() => setScreen('settings')} navProps={navProps} />
   }
   if (screen === 'patchnotes') {
-    return <PatchNotes onBack={() => setScreen('settings')} />
+    return <PatchNotes onBack={() => setScreen('settings')} navProps={navProps} />
   }
   if (screen === 'reveal') {
     return <RevealGame onBack={() => setScreen('home')} sfxOn={sfxOn} />
@@ -799,92 +709,39 @@ export default function App() {
   }
   // ── Purchase overlay (shown after Stripe redirect) ─────────────────────────
   if (purchaseStatus === 'verifying') {
-    return (
-      <div style={{ position:'fixed', inset:0, background:'#0d0030', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:16, color:'#fff', fontFamily:'Arial' }}>
-        <div style={{ fontSize:48 }}>⌛</div>
-        <div style={{ fontSize:20, fontWeight:700 }}>Claiming your purchase…</div>
-      </div>
-    )
+    return <div className={`${appStyles.overlayPage} foTheme`} data-concept-screen="route"><LoadingState label="Claiming your purchase…" /></div>
   }
   if (purchaseStatus === 'success' && purchaseResult) {
     const { product_type, coins, decks, extras } = purchaseResult
     return (
-      <div style={{ position:'fixed', inset:0, background:'#0d0030', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:12, color:'#fff', fontFamily:'Arial', padding:24, textAlign:'center' }}>
-        <div style={{ fontSize:64 }}>🎉</div>
-        <div style={{ fontSize:24, fontWeight:900, color:'#FFD700' }}>Purchase complete!</div>
-        {coins > 0 && <div style={{ fontSize:16 }}>+{coins} coins added 🪙</div>}
-        {decks?.length > 0 && <div style={{ fontSize:16 }}>New deck{decks.length > 1 ? 's' : ''} unlocked! 🃏</div>}
-        {product_type === 'remove_ads' && <div style={{ fontSize:16 }}>Ads removed 🚫</div>}
+      <div className="foTheme" data-concept-screen="route"><Modal open title="Purchase complete" tone="success" actions={<button className={appStyles.primaryAction} onClick={() => { setPurchaseStatus(null); setPurchaseResult(null) }}>Continue</button>}>
+        <div className={appStyles.rewardIcon} aria-hidden="true">★</div>
+        {coins > 0 && <p><strong>+{coins} Coins</strong> added.</p>}
+        {decks?.length > 0 && <p>New deck{decks.length > 1 ? 's' : ''} unlocked.</p>}
+        {product_type === 'remove_ads' && <p>Advertising removed.</p>}
         {extras && Object.entries(extras).map(([k, v]) => (
-          <div key={k} style={{ fontSize:16 }}>{v}× {k} power-up added ⚡</div>
+          <p key={k}>{v}× {k} power-up added.</p>
         ))}
-        <button
-          onClick={() => { setPurchaseStatus(null); setPurchaseResult(null) }}
-          style={{ marginTop:16, padding:'14px 40px', borderRadius:50, border:'none', background:'linear-gradient(180deg,#32d96a,#1a9e48)', color:'#fff', fontSize:18, fontWeight:900, cursor:'pointer' }}
-        >
-          Let's play!
-        </button>
-      </div>
+      </Modal></div>
     )
   }
   if (purchaseStatus === 'error') {
     return (
-      <div style={{ position:'fixed', inset:0, background:'#0d0030', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:16, color:'#fff', fontFamily:'Arial', padding:24, textAlign:'center' }}>
-        <div style={{ fontSize:48 }}>⚠️</div>
-        <div style={{ fontSize:20, fontWeight:700 }}>Something went wrong</div>
-        <div style={{ fontSize:14, opacity:0.7 }}>Your payment went through — tap Restore Purchases in Settings to claim your items.</div>
-        <button onClick={() => setPurchaseStatus(null)} style={{ marginTop:8, padding:'12px 32px', borderRadius:50, border:'1px solid rgba(255,255,255,0.3)', background:'transparent', color:'#fff', fontSize:16, cursor:'pointer' }}>
-          OK
-        </button>
-      </div>
+      <div className="foTheme" data-concept-screen="route"><Modal open title="Purchase needs attention" tone="danger" actions={<button className={appStyles.primaryAction} onClick={() => setPurchaseStatus(null)}>Continue</button>}>
+        <p>Your payment may have completed. Use Restore Purchases in the Shop to claim the items safely.</p>
+      </Modal></div>
     )
   }
 
   return (
     <>
     {/* Online deck unlock prompt — shown after guest plays a deck they don't own */}
-    {mpUnlockPrompt && (
-      <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.85)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-        <div style={{ background:'#1a0040', border:'2px solid rgba(255,215,0,0.5)', borderRadius:20, padding:'28px 24px', margin:'0 24px', maxWidth:320, width:'100%', display:'flex', flexDirection:'column', alignItems:'center', gap:12, textAlign:'center', boxShadow:'0 0 40px rgba(0,0,0,0.6)' }}>
-          <div style={{ fontSize:36 }}>🃏</div>
-          <div style={{ fontSize:18, fontWeight:900, letterSpacing:1, color:'#FFD700', fontFamily:"'Arial Black', Arial, sans-serif" }}>LIKED THAT DECK?</div>
-          <div style={{ fontSize:14, color:'rgba(255,255,255,0.8)', fontFamily:'Arial, sans-serif', lineHeight:1.5 }}>
-            You just played with <strong style={{ color:'#FFD700' }}>{mpUnlockPrompt.name}</strong>. Unlock it in the Shop to play it any time!
-          </div>
-          <button
-            onClick={() => { setMpUnlockPrompt(null); setScreen('shop') }}
-            style={{ width:'100%', padding:14, background:'#FFD700', color:'#1a0040', fontSize:15, fontWeight:900, letterSpacing:2, borderRadius:12, border:'none', cursor:'pointer', fontFamily:"'Arial Black', Arial, sans-serif" }}
-          >
-            VISIT SHOP
-          </button>
-          <button
-            onClick={() => setMpUnlockPrompt(null)}
-            style={{ background:'none', border:'none', color:'rgba(255,255,255,0.45)', fontSize:13, cursor:'pointer', fontFamily:'Arial, sans-serif' }}
-          >
-            Maybe later
-          </button>
-        </div>
-      </div>
-    )}
-    {showStreakIntro && (
-      <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.8)', display:'flex', alignItems:'center', justifyContent:'center', animation:'fadeIn 0.2s ease' }}>
-        <div style={{ position:'relative', background:'#1a0040', border:'2px solid rgba(255,215,0,0.5)', borderRadius:20, padding:'28px 24px', margin:'0 24px', display:'flex', flexDirection:'column', alignItems:'center', gap:12, textAlign:'center', boxShadow:'0 0 40px rgba(0,0,0,0.6)' }}>
-          <button className="modal-close-x" onClick={handleStreakIntroDismiss} aria-label="Close">✕</button>
-          <div style={{ fontSize:40 }}>🔥</div>
-          <div style={{ fontSize:20, fontWeight:900, letterSpacing:2, color:'#FFD700', fontFamily:"'Arial Black', Arial, sans-serif" }}>STREAK MODE</div>
-          <div style={{ fontSize:14, color:'rgba(255,255,255,0.7)', fontFamily:'Arial, sans-serif', lineHeight:1.5 }}>
-            {streakBest > 0
-              ? <><span>Your best streak is </span><strong style={{ color:'#FFD700' }}>{streakBest}</strong><span>. Can you beat it?</span></>
-              : <span>You haven't set a streak yet. Time to change that!</span>
-            }
-          </div>
-          <div style={{ fontSize:18, fontWeight:900, color:'#FFD700', letterSpacing:2, fontFamily:"'Arial Black', Arial, sans-serif" }}>GOOD LUCK!</div>
-          <button onClick={handleStreakIntroDismiss} style={{ marginTop:4, width:'100%', padding:14, background:'#FFD700', color:'#1a0040', fontSize:15, fontWeight:900, letterSpacing:2, borderRadius:12, border:'none', cursor:'pointer', fontFamily:"'Arial Black', Arial, sans-serif" }}>
-            LET'S GO!
-          </button>
-        </div>
-      </div>
-    )}
+    <Modal open={Boolean(mpUnlockPrompt)} title="Liked that deck?" onDismiss={() => setMpUnlockPrompt(null)} actions={<><button className={appStyles.secondaryAction} onClick={() => setMpUnlockPrompt(null)}>Maybe later</button><button className={appStyles.primaryAction} onClick={() => { setMpUnlockPrompt(null); setScreen('shop') }}>Visit Shop</button></>}>
+      <p>You just played with <strong>{mpUnlockPrompt?.name}</strong>. Unlock it in the Shop to use it any time.</p>
+    </Modal>
+    <Modal open={showStreakIntro} title="Streak Mode" tone="success" onDismiss={handleStreakIntroDismiss} actions={<button className={appStyles.primaryAction} onClick={handleStreakIntroDismiss}>Start streak</button>}>
+      <p>{streakBest > 0 ? <>Your best streak is <strong>{streakBest}</strong>. Can you beat it?</> : <>You have not set a streak yet. Time to change that.</>}</p>
+    </Modal>
     <Home
       onMatch3={() => setScreen('match3')}
       onMemory={() => handlePlay(false)}
@@ -892,7 +749,6 @@ export default function App() {
       onOnline={handleOnline}
       onLocalPlay={handleLocalPlay}
       onReveal={() => setScreen('reveal')}
-      onSeason={handleSeasonMap}
       onShop={() => setScreen('shop')}
       onAvatar={() => setScreen('avatarpicker')}
       onCollection={() => setScreen('inventory')}

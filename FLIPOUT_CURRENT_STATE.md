@@ -439,3 +439,11 @@ Focused lint for the newly added transaction service, backend helper/endpoints, 
 - Verification: focused gameplay **39/39**; full local Node **95 passed + 8 expected Preview skips**; UI **19/19**; 20,000 seeded boards with zero invalid starts; production and Preview builds passed; local HTTP smoke returned 200.
 - Full-project lint still has 38 errors and 8 warnings in unrelated prototype files. Every changed file passes focused lint. See `MATCH3_GAMEPLAY_COMPLETION_REPORT.md`.
 - Gameplay commit `5a22617` deployed Ready as Preview `dpl_L161cZ7Cqze89qSuKWj9dhkbJmwZ`. `https://dev.flipout.gizmogames.uk` returned 200, matched the generated deployment's HTML/ETag and served version `1.2.0-match3-gameplay`. Production and the database were untouched.
+
+## UI consolidation update — 19 July 2026
+
+- **Status: Working, pending physical-device accessibility review.** Every reachable route now uses the approved Concept 4D shell, typography, spacing, panels, controls, dialogs and four-destination navigation.
+- The old Season map, game-show/scenic prototype shells, old image back controls and unused `AdBanner`, `DailyBonus` and `SpecialOffer` components were removed. Season progress remains informational only.
+- Collection and Exchange were rebuilt from plain prototypes; More is now the durable secondary-destination hub. Mechanic-specific game boards remain intact inside the shared visual shell.
+- Version: `1.3.0-ui-consolidation`. Local verification: 100 Node tests passed with 8 expected Preview-only skips; 25/25 UI tests passed; build passed; focused lint reported 0 errors and 4 pre-existing gameplay hook warnings.
+- Full route matrix, removals and remaining risks: `FLIPOUT_UI_CONSOLIDATION_REPORT.md`.

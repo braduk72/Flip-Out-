@@ -1034,3 +1034,7 @@ No additional production screen should be redesigned independently. Work proceed
 6. **Shop:** catalogue, Coin Store, offers, odds, purchase status and restoration.
 
 Each package must pass the completion gate for every new shared primitive before the next package begins.
+
+## Consolidation application — 19 July 2026
+
+Every reachable application route now applies this system. Route shells must opt into `data-concept-screen`, durable navigation remains Home / Collection / Rewards / More, and newly introduced routes must pass `tests-ui/route-consolidation.test.js`. Gameplay-specific art is allowed only inside the mechanic itself; headers, controls, dialogs, cards, spacing and typography must continue to use shared primitives and tokens.

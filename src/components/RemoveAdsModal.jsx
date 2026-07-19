@@ -1,67 +1,25 @@
-import styles from './RemoveAdsModal.module.css'
+import { Modal } from '../ui/components.jsx'
 import { createTransactionId, economy } from '../utils/economyService.js'
+import styles from './RemoveAdsModal.module.css'
 
-const PERKS = [
-  { icon: '🚫', text: 'Remove forced ads' },
-  { icon: '🖼️', text: 'Remove banner ads' },
-  { icon: '📺', text: 'Rewarded ads remain' },
-]
+const PERKS = ['Remove forced adverts', 'Remove banner adverts', 'Keep optional rewarded adverts']
 
 export default function RemoveAdsModal({ onClose, onBuy }) {
-  const already = !!localStorage.getItem('fo_no_ads')
-
+  const already = Boolean(localStorage.getItem('fo_no_ads'))
   function handleBuy(tier) {
     economy.applyTransaction({
       id: createTransactionId(`legacy-remove-ads:${tier}`),
       source: 'legacy-remove-ads',
-      changes: {
-        counters: { coins: tier === 'bundle' ? 555 : 0 },
-        flags: { fo_no_ads: '1' },
-      },
+      changes: { counters: { coins: tier === 'bundle' ? 555 : 0 }, flags: { fo_no_ads: '1' } },
     })
     onBuy?.()
     onClose()
   }
-
-  return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.card} onClick={e => e.stopPropagation()}>
-        <button className="modal-close-x" onClick={onClose} aria-label="Close">✕</button>
-
-        <div className={styles.bigLogo}>A<span className={styles.slash}>/</span>S</div>
-        <h2 className={styles.title}>REMOVE ADS</h2>
-
-        <div className={styles.perks}>
-          {PERKS.map(p => (
-            <div key={p.text} className={styles.perkRow}>
-              <span className={styles.perkIcon}>{p.icon}</span>
-              <span className={styles.perkText}>{p.text}</span>
-            </div>
-          ))}
-        </div>
-
-        {already ? (
-          <div className={styles.alreadyMsg}>✓ You already have Ad-Free!</div>
-        ) : (
-          <div className={styles.tiers}>
-            <button className={styles.tierBtn} onClick={() => handleBuy('basic')}>
-              <div className={styles.tierIcon}>🚫</div>
-              <div className={styles.tierLabel}>NO ADS</div>
-              <div className={styles.tierPrice}>£7.99</div>
-            </button>
-            <button className={`${styles.tierBtn} ${styles.tierHighlight}`} onClick={() => handleBuy('bundle')}>
-              <div className={styles.tierBadge}>BEST VALUE</div>
-              <div className={styles.tierIconRow}>
-                <span>🚫</span><span>🪙×555</span>
-              </div>
-              <div className={styles.tierBonusRow}>
-                <span>❄️×3</span><span>👁️×3</span><span>🔀×3</span>
-              </div>
-              <div className={styles.tierPrice}>£11.99</div>
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  )
+  return <Modal open title="Remove advertising" onDismiss={onClose} actions={!already && <button className={styles.secondary} onClick={onClose}>Not now</button>}>
+    <div className={styles.perks}>{PERKS.map(perk => <p key={perk}><span aria-hidden="true">✓</span>{perk}</p>)}</div>
+    {already ? <p className={styles.already}>Advertising is already removed on this account.</p> : <div className={styles.tiers}>
+      <button className={styles.tier} onClick={() => handleBuy('basic')}><strong>No adverts</strong><span>£7.99</span></button>
+      <button className={`${styles.tier} ${styles.featured}`} onClick={() => handleBuy('bundle')}><small>Best value</small><strong>No adverts + 555 Coins</strong><span>£11.99</span></button>
+    </div>}
+  </Modal>
 }

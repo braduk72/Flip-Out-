@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { DECKS, FREE_CARD_COUNT, getDeckBackImage } from '../data/decks'
+import { DECKS, FREE_CARD_COUNT } from '../data/decks'
 import styles from './DeckPicker.module.css'
 import { createTransactionId, economy } from '../utils/economyService.js'
 
@@ -98,12 +98,12 @@ export default function DeckPicker({ onSelect, onBack }) {
   }
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="deck-picker">
 
       <div className={styles.scroll}>
         <div className={styles.header}>
           <button className={styles.backBtn} onClick={onBack} aria-label="Back">
-            <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+            <span aria-hidden="true">‹</span>
           </button>
           <h1 className={styles.title}>Pick a Deck</h1>
         </div>

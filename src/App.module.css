@@ -1,0 +1,5 @@
+.overlayPage { display: grid; width: 100%; min-height: 100svh; padding: max(24px, var(--fo-safe-top)) max(24px, var(--fo-safe-right)) max(24px, var(--fo-safe-bottom)) max(24px, var(--fo-safe-left)); place-items: center; }
+.primaryAction, .secondaryAction { min-height: 48px; padding: 10px 20px; border-radius: var(--fo-radius-compact); font-weight: 900; }
+.primaryAction { color: #fff; background: linear-gradient(180deg, #8b5cf6, #6d28d9); border: 1px solid #c4b5fd; box-shadow: 0 5px 0 #3b0764; }
+.secondaryAction { color: var(--fo-text); background: var(--fo-surface-elevated); border: 1px solid var(--fo-border); }
+.rewardIcon { display: grid; width: 76px; aspect-ratio: 1; margin: 0 auto var(--fo-space-3); place-items: center; color: #3b0764; background: radial-gradient(circle, #fef08a, var(--fo-gold)); border: 3px solid #fff3b0; border-radius: 50%; box-shadow: 0 0 30px rgb(245 196 81 / .45); font-size: 2.5rem; }

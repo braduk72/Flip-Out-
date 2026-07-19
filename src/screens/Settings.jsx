@@ -1,39 +1,40 @@
-import { useState, useEffect } from 'react'
 import styles from './Settings.module.css'
 import BottomNav from '../components/BottomNav'
 import { APP_VERSION } from '../version.js'
 import { playHoverTick } from '../hooks/useSfx'
 
-const STAGE_BKGS = [1, 2, 3, 4].map(n => `/images/gameshowStages/${n}.webp`)
-
 const DIFFICULTIES = [
-  { id: 'Easy',   label: '🟢  Easy',   bg: '#1a6e2e', color: '#afffb8' },
-  { id: 'Medium', label: '🟡  Medium', bg: '#7a5200', color: '#ffe080' },
-  { id: 'Hard',   label: '🔴  Hard',   bg: '#7a1500', color: '#ffaaaa' },
+  { id: 'Easy', label: 'Easy' },
+  { id: 'Medium', label: 'Medium' },
+  { id: 'Hard', label: 'Hard' },
 ]
 
-export default function Settings({ onBack, onSeason, onAbout, onPrivacy, onPatchNotes, musicOn, sfxOn, onToggleMusic, onToggleSfx, musicVol = 0.45, sfxVol = 0.7, onMusicVol, onSfxVol, difficulty, onDifficulty, onDevWin, seasonStep, navProps }) {
-  const [bgIdx, setBgIdx] = useState(0)
-  useEffect(() => {
-    const t = setInterval(() => setBgIdx(i => (i + 1) % STAGE_BKGS.length), 8000)
-    return () => clearInterval(t)
-  }, [])
-
+export default function Settings({ onBack, onAbout, onPrivacy, onPatchNotes, musicOn, sfxOn, onToggleMusic, onToggleSfx, musicVol = 0.45, sfxVol = 0.7, onMusicVol, onSfxVol, difficulty, onDifficulty, navProps }) {
   return (
-    <div className={styles.page}>
-      {STAGE_BKGS.map((src, i) => (
-        <img key={src} src={src} aria-hidden="true" draggable="false"
-          className={`${styles.stageBg} ${i === bgIdx ? styles.stageBgActive : ''}`} />
-      ))}
-      <div className={styles.stageBgOverlay} />
+    <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="settings">
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onBack} aria-label="Back">
-          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+          <span aria-hidden="true">‹</span>
         </button>
-        <h1 className={styles.title}>Settings</h1>
+        <h1 className={styles.title}>More</h1>
       </div>
 
       <div className={styles.list}>
+
+        <div className={styles.destinationGrid} aria-label="More destinations">
+          <button className={styles.destinationCard} type="button" onClick={navProps?.onRanks}>
+            <span className={styles.destinationEyebrow}>Compete</span>
+            <strong>Leaderboard</strong>
+            <span>See ranks and your best scores</span>
+          </button>
+          <button className={styles.destinationCard} type="button" onClick={navProps?.onShop}>
+            <span className={styles.destinationEyebrow}>Discover</span>
+            <strong>Coin Store</strong>
+            <span>Offers, bundles and the Exchange</span>
+          </button>
+        </div>
+
+        <h2 className={styles.sectionTitle}>Settings</h2>
 
         {/* Difficulty */}
         <div className={styles.row}>
@@ -43,10 +44,9 @@ export default function Settings({ onBack, onSeason, onAbout, onPrivacy, onPatch
             value={difficulty}
             onChange={e => onDifficulty(e.target.value)}
             aria-label="Select difficulty"
-            style={{ background: DIFFICULTIES.find(d => d.id === difficulty)?.bg, color: DIFFICULTIES.find(d => d.id === difficulty)?.color }}
           >
             {DIFFICULTIES.map(d => (
-              <option key={d.id} value={d.id} style={{ background: d.bg, color: d.color }}>{d.label}</option>
+              <option key={d.id} value={d.id}>{d.label}</option>
             ))}
           </select>
         </div>
@@ -95,17 +95,6 @@ export default function Settings({ onBack, onSeason, onAbout, onPrivacy, onPatch
         </div>
 
       </div>
-
-      {/* ── Dev tools — Preview only ── */}
-      {(import.meta.env.DEV || import.meta.env.VITE_DEV_TOOLS === 'true') && (
-        <div className={styles.devSection}>
-          <div className={styles.devLabel}>DEV TOOLS</div>
-          <button className={styles.devBtn} onClick={onDevWin}>
-            ⚡ WIN — advance season step
-            <span className={styles.devStepBadge}>Step {(seasonStep ?? 0) + 1} / 30</span>
-          </button>
-        </div>
-      )}
 
       <div className={styles.footerLinks}>
         <button className={styles.footerLink} onClick={onAbout}>About Us</button>

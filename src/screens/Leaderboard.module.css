@@ -7,27 +7,6 @@
   overflow: hidden;
 }
 
-/* ── Cycling gameshow stage backgrounds ── */
-.stageBg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  opacity: 0;
-  transition: opacity 1.5s ease-in-out;
-  pointer-events: none;
-  z-index: 0;
-}
-.stageBgActive { opacity: 1; }
-.stageBgOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(4,10,26,0.6) 0%, rgba(4,10,26,0.75) 100%);
-  pointer-events: none;
-  z-index: 1;
-}
 .content {
   flex: 1;
   display: flex;
@@ -88,7 +67,7 @@
   font-size: clamp(10px, 2.8vw, 13px);
   font-weight: 900;
   letter-spacing: 0px;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
   white-space: nowrap;
@@ -147,7 +126,7 @@
   font-size: 11px;
   font-weight: 900;
   color: #fff;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
   max-width: 80px;
   text-align: center;
   overflow: hidden;
@@ -159,7 +138,7 @@
   font-size: 12px;
   font-weight: 900;
   color: #FFD700;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
 }
 
 .podiumBase {
@@ -203,7 +182,7 @@
   font-weight: 900;
   color: rgba(255,255,255,0.5);
   text-align: center;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
 }
 
 .rowAvatar {
@@ -220,14 +199,14 @@
   font-size: 14px;
   font-weight: 700;
   color: #fff;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
 }
 
 .rowScore {
   font-size: 13px;
   font-weight: 900;
   color: #FFD700;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
 }
 
 /* ── My rank pinned bar ── */
@@ -246,7 +225,7 @@
   font-weight: 900;
   color: rgba(0,0,0,0.6);
   text-align: center;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
 }
 
 .myRankAvatar {
@@ -263,14 +242,14 @@
   font-size: 14px;
   font-weight: 900;
   color: #000;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
 }
 
 .myRankScore {
   font-size: 14px;
   font-weight: 900;
   color: #000;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
 }
 
 

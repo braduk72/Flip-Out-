@@ -3,10 +3,10 @@ import BottomNav from '../components/BottomNav'
 
 export default function PrivacyPolicy({ onBack, navProps }) {
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="privacy-policy">
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onBack} aria-label="Back">
-          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+          <span aria-hidden="true">‹</span>
         </button>
         <h1 className={styles.title}>Privacy Policy</h1>
       </div>

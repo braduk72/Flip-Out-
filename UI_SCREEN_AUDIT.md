@@ -113,3 +113,7 @@ Bottom navigation is present on only some screens. Other screens use one-off bac
 4. The permanent information architecture must be approved before any route is reconnected or removed. Unreachable screens may still contain valuable behaviour.
 5. Development tools should move into a development-only tools area, never remain mixed into player navigation.
 6. The home redesign must make the collection, progression, reward and economy loops legible without making optional characters the organising principle.
+
+## Consolidation status — 19 July 2026
+
+All routes in this inventory have been reviewed and consolidated. The Season map is deleted and inaccessible. Home is the canonical reference; Collection, Rewards, More, Shop, Exchange, Leaderboard, information routes, selection routes and game shells now use one Concept 4D language. See `FLIPOUT_UI_CONSOLIDATION_REPORT.md` for the final route-by-route result.

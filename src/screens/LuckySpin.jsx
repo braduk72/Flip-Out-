@@ -236,10 +236,10 @@ export default function LuckySpin({ onBack, navProps }) {
   }
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="rewards-wheel">
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onBack} aria-label="Back">
-          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+          <span aria-hidden="true">‹</span>
         </button>
         <div className={styles.spinsLeft}>🕛 {midnightTimer}</div>
         {import.meta.env.VITE_DEV_TOOLS === 'true' && (
@@ -303,18 +303,20 @@ export default function LuckySpin({ onBack, navProps }) {
             onClick={handleFree}
             disabled={spinning || !!prize}
           >
-            <img src="/images/play.webp" alt="Spin" className={styles.spinImgBtnImg} />
+            <strong>Spin</strong>
+            <span>Free daily spin</span>
           </button>
         )}
 
         {/* Ad spin button — shown once free spin is used */}
         {freeLeft === 0 && (
           <button
-            className={styles.spinImgBtn}
+            className={`${styles.spinImgBtn} ${styles.spinAdBtn}`}
             onClick={handleAdRequest}
             disabled={spinning || !!prize || adLeft === 0}
           >
-            <img src="/images/spin1.webp" alt="Watch Ad for Extra Spin" className={`${styles.spinImgBtnImg} ${adLeft === 0 ? styles.spinImgBtnUsed : ''}`} />
+            <strong>{adLeft === 0 ? 'Extra spin used' : 'Watch advert'}</strong>
+            <span>{adLeft === 0 ? 'Available again tomorrow' : 'Earn one extra spin'}</span>
           </button>
         )}
 
@@ -356,7 +358,7 @@ export default function LuckySpin({ onBack, navProps }) {
       {/* Rewarded ad interstitial */}
       {showAd && <Interstitial onCancel={handleAdCancel} />}
 
-      <BottomNav active="shop" {...navProps} />
+      <BottomNav active="rewards" {...navProps} />
     </div>
   )
 }

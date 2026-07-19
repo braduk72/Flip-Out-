@@ -3,10 +3,10 @@ import BottomNav from '../components/BottomNav'
 
 export default function AboutUs({ onBack, navProps }) {
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="about">
       <div className={styles.header}>
         <button className={styles.backBtn} onClick={onBack} aria-label="Back">
-          <img src="/images/back_button.webp" alt="Back" draggable="false" className={styles.backBtnImg} />
+          <span aria-hidden="true">‹</span>
         </button>
         <h1 className={styles.title}>About Us</h1>
       </div>
@@ -14,9 +14,8 @@ export default function AboutUs({ onBack, navProps }) {
       <div className={styles.content}>
 
         <div className={styles.logoWrap}>
-          <img src="/images/mascot3b.webp" alt="Flip Out! mascot" draggable="false" className={styles.mascot} />
-          <div className={styles.appName}>Flip Out!</div>
-          <div className={styles.appTagline}>The ultimate card-matching showdown</div>
+          <img src="/ui/flipout-logo.svg" alt="Flip-Out!" draggable="false" className={styles.mascot} />
+          <div className={styles.appTagline}>Collection, progression and rewarding play</div>
         </div>
 
         <div className={styles.card}>
@@ -29,17 +28,17 @@ export default function AboutUs({ onBack, navProps }) {
 
         <div className={styles.card}>
           <div className={styles.cardTitle}>OUR MISSION</div>
-          <p className={styles.cardText} style={{ fontStyle: 'italic', color: 'rgba(255,255,255,0.9)' }}>
+          <p className={styles.cardText}>
             "When I was at my absolute lowest, these little creatures saved me.
             Now I want to do the same for as many of them as I can."
           </p>
-          <p className={styles.cardText} style={{ marginTop: 8 }}>
+          <p className={styles.cardText}>
             We are working to establish a cat sanctuary and free veterinary service
             for local residents who cannot afford care elsewhere. When you play Flip Out!,
             buy a deck, or support us in any way — you're helping make that happen.
           </p>
-          <p className={styles.cardText} style={{ marginTop: 8 }}>
-            🐱 Every game played. Every purchase made. Every cat helped.
+          <p className={styles.cardText}>
+            Every game played. Every purchase made. Every cat helped.
           </p>
         </div>
 

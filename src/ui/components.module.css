@@ -281,7 +281,7 @@ button.playerSummary { cursor: pointer; }
 .carouselDots button { position: relative; width: 44px; min-width: 44px; height: 44px; padding: 0; background: none; }
 .carouselDots button::after { content: ''; position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; border-radius: 999px; background: #aeb8cc; transform: translate(-50%, -50%); transition: width var(--fo-motion-fast), background var(--fo-motion-fast); }
 .carouselDots .carouselDotActive::after { width: 20px; background: var(--fo-cyan); box-shadow: 0 0 8px var(--fo-cyan); }
-.carouselPause { display: grid; place-items: center; width: 44px; height: 44px; color: var(--fo-text-secondary); background: transparent; border-radius: 50%; }
+.carouselPause { display: grid; flex: 0 0 44px; place-items: center; width: 44px; height: 44px; color: var(--fo-text-secondary); background: transparent; border-radius: 50%; }
 
 .playButton {
   position: relative;

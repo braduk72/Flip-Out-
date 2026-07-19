@@ -37,11 +37,7 @@
   to   { rotate: 360deg; }
 }
 
-.stage {
-  display: none;
-}
-
-/* ── Centred phone-width column — stage bleeds full screen behind it ── */
+/* ── Centred responsive gameplay column ── */
 .gameInner {
   max-width: 440px;
   width: 100%;
@@ -263,7 +259,7 @@
   font-size: 30px;
   font-weight: 900;
   color: var(--yellow);
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   text-shadow: 2px 2px 0 rgba(0,0,0,0.6);
   letter-spacing: -1px;
 }
@@ -370,13 +366,13 @@
   font-weight: 900;
   color: #FFD700;
   letter-spacing: 1.5px;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
 }
 
 .jokerCount {
   font-size: 10px;
   color: rgba(255,255,255,0.6);
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
 }
 
 @keyframes jokerPulse {
@@ -499,7 +495,7 @@
   font-size: clamp(16px, 4vw, 20px);
   font-weight: 900;
   color: var(--yellow);
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   text-align: center;
   text-shadow: 0 0 20px rgba(255,215,0,0.7), 2px 2px 0 rgba(0,0,0,0.8);
   letter-spacing: 1px;
@@ -536,7 +532,7 @@
 .effectDismissHint {
   font-size: 11px;
   color: rgba(255,255,255,0.4);
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
   letter-spacing: 0.5px;
 }
 
@@ -562,7 +558,7 @@
 .effectDesc {
   font-size: 11px;
   color: var(--white-dim);
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
   font-weight: 400;
   line-height: 1.4;
   margin-top: 2px;
@@ -606,14 +602,14 @@
 
 .resultEmoji  { font-size: 64px; }
 .resultTitle  { font-size: 32px; font-weight: 900; color: var(--yellow); }
-.finalScores  { display: flex; gap: 24px; font-size: 18px; color: var(--white-dim); font-family: Arial, sans-serif; }
+.finalScores  { display: flex; gap: 24px; font-size: 18px; color: var(--white-dim); font-family: 'Atkinson Hyperlegible', system-ui, sans-serif; }
 
 .playAgainBtn {
   margin-top: 8px;
   padding: 14px 40px;
   background: var(--yellow);
   color: #1A0040;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   font-size: 18px;
   font-weight: 900;
   border-radius: 50px;
@@ -709,7 +705,7 @@
   font-size: 52px;
   font-weight: 900;
   color: #FFD700;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   line-height: 1;
   text-shadow: 0 0 20px rgba(255,215,0,0.6), 0 3px 0 rgba(0,0,0,0.5);
   animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -720,14 +716,14 @@
   font-weight: 900;
   letter-spacing: 3px;
   color: rgba(255,215,0,0.75);
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   text-transform: uppercase;
 }
 
 .streakBest {
   font-size: 13px;
   color: rgba(255,255,255,0.5);
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
   margin-top: 2px;
 }
 
@@ -740,7 +736,7 @@
   color: #3A0060;
   font-size: 17px;
   font-weight: 900;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   letter-spacing: 1px;
   cursor: pointer;
   box-shadow: 0 4px 0 #7A4400, 0 6px 20px rgba(255,215,0,0.35);
@@ -757,7 +753,7 @@
   background: transparent;
   color: rgba(255,255,255,0.5);
   font-size: 13px;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
 }
@@ -791,14 +787,14 @@
 .streakContinueLabel {
   font-size: 14px;
   font-weight: 900;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   letter-spacing: 1px;
 }
 
 .streakContinueCost {
   font-size: 12px;
   font-weight: 700;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
   opacity: 0.85;
 }
 
@@ -810,7 +806,7 @@
   color: #fff;
   font-size: 14px;
   font-weight: 900;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   letter-spacing: 1px;
   cursor: pointer;
   transition: background 0.15s;
@@ -820,7 +816,7 @@
 .watchingAdLabel {
   font-size: 12px;
   color: rgba(255,255,255,0.6);
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
   letter-spacing: 1px;
   animation: pulse 1s ease-in-out infinite;
 }
@@ -834,7 +830,7 @@
   font-size: 48px;
   font-weight: 900;
   color: var(--yellow);
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   letter-spacing: 2px;
 }
 
@@ -851,7 +847,7 @@
 .soloMeta {
   font-size: 14px;
   color: var(--white-dim);
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
   letter-spacing: 0.5px;
 }
 
@@ -1131,7 +1127,7 @@
   color: #fff;
   line-height: 1;
   text-shadow: 0 0 20px rgba(255,255,255,0.2);
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
 }
 
 .robotModel {
@@ -1262,64 +1258,15 @@
   border-color: rgba(255,255,255,0.1);
 }
 
-/* ── Quit confirmation modal ── */
-.quitOverlay {
-  position: absolute;
-  inset: 0;
-  z-index: 40;
-  background: rgba(0, 0, 0, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.2s ease;
-}
-
-.quitModal {
-  background: var(--surface, #1a0040);
-  border: 2px solid rgba(255, 215, 0, 0.5);
-  border-radius: 20px;
-  padding: 28px 24px;
-  margin: 0 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  text-align: center;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
-  animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
 .quitIcon { font-size: 40px; }
-
-.quitTitle {
-  font-size: 20px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  color: var(--yellow, #FFD700);
-}
-
-.quitBody {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
-  font-family: Arial, sans-serif;
-  line-height: 1.5;
-}
-
-.quitBtns {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  margin-top: 4px;
-}
 
 .quitStayBtn {
   padding: 14px;
-  background: var(--yellow, #FFD700);
-  color: #1a0040;
+  background: linear-gradient(180deg, var(--fo-violet), var(--fo-purple));
+  color: var(--fo-text);
   font-size: 15px;
   font-weight: 900;
-  letter-spacing: 2px;
+  letter-spacing: .04em;
   border-radius: 12px;
   border: none;
   cursor: pointer;
@@ -1331,13 +1278,13 @@
 
 .quitLeaveBtn {
   padding: 12px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.4);
+  background: rgb(127 29 29 / .28);
+  color: #ffd4dc;
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: .04em;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgb(251 113 133 / .55);
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
 }
@@ -1413,14 +1360,14 @@
   font-size: 22px;
   font-weight: 900;
   color: #FFD700;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   letter-spacing: 2px;
 }
 
 .passSub {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.65);
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
   line-height: 1.4;
 }
 
@@ -1435,7 +1382,7 @@
   border: none;
   border-radius: 50px;
   cursor: pointer;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   box-shadow: 0 4px 20px rgba(50, 217, 106, 0.4);
   transition: transform 0.1s;
 }
@@ -1465,7 +1412,7 @@
   font-weight: 900;
   color: #FFD700;
   text-shadow: 2px 2px 0 #8B0000;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   letter-spacing: 1px;
   margin: 0;
 }
@@ -1488,7 +1435,7 @@
   color: #fff;
   font-size: 15px;
   font-weight: 700;
-  font-family: Arial, sans-serif;
+  font-family: 'Atkinson Hyperlegible', system-ui, sans-serif;
   cursor: pointer;
   text-align: left;
   width: 100%;
@@ -1588,7 +1535,7 @@
 .coinResult {
   font-size: 17px;
   font-weight: 900;
-  font-family: 'Arial Black', Arial, sans-serif;
+  font-family: 'Nunito Sans', system-ui, sans-serif;
   letter-spacing: 0.5px;
   text-align: center;
   animation: resultPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;

@@ -106,3 +106,7 @@ Two transient verification events were retained for accuracy. One combined run r
 ## Next screen boundary
 
 No additional screen was redesigned. The design-system implementation is now ready to be extended deliberately, and the approved next screen package remains the Match-3 gameplay screen—not Reward Theatre, Collection, Exchange or Shop in parallel.
+
+## Consolidation completion — 19 July 2026
+
+The former next-screen boundary has now been superseded by Brad's approved full consolidation pass. Every reachable route uses the Concept 4D language, Collection and Exchange are no longer plain prototypes, More is the canonical secondary hub, and the old Season map is removed. The shared route contract is in `src/ui/route-consolidation.css`; route regression coverage is in `tests-ui/route-consolidation.test.js`. Full details and verification are recorded in `FLIPOUT_UI_CONSOLIDATION_REPORT.md`.

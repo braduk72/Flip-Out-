@@ -4,6 +4,7 @@ import { objectiveProgress } from '../match3/engine.js'
 import { MATCH3_LEVELS, MATCH3_TOKENS, getMatch3Level } from '../match3/levels.js'
 import { cellIsInPresentation, createMatch3Presentation } from '../match3/presentation.js'
 import Match3TokenImage from '../match3/Match3TokenImage.jsx'
+import { CardPanel } from '../ui/components.jsx'
 import { useMotionMode } from '../ui/motion.js'
 import { playerGameApi } from '../utils/gameApi.js'
 import { haptic, recordMatch3Event } from '../utils/match3Analytics.js'
@@ -133,15 +134,22 @@ export default function Match3({ onBack }) {
 }
 
 function LevelMap({ progress, onBack, onSelect, onReset }) {
-  return <main className={styles.page}><header className={styles.header}><button onClick={onBack}>← Memory &amp; modes</button><h1>Match-3 Journey</h1></header><p className={styles.lead}>Earn Stars by completing levels. Memory Match remains available from the main screen.</p><div className={styles.levels}>{MATCH3_LEVELS.map(level => { const unlocked = level.id <= progress.highestUnlockedLevel || import.meta.env.DEV; return <button key={level.id} disabled={!unlocked} className={progress.completedLevels?.[level.id] ? styles.complete : ''} onClick={() => onSelect(level.id)} aria-label={`${level.name}, ${unlocked ? 'unlocked' : 'locked'}`}><strong>{level.id}</strong><span>{progress.completedLevels?.[level.id] ? '★' : '○'}</span></button> })}</div>{import.meta.env.DEV && <button className={styles.dev} onClick={onReset}>Reset development progress</button>}</main>
+  return <main className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="match3-journey">
+    <header className={styles.header}><button className={styles.backBtn} onClick={onBack} aria-label="Back to Home"><span aria-hidden="true">‹</span></button><h1>Match-3 Journey</h1></header>
+    <div className={styles.journeyContent}>
+      <CardPanel className={styles.journeyIntro}><span className={styles.eyebrow}>Earned progression</span><h2>Keep your journey moving</h2><p>Complete objectives, earn Stars and unlock the next challenge.</p></CardPanel>
+      <div className={styles.levels}>{MATCH3_LEVELS.map(level => { const unlocked = level.id <= progress.highestUnlockedLevel || import.meta.env.DEV; const complete = progress.completedLevels?.[level.id]; return <button key={level.id} disabled={!unlocked} className={complete ? styles.complete : ''} onClick={() => onSelect(level.id)} aria-label={`${level.name}, ${unlocked ? 'unlocked' : 'locked'}`}><span className={styles.levelNumber}>Level {level.id}</span><strong>{level.name}</strong><span className={styles.levelObjective}>{complete ? `Complete · ${complete.stars ?? 0} Stars` : unlocked ? objectiveLabel(level.objectives[0]) : 'Locked'}</span></button> })}</div>
+      {import.meta.env.DEV && <button className={styles.dev} onClick={onReset}>Reset development progress</button>}
+    </div>
+  </main>
 }
 
 function Brief({ level, busy, error, onBack, onStart }) {
-  return <main className={styles.page}><header className={styles.header}><button onClick={onBack}>← Levels</button><h1>{level.name}</h1></header>{level.teaching && <p className={styles.teach}>{level.teaching}</p>}<section className={styles.card}><h2>Objectives</h2><ul>{level.objectives.map((objective, index) => <li key={index}>{objectiveLabel(objective)}</li>)}</ul><p>{level.moves} moves</p></section><button className={styles.primary} disabled={busy} onClick={onStart}>{busy ? 'Preparing…' : 'Play'}</button><p role="alert">{error}</p></main>
+  return <main className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="match3-brief"><header className={styles.header}><button className={styles.backBtn} onClick={onBack} aria-label="Back to level journey"><span aria-hidden="true">‹</span></button><h1>{level.name}</h1></header><div className={styles.briefContent}>{level.teaching && <CardPanel className={styles.teach}><span className={styles.eyebrow}>Level lesson</span><p>{level.teaching}</p></CardPanel>}<CardPanel className={styles.card}><span className={styles.eyebrow}>Level {level.id}</span><h2>Objectives</h2><ul>{level.objectives.map((objective, index) => <li key={index}>{objectiveLabel(objective)}</li>)}</ul><p className={styles.moveBudget}>{level.moves} moves</p></CardPanel><button className={styles.primary} disabled={busy} onClick={onStart}>{busy ? 'Preparing…' : 'Play Match-3'}</button><p role="alert">{error}</p></div></main>
 }
 
 function Result({ stars, level, movesUsed, error, onDouble, onMap, onNext }) {
-  return <main className={styles.result}><div aria-hidden="true" className={styles.resultIcon}>★</div><h1>Level complete!</h1><p className={styles.starAward}>+{stars} Stars</p><p role="alert">{error}</p>{stars === 30 && <button onClick={onDouble}>Watch verified advert to double</button>}<button className={styles.primary} onClick={onNext}>Next level</button><button onClick={onMap}>Level map</button>{import.meta.env.DEV && <Match3FeedbackPanel level={level} result="won" movesUsed={movesUsed} />}</main>
+  return <main className={`${styles.result} foTheme`} data-concept-screen="route" data-screen="match3-result"><div aria-hidden="true" className={styles.resultIcon}>★</div><h1>Level complete!</h1><p className={styles.starAward}>+{stars} Stars</p><p role="alert">{error}</p>{stars === 30 && <button onClick={onDouble}>Watch verified advert to double</button>}<button className={styles.primary} onClick={onNext}>Next level</button><button onClick={onMap}>Level journey</button>{import.meta.env.DEV && <Match3FeedbackPanel level={level} result="won" movesUsed={movesUsed} />}</main>
 }
 
 function GameBoard({ session, busy, error, presentation, onMove, onPower, onRestart, onQuit }) {
@@ -205,7 +213,7 @@ function GameBoard({ session, busy, error, presentation, onMove, onPower, onRest
   }
 
   const boardClass = [styles.board, presentation?.phase === 'swap' ? styles.swapping : '', presentation?.cascadeCount ? styles.resolving : '', presentation?.comboType ? styles.specialResolution : ''].filter(Boolean).join(' ')
-  return <main className={styles.game}>
+  return <main className={`${styles.game} foTheme`} data-concept-screen="gameplay" data-screen="match3-game">
     <div className={styles.gameTop}><button onClick={onQuit}>Quit</button><strong>Level {level.id}</strong><button onClick={() => setPaused(true)}>Pause</button></div>
     <div className={styles.stats}><span>Score <strong>{state.score.toLocaleString()}</strong></span><span>Moves <strong>{state.movesRemaining}</strong></span></div>
     <div className={styles.objectives}>{level.objectives.map((objective, index) => <span key={index}>{objectiveLabel(objective)}: {objectiveProgress(state, objective)}/{objective.target}</span>)}</div>
