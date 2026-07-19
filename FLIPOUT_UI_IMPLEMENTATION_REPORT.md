@@ -61,6 +61,8 @@ Automated viewport contracts cover 320px, the phone breakpoint, 768px tablets, l
 - Local built-app HTTP smoke: **200** at the development preview server.
 - Automated accessibility scan: **passed** for the rendered Home fixture, with colour-contrast measurement excluded only because jsdom cannot compute layout/paint contrast.
 
+Two transient verification events were retained for accuracy. One combined run reported the existing `platform-identity.test.js` process as failed without an assertion; the file then passed **7/7** in isolation and the final full run passed. One attempt launched production and Preview builds simultaneously against the same `dist` directory and Preview correctly failed with `ENOTEMPTY`; both required sequential builds then passed with the results above. Neither event required application-code changes.
+
 ## Preview deployment and remote verification
 
 - Commit `c4e34bc` was pushed from `dev` to `origin/dev`; production branch `main` was not changed.
@@ -70,8 +72,8 @@ Automated viewport contracts cover 320px, the phone breakpoint, 768px tablets, l
 - Current entry bundle: `/assets/index-BYVmyWFx.js`, **412,286 bytes**, HTTP 200. It contains `1.1.0-ui4d`, matching `src/version.js` and this deployment.
 - Runtime assets verified at HTTP 200 with the exact shipped byte sizes: logo 1,651-byte SVG; Coin Store promotion 160,782-byte WebP; Match-3 star token 734-byte SVG.
 - Unauthenticated `/api/fo-player-state` returns the expected **401**, confirming the server boundary is present.
-- Vercel CLI deployment-ID/domain-assignment inspection could not be rerun because Codex's external-tool usage cap rejected Vercel access. The public permanent hostname, Vercel response, new bundle filename/version and fresh Last-Modified timestamp independently confirm that the `dev` deployment is being served.
-- The Preview database suite could not be rerun in this pass: the local checkout has no `DATABASE_URL`, and both Vercel/Railway credential retrieval were rejected by the same tool usage cap. No database schema or production data was changed.
+- Vercel CLI inspection maps the permanent hostname to Ready Preview deployment `dpl_Agvh9BKAVH1DCdzYP5pMMbvcjbDb` (`https://flip-6ji7jlyxe-chattocal.vercel.app`), target `preview`, created 19 July 2026 at 01:41:40 BST. Domain verification returns `configured_correctly`, attached and verified, with no issues or conflicts.
+- The Preview database suite rerun was attempted twice but could not execute against the database. A pulled sensitive placeholder caused **7 DNS failures / 1 skip** before any connection was made; `vercel env run` then correctly supplied `VERCEL_ENV=preview` but withheld the sensitive `DATABASE_URL` and HMAC secret, so all **8 DB files skipped**. Vercel metadata confirms both secrets exist with Preview scope (`DATABASE_URL` is restricted to branch `dev`) but does not expose their values. No database mutation occurred; the complete prior-package database verification remains the recorded evidence.
 - Browser-based responsive screenshots were attempted at the exact permanent URL but blocked by a user-level browser privacy rule. Automated responsive/safe-area tests pass; real visual viewport judgement remains a human/device check and is not concealed as complete.
 
 ## Remaining placeholders and risks

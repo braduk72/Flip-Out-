@@ -61,11 +61,11 @@ The application currently reports `v1.1.0-ui4d` from `src/version.js`. Reports m
 
 - Git commit `c4e34bc` was pushed from `dev`; `main` was not touched.
 - DNS resolves with TTL 60 to `39622341da5cfe42.vercel-dns-016.com`.
-- HTTPS returns 200 from Vercel. Last-Modified is `Sun, 19 Jul 2026 00:37:21 GMT`; ETag is `"76dfb8a66ab3338e7fd8ab136b6d027f"`.
+- HTTPS returns 200 from Vercel. Last-Modified is `Sun, 19 Jul 2026 00:42:19 GMT`; ETag is `"76dfb8a66ab3338e7fd8ab136b6d027f"`.
 - The permanent URL loads `/assets/index-BYVmyWFx.js` (412,286 bytes), which contains application version `1.1.0-ui4d`.
 - New Concept 4D logo, Coin Store WebP and Match-3 token assets each return HTTP 200 from the permanent URL.
 - Unauthenticated player-state API returns the expected 401.
-- Vercel CLI deployment-ID inspection was unavailable because the external-tool usage cap rejected the read; no manual alias or production action was attempted.
+- Vercel reports `configured_correctly`, attached and verified, with no issues or conflicts. The hostname maps to Ready Preview deployment `dpl_Agvh9BKAVH1DCdzYP5pMMbvcjbDb` (`https://flip-6ji7jlyxe-chattocal.vercel.app`), target `preview`, created 19 July 2026 at 01:41:40 BST. No manual alias or production action was attempted.
 
 ## Verification record — 18 July 2026
 
