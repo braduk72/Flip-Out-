@@ -160,10 +160,17 @@
   transform: translateZ(0);
   transition: filter 130ms ease, transform 150ms cubic-bezier(.2, .8, .2, 1), box-shadow 160ms ease;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .tile:not(.hole) { animation: tileIdle 3.6s ease-in-out var(--idle-delay) infinite; }
 .tile:hover:not(:disabled) { z-index: 2; filter: brightness(1.12); transform: translateY(-2px) scale(1.04); }
+.draggingTile { z-index: 30 !important; cursor: grabbing !important; animation: none !important; transform: translate3d(var(--drag-x, 0), var(--drag-y, 0), 0) scale(1.06) !important; transition: none !important; filter: brightness(1.18); will-change: transform; }
+.draggingTile[data-drag-phase="returning"] { transition: transform 180ms cubic-bezier(.2, .8, .2, 1), filter 100ms ease !important; }
+.draggingTile[data-drag-phase="committed"] { transition: transform 120ms ease-out !important; }
+.draggingTile:active { transform: translate3d(var(--drag-x, 0), var(--drag-y, 0), 0) scale(1.06) !important; }
+.dragPreviewTile { z-index: 5; animation: none !important; transform: translate3d(var(--preview-x, 0), var(--preview-y, 0), 0) scale(.96) !important; transition: transform 120ms ease-out !important; filter: brightness(.88); will-change: transform; }
 .tokenImage { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 2px #000a) saturate(1.08); }
 .selected { z-index: 5; outline: 3px solid #fff !important; outline-offset: -2px; box-shadow: 0 0 0 3px #20cfff, 0 0 20px #28bfff !important; animation: selectedPulse .7s ease-in-out infinite alternate !important; }
 .hole { border: 0 !important; background: #050315 !important; box-shadow: inset 0 0 10px #000 !important; }

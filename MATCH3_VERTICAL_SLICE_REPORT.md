@@ -98,3 +98,11 @@ The vertical slice now separates authoritative resolution from presentation. Ser
 ## Real-device repair revision — 19 July 2026
 
 The current revision adds explicit swap offsets, pointer capture and drag handling rather than relying on board replacement plus scale effects. Preview `https://flip-4lw572b7k-chattocal.vercel.app` (`dpl_3tH1ZE26TtJ7ugCUA4pbQ1F5dy7H`) passed 37/37 Node tests, 8/8 UI/token tests and production build. Real-device/browser trace acceptance remains outstanding.
+
+## Visible drag correction and deployed trace — 19 July 2026
+
+The preceding repair statement was source-level only and is superseded here. The board still lacked an `onPointerMove` render path, so a held token could not follow a pointer even though release could submit a move. The permanent idle animation also controlled `transform`. The fix adds captured-pointer drag state, per-frame CSS-variable transforms, neighbour preview, full opposite-cell release transforms, invalid return, click suppression and a Preview-only diagnostic overlay. No engine, level, reward or economy values changed.
+
+An Edge test ran against the deployed Preview and measured the tile before pointer-down, halfway while the button remained held, immediately after release while the request was deliberately held for observation, and after authoritative settlement. Mouse results were 32.125 px held source motion, −6.817 px neighbour preview and +63.865/−63.865 px committed exchange; pointer capture and threshold both reported active, scroll remained zero, and the legal move settled to 17 moves. A 390×844 Chromium touch-input pass recorded 23.434 px held motion, +45.929/−43.304 px exchange and no page scroll. Physical iPhone Safari remains a manual acceptance item.
+
+Preview `https://flip-md0ub8wpi-chattocal.vercel.app` (`dpl_4pSSBn13cpUkvHVmmTCM2z2jqC7f`) is Ready. Cloud verification passed 37/37 Node tests and 9/9 UI/token tests; focused lint and the production build passed. The permanent development URL served the identical HTML and entry bundle. Trace JSON, four desktop frames, two mobile-touch frames and `browser-trace.zip` are stored under `artifacts/match3-drag-preview/` locally.

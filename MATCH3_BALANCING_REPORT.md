@@ -162,3 +162,7 @@ No level balance, objectives, move budgets or economy values were changed. The p
 ## Real-device repair revision — 19 July 2026
 
 No balance values changed. Preview `https://flip-4lw572b7k-chattocal.vercel.app` is Ready. Automated checks passed, but visual coordinate traces and iPhone Safari/manual acceptance are still required before the animation correction can be considered complete.
+
+## Deployed drag-verification addendum — 19 July 2026
+
+No balance, objective, move, reward or economy value changed. The visible drag defect was isolated to input presentation: the deployed board had no pointer-move-driven render state. Preview `https://flip-md0ub8wpi-chattocal.vercel.app` now has a measured desktop held-drag and a measured 390×844 Chromium touch-drag trace, including opposite-cell release movement and zero page scrolling. Physical iPhone Safari remains a human acceptance check; none of these presentation changes alter the simulation results in this report.

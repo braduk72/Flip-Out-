@@ -16,6 +16,7 @@
     "simulate:match3": "node scripts/simulate-match3.mjs 1000",
     "balance:match3": "node scripts/simulate-match3-levels.mjs --runs 100",
     "performance:match3": "node --expose-gc scripts/measure-match3-performance.mjs 200",
+    "verify:match3-drag-preview": "node scripts/verify-deployed-match3-drag.mjs",
     "assets:match3-tokens": "node scripts/generate-match3-tokens.mjs",
     "verify:coin-ledger": "node scripts/verify-coin-ledger.mjs",
     "preview": "vite preview",
@@ -52,6 +53,7 @@
     "globals": "^17.6.0",
     "jimp": "^0.22.12",
     "jsdom": "^29.1.1",
+    "playwright-core": "^1.61.1",
     "sharp": "^0.34.5",
     "vite": "^8.0.12",
     "vitest": "^4.1.10"

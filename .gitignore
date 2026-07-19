@@ -35,6 +35,9 @@ public/images/downloads/
 # Source/working images — originals and working files, not for repo
 source-images/
 
+# Local deployed-browser traces and screenshots
+/artifacts/match3-drag-preview/
+
 # Local documentation — kept on this machine only
 docs/
 CHANGELOG.md

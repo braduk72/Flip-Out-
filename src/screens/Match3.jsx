@@ -172,7 +172,10 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
   const [power, setPower] = useState(null)
   const [paused, setPaused] = useState(false)
   const [slowAnimations, setSlowAnimations] = useState(false)
+  const [dragState, setDragState] = useState(null)
   const drag = useRef(null)
+  const dragReturnTimer = useRef(null)
+  const suppressClick = useRef(false)
   const moveInFlight = useRef(false)
   const level = state.level
   const locked = isMatch3BoardInputLocked({ status: state.status, paused, busy, presentation })
@@ -180,9 +183,12 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
   const rows = state.board.length
   const columns = state.board[0].length
   const summary = useMemo(() => `Level ${level.id}. ${state.movesRemaining} moves left. Score ${state.score}.`, [level.id, state.movesRemaining, state.score])
+  const diagnosticsEnabled = import.meta.env.DEV || (typeof window !== 'undefined' && window.location.hostname !== 'flipout.app' && new URLSearchParams(window.location.search).has('match3Diagnostics'))
+
+  useEffect(() => () => clearTimeout(dragReturnTimer.current), [])
 
   function choose(row, column) {
-    if (locked || moveInFlight.current) return
+    if (locked || moveInFlight.current || suppressClick.current) return
     if (power) {
       onPower(power, { r: row, c: column }).then(() => setPower(null)).catch(() => {})
       return
@@ -196,6 +202,83 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
       setSelected(next)
       haptic('light')
     }
+  }
+
+  function intendedDestination(source, deltaX, deltaY) {
+    if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) <= 18) return null
+    const destination = Math.abs(deltaX) > Math.abs(deltaY)
+      ? { r: source.r, c: source.c + Math.sign(deltaX) }
+      : { r: source.r + Math.sign(deltaY), c: source.c }
+    return destination.r >= 0 && destination.r < rows && destination.c >= 0 && destination.c < columns ? destination : null
+  }
+
+  function beginDrag(event, row, column, tokenId) {
+    if (locked || moveInFlight.current) return
+    event.preventDefault()
+    let capture = false
+    try {
+      event.currentTarget.setPointerCapture?.(event.pointerId)
+      capture = event.currentTarget.hasPointerCapture?.(event.pointerId) ?? false
+    } catch {
+      // Pointer capture can be unavailable in older embedded webviews. The
+      // board-level touch-action rule still prevents the page from scrolling.
+    }
+    const source = { r: row, c: column }
+    const next = {
+      pointerId: event.pointerId,
+      pointerType: event.pointerType || 'mouse',
+      source,
+      tokenId,
+      startX: event.clientX,
+      startY: event.clientY,
+      currentX: event.clientX,
+      currentY: event.clientY,
+      deltaX: 0,
+      deltaY: 0,
+      destination: null,
+      thresholdPassed: false,
+      capture,
+      phase: 'dragging',
+    }
+    drag.current = next
+    setDragState(next)
+    setSelected(source)
+  }
+
+  function moveDrag(event) {
+    const current = drag.current
+    if (!current || current.pointerId !== event.pointerId || locked) return
+    event.preventDefault()
+    const deltaX = event.clientX - current.startX
+    const deltaY = event.clientY - current.startY
+    const destination = intendedDestination(current.source, deltaX, deltaY)
+    const next = {
+      ...current,
+      currentX: event.clientX,
+      currentY: event.clientY,
+      deltaX,
+      deltaY,
+      destination,
+      thresholdPassed: Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 18,
+      capture: event.currentTarget.hasPointerCapture?.(event.pointerId) ?? current.capture,
+    }
+    drag.current = next
+    setDragState(next)
+  }
+
+  function clearDrag() {
+    clearTimeout(dragReturnTimer.current)
+    dragReturnTimer.current = null
+    drag.current = null
+    setDragState(null)
+  }
+
+  function returnDraggedToken(current) {
+    const returning = { ...current, deltaX: 0, deltaY: 0, destination: null, phase: 'returning' }
+    drag.current = returning
+    setDragState(returning)
+    clearTimeout(dragReturnTimer.current)
+    dragReturnTimer.current = window.setTimeout(clearDrag, motionMode === 'full' ? 180 : 40)
   }
 
   function keyDown(event, row, column) {
@@ -214,22 +297,38 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
     }
   }
 
-  function dragEnd(event, row, column) {
-    const start = drag.current
-    drag.current = null
-    if (!start || locked) return
-    const deltaX = event.clientX - start.x
-    const deltaY = event.clientY - start.y
-    if (Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 18) {
-      const to = Math.abs(deltaX) > Math.abs(deltaY) ? { r: row, c: column + Math.sign(deltaX) } : { r: row + Math.sign(deltaY), c: column }
-      if (to.r >= 0 && to.r < rows && to.c >= 0 && to.c < columns) {
-        if (moveInFlight.current) return
-        moveInFlight.current = true
-        onMove({ r: row, c: column }, to).catch(() => {}).finally(() => { moveInFlight.current = false })
-        return
-      }
+  async function endDrag(event) {
+    const current = drag.current
+    if (!current || current.pointerId !== event.pointerId) return
+    event.preventDefault()
+    event.currentTarget.releasePointerCapture?.(event.pointerId)
+    if (!current.thresholdPassed || !current.destination || locked || moveInFlight.current) {
+      if (current.thresholdPassed) suppressClick.current = true
+      returnDraggedToken(current)
+      window.setTimeout(() => { suppressClick.current = false }, 0)
+      return
     }
-    choose(row, column)
+    suppressClick.current = true
+    moveInFlight.current = true
+    const cell = event.currentTarget.getBoundingClientRect()
+    const committed = {
+      ...current,
+      deltaX: (current.destination.c - current.source.c) * cell.width,
+      deltaY: (current.destination.r - current.source.r) * cell.height,
+      phase: 'committed',
+    }
+    drag.current = committed
+    setDragState(committed)
+    try {
+      await onMove(current.source, current.destination)
+      clearDrag()
+      setSelected(null)
+    } catch {
+      returnDraggedToken(committed)
+    } finally {
+      moveInFlight.current = false
+      window.setTimeout(() => { suppressClick.current = false }, 0)
+    }
   }
 
   const boardClass = [styles.board, presentation?.phase === 'swap' ? styles.swapping : '', presentation?.invalidSwap ? styles.invalidSwap : '', presentation?.phase === 'shuffle' ? styles.shuffling : '', presentation?.cascadeCount ? styles.resolving : '', presentation?.comboType ? styles.specialResolution : ''].filter(Boolean).join(' ')
@@ -243,7 +342,7 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
       {presentation?.label && <div className={styles.comboBanner} aria-hidden="true"><strong>{presentation.label}</strong>{presentation.cascadeCount > 1 && <span>×{presentation.cascadeCount} cascade</span>}</div>}
       {presentation?.scoreGained > 0 && <div className={styles.scoreBurst} aria-hidden="true">+{presentation.scoreGained.toLocaleString()}</div>}
       <div className={boardClass} role="grid" aria-label={summary} aria-busy={locked} data-input-locked={locked ? 'true' : 'false'}>
-        {state.board.map((row, rowIndex) => row.map((cell, columnIndex) => <Tile key={`${rowIndex}:${columnIndex}`} cell={cell} row={rowIndex} column={columnIndex} columns={columns} selected={selected?.r === rowIndex && selected?.c === columnIndex} presentation={presentation} onChoose={choose} onKeyDown={keyDown} onPointerDown={event => { event.currentTarget.setPointerCapture?.(event.pointerId); drag.current = { x: event.clientX, y: event.clientY } }} onPointerUp={event => dragEnd(event, rowIndex, columnIndex)} onPointerCancel={() => { drag.current = null }} />))}
+        {state.board.map((row, rowIndex) => row.map((cell, columnIndex) => <Tile key={`${rowIndex}:${columnIndex}`} cell={cell} row={rowIndex} column={columnIndex} columns={columns} selected={selected?.r === rowIndex && selected?.c === columnIndex} presentation={presentation} dragState={dragState} onChoose={choose} onKeyDown={keyDown} onPointerDown={event => beginDrag(event, rowIndex, columnIndex, cell.token)} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={() => { if (drag.current) returnDraggedToken(drag.current) }} />))}
       </div>
       <BoardEffects presentation={presentation} rows={rows} columns={columns} />
     </div>
@@ -252,7 +351,7 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
     <p role="alert">{error}</p>
     {state.status === 'lost' && <div className={styles.modal}><div><h2>Out of moves</h2><p>Use Extra Moves if available, or retry the level.</p><button onClick={() => { recordMatch3Event('continue-used', { method: 'extra-moves' }); onPower('extra-moves', null).catch(() => {}) }}>Continue with Extra Moves</button><button onClick={onRestart}>Retry</button><button onClick={onQuit}>Level map</button></div></div>}
     {paused && <div className={styles.modal}><div><h2>Paused</h2><button onClick={() => setPaused(false)}>Resume</button><button onClick={onRestart}>Restart</button><button onClick={onQuit}>Quit</button></div></div>}
-    {import.meta.env.DEV && <aside className={styles.diagnostics} aria-label="Match-3 diagnostics"><strong>DEV DIAGNOSTICS</strong><span>Phase: {presentation?.phase ?? 'idle'}</span><span>Lock: {locked ? lockReason : 'none'}</span><span>Selected: {selected ? `${selected.r}:${selected.c}` : 'none'}</span><span>Duration: {presentation?.durationMs ?? 0}ms</span><span>Motion: {motionMode}</span><span>Revision: {state.revision ?? state.movesRemaining}</span><button onClick={() => setSlowAnimations(value => !value)}>{slowAnimations ? 'Normal speed' : 'Slow to 25%'}</button></aside>}
+    {diagnosticsEnabled && <aside className={styles.diagnostics} aria-label="Match-3 drag diagnostics"><strong>DEV DRAG DIAGNOSTICS</strong><span>Phase: {dragState?.phase ?? presentation?.phase ?? 'idle'}</span><span>Lock: {locked ? lockReason : 'none'}</span><span>Pointer down: {dragState ? `${Math.round(dragState.startX)}, ${Math.round(dragState.startY)}` : 'none'}</span><span>Pointer now: {dragState ? `${Math.round(dragState.currentX)}, ${Math.round(dragState.currentY)}` : 'none'}</span><span>Delta: {dragState ? `${Math.round(dragState.deltaX)}, ${Math.round(dragState.deltaY)}` : '0, 0'}</span><span>Token: {dragState?.tokenId ?? 'none'}</span><span>Source: {dragState ? `${dragState.source.r}:${dragState.source.c}` : 'none'}</span><span>Destination: {dragState?.destination ? `${dragState.destination.r}:${dragState.destination.c}` : 'none'}</span><span>Capture: {dragState?.capture ? 'yes' : 'no'}</span><span>Threshold: {dragState?.thresholdPassed ? 'passed' : 'waiting'}</span><span>Transform: {dragState ? `translate3d(${Math.round(dragState.deltaX)}px, ${Math.round(dragState.deltaY)}px, 0)` : 'none'}</span><span>Motion: {motionMode}</span><span>Revision: {state.revision ?? state.movesRemaining}</span><button onClick={() => setSlowAnimations(value => !value)}>{slowAnimations ? 'Normal speed' : 'Slow to 25%'}</button></aside>}
   </main>
 }
 
@@ -266,7 +365,7 @@ function BoardEffects({ presentation, rows, columns }) {
   </div>
 }
 
-function Tile({ cell, row, column, columns, selected, presentation, onChoose, onKeyDown, ...events }) {
+function Tile({ cell, row, column, columns, selected, presentation, dragState, onChoose, onKeyDown, ...events }) {
   if (cell.hole) return <span className={`${styles.tile} ${styles.hole}`} role="gridcell" aria-label={`Row ${row + 1}, column ${column + 1}, unusable`} />
   const token = TOKEN.get(cell.token)
   const special = cell.special === 'bomb' ? 'wrapped' : cell.special
@@ -284,6 +383,8 @@ function Tile({ cell, row, column, columns, selected, presentation, onChoose, on
     cellIsInPresentation(presentation, 'cleared', row, column) ? styles.clearedTile : '',
     cellIsInPresentation(presentation, 'triggered', row, column) ? styles.triggeredTile : '',
     cellIsInPresentation(presentation, 'created', row, column) ? styles.createdTile : '',
+    dragState?.source.r === row && dragState?.source.c === column ? styles.draggingTile : '',
+    dragState?.destination?.r === row && dragState?.destination?.c === column ? styles.dragPreviewTile : '',
   ].filter(Boolean).join(' ')
   const swap = presentation?.swapped?.find(position => position.r === row && position.c === column)
   const other = swap ? presentation.swapped.find(position => position.r !== row || position.c !== column) : null
@@ -292,7 +393,16 @@ function Tile({ cell, row, column, columns, selected, presentation, onChoose, on
     style['--swap-x'] = `${(other.c - column) * 100}%`
     style['--swap-y'] = `${(other.r - row) * 100}%`
   }
-  return <button type="button" data-cell={`${row}:${column}`} role="gridcell" aria-selected={selected} aria-label={`Row ${row + 1}, column ${column + 1}: ${parts.join(', ')}`} className={classes} style={style} onClick={() => onChoose(row, column)} onKeyDown={event => onKeyDown(event, row, column)} {...events}>
+  if (dragState?.source.r === row && dragState?.source.c === column) {
+    style['--drag-x'] = `${dragState.deltaX}px`
+    style['--drag-y'] = `${dragState.deltaY}px`
+  }
+  if (dragState?.destination?.r === row && dragState?.destination?.c === column) {
+    const previewFactor = dragState.phase === 'committed' ? 1 : 0.22
+    style['--preview-x'] = `${-dragState.deltaX * previewFactor}px`
+    style['--preview-y'] = `${-dragState.deltaY * previewFactor}px`
+  }
+  return <button type="button" data-cell={`${row}:${column}`} data-drag-phase={dragState?.source.r === row && dragState?.source.c === column ? dragState.phase : undefined} role="gridcell" aria-selected={selected} aria-label={`Row ${row + 1}, column ${column + 1}: ${parts.join(', ')}`} className={classes} style={style} onClick={() => onChoose(row, column)} onKeyDown={event => onKeyDown(event, row, column)} {...events}>
     <Match3TokenImage tokenId={cell.token} className={styles.tokenImage} decorative />
     {cell.drop && <span className={styles.dropObject}>⬇</span>}
     {special && <span className={`${styles.special} ${styles[`specialGraphic_${special}`]}`} aria-hidden="true">{special === 'row' || special === 'col' ? <img src="/images/cards/special/rocket.webp" alt="" /> : <span className={styles.sunGraphic} />}</span>}
