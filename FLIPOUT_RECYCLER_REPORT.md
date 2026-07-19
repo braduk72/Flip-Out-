@@ -86,6 +86,8 @@ Migration 010 committed to the Railway Preview database at `2026-07-19T14:17:11.
 - Preview Recycler verification: **8 passed, 0 failed, 0 skipped**, including live PostgreSQL concurrency, idempotency, cross-account rejection and last-copy protection.
 - Preview verification build: **passed**, 139 modules in 1.80 seconds.
 - Ready verification deployment: `https://flip-2byq6y99m-chattocal.vercel.app` (`dpl_FHvohRLGLRDrPu2pm7byUoDeZXKt`).
+- Dev-branch commit: `2d8eefb` (`Build secure duplicate card recycler`). Standard Vercel deployment `dpl_Pe11GoVn1HEQwY97ktuzYbWx74WW` reached Ready at `https://flip-8lnylx40e-chattocal.vercel.app`.
+- Permanent development URL: `https://dev.flipout.gizmogames.uk` returned HTTP 200, used the same `/assets/index-DHG-xlKH.js` bundle and ETag as the generated deployment, and contained build version `1.5.0-recycler`.
 
 The first full Preview migration build applied migration 010 and passed **115 of 116** tests. Its only failure was unrelated to the Recycler: Vercel's source upload omitted the gitignored native Android `MainActivity.java` expected by `tests/mobile-ux.test.js`. The focused Preview verification was therefore run separately and passed. This packaging limitation remains recorded; mobile code was not changed as part of this package.
 
