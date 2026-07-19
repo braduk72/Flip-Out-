@@ -34,6 +34,7 @@ The development build now has an explicit phone/tablet orientation policy, runti
 - The card remains a real disabled button while collection is pending, exposes `aria-busy`, and cannot be submitted twice during the same React render tick.
 - A successful response immediately applies the confirmed server amount, removes the claimable card and presents the authoritative receipt, then refreshes player state from the server.
 - Timezone detection now falls back to `UTC` when Safari/Intl does not return an IANA timezone.
+- The first deployed API check exposed a pre-existing global-ID collision: `daily-login:<date>` let one development account block every other account on that date. Daily claim/transaction IDs now include the authenticated player ID, so retries for one account remain stable while different accounts cannot collide.
 - No placeholder reward animation or client-invented reward is used.
 
 ## Touch and button review
@@ -55,7 +56,7 @@ The development build now has an explicit phone/tablet orientation policy, runti
 
 ## Verification results
 
-- Full automated suite: passed. Node: 107 total, 99 passed, 0 failed, 8 Preview-database tests skipped because their restricted database secrets are not exposed to the local shell. UI: 20 passed, 0 failed across 5 files.
+- Final full automated suite: Node 108 total, 100 passed, 0 failed, 8 Preview-database tests skipped because their restricted database secrets are not exposed to the local shell; UI 20 passed, 0 failed across 5 files. The new per-account Daily claim-ID regression test passed.
 - Focused lint: passed with no findings.
 - Production build: passed; 137 modules. Main JS 424.82 kB / 133.32 kB gzip; main CSS 96.01 kB / 20.34 kB gzip; Match-3 JS 16.23 kB / 5.75 kB gzip.
 - Preview build: passed with the same output.
@@ -64,6 +65,8 @@ The development build now has an explicit phone/tablet orientation policy, runti
 - Native Android compile: blocked before compilation because this Windows environment has neither `JAVA_HOME` nor a `java` executable.
 - Local Chromium built-app smoke: HTTP 200; carousel controls rendered below the promotion and exposed expected accessible names. The local Vite static preview has no Vercel API runtime, so it was not used as Daily Reward evidence.
 - Preview deployment and authoritative Daily Reward verification: pending final recorded run.
+
+One combined shell invocation accidentally overlapped the production and Preview builds against the shared `dist` directory; Preview reported `ENOTEMPTY`. The same commands were immediately rerun separately and both passed with the exact results above. No code change was made to conceal or work around that command-concurrency error.
 
 ## Remaining physical-device work
 

@@ -10,6 +10,10 @@ function safeId(value, label) {
   return String(value)
 }
 
+export function dailyLoginClaimId(playerId, dateKey) {
+  return safeId(`daily-login:${safeId(playerId, 'player id')}:${safeId(dateKey, 'local date')}`, 'daily login claim id')
+}
+
 export function secureWeightedReward(table = REWARD_TABLES.dailyWheelV1) {
   const value = crypto.randomInt(0, 0x100000000) / 0x100000000
   return selectWeightedReward(table, value)
@@ -85,7 +89,7 @@ export async function claimDailyWheel(db, { playerId, spinType, timeZone = 'UTC'
 export async function getDailyLoginStatus(db, { playerId, timeZone = 'UTC' }) {
   const today = localDateKey(new Date(), timeZone)
   const yesterday = localDateKey(new Date(Date.now() - 86400000), timeZone)
-  const claimId = `daily-login:${today}`
+  const claimId = dailyLoginClaimId(playerId, today)
   const [prior, streakRow] = await Promise.all([
     db.query(`SELECT reward FROM fo_reward_claims WHERE claim_id=$1 AND player_id=$2`, [claimId, playerId]),
     db.query(`SELECT current_count,last_date::text AS last_date FROM fo_player_streaks WHERE player_id=$1 AND streak_type='daily-login'`, [playerId]),
@@ -104,7 +108,7 @@ export async function getDailyLoginStatus(db, { playerId, timeZone = 'UTC' }) {
 export async function claimDailyLogin(db, { playerId, timeZone = 'UTC' }) {
   const today = localDateKey(new Date(), timeZone)
   const yesterday = localDateKey(new Date(Date.now() - 86400000), timeZone)
-  const claimId = `daily-login:${today}`
+  const claimId = dailyLoginClaimId(playerId, today)
   const client = await db.connect()
   try {
     await client.query('BEGIN')

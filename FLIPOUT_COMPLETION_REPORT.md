@@ -6,6 +6,8 @@ Phone shells now use portrait orientation, while tablets retain portrait/landsca
 
 The Home carousel now provides native finger scrolling, momentum and snapping, autoplay, indicators and non-overlay controls. Daily Reward collection remains server-authoritative, blocks immediate duplicate taps, keeps its pending button semantics and displays only the confirmed reward. Shared coarse-pointer targets have a 44 x 44 CSS-pixel minimum. Full technical evidence and physical-device limitations are in `FLIPOUT_MOBILE_UX_REPORT.md`; no economy or gameplay balance was altered.
 
+The first real Preview claim exposed a pre-existing cross-account collision in the date-only Daily transaction ID. The ID now includes the authenticated player ID; same-account retries remain idempotent and different accounts can claim independently.
+
 > **Development deployment URL:** Future verification and handover reports use `https://dev.flipout.gizmogames.uk`. Vercel-generated `*.vercel.app` addresses below are preserved only as historical deployment evidence, not as user-facing development URLs.
 
 ## Match-3 card-art token package — 19 July 2026
