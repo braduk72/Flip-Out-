@@ -6,7 +6,7 @@
 
 The approved permanent Home direction is implemented in one pass: original layered SVG/WebP assets, a tokenised reusable React component system, data-driven/swipeable promotions, safe-area fixed player/economy header, real-engine animated Match-3 preview, signature purple Play control, contextual Daily Reward, collection/Foil/season progress, modal/loading/error/empty states and four-item navigation. Existing game modes and economy/authentication boundaries were retained.
 
-Pre-deployment verification: UI **15/15 passed**; full local Node discovery **87 total / 79 passed / 0 failed / 8 Preview-only skipped**; focused lint **0 errors / 0 warnings**; production and Preview builds passed with 128 modules, main JS **412.01 kB / 129.33 kB gzip** and main CSS **95.44 kB / 20.15 kB gzip**; local built-app smoke **HTTP 200**. Full detail: `FLIPOUT_UI_IMPLEMENTATION_REPORT.md`; assets: `UI_ASSET_MANIFEST.md`. Production was not touched.
+Verification: UI **15/15 passed**; full local Node discovery **87 total / 79 passed / 0 failed / 8 Preview-only skipped**; focused lint **0 errors / 0 warnings**; production and Preview builds passed with 128 modules, main JS **412.01 kB / 129.33 kB gzip** and main CSS **95.44 kB / 20.15 kB gzip**. Commit `c4e34bc` is live at `https://dev.flipout.gizmogames.uk`; page and new UI assets return 200 and the bundle reports `1.1.0-ui4d`. Preview DB rerun and browser visual screenshots were blocked by the external-tool usage cap/browser privacy rule and remain explicitly unverified. Full detail: `FLIPOUT_UI_IMPLEMENTATION_REPORT.md`; assets: `UI_ASSET_MANIFEST.md`. Production was not touched.
 
 ## Match-3 balancing and device-preparation package — 18 July 2026
 

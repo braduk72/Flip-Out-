@@ -49,7 +49,7 @@ Named audio events exist for `buttonPress`, `carouselChange`, `coinStoreOpen`, `
 - Touch actions are at least 44×44 CSS pixels; primary interactive controls are generally 48px or larger.
 - Keyboard navigation, visible focus, semantic landmarks/labels, dialog focus management/Escape, live progress semantics, forced-colour borders, scalable type and colour-independent labels are present.
 
-Automated viewport contracts cover 320px, the phone breakpoint, 768px tablets, landscape rules, safe-area variables and target sizes. Human checks are still required on real iPhone/Android cut-outs, VoiceOver, TalkBack, 200% text, physical landscape and native haptics.
+Automated viewport contracts cover 320px, the phone breakpoint, 768px tablets, landscape rules, safe-area variables and target sizes. Browser visual inspection was blocked by the browser privacy rule. Human checks are still required on real iPhone/Android cut-outs, VoiceOver, TalkBack, 200% text, physical landscape and native haptics.
 
 ## Verification before deployment
 
@@ -61,11 +61,18 @@ Automated viewport contracts cover 320px, the phone breakpoint, 768px tablets, l
 - Local built-app HTTP smoke: **200** at the development preview server.
 - Automated accessibility scan: **passed** for the rendered Home fixture, with colour-contrast measurement excluded only because jsdom cannot compute layout/paint contrast.
 
-## Preview deployment
+## Preview deployment and remote verification
 
-Permanent development URL: `https://dev.flipout.gizmogames.uk`.
-
-Final deployment ID, HTTP/build match and remote responsive-browser results are recorded in the deployment verification section below after the `dev` branch deployment completes.
+- Commit `c4e34bc` was pushed from `dev` to `origin/dev`; production branch `main` was not changed.
+- Permanent development URL: `https://dev.flipout.gizmogames.uk`.
+- DNS: CNAME `dev.flipout.gizmogames.uk` → `39622341da5cfe42.vercel-dns-016.com`, TTL 60.
+- HTTPS: **200**, Server `Vercel`, Last-Modified `Sun, 19 Jul 2026 00:37:21 GMT`, ETag `"76dfb8a66ab3338e7fd8ab136b6d027f"`.
+- Current entry bundle: `/assets/index-BYVmyWFx.js`, **412,286 bytes**, HTTP 200. It contains `1.1.0-ui4d`, matching `src/version.js` and this deployment.
+- Runtime assets verified at HTTP 200 with the exact shipped byte sizes: logo 1,651-byte SVG; Coin Store promotion 160,782-byte WebP; Match-3 star token 734-byte SVG.
+- Unauthenticated `/api/fo-player-state` returns the expected **401**, confirming the server boundary is present.
+- Vercel CLI deployment-ID/domain-assignment inspection could not be rerun because Codex's external-tool usage cap rejected Vercel access. The public permanent hostname, Vercel response, new bundle filename/version and fresh Last-Modified timestamp independently confirm that the `dev` deployment is being served.
+- The Preview database suite could not be rerun in this pass: the local checkout has no `DATABASE_URL`, and both Vercel/Railway credential retrieval were rejected by the same tool usage cap. No database schema or production data was changed.
+- Browser-based responsive screenshots were attempted at the exact permanent URL but blocked by a user-level browser privacy rule. Automated responsive/safe-area tests pass; real visual viewport judgement remains a human/device check and is not concealed as complete.
 
 ## Remaining placeholders and risks
 

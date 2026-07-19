@@ -4,11 +4,11 @@
 
 ## Concept 4D design-system Home — 19 July 2026
 
-- **Status: Implemented; Preview verification in progress.** The prototype Home has been replaced by the approved Concept 4D hierarchy using reusable React primitives and independent SVG/WebP layers. It has a safe-area fixed identity/economy header, data-driven promotional carousel, real-engine Match-3 preview, signature purple Play action, meaningful collection/Foil/season states and four-item bottom navigation.
+- **Status: Implemented and deployed to development Preview.** The prototype Home has been replaced by the approved Concept 4D hierarchy using reusable React primitives and independent SVG/WebP layers. It has a safe-area fixed identity/economy header, data-driven promotional carousel, real-engine Match-3 preview, signature purple Play action, meaningful collection/Foil/season states and four-item bottom navigation.
 - The fixed 390×844 shell has been removed. Responsive contracts cover 320px phones, common and tall phones, tablets, compact landscape, runtime safe-area insets, keyboard/focus, Reduced Motion and forced colours.
 - Home now reads authenticated identity, authoritative Stars/Coins, Match-3 progress, inventory and live-ops data. Daily Reward availability is read without granting anything; claim remains an explicit server action. Missing XP/level and Foil foundations are reported honestly rather than fabricated.
 - New reusable source lives under `src/ui/`; original layered assets live under `public/ui/`. Full results and remaining human checks are in `FLIPOUT_UI_IMPLEMENTATION_REPORT.md`; exact assets/statuses are in `UI_ASSET_MANIFEST.md`.
-- Verification so far: UI **15/15 passed**; Node **79 passed, 0 failed, 8 Preview-only skipped**; focused lint clean; production and Preview builds pass at **412.01 kB / 129.33 kB gzip main JS** and **95.44 kB / 20.15 kB gzip main CSS**. Production was not touched.
+- Verification: UI **15/15 passed**; Node **79 passed, 0 failed, 8 Preview-only skipped**; focused lint clean; production and Preview builds pass at **412.01 kB / 129.33 kB gzip main JS** and **95.44 kB / 20.15 kB gzip main CSS**. Commit `c4e34bc` is live at `https://dev.flipout.gizmogames.uk`: HTTP 200 and bundle version `1.1.0-ui4d`. Preview DB rerun and browser screenshots were blocked by the external-tool usage cap/browser privacy rule respectively; no database or production system was changed.
 
 ## Match-3 balancing package — 18 July 2026
 

@@ -55,7 +55,17 @@ npx vercel inspect https://dev.flipout.gizmogames.uk --scope chattocal
 npx vercel ls flip-out --scope chattocal
 ```
 
-The application currently reports `v1.0.0` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+The application currently reports `v1.1.0-ui4d` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+
+## Verification record — 19 July 2026
+
+- Git commit `c4e34bc` was pushed from `dev`; `main` was not touched.
+- DNS resolves with TTL 60 to `39622341da5cfe42.vercel-dns-016.com`.
+- HTTPS returns 200 from Vercel. Last-Modified is `Sun, 19 Jul 2026 00:37:21 GMT`; ETag is `"76dfb8a66ab3338e7fd8ab136b6d027f"`.
+- The permanent URL loads `/assets/index-BYVmyWFx.js` (412,286 bytes), which contains application version `1.1.0-ui4d`.
+- New Concept 4D logo, Coin Store WebP and Match-3 token assets each return HTTP 200 from the permanent URL.
+- Unauthenticated player-state API returns the expected 401.
+- Vercel CLI deployment-ID inspection was unavailable because the external-tool usage cap rejected the read; no manual alias or production action was attempted.
 
 ## Verification record — 18 July 2026
 
