@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { buildCollectionData, buildRecyclerModel, filterCollectionCards, readCollectionFavourites, writeCollectionFavourites } from '../src/ui/collectionData.js'
+import { buildCollectionData, buildRecyclerModel, filterCollectionCards, formatRecyclerReward, readCollectionFavourites, writeCollectionFavourites } from '../src/ui/collectionData.js'
 
 const state = {
   profile: { player_id: 'collector-one' },
@@ -71,4 +71,9 @@ test('recycler model exposes only copies above the protected final copy and comp
   assert.equal(complete.complete, true)
   assert.equal(complete.cardsSelected, 5)
   assert.deepEqual(complete.reward, { currencyId: 'stars', amount: 1 })
+})
+
+test('recycler reward copy uses singular Star for the one-Star recipe', () => {
+  assert.equal(formatRecyclerReward({ currencyId: 'stars', amount: 1 }), '1 Star')
+  assert.equal(formatRecyclerReward({ currencyId: 'stars', amount: 5 }), '5 Stars')
 })

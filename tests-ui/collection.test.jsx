@@ -88,7 +88,7 @@ describe('Collection 2.0', () => {
     for (let count = 0; count < 5; count += 1) await user.click(add)
     await user.click(screen.getByRole('button', { name: 'Recycle 5 cards' }))
     expect(await screen.findByRole('dialog', { name: 'Recycling complete' })).toBeInTheDocument()
-    expect(screen.getByText('+1 stars')).toBeInTheDocument()
+    expect(screen.getByText('+1 Star')).toBeInTheDocument()
     expect(action).toHaveBeenCalledWith(expect.objectContaining({ action: 'recycle-duplicates', recipeId: 'common-stars-v1', items: [{ itemId: 'card:sportscars:1', quantity: 5 }] }))
   })
 

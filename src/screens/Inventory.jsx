@@ -3,7 +3,7 @@ import BottomNav from '../components/BottomNav.jsx'
 import { RARITIES } from '../data/itemCatalog.js'
 import { Badge, CardPanel, EmptyState, ErrorState, LoadingState, Modal, ProgressBar } from '../ui/components.jsx'
 import Icon from '../ui/Icon.jsx'
-import { buildCollectionData, buildRecyclerModel, filterCollectionCards, readCollectionFavourites, writeCollectionFavourites } from '../ui/collectionData.js'
+import { buildCollectionData, buildRecyclerModel, filterCollectionCards, formatRecyclerReward, readCollectionFavourites, writeCollectionFavourites } from '../ui/collectionData.js'
 import { playerGameApi } from '../utils/gameApi.js'
 import styles from './Collection.module.css'
 
@@ -253,12 +253,12 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
           <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>Duplicates retain value</span><h2 id="recycler-title">Card Recycler</h2></div><Badge tone="ready">Keep one guaranteed</Badge></div>
           {!recyclerRecipe ? <CardPanel><EmptyState icon="recycle" title="Recycler recipe unavailable" detail="The server has not supplied an active recycling recipe, so no cards can be destroyed." /></CardPanel> : <>
             <CardPanel variant="elevated" className={`${styles.recyclerMachine} ${recycling ? styles.recyclerRunning : ''}`} aria-busy={recycling || undefined}>
-              <div className={styles.machineHeader}><span className={styles.machineIcon}><Icon name="recycle" size={34}/></span><div><span className={styles.eyebrow}>Recipe {recyclerRecipe.configVersion}</span><h3>{recyclerRecipe.batchSize} {recyclerRecipe.rarity} duplicates</h3><p>Every batch returns {recyclerRecipe.reward.amount} {recyclerRecipe.reward.currencyId ?? recyclerRecipe.reward.itemId}. Your final copy is locked away safely.</p></div></div>
+              <div className={styles.machineHeader}><span className={styles.machineIcon}><Icon name="recycle" size={34}/></span><div><span className={styles.eyebrow}>Recipe {recyclerRecipe.configVersion}</span><h3>{recyclerRecipe.batchSize} {recyclerRecipe.rarity} duplicates</h3><p>Every batch returns {formatRecyclerReward(recyclerRecipe.reward)}. Your final copy is locked away safely.</p></div></div>
               <div className={styles.machineWindow} aria-hidden="true"><span className={styles.gearLarge}><Icon name="recycle" size={58}/></span><span className={styles.gearSmall}><Icon name="recycle" size={35}/></span><span className={styles.machineSteam}/><span className={styles.machineTray}><Icon name={recyclerRecipe.reward.currencyId === 'stars' ? 'star' : 'rewards'} size={26}/></span></div>
               <div className={styles.recyclerMeter}>
                 <div><span>Loaded</span><strong>{recycler.cardsSelected} / {recycler.targetCards}</strong></div>
                 <ProgressBar value={recycler.cardsSelected} max={recycler.targetCards} label={`${recycler.cardsSelected} duplicate cards loaded`} tone="purple"/>
-                <p>{recycler.complete ? `${recycler.batches} complete ${recycler.batches === 1 ? 'batch' : 'batches'} · ${recycler.reward.amount} ${recycler.reward.currencyId ?? recycler.reward.itemId} guaranteed` : `Select ${recycler.cardsNeeded} more duplicate ${recycler.cardsNeeded === 1 ? 'card' : 'cards'} for a complete batch.`}</p>
+                <p>{recycler.complete ? `${recycler.batches} complete ${recycler.batches === 1 ? 'batch' : 'batches'} · ${formatRecyclerReward(recycler.reward)} guaranteed` : `Select ${recycler.cardsNeeded} more duplicate ${recycler.cardsNeeded === 1 ? 'card' : 'cards'} for a complete batch.`}</p>
               </div>
               <button type="button" className={styles.recycleButton} disabled={!recycler.complete || recycling} onClick={recycleCards}><Icon name="recycle"/>{recycling ? 'Recycling securely…' : recyclerNotice ? 'Retry secure recycling' : `Recycle ${recycler.cardsSelected || recycler.batchSize} cards`}</button>
               {recyclerNotice && <p className={styles.recyclerError} role="alert">{recyclerNotice}</p>}
@@ -302,7 +302,7 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
     <Modal open={Boolean(recyclerReceipt)} title="Recycling complete" tone="reward" onDismiss={() => setRecyclerReceipt(null)} actions={<button type="button" className={styles.primary} onClick={() => setRecyclerReceipt(null)}>Collect reward</button>}>
       {recyclerReceipt && <div className={styles.recyclerResult}>
         <div className={styles.resultMachine} aria-hidden="true"><Icon name="recycle" size={46}/><span/><Icon name={recyclerReceipt.reward.currencyId === 'stars' ? 'star' : 'rewards'} size={52}/></div>
-        <strong>+{recyclerReceipt.reward.amount} {recyclerReceipt.reward.currencyId ?? recyclerReceipt.reward.itemId}</strong>
+        <strong>+{formatRecyclerReward(recyclerReceipt.reward)}</strong>
         <p>{recyclerReceipt.cardsConsumed} duplicate cards were permanently recycled in one secure transaction.</p>
         <small>Receipt: {recyclerReceipt.transactionId}{recyclerReceipt.duplicate ? ' · Safe retry confirmed' : ''}</small>
       </div>}

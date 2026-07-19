@@ -162,6 +162,13 @@ export function buildRecyclerModel(cards = [], recipe = null, selection = {}) {
   }
 }
 
+export function formatRecyclerReward(reward = {}) {
+  const amount = Number(reward.amount) || 0
+  const rawLabel = reward.currencyId ?? reward.itemId ?? 'reward'
+  const label = rawLabel === 'stars' ? 'Star' : rawLabel === 'coins' ? 'Coin' : String(rawLabel)
+  return `${amount} ${amount === 1 ? label : `${label}s`}`
+}
+
 export function filterCollectionCards(cards, {
   query = '', setId = 'all', ownership = 'all', rarity = 'all', variant = 'all', favouritesOnly = false, sort = 'set',
 } = {}) {
