@@ -6,6 +6,8 @@ The Home foundation now follows the project-wide phone portrait/tablet adaptive 
 
 The promotional carousel is a native momentum-scrolling snap viewport with autoplay, labelled indicators and controls below the art. Daily Reward is a stable pending button backed by the authenticated authoritative grant, with immediate duplicate-tap protection and a Safari-safe timezone fallback. Coarse-pointer controls have a 44 x 44 CSS-pixel floor. See `FLIPOUT_MOBILE_UX_REPORT.md` for exact verification and remaining physical Safari/Android checks.
 
+The final development deployment is Ready Preview `dpl_JAn3NGNQJSLttPuV2x5krL5JwWD2` at the permanent URL. The real API test granted a disposable guest exactly 50 Stars once and treated the immediate repeat as a duplicate. Physical Safari and Android hardware checks remain required because this Windows environment provides Chromium only and has no JDK/Xcode toolchain.
+
 Date: 19 July 2026. Environment: development and Vercel Preview only. Production was not targeted.
 
 ## Outcome

@@ -8,6 +8,8 @@ The Home carousel now provides native finger scrolling, momentum and snapping, a
 
 The first real Preview claim exposed a pre-existing cross-account collision in the date-only Daily transaction ID. The ID now includes the authenticated player ID; same-account retries remain idempotent and different accounts can claim independently.
 
+Final result: Node 108 total / 100 passed / 0 failed / 8 restricted Preview-database skips; UI 20/20; focused lint clean; both builds passed. Ready Preview `dpl_JAn3NGNQJSLttPuV2x5krL5JwWD2` is served at `https://dev.flipout.gizmogames.uk` with HTTP 200 and version `1.2.1-mobile-ux`. A disposable guest claim changed Stars from 0 to exactly 50; the immediate retry returned duplicate with the same claim ID and no second grant. Production remained untouched.
+
 > **Development deployment URL:** Future verification and handover reports use `https://dev.flipout.gizmogames.uk`. Vercel-generated `*.vercel.app` addresses below are preserved only as historical deployment evidence, not as user-facing development URLs.
 
 ## Match-3 card-art token package — 19 July 2026

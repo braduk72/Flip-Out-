@@ -2,13 +2,14 @@
 
 ## Mobile UX polish — 19 July 2026
 
-- **Status: Implemented; development verification in progress.** Native iPhone orientation is portrait-only, Android phones request portrait, and tablets retain portrait/landscape through a 600 dp smallest-width policy. Web applies the same boundary progressively and presents a portrait guard where Safari or another browser refuses programmatic locking.
+- **Status: Implemented and deployed to development Preview.** Native iPhone orientation is portrait-only, Android phones request portrait, and tablets retain portrait/landscape through a 600 dp smallest-width policy. Web applies the same boundary progressively and presents a portrait guard where Safari or another browser refuses programmatic locking.
 - Runtime safe-area variables now cover all four edges; compact phone-landscape layouts were removed from Home, shared components and Match-3.
 - The promotional carousel now uses native touch/momentum scrolling and snap points, preserves autoplay/indicators/pause controls, and puts both arrows below rather than over the slide artwork or text.
 - Daily Reward remains an authenticated server claim. The pending card stays a disabled semantic button, same-tick duplicate taps are blocked, the exact confirmed Star amount is displayed immediately, and Safari timezone detection has a safe UTC fallback. No placeholder reward animation or client-invented grant remains.
 - Preview API verification exposed and repaired a pre-existing date-only Daily claim-ID collision. Claim IDs now include the authenticated player ID, remaining stable for retries without colliding across accounts.
 - Coarse-pointer controls have a shared 44 x 44 CSS-pixel floor; carousel dots were enlarged to a full 44 x 44 target.
 - Exact commands, files, limits and deployment evidence are recorded in `FLIPOUT_MOBILE_UX_REPORT.md`. Economy balance and gameplay rules were not changed.
+- Final verification: Node 108 total / 100 passed / 0 failed / 8 local Preview-database skips; UI 20/20; focused lint clean; production and Preview builds passed. Permanent development URL HTTP 200 served `1.2.1-mobile-ux`. A fresh Preview guest received exactly 50 Stars once; the immediate retry was a duplicate and balance stayed 50. Native Android compilation remains blocked only by the missing local JDK, and physical Safari/Android device checks remain manual.
 
 > **Development deployment URL:** Future verification and handover reports use `https://dev.flipout.gizmogames.uk`. Vercel-generated `*.vercel.app` addresses below are preserved only as historical deployment evidence, not as user-facing development URLs.
 

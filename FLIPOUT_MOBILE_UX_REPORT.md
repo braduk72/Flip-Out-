@@ -64,7 +64,10 @@ The development build now has an explicit phone/tablet orientation policy, runti
 - Capacitor iOS sync: passed.
 - Native Android compile: blocked before compilation because this Windows environment has neither `JAVA_HOME` nor a `java` executable.
 - Local Chromium built-app smoke: HTTP 200; carousel controls rendered below the promotion and exposed expected accessible names. The local Vite static preview has no Vercel API runtime, so it was not used as Daily Reward evidence.
-- Preview deployment and authoritative Daily Reward verification: pending final recorded run.
+- Preview deployment: commits `6aa2916` and `2c76e42` were pushed only to `dev`. Ready deployment `dpl_JAn3NGNQJSLttPuV2x5krL5JwWD2` (`https://flip-dfex0oe42-chattocal.vercel.app`) is target `preview`; the permanent URL maps to it.
+- Permanent URL verification: `https://dev.flipout.gizmogames.uk` returned HTTP 200 from Vercel and byte-identical HTML to the generated Preview with ETag `"4e722771f70cac7ee939a5bf1260c5d4"`. `/assets/index-VU0UgckH.js` returned 200, 425,095 bytes and contains `1.2.1-mobile-ux`.
+- Authoritative Daily Reward verification: a disposable Preview guest began at 0 Stars. The first claim returned `duplicate: false`, reward `stars: 50` and claim ID `daily-login:7bfe277c-a3bc-401d-87db-88ee355a2aa0:2026-07-19`. The immediate identical retry returned `duplicate: true` with the same ID. Final balance was exactly 50 Stars, delta exactly 50, and `available` was `false`.
+- Branch safety: `main` and `origin/main` both remained at `157344e5f6deaaa6540418c514448a976753688c`. No production target or production domain was modified.
 
 One combined shell invocation accidentally overlapped the production and Preview builds against the shared `dist` directory; Preview reported `ENOTEMPTY`. The same commands were immediately rerun separately and both passed with the exact results above. No code change was made to conceal or work around that command-concurrency error.
 

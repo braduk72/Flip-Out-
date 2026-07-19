@@ -57,6 +57,16 @@ npx vercel ls flip-out --scope chattocal
 
 The application currently reports `1.2.1-mobile-ux` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
 
+## Verification record — mobile UX polish, 19 July 2026
+
+- Commits `6aa2916` and `2c76e42` were pushed from `dev`; `main` and `origin/main` remained at `157344e5f6deaaa6540418c514448a976753688c`.
+- Vercel Ready Preview: `dpl_JAn3NGNQJSLttPuV2x5krL5JwWD2`, generated URL `https://flip-dfex0oe42-chattocal.vercel.app`, target `preview`.
+- `https://dev.flipout.gizmogames.uk` maps to that deployment and returns HTTP 200 from Vercel.
+- Permanent and generated URLs returned byte-identical HTML and ETag `"4e722771f70cac7ee939a5bf1260c5d4"`.
+- The permanent URL serves `/assets/index-VU0UgckH.js` at HTTP 200 (425,095 bytes), containing `1.2.1-mobile-ux`.
+- A disposable development guest claimed the authoritative Daily Reward: 0 to 50 Stars, first response non-duplicate, immediate retry duplicate with the same account-scoped claim ID, final availability false.
+- No production deployment, production domain, root DNS record or nameserver was changed.
+
 ## Verification record — Match-3 card-art tokens, 19 July 2026
 
 - Git commit `9ad2af5` was pushed from `dev`; `main` and production were not changed.
