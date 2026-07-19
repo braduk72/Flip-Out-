@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
+if [ "$(git branch --show-current)" != "dev" ]; then
+  echo "Development deployments must run from branch dev."
+  exit 1
+fi
 echo "Pushing to git..."
 git push origin dev
-echo "Waiting for Vercel build..."
-sleep 30
-LATEST=$(npx vercel ls --scope chattocal 2>&1 | grep "flip-out " | grep "Ready.*Preview" | head -1 | awk '{print $3}' | sed 's|https://||')
-echo "Latest deployment: $LATEST"
-npx vercel alias set $LATEST dev.gizmogames.uk --scope chattocal
-echo "Done. https://dev.gizmogames.uk is live."
+echo "Vercel will update the dev-branch domain after the deployment is Ready."
+echo "Permanent development URL: https://dev.flipout.gizmogames.uk"

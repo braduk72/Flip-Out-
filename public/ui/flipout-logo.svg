@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 230" role="img" aria-labelledby="title">
+  <title id="title">Flip-Out!</title>
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff4a8"/><stop offset=".22" stop-color="#ffd84f"/><stop offset=".7" stop-color="#f59e0b"/><stop offset="1" stop-color="#b95d08"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e4fbff"/><stop offset=".28" stop-color="#63e6ff"/><stop offset=".75" stop-color="#1594ff"/><stop offset="1" stop-color="#0752bd"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-30%" width="140%" height="170%">
+      <feDropShadow dx="0" dy="9" stdDeviation="5" flood-color="#020617" flood-opacity=".95"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#8b5cf6" flood-opacity=".42"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)" stroke="#2e1065" stroke-width="15" stroke-linejoin="round" paint-order="stroke fill">
+    <text x="300" y="104" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="116" font-weight="900" letter-spacing="-8" fill="url(#gold)">FLIP</text>
+    <text x="300" y="205" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="111" font-weight="900" letter-spacing="-7" fill="url(#blue)">OUT!</text>
+  </g>
+  <path d="M300 2l9 21 23 2-18 15 6 23-20-12-20 12 6-23-18-15 23-2z" fill="#fff3a5" stroke="#9a4f00" stroke-width="5"/>
+  <path d="M75 37c76-36 154-35 211-21" fill="none" stroke="#fff" stroke-opacity=".72" stroke-width="7" stroke-linecap="round"/>
+</svg>

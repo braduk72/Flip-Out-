@@ -17,7 +17,7 @@ Developed by **Gizmo Games** — a UK Community Interest Company whose mission i
 - **Payments:** Stripe (live keys in Vercel env vars)
 - **Bundle ID:** `uk.gizmogames.flipout`
 - **Live URL:** [flipout.gizmogames.uk](https://flipout.gizmogames.uk)
-- **Dev URL:** [dev.gizmogames.uk](https://dev.gizmogames.uk)
+- **Permanent development URL:** [dev.flipout.gizmogames.uk](https://dev.flipout.gizmogames.uk)
 
 ---
 
@@ -35,9 +35,13 @@ C:\brad\FlipOut
 
 Standard `vercel deploy` silently 404s images due to file-read issues. Always use the prebuilt method:
 
-**Deploy to dev.gizmogames.uk only:**
+**Deploy the `dev` branch only:**
 ```powershell
 Set-Location "C:\brad\FlipOut"
+
+# The custom domain is bound to Git branch `dev` in Vercel. A successful
+# deployment of this branch updates https://dev.flipout.gizmogames.uk automatically.
+if ((git branch --show-current) -ne 'dev') { throw 'Development deployments must run from branch dev.' }
 
 # 1. Build locally
 npx vercel build --yes --scope chattocal
@@ -47,9 +51,11 @@ $output = npx vercel deploy --prebuilt --scope chattocal --yes 2>&1
 $output | Write-Host
 $url = ($output | Select-String 'https://flip-[a-z0-9]+-chattocal\.vercel\.app').Matches[0].Value
 
-# 3. Alias to dev only
-npx vercel alias $url dev.gizmogames.uk --scope chattocal
+# 3. Verify the permanent branch URL (do not create a per-deployment alias)
+(Invoke-WebRequest https://dev.flipout.gizmogames.uk -Method Head -UseBasicParsing).StatusCode
 ```
+
+See [`FLIPOUT_DEPLOYMENT.md`](FLIPOUT_DEPLOYMENT.md) for the branch-domain and DNS configuration, verification commands, and the strict production boundary. Deployment reports should use `https://dev.flipout.gizmogames.uk`; temporary `*.vercel.app` URLs are diagnostic identifiers only.
 
 **Promote to production (gizmogames.uk) — only when Brad says "push to live":**
 ```powershell

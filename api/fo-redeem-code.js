@@ -10,10 +10,10 @@ function getPool() {
 // ── Server-side source of truth for promo codes ───────────────────────────────
 // Keep in sync with src/data/promoCodes.js (client uses that for offline fallback)
 const CODES = {
-  'FLIPOUT':    { coins: 200 },
-  'GIZMO100':   { coins: 100 },
-  'LAUNCH':     { coins: 500 },
-  'LUCKYPENNY': { coins: 1000, spins: 5 },
+  'FLIPOUT':    { stars: 2000 },
+  'GIZMO100':   { stars: 1000 },
+  'LAUNCH':     { stars: 5000 },
+  'LUCKYPENNY': { stars: 10000, spins: 5 },
   'SPIN2WIN':   { spins: 5 },
   'NEWDECK':    { unlocks: 1 },
   'CRASHONE':   { avatar: 99 },  // Beta Tester exclusive — unlocks Crash Test Dummy avatar
@@ -67,7 +67,14 @@ export default async function handler(req, res) {
       [code, deviceUuid, email, ip]
     )
 
-    return res.json({ ok: true, coins: promo.coins || 0, spins: promo.spins || 0, unlocks: promo.unlocks || 0, avatar: promo.avatar || null })
+    return res.json({
+      ok: true,
+      transactionId: `promo:${deviceUuid}:${code}`,
+      stars: promo.stars || 0,
+      spins: promo.spins || 0,
+      unlocks: promo.unlocks || 0,
+      avatar: promo.avatar || null,
+    })
 
   } catch (err) {
     if (err.code === '23505') {

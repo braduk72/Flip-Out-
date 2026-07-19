@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { DECKS, FREE_CARD_COUNT, getDeckBackImage } from '../data/decks'
 import styles from './DeckPicker.module.css'
+import { createTransactionId, economy } from '../utils/economyService.js'
 
 function randomCard(deck) {
   const n = deck.cardStart + Math.floor(Math.random() * deck.cardCount)
@@ -13,13 +14,6 @@ function getOwnedDecks() {
 
 function getCoins() {
   return parseInt(localStorage.getItem('fo_coins') || '0')
-}
-
-function buyDeckById(id) {
-  const owned = getOwnedDecks()
-  if (!owned.includes(id)) {
-    localStorage.setItem('fo_owned_decks', JSON.stringify([...owned, id]))
-  }
 }
 
 function getFreeUnlocks() {
@@ -76,8 +70,12 @@ export default function DeckPicker({ onSelect, onBack }) {
       setNotEnough(true)
       return
     }
-    localStorage.setItem('fo_coins', String(current - price))
-    buyDeckById(buyDeck.id)
+    const result = economy.applyTransaction({
+      id: createTransactionId(`deck-unlock:${buyDeck.id}`),
+      source: 'deck-unlock',
+      changes: { counters: { coins: -price }, decks: [buyDeck.id] },
+    })
+    if (!result.applied) return
     setOwnedDecks(getOwnedDecks())
     setCoins(current - price)
     setBuyDeck(null)
@@ -87,8 +85,12 @@ export default function DeckPicker({ onSelect, onBack }) {
   function handleFreeUnlock() {
     const remaining = getFreeUnlocks()
     if (remaining <= 0 || !buyDeck) return
-    localStorage.setItem('fo_free_unlocks', String(remaining - 1))
-    buyDeckById(buyDeck.id)
+    const result = economy.applyTransaction({
+      id: createTransactionId(`free-deck-unlock:${buyDeck.id}`),
+      source: 'free-deck-unlock',
+      changes: { counters: { freeUnlocks: -1 }, decks: [buyDeck.id] },
+    })
+    if (!result.applied) return
     setOwnedDecks(getOwnedDecks())
     setFreeUnlocks(remaining - 1)
     setBuyDeck(null)

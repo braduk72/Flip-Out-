@@ -1,12 +1,6 @@
 import Stripe from 'stripe'
-import pg from 'pg'
-
-const { Pool } = pg
-let pool
-function getPool() {
-  if (!pool) pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
-  return pool
-}
+import { ensureEconomyTransactionsTable, purchasePayload, recordPurchaseGrant } from './_economy.js'
+import { getDb } from './_db.js'
 
 // Disable Vercel's automatic body parsing — Stripe needs the raw bytes to verify signature
 export const config = { api: { bodyParser: false } }
@@ -40,22 +34,30 @@ export default async function handler(req, res) {
     const session = event.data.object
     if (session.metadata?.source !== 'flipout') return res.json({ received: true })
 
-    const { device_uuid, product_id, product_type, coins, decks, extras } = session.metadata
+    const { player_id, device_uuid, product_id, product_type, coins, decks, extras } = session.metadata
+    if (!player_id) return res.status(400).json({ error: 'Authenticated purchase owner missing' })
     const customerEmail = session.customer_details?.email?.toLowerCase()
-    const db = getPool()
+    const db = getDb()
 
     try {
-      // Idempotency: skip if already completed
-      const { rows: existing } = await db.query(
-        `SELECT id FROM fo_purchases WHERE stripe_session_id = $1 AND status = 'completed'`,
-        [session.id]
-      )
-      if (existing[0]) return res.json({ received: true })
-
       await db.query(
-        `UPDATE fo_purchases SET status = 'completed', completed_at = NOW() WHERE stripe_session_id = $1`,
-        [session.id]
+        `UPDATE fo_purchases SET status = 'completed', completed_at = NOW() WHERE stripe_session_id = $1 AND player_id = $2`,
+        [session.id, player_id]
       )
+
+      await ensureEconomyTransactionsTable(db)
+      await recordPurchaseGrant(db, {
+        stripeSessionId: session.id,
+        playerId: player_id,
+        deviceUuid: device_uuid,
+        payload: purchasePayload({
+          productId: product_id,
+          productType: product_type,
+          coins,
+          decks: JSON.parse(decks ?? '[]'),
+          extras: JSON.parse(extras ?? '{}'),
+        }),
+      })
 
       // Link email captured by Stripe checkout to this device
       if (customerEmail && device_uuid) {

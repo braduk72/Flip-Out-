@@ -1,0 +1,434 @@
+{
+  "generatedAt": "2026-07-18T19:02:06.884Z",
+  "runsPerLevelPerStrategy": 100,
+  "levels": 20,
+  "strategies": [
+    "objective-aware"
+  ],
+  "elapsedMs": 58190.25,
+  "averageRunMs": 29.0951,
+  "heapGrowthBytes": 50010464,
+  "results": [
+    {
+      "levelId": 1,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 100,
+      "winRate": 1,
+      "averageMovesUsed": 1.94,
+      "medianMovesUsed": 2,
+      "averageRemainingMovesOnWins": 16.06,
+      "averageScore": 2458,
+      "failureReasons": {},
+      "objectiveBottlenecks": {},
+      "powerUpUsage": {},
+      "deadBoardShuffles": 0,
+      "averageCascades": 5.51,
+      "longestCascade": 7,
+      "difficultyBand": "Tutorial"
+    },
+    {
+      "levelId": 2,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 100,
+      "winRate": 1,
+      "averageMovesUsed": 7.09,
+      "medianMovesUsed": 7,
+      "averageRemainingMovesOnWins": 12.91,
+      "averageScore": 8369,
+      "failureReasons": {},
+      "objectiveBottlenecks": {},
+      "powerUpUsage": {},
+      "deadBoardShuffles": 1,
+      "averageCascades": 18.67,
+      "longestCascade": 8,
+      "difficultyBand": "Tutorial"
+    },
+    {
+      "levelId": 3,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 99,
+      "winRate": 0.99,
+      "averageMovesUsed": 5.43,
+      "medianMovesUsed": 5,
+      "averageRemainingMovesOnWins": 13.707,
+      "averageScore": 6485.5,
+      "failureReasons": {
+        "moves-exhausted": 1
+      },
+      "objectiveBottlenecks": {
+        "collect:moon": 1
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 0,
+      "averageCascades": 14.3,
+      "longestCascade": 6,
+      "difficultyBand": "Tutorial"
+    },
+    {
+      "levelId": 4,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 94,
+      "winRate": 0.94,
+      "averageMovesUsed": 4.79,
+      "medianMovesUsed": 4,
+      "averageRemainingMovesOnWins": 9.798,
+      "averageScore": 5402,
+      "failureReasons": {
+        "moves-exhausted": 6
+      },
+      "objectiveBottlenecks": {
+        "blockers": 6
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 1,
+      "averageCascades": 11.59,
+      "longestCascade": 9,
+      "difficultyBand": "Tutorial"
+    },
+    {
+      "levelId": 5,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 85,
+      "winRate": 0.85,
+      "averageMovesUsed": 10.52,
+      "medianMovesUsed": 9,
+      "averageRemainingMovesOnWins": 8.8,
+      "averageScore": 12029,
+      "failureReasons": {
+        "moves-exhausted": 15
+      },
+      "objectiveBottlenecks": {
+        "blockers": 15
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 2,
+      "averageCascades": 26.51,
+      "longestCascade": 8,
+      "difficultyBand": "Tutorial"
+    },
+    {
+      "levelId": 6,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 100,
+      "winRate": 1,
+      "averageMovesUsed": 3.65,
+      "medianMovesUsed": 3,
+      "averageRemainingMovesOnWins": 18.35,
+      "averageScore": 4629.5,
+      "failureReasons": {},
+      "objectiveBottlenecks": {},
+      "powerUpUsage": {},
+      "deadBoardShuffles": 0,
+      "averageCascades": 10.19,
+      "longestCascade": 8,
+      "difficultyBand": "Tutorial"
+    },
+    {
+      "levelId": 7,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 96,
+      "winRate": 0.96,
+      "averageMovesUsed": 14.41,
+      "medianMovesUsed": 14,
+      "averageRemainingMovesOnWins": 8.948,
+      "averageScore": 15209,
+      "failureReasons": {
+        "moves-exhausted": 4
+      },
+      "objectiveBottlenecks": {
+        "collect:leaf": 4
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 1,
+      "averageCascades": 35.26,
+      "longestCascade": 10,
+      "difficultyBand": "Tutorial"
+    },
+    {
+      "levelId": 8,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 94,
+      "winRate": 0.94,
+      "averageMovesUsed": 7.24,
+      "medianMovesUsed": 6,
+      "averageRemainingMovesOnWins": 7.191,
+      "averageScore": 7056.5,
+      "failureReasons": {
+        "moves-exhausted": 6
+      },
+      "objectiveBottlenecks": {
+        "blockers": 6
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 6,
+      "averageCascades": 15.84,
+      "longestCascade": 7,
+      "difficultyBand": "Tutorial"
+    },
+    {
+      "levelId": 9,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 9,
+      "winRate": 0.09,
+      "averageMovesUsed": 27.41,
+      "medianMovesUsed": 28,
+      "averageRemainingMovesOnWins": 6.556,
+      "averageScore": 21438.5,
+      "failureReasons": {
+        "moves-exhausted": 91
+      },
+      "objectiveBottlenecks": {
+        "drops": 91
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 20,
+      "averageCascades": 58.31,
+      "longestCascade": 8,
+      "difficultyBand": "Showcase"
+    },
+    {
+      "levelId": 10,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 100,
+      "winRate": 1,
+      "averageMovesUsed": 5.62,
+      "medianMovesUsed": 5,
+      "averageRemainingMovesOnWins": 16.38,
+      "averageScore": 7309.5,
+      "failureReasons": {},
+      "objectiveBottlenecks": {},
+      "powerUpUsage": {},
+      "deadBoardShuffles": 1,
+      "averageCascades": 15.86,
+      "longestCascade": 9,
+      "difficultyBand": "Tutorial"
+    },
+    {
+      "levelId": 11,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 76,
+      "winRate": 0.76,
+      "averageMovesUsed": 14.73,
+      "medianMovesUsed": 15,
+      "averageRemainingMovesOnWins": 6.934,
+      "averageScore": 16125,
+      "failureReasons": {
+        "moves-exhausted": 24
+      },
+      "objectiveBottlenecks": {
+        "blockers": 24
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 1,
+      "averageCascades": 36.89,
+      "longestCascade": 9,
+      "difficultyBand": "Easy"
+    },
+    {
+      "levelId": 12,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 1,
+      "winRate": 0.01,
+      "averageMovesUsed": 29.99,
+      "medianMovesUsed": 30,
+      "averageRemainingMovesOnWins": 1,
+      "averageScore": 23202.5,
+      "failureReasons": {
+        "moves-exhausted": 99
+      },
+      "objectiveBottlenecks": {
+        "drops": 99
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 25,
+      "averageCascades": 63.17,
+      "longestCascade": 9,
+      "difficultyBand": "Showcase"
+    },
+    {
+      "levelId": 13,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 100,
+      "winRate": 1,
+      "averageMovesUsed": 6.86,
+      "medianMovesUsed": 7,
+      "averageRemainingMovesOnWins": 16.14,
+      "averageScore": 8438,
+      "failureReasons": {},
+      "objectiveBottlenecks": {},
+      "powerUpUsage": {},
+      "deadBoardShuffles": 0,
+      "averageCascades": 18.42,
+      "longestCascade": 10,
+      "difficultyBand": "Tutorial"
+    },
+    {
+      "levelId": 14,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 76,
+      "winRate": 0.76,
+      "averageMovesUsed": 10.49,
+      "medianMovesUsed": 10,
+      "averageRemainingMovesOnWins": 7.25,
+      "averageScore": 10795.5,
+      "failureReasons": {
+        "moves-exhausted": 24
+      },
+      "objectiveBottlenecks": {
+        "blockers": 24
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 6,
+      "averageCascades": 23.68,
+      "longestCascade": 10,
+      "difficultyBand": "Easy"
+    },
+    {
+      "levelId": 15,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 98,
+      "winRate": 0.98,
+      "averageMovesUsed": 7.53,
+      "medianMovesUsed": 7,
+      "averageRemainingMovesOnWins": 8.643,
+      "averageScore": 7692,
+      "failureReasons": {
+        "moves-exhausted": 2
+      },
+      "objectiveBottlenecks": {
+        "collect:star": 2
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 0,
+      "averageCascades": 18.27,
+      "longestCascade": 9,
+      "difficultyBand": "Tutorial"
+    },
+    {
+      "levelId": 16,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 13,
+      "winRate": 0.13,
+      "averageMovesUsed": 30.66,
+      "medianMovesUsed": 32,
+      "averageRemainingMovesOnWins": 10.308,
+      "averageScore": 24272.5,
+      "failureReasons": {
+        "moves-exhausted": 87
+      },
+      "objectiveBottlenecks": {
+        "drops": 87
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 26,
+      "averageCascades": 64.72,
+      "longestCascade": 9,
+      "difficultyBand": "Showcase"
+    },
+    {
+      "levelId": 17,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 94,
+      "winRate": 0.94,
+      "averageMovesUsed": 17.01,
+      "medianMovesUsed": 17,
+      "averageRemainingMovesOnWins": 8.5,
+      "averageScore": 19873.5,
+      "failureReasons": {
+        "moves-exhausted": 6
+      },
+      "objectiveBottlenecks": {
+        "collect:gem": 6
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 2,
+      "averageCascades": 43.78,
+      "longestCascade": 11,
+      "difficultyBand": "Tutorial"
+    },
+    {
+      "levelId": 18,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 83,
+      "winRate": 0.83,
+      "averageMovesUsed": 11.43,
+      "medianMovesUsed": 10,
+      "averageRemainingMovesOnWins": 7.916,
+      "averageScore": 11990,
+      "failureReasons": {
+        "moves-exhausted": 17
+      },
+      "objectiveBottlenecks": {
+        "blockers": 17
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 6,
+      "averageCascades": 25.83,
+      "longestCascade": 7,
+      "difficultyBand": "Easy"
+    },
+    {
+      "levelId": 19,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 0,
+      "winRate": 0,
+      "averageMovesUsed": 34,
+      "medianMovesUsed": 34,
+      "averageRemainingMovesOnWins": 0,
+      "averageScore": 24644,
+      "failureReasons": {
+        "moves-exhausted": 100
+      },
+      "objectiveBottlenecks": {
+        "drops": 100
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 52,
+      "averageCascades": 68.72,
+      "longestCascade": 10,
+      "difficultyBand": "Showcase"
+    },
+    {
+      "levelId": 20,
+      "strategy": "objective-aware",
+      "runs": 100,
+      "wins": 4,
+      "winRate": 0.04,
+      "averageMovesUsed": 33.42,
+      "medianMovesUsed": 34,
+      "averageRemainingMovesOnWins": 14.5,
+      "averageScore": 23820,
+      "failureReasons": {
+        "moves-exhausted": 96
+      },
+      "objectiveBottlenecks": {
+        "drops": 95,
+        "blockers": 1
+      },
+      "powerUpUsage": {},
+      "deadBoardShuffles": 96,
+      "averageCascades": 64.72,
+      "longestCascade": 8,
+      "difficultyBand": "Showcase"
+    }
+  ]
+}

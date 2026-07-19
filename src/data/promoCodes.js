@@ -6,10 +6,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const PROMO_CODES = {
-  'FLIPOUT':    { coins: 200 },
-  'GIZMO100':   { coins: 100 },
-  'LAUNCH':     { coins: 500 },
-  'LUCKYPENNY': { coins: 1000, spins: 5 },
+  'FLIPOUT':    { stars: 2000 },
+  'GIZMO100':   { stars: 1000 },
+  'LAUNCH':     { stars: 5000 },
+  'LUCKYPENNY': { stars: 10000, spins: 5 },
   'SPIN2WIN':   { spins: 5 },
   'NEWDECK':    { unlocks: 1 },
   'CRASHONE':   { avatar: 99 },  // Beta Tester exclusive — unlocks Crash Test Dummy avatar

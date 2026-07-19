@@ -1,6 +1,13 @@
 node_modules
 .git
 .claude
+.vercel
+dist
+source-images
+android
+ios
+video
+assets
 public/images/cloudflared-windows-amd64.msi
 public/images/cards/space
 public/images/contestants

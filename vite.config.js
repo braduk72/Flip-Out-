@@ -6,6 +6,6 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
-    allowedHosts: ['flipout.gizmogames.uk'],
+    allowedHosts: ['flipout.gizmogames.uk', 'dev.flipout.gizmogames.uk'],
   },
 })

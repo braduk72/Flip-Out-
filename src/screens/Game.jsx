@@ -5,7 +5,7 @@ import Card from '../components/Card'
 import styles from './Game.module.css'
 import { SPECIAL_CARDS, SPECIAL_POOL } from '../data/specialCards'
 import { getDeckBackImage, DECKS } from '../data/decks'
-import Interstitial from '../components/Interstitial'
+import { createTransactionId, economy } from '../utils/economyService.js'
 
 // ── Joker daily pool helpers ───────────────────────────────────────────────────
 function todayKey() { return new Date().toISOString().slice(0, 10) }
@@ -20,20 +20,25 @@ function getJokersRemaining() {
   if (pool === 0) return 0
   const stored = localStorage.getItem('fo_joker_date')
   if (stored !== todayKey()) {
-    localStorage.setItem('fo_joker_date', todayKey())
-    localStorage.setItem('fo_jokers', String(pool))
+    economy.applyTransaction({
+      id: `joker-pool:${todayKey()}`,
+      source: 'joker-pool',
+      changes: { flags: { fo_joker_date: todayKey(), fo_jokers: pool } },
+    })
     return pool
   }
   return Math.min(pool, parseInt(localStorage.getItem('fo_jokers') || '0'))
 }
 
-function spendJoker() {
-  const n = Math.max(0, getJokersRemaining() - 1)
-  localStorage.setItem('fo_jokers', String(n))
-  return n
+function spendJoker(transactionId) {
+  const result = economy.applyTransaction({
+    id: transactionId,
+    source: 'joker-use',
+    changes: { counters: { jokers: -1 } },
+  })
+  return result.applied ? getJokersRemaining() : null
 }
 
-const COLS = 4
 const STAGE_COUNT = 4
 const CONTESTANT_COUNT = 4
 
@@ -83,7 +88,8 @@ function generateSpecialSeed(specialType, index, cards, matched, consumed) {
 }
 
 export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onToggleMusic, onToggleSfx, difficulty = 'Medium', mode = 'vs', prebuiltCards = null, mpState = null, yourTurn = true, opponentImage, opponentDefeatedImage, opponentName, opponentModel, opponentBio, onResult, onQuit, onPlayerLost, onPlayerWon, onRetry, canRetry = false, gauntletStep, streakMode = false, currentStreak = 0, bestStreak = 0, onStreakWin, onStreakContinue, onStreakGiveUp, streakContinueUsed = false }) {
-  const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, endStopwatch, useJoker, forceGameOver } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player', mode === 'solo')
+  const economySessionId = useRef(createTransactionId('game')).current
+  const { state, flipCard, aiFlip, hideFlipped, clearEffect, clearFrozen, teachAI, getAIMove, applyPendingSpecial, triggerDevSpecial, commitResolve, endStopwatch, useJoker: activateJoker, forceGameOver } = useGame(deck, difficulty, prebuiltCards, mode === 'mp' ? (yourTurn ? 'player' : 'ai') : 'player', mode === 'solo')
   // Dev toolbar — only exists in Preview (dev branch) builds.
   // Set VITE_DEV_TOOLS=true in Vercel → Preview env vars; leave it unset for Production.
   const devEnabled  = import.meta.env.DEV || import.meta.env.VITE_DEV_TOOLS === 'true'
@@ -98,8 +104,6 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   const [cinematicDismissed, setCinematicDismissed] = useState(false)
   const [portraitFlipped, setPortraitFlipped] = useState(false)
   const [showQuitModal, setShowQuitModal] = useState(false)
-  const [showInterstitial, setShowInterstitial] = useState(false)
-  const pendingAction = useRef(null)
   const soloFrozenReadyToClear = useRef(false)
   const [xrayPeeked, setXrayPeeked] = useState([])
   const [swSecsLeft, setSwSecsLeft] = useState(null)
@@ -165,7 +169,9 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
   function stopHeartbeat() {
     if (heartbeatRef.current) {
-      try { heartbeatRef.current.pause(); heartbeatRef.current.src = '' } catch (_) {}
+      try { heartbeatRef.current.pause(); heartbeatRef.current.src = '' } catch {
+        // Heartbeat audio cleanup is best-effort.
+      }
       heartbeatRef.current = null
     }
   }
@@ -209,7 +215,13 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     else if (activeEffect.type === 'dice')        play('dice_roll')
     else                                           play('special')
     if (activeEffect.type === 'tiebreaker' && activeEffect.data?.whose === 'player') {
-      setTieBreakers(parseInt(localStorage.getItem('fo_tiebreakers') || '0', 10))
+      economy.applyTransaction({
+        id: `${economySessionId}:tiebreaker:${activeEffect.data.index}`,
+        source: 'tiebreaker-card',
+        changes: { counters: { tiebreakers: 1 } },
+      })
+      const timer = setTimeout(() => setTieBreakers(economy.getCounter('tiebreakers')), 0)
+      return () => clearTimeout(timer)
     }
   }, [activeEffect]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -664,7 +676,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   })
 
   const doAITurn = useCallback((duringStopwatch = false) => {
-    const { state, cards, flipped, matched, consumed, frozen } = aiTurnStateRef.current
+    const { state, flipped } = aiTurnStateRef.current
     if (state.turn !== 'ai' || state.gameOver) return
     // Guard: if cards are already mid-flip, don't start a new sequence
     if (flipped.length > 0) return
@@ -809,8 +821,10 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
   function handleJoker() {
     if (jokersRemaining <= 0 || state.jokerUsed || flipped.length !== 1) return
-    useJoker()
-    setJokersRemaining(spendJoker())
+    const remaining = spendJoker(`${economySessionId}:joker`)
+    if (remaining === null) return
+    activateJoker()
+    setJokersRemaining(remaining)
     play('joker')
   }
 
@@ -830,20 +844,31 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
   function useTieBreaker() {
     const n = Math.max(0, tieBreakers - 1)
-    localStorage.setItem('fo_tiebreakers', String(n))
+    const result = economy.applyTransaction({
+      id: `${economySessionId}:use-tiebreaker`,
+      source: 'tiebreaker-use',
+      changes: { counters: { tiebreakers: -1 } },
+    })
+    if (!result.applied) return
     setTieBreakers(n)
     forceGameOver('player')
   }
 
   // Award trophies + show interstitial before navigating away
-  function addTrophies(count) {
-    const cur = parseInt(localStorage.getItem('fo_trophies') || '0')
-    localStorage.setItem('fo_trophies', String(cur + count))
+  function addTrophies(count, action) {
+    economy.applyTransaction({
+      id: `${economySessionId}:trophies:${action}`,
+      source: 'game-trophies',
+      changes: { counters: { trophies: count } },
+    })
   }
 
-  function addCoins(amount) {
-    const cur = parseInt(localStorage.getItem('fo_coins') || '0', 10)
-    localStorage.setItem('fo_coins', String(cur + amount))
+  function addStars(amount, action) {
+    economy.applyTransaction({
+      id: `${economySessionId}:stars:${action}`,
+      source: 'game-stars',
+      changes: { counters: { stars: amount } },
+    })
   }
 
   // Award 10 coins once when the player wins any round
@@ -851,7 +876,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   useEffect(() => {
     if (winner === 'player' && !coinAwardedRef.current) {
       coinAwardedRef.current = true
-      addCoins(10)
+      addStars(100, 'win')
     }
   }, [winner])
 
@@ -859,12 +884,6 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     cb()
   }
 
-
-  function handleInterstitialClose() {
-    setShowInterstitial(false)
-    pendingAction.current?.()
-    pendingAction.current = null
-  }
 
   const totalPairs = cards.filter(c => c.type === 'regular').length / 2
   const progress = ((playerScore + aiScore) / totalPairs) * 100
@@ -1256,7 +1275,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                     </div>
                   </div>
 
-                  <button className={styles.cinematicNextBtn} onClick={() => withInterstitial(() => { addTrophies(10); setCinematicDismissed(true) })}>
+                  <button className={styles.cinematicNextBtn} onClick={() => withInterstitial(() => { addTrophies(10, 'cinematic-win'); setCinematicDismissed(true) })}>
                     <span className={styles.nextBtnArrow}>▶</span> CONTINUE
                   </button>
                 </div>
@@ -1358,10 +1377,12 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                               className={styles.stdImgBtn}
                               disabled={!canAfford}
                               onClick={() => {
-                                const c = parseInt(localStorage.getItem('fo_coins') || '0', 10)
-                                if (c < 25) return
-                                localStorage.setItem('fo_coins', String(c - 25))
-                                addTrophies(1)
+                                const result = economy.applyTransaction({
+                                  id: `${economySessionId}:retry`,
+                                  source: 'game-retry',
+                                  changes: { counters: { coins: -25, trophies: 1 } },
+                                })
+                                if (!result.applied) return
                                 onRetry?.()
                               }}
                             >
@@ -1371,7 +1392,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                         })()}
                         <button
                           className={styles.stdImgBtn}
-                          onClick={() => { addTrophies(1); onBack() }}
+                          onClick={() => { addTrophies(1, 'defeat-give-up'); onBack() }}
                         >
                           <img src="/images/btn_giveup.webp" alt="Give Up" className={styles.stdBtnImg} />
                         </button>
@@ -1406,17 +1427,17 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                           <div className={styles.streakBest}>Best: {Math.max(bestStreak, currentStreak + 1)}</div>
                         )}
                       </div>
-                      <button className={styles.streakNextBtn} onClick={() => { addTrophies(5); onPlayerWon?.(); onStreakWin?.() }}>
+                      <button className={styles.streakNextBtn} onClick={() => { addTrophies(5, 'streak-next'); onPlayerWon?.(); onStreakWin?.() }}>
                         NEXT GAME 🔥
                       </button>
-                      <button className={styles.streakQuitBtn} onClick={() => withInterstitial(() => { addTrophies(5); onPlayerWon?.(); onStreakGiveUp?.() })}>
+                      <button className={styles.streakQuitBtn} onClick={() => withInterstitial(() => { addTrophies(5, 'streak-end'); onPlayerWon?.(); onStreakGiveUp?.() })}>
                         End Streak
                       </button>
                     </>
                   ) : (
                     <button
                       className={styles.stdImgBtn}
-                      onClick={() => withInterstitial(() => { addTrophies(5); onPlayerWon?.(); onBack() })}
+                      onClick={() => withInterstitial(() => { addTrophies(5, 'victory-continue'); onPlayerWon?.(); onBack() })}
                     >
                       <img src="/images/btn_continue.webp" alt="Continue" className={styles.stdBtnImg} />
                     </button>
@@ -1471,7 +1492,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
                           🃏 Use Tie Breaker {tieBreakers > 0 ? `(${tieBreakers})` : '(none)'}
                           <span className={styles.tieBreakBtnSub}>Guaranteed win — card consumed on use</span>
                         </button>
-                        <button className={`${styles.tieBreakBtn} ${styles.tieBreakBtnGiveUp}`} onClick={() => { addTrophies(1); withInterstitial(onBack) }}>
+                        <button className={`${styles.tieBreakBtn} ${styles.tieBreakBtnGiveUp}`} onClick={() => { addTrophies(1, 'draw-give-up'); withInterstitial(onBack) }}>
                           🏳️ Give Up
                         </button>
                       </div>
@@ -1511,7 +1532,6 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
       </button>
 
       {/* Interstitial ad — shown when navigating away from game-over */}
-      {showInterstitial && <Interstitial onClose={handleInterstitialClose} />}
 
       {/* Dev special-card toolbar — compiled out on Production (VITE_DEV_TOOLS not set) */}
       {devEnabled && <div style={{ display:'flex', flexDirection:'column', position:'relative', zIndex:50 }}>
@@ -1578,7 +1598,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
             <div className={styles.quitBody}>You cannot catch your opponent up. Keep trying or give up?</div>
             <div className={styles.quitBtns}>
               <button className={styles.quitStayBtn} onClick={() => setShowEasyLose(false)}>KEEP TRYING</button>
-              <button className={styles.quitLeaveBtn} onClick={() => { setShowEasyLose(false); withInterstitial(() => { addTrophies(1); onBack() }) }}>GIVE UP</button>
+              <button className={styles.quitLeaveBtn} onClick={() => { setShowEasyLose(false); withInterstitial(() => { addTrophies(1, 'early-give-up'); onBack() }) }}>GIVE UP</button>
             </div>
           </div>
         </div>

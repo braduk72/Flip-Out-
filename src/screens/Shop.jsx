@@ -1,23 +1,16 @@
 import { useState, useEffect } from 'react'
-import { DECKS } from '../data/decks'
-import { PROMO_CODES } from '../data/promoCodes'
 import styles from './Shop.module.css'
 import BottomNav from '../components/BottomNav'
 import RemoveAdsModal from '../components/RemoveAdsModal'
 import { startCheckout, restorePurchases } from '../utils/foShop.js'
-
-function getOwnedPaidCount() {
-  const owned = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
-  return DECKS.filter(d => !d.free && owned.includes(d.id)).length
-}
+import { economy } from '../utils/economyService.js'
+import { getDeviceUuid } from '../utils/deviceId.js'
 
 const COIN_PACKS = [
   { id: 'coins_100',  label: '100 Coins',  price: '£0.99',  coins: 100,  highlight: false, img: '/images/x100.webp'  },
   { id: 'coins_500',  label: '500 Coins',  price: '£3.99',  coins: 500,  highlight: false, img: '/images/x500.webp'  },
   { id: 'coins_1000', label: '1000 Coins', price: '£6.99',  coins: 1000, highlight: true,  img: '/images/x1000.webp' },
 ]
-
-const JOKER_RELOAD_PRICE = 50
 
 const POWERUPS = [
   { id: 'pu_xray',    label: 'X-Ray',   desc: 'Peek at 2 cards before your turn', price: 50, qty: 3, image: '/images/cards/special/xray.webp'    },
@@ -40,15 +33,13 @@ const BUNDLES = [
 
 const STAGE_BKGS = [1, 2, 3, 4].map(n => `/images/gameshowStages/${n}.webp`)
 
-export default function Shop({ onBack, navProps }) {
-  const ownedPaidCount = getOwnedPaidCount()
+export default function Shop({ onBack, onInventory, onMarketplace, navProps }) {
   const [bgIdx, setBgIdx] = useState(0)
   useEffect(() => {
     const t = setInterval(() => setBgIdx(i => (i + 1) % STAGE_BKGS.length), 8000)
     return () => clearInterval(t)
   }, [])
-  const [jokerHovered, setJokerHovered] = useState(false)
-  const [noAds, setNoAds] = useState(() => !!localStorage.getItem('fo_no_ads'))
+  const [, setNoAds] = useState(() => !!localStorage.getItem('fo_no_ads'))
   const [showRemoveAdsModal, setShowRemoveAdsModal] = useState(false)
   const [buying, setBuying] = useState(null)
   const [restoreState, setRestoreState] = useState('idle') // idle | loading | done | notfound | error
@@ -66,11 +57,15 @@ export default function Shop({ onBack, navProps }) {
   const [codeInput, setCodeInput] = useState('')
   const [codeResult, setCodeResult] = useState(null) // null | { loading } | { ok: true, ... } | { ok: false, msg }
 
-  function applyCodeRewards({ coins, spins, unlocks, avatar }) {
-    if (coins)   { const c = parseInt(localStorage.getItem('fo_coins')       || '0', 10); localStorage.setItem('fo_coins',        String(c + coins))   }
-    if (spins)   { const c = parseInt(localStorage.getItem('fo_spin_bonus')  || '0', 10); localStorage.setItem('fo_spin_bonus',   String(c + spins))   }
-    if (unlocks) { const c = parseInt(localStorage.getItem('fo_free_unlocks')|| '0', 10); localStorage.setItem('fo_free_unlocks', String(c + unlocks)) }
-    if (avatar)  { const a = JSON.parse(localStorage.getItem('fo_unlocked_avatars') || '[]'); if (!a.includes(avatar)) localStorage.setItem('fo_unlocked_avatars', JSON.stringify([...a, avatar])) }
+  function applyCodeRewards(transactionId, { stars, spins, unlocks, avatar }) {
+    return economy.applyTransaction({
+      id: transactionId,
+      source: 'promo',
+      changes: {
+        counters: { stars: stars || 0, bonusSpins: spins || 0, freeUnlocks: unlocks || 0 },
+        avatars: avatar ? [avatar] : [],
+      },
+    })
   }
 
   async function redeemCode() {
@@ -84,7 +79,6 @@ export default function Shop({ onBack, navProps }) {
     setCodeResult({ loading: true })
 
     try {
-      const { getDeviceUuid } = await import('../utils/deviceId.js')
       const res  = await fetch('/api/fo-redeem-code', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -94,19 +88,13 @@ export default function Shop({ onBack, navProps }) {
 
       if (!data.ok) { setCodeResult({ ok: false, msg: `✗ ${data.msg || 'Invalid code'}` }); return }
 
-      applyCodeRewards(data)
+      applyCodeRewards(data.transactionId ?? `promo:${code}`, data)
       localStorage.setItem('fo_used_codes', JSON.stringify([...used, code]))
-      setCodeResult({ ok: true, coins: data.coins, spins: data.spins, unlocks: data.unlocks, avatar: data.avatar })
+      setCodeResult({ ok: true, stars: data.stars, spins: data.spins, unlocks: data.unlocks, avatar: data.avatar })
       setCodeInput('')
 
     } catch {
-      // Network failure — fall back to client-side validation so the player isn't blocked offline
-      const promo = PROMO_CODES[code]
-      if (!promo) { setCodeResult({ ok: false, msg: '✗ Invalid code' }); return }
-      applyCodeRewards({ coins: promo.coins || 0, spins: promo.spins || 0, unlocks: promo.unlocks || 0, avatar: promo.avatar || null })
-      localStorage.setItem('fo_used_codes', JSON.stringify([...used, code]))
-      setCodeResult({ ok: true, coins: promo.coins || 0, spins: promo.spins || 0, unlocks: promo.unlocks || 0, avatar: promo.avatar || null })
-      setCodeInput('')
+      setCodeResult({ ok: false, msg: 'Could not securely verify that code. Try again online.' })
     }
   }
 
@@ -147,6 +135,19 @@ export default function Shop({ onBack, navProps }) {
           </div>
         </button>
 
+        <button className={styles.removeAdsCard} onClick={onInventory}>
+          <div className={styles.removeAdsText}>
+            <span className={styles.removeAdsTitle}>MY COLLECTION</span>
+            <span className={styles.removeAdsDesc}>Cards, decks, gold cards, items and transaction history</span>
+          </div>
+        </button>
+        <button className={styles.removeAdsCard} onClick={onMarketplace}>
+          <div className={styles.removeAdsText}>
+            <span className={styles.removeAdsTitle}>EXCHANGE</span>
+            <span className={styles.removeAdsDesc}>Trade eligible duplicate items for Flip-Out coins</span>
+          </div>
+        </button>
+
         {/* Promo code */}
         <h2 className={styles.sectionTitle}>🎟️ Enter a Code</h2>
         <div className={styles.promoCard}>
@@ -168,7 +169,7 @@ export default function Shop({ onBack, navProps }) {
           {codeResult?.ok && (
             <p className={`${styles.codeMsg} ${styles.codeMsgOk}`}>
               ✓ {[
-                codeResult.coins   && `${codeResult.coins} coins`,
+                codeResult.stars   && `${codeResult.stars} Stars`,
                 codeResult.spins   && `${codeResult.spins} bonus spins`,
                 codeResult.unlocks && `${codeResult.unlocks} free deck unlock`,
                 codeResult.avatar  && `exclusive avatar unlocked`,
@@ -282,7 +283,10 @@ export default function Shop({ onBack, navProps }) {
 
         {/* Restore Purchases */}
         <div className={styles.restoreRow}>
-          <span className={styles.restoreLabel}>Restore Purchases</span>
+          <div>
+            <span className={styles.restoreLabel}>Restore Purchases</span>
+            <span className={styles.restoreMsg}>For this Flip-Out account</span>
+          </div>
           <div className={styles.restoreRight}>
             {restoreState === 'done' ? (
               <span className={styles.restoreDone}>✓ Restored!</span>

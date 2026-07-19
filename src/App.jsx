@@ -1,37 +1,41 @@
-import { useState, useEffect, useRef } from 'react'
+/* eslint-disable react-hooks/set-state-in-effect, react-hooks/refs -- legacy app orchestration is outside the Home redesign */
+import { lazy, useState, useEffect, useRef } from 'react'
 import Home from './screens/Home'
 import DeckPicker from './screens/DeckPicker'
-import Shop from './screens/Shop'
 import AvatarPicker from './screens/AvatarPicker'
 import Settings from './screens/Settings'
 import AboutUs from './screens/AboutUs'
 import PrivacyPolicy from './screens/PrivacyPolicy'
 import PatchNotes from './screens/PatchNotes'
-import Game from './screens/Game'
 import Gauntlet from './screens/Gauntlet'
 import RoundStart from './screens/RoundStart'
 import MultiplayerLobby from './screens/MultiplayerLobby'
-import LuckySpin from './screens/LuckySpin'
 import Leaderboard from './screens/Leaderboard'
 import SeasonMap from './screens/SeasonMap'
-import RevealGame from './screens/RevealGame'
-import { KNOCKOUT_OPPONENTS, STANDARD_OPPONENTS, pickStdOpponent } from './data/opponents'
-import { ACTIVE_SEASON, STEPS_PER_STAGE, BOSS_STEP, GENERIC_OPPONENT, ROB_OPPONENTS, getRobNames } from './data/seasonalOpponents'
+import { KNOCKOUT_OPPONENTS, pickStdOpponent } from './data/opponents'
+import { ACTIVE_SEASON, BOSS_STEP, GENERIC_OPPONENT, ROB_OPPONENTS, getRobNames } from './data/seasonalOpponents'
 import { DECKS } from './data/decks'
 import { useMultiplayer } from './hooks/useMultiplayer'
 import { buildBoard } from './hooks/useGame'
 import { verifySession, applyPurchase, syncStats } from './utils/foShop.js'
-import { getDeviceUuid } from './utils/deviceId.js'
 import { setSfxVol } from './hooks/useSfx'
 import { snapshotToCookie } from './utils/gameStorage.js'
+import { createTransactionId, economy } from './utils/economyService.js'
 import CookieBanner, { consentAnswered, hasConsent } from './components/CookieBanner.jsx'
+
+const Shop=lazy(()=>import('./screens/Shop'))
+const Game=lazy(()=>import('./screens/Game'))
+const LuckySpin=lazy(()=>import('./screens/LuckySpin'))
+const Inventory=lazy(()=>import('./screens/Inventory'))
+const Marketplace=lazy(()=>import('./screens/Marketplace'))
+const RevealGame=lazy(()=>import('./screens/RevealGame'))
+const Match3=lazy(()=>import('./screens/Match3'))
 
 // ── Music pools ───────────────────────────────────────────────────────────────
 const HOME_TRACKS = [
   '/music/home_1.mp3',
   '/music/home_2.mp3',
 ]
-const MENU_TRACKS     = []
 const GAMEOVER_TRACKS = [
   '/music/tryagain_1.mp3',
   '/music/tryagain_2.mp3',
@@ -66,19 +70,7 @@ const SPIN_TRACKS     = [
   '/music/spin_1.mp3',
   '/music/spin_2.mp3',
 ]
-const MENU_SCREENS = new Set(['home','deckpicker','shop','avatarpicker','settings','leaderboard','luckyspin','mplobby','gauntlet'])
 const GAME_SCREENS = new Set(['game','mpgame','roundstart','seasongame','seasonroundstart'])
-
-function awardGoldCard() {
-  if (!localStorage.getItem('fo_gold_card')) {
-    localStorage.setItem('fo_gold_card', new Date().toISOString().slice(0, 10))
-  }
-}
-
-function addCoins(amount) {
-  const current = parseInt(localStorage.getItem('fo_coins') || '0')
-  localStorage.setItem('fo_coins', String(current + amount))
-}
 
 export default function App() {
   const [screen,     setScreen]     = useState('home')
@@ -120,7 +112,7 @@ export default function App() {
 
   // Season state — seasonStep 0..BOSS_STEP (0-indexed, 30 steps total)
   const [seasonStep,   setSeasonStep]   = useState(() => parseInt(localStorage.getItem('fo_season1_step') || '0'))
-  const [seasonActive, setSeasonActive] = useState(false)
+  const [, setSeasonActive] = useState(false)
   const isBossStep  = seasonStep === BOSS_STEP
   const [robNames]  = useState(getRobNames)
   const isRobStep   = seasonStep < ROB_OPPONENTS.length && !isBossStep
@@ -167,9 +159,7 @@ export default function App() {
     const params = new URLSearchParams(window.location.search)
     if (params.get('unlock') === 'gizmo') {
       const allIds = DECKS.filter(d => !d.free).map(d => d.id)
-      const existing = JSON.parse(localStorage.getItem('fo_owned_decks') || '[]')
-      const merged = [...new Set([...existing, ...allIds])]
-      localStorage.setItem('fo_owned_decks', JSON.stringify(merged))
+      economy.applyTransaction({ id: 'dev:unlock-gizmo', source: 'dev', changes: { decks: allIds } })
       window.history.replaceState({}, '', window.location.pathname)
     }
     // Dev helpers — never linked publicly
@@ -181,12 +171,20 @@ export default function App() {
     }
     if (params.get('resetseason') === '1') {
       localStorage.removeItem('fo_season1_step')
-      localStorage.removeItem('fo_season1_gold_card')
+      economy.applyTransaction({
+        id: createTransactionId('dev:reset-season'),
+        source: 'dev',
+        changes: { flags: { fo_season1_gold_card: '' } },
+      })
       window.history.replaceState({}, '', window.location.pathname)
     }
     if (params.get('resetgauntlet') === '1') {
       localStorage.removeItem('fo_gauntlet_step')
-      localStorage.removeItem('fo_gold_card')
+      economy.applyTransaction({
+        id: createTransactionId('dev:reset-gauntlet'),
+        source: 'dev',
+        changes: { flags: { fo_gold_card: '' } },
+      })
       window.history.replaceState({}, '', window.location.pathname)
     }
     if (params.has('testprize')) {
@@ -259,22 +257,15 @@ export default function App() {
     playNextRef.current(pool)
   }
 
-  function forceNewHomeTrack() {
-    // Home screen uses the background video's baked-in music — make sure no
-    // app track plays over it (this fires from the bottom-nav home button).
-    if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current = null }
-    activePoolRef.current = null
-  }
-
   // Snapshot progress to cookie on every screen change (only if user consented)
-  useEffect(() => { if (hasConsent()) snapshotToCookie() }, [screen]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (hasConsent()) snapshotToCookie() }, [screen])
 
   // Stop any playing track immediately on screen change; clear any orphaned unlock listeners
   useEffect(() => {
     if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current = null }
     activePoolRef.current = null
     clearUnlockListeners()
-  }, [screen]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [screen])
 
   // Switch to the correct music pool for the new screen
   useEffect(() => {
@@ -289,9 +280,7 @@ export default function App() {
     } else if (screen === 'seasonmap') {
       switchToPool(SEASON_TRACKS)
     } else if (screen === 'home') {
-      // Home screen plays the background video's baked-in music — stop app music.
-      if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current = null }
-      activePoolRef.current = null
+      switchToPool(HOME_TRACKS)
     } else if (screen === 'gauntlet' || screen === 'roundstart') {
       switchToPool(BOSS_TRACKS)
     } else if (screen === 'leaderboard') {
@@ -318,16 +307,15 @@ export default function App() {
   }, [])
 
   // Sync sfxVol module var on mount and whenever it changes
-  useEffect(() => { setSfxVol(sfxVol) }, [sfxVol]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setSfxVol(sfxVol) }, [sfxVol])
 
   // Kick off music on very first user interaction (browsers block autoplay until a gesture)
   useEffect(() => {
     if (!musicOn) return
     const unlock = () => {
-      // Home uses the video's audio — don't start an app track there.
-      if ((prevScreenRef.current || screen) !== 'home' && (!audioRef.current || audioRef.current.paused)) {
+      if (!audioRef.current || audioRef.current.paused) {
         activePoolRef.current = null
-        switchToPool(INGAME_TRACKS)
+        switchToPool(GAME_SCREENS.has(prevScreenRef.current || screen) ? INGAME_TRACKS : HOME_TRACKS)
       }
       document.removeEventListener('click',      unlock)
       document.removeEventListener('touchstart', unlock)
@@ -359,14 +347,13 @@ export default function App() {
       if (audioRef.current) audioRef.current.pause()
     } else {
       if (screen === 'home') {
-        // Home uses the video's audio — keep app music off (the video unmutes itself).
-        if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; audioRef.current = null }
         activePoolRef.current = null
+        switchToPool(HOME_TRACKS)
       } else if (audioRef.current && !audioRef.current.ended) {
         audioRef.current.play().catch(() => {})
       } else {
         activePoolRef.current = null
-        switchToPool(GAME_SCREENS.has(screen) ? INGAME_TRACKS : MENU_TRACKS)
+        switchToPool(GAME_SCREENS.has(screen) ? INGAME_TRACKS : HOME_TRACKS)
       }
     }
   }
@@ -463,9 +450,12 @@ export default function App() {
   }
 
   function handleStreakContinue() {
-    const cur = parseInt(localStorage.getItem('fo_coins') || '0')
-    if (cur < 25) return
-    localStorage.setItem('fo_coins', String(cur - 25))
+    const result = economy.applyTransaction({
+      id: `streak-continue:${streakCurrent}:${retryKey}`,
+      source: 'streak-continue',
+      changes: { counters: { coins: -25 } },
+    })
+    if (!result.applied) return
     setStreakContinueUsed(true)
     setRetryKey(k => k + 1)
   }
@@ -549,8 +539,14 @@ export default function App() {
       localStorage.setItem('fo_gauntlet_step', String(next))
       // Defeating Professor Claw (final boss) awards the Gold Collector Card + 100 coins
       if (gauntletStep === KNOCKOUT_OPPONENTS.length - 1) {
-        awardGoldCard()
-        addCoins(100)
+        economy.applyTransaction({
+          id: 'gauntlet:first-completion',
+          source: 'gauntlet-completion',
+          changes: {
+            counters: { stars: 1000 },
+            flags: { fo_gold_card: new Date().toISOString().slice(0, 10) },
+          },
+        })
       }
     } else {
       // Loss = back to round 1
@@ -585,10 +581,14 @@ export default function App() {
       if (seasonStep === BOSS_STEP) {
         // Beat the final boss — award season gold card + coins, then reset for replay
         const key = ACTIVE_SEASON.boss.rewardKey
-        if (!localStorage.getItem(key)) {
-          localStorage.setItem(key, new Date().toISOString().slice(0, 10))
-        }
-        addCoins(150)
+        economy.applyTransaction({
+          id: 'season1:first-completion',
+          source: 'season-completion',
+          changes: {
+            counters: { stars: 1500 },
+            flags: { [key]: new Date().toISOString().slice(0, 10) },
+          },
+        })
         const completeStep = BOSS_STEP + 1
         setSeasonStep(completeStep)
         localStorage.setItem('fo_season1_step', String(completeStep))
@@ -667,10 +667,17 @@ export default function App() {
     )
   }
   if (screen === 'shop') {
-    return <Shop onBack={() => setScreen('home')} navProps={navProps} />
+    return <Shop onBack={() => setScreen('home')} onInventory={() => setScreen('inventory')} onMarketplace={() => setScreen('marketplace')} navProps={navProps} />
   }
   if (screen === 'luckyspin') {
     return <LuckySpin onBack={() => setScreen('shop')} navProps={navProps} />
+  }
+  if (screen === 'match3') return <Match3 onBack={() => setScreen('home')} />
+  if (screen === 'inventory') {
+    return <Inventory onBack={() => setScreen('shop')} navProps={navProps} />
+  }
+  if (screen === 'marketplace') {
+    return <Marketplace onBack={() => setScreen('shop')} />
   }
   if (screen === 'leaderboard') {
     return <Leaderboard portrait={portrait} onBack={() => setScreen('home')} navProps={navProps} />
@@ -876,27 +883,20 @@ export default function App() {
       </div>
     )}
     <Home
-      onPlay={handlePlay}
+      onMatch3={() => setScreen('match3')}
+      onMemory={() => handlePlay(false)}
       onKnockout={handleKnockout}
       onOnline={handleOnline}
       onLocalPlay={handleLocalPlay}
-      onSeason={handleSeasonMap}
       onReveal={() => setScreen('reveal')}
+      onSeason={handleSeasonMap}
       onShop={() => setScreen('shop')}
       onAvatar={() => setScreen('avatarpicker')}
-      onSettings={() => setScreen('settings')}
-      onRanks={() => setScreen('leaderboard')}
-      portrait={portrait}
-      onPortrait={handlePortrait}
-      gauntletStep={gauntletStep}
+      onCollection={() => setScreen('inventory')}
+      onRewards={() => setScreen('luckyspin')}
+      onMore={() => setScreen('settings')}
       seasonStep={seasonStep}
-      mode={mode}
-      onMode={setMode}
-      musicOn={musicOn}
       sfxOn={sfxOn}
-      onToggleMusic={toggleMusic}
-      onToggleSfx={toggleSfx}
-      onHomeMusic={forceNewHomeTrack}
     />
     {!cookieBannerDone && (
       <CookieBanner

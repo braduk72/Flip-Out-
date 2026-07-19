@@ -1,4 +1,5 @@
 import styles from './RemoveAdsModal.module.css'
+import { createTransactionId, economy } from '../utils/economyService.js'
 
 const PERKS = [
   { icon: '🚫', text: 'Remove forced ads' },
@@ -10,11 +11,14 @@ export default function RemoveAdsModal({ onClose, onBuy }) {
   const already = !!localStorage.getItem('fo_no_ads')
 
   function handleBuy(tier) {
-    localStorage.setItem('fo_no_ads', '1')
-    if (tier === 'bundle') {
-      const cur = parseInt(localStorage.getItem('fo_coins') || '0')
-      localStorage.setItem('fo_coins', String(cur + 555))
-    }
+    economy.applyTransaction({
+      id: createTransactionId(`legacy-remove-ads:${tier}`),
+      source: 'legacy-remove-ads',
+      changes: {
+        counters: { coins: tier === 'bundle' ? 555 : 0 },
+        flags: { fo_no_ads: '1' },
+      },
+    })
     onBuy?.()
     onClose()
   }

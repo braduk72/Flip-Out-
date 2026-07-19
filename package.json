@@ -7,13 +7,26 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "test": "npm run test:node && npm run test:ui",
+    "test:node": "node --test tests/*.test.js",
+    "test:ui": "vitest run --config vitest.config.js",
+    "test:preview": "node --test tests/*-db.test.js",
+    "lint:source": "eslint api src tests scripts eslint.config.js vite.config.js",
+    "simulate:economy": "node scripts/simulate-economy.mjs 100000",
+    "simulate:match3": "node scripts/simulate-match3.mjs 1000",
+    "balance:match3": "node scripts/simulate-match3-levels.mjs --runs 100",
+    "performance:match3": "node --expose-gc scripts/measure-match3-performance.mjs 200",
+    "verify:coin-ledger": "node scripts/verify-coin-ledger.mjs",
+    "preview": "vite preview",
+    "build:preview": "vite build --mode preview"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",
     "@capacitor/cli": "^8.3.4",
     "@capacitor/core": "^8.3.4",
     "@capacitor/ios": "^8.3.4",
+    "@fontsource/atkinson-hyperlegible": "^5.2.8",
+    "@fontsource/nunito-sans": "^5.2.7",
     "@vercel/analytics": "^2.0.1",
     "canvas-confetti": "^1.9.4",
     "pg": "^8.21.0",
@@ -25,15 +38,21 @@
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
     "@eslint/js": "^10.0.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "axe-core": "^4.12.1",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "jimp": "^0.22.12",
+    "jsdom": "^29.1.1",
     "sharp": "^0.34.5",
-    "vite": "^8.0.12"
+    "vite": "^8.0.12",
+    "vitest": "^4.1.10"
   }
 }

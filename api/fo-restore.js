@@ -1,66 +1,59 @@
-import pg from 'pg'
-
-const { Pool } = pg
-let pool
-function getPool() {
-  if (!pool) pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
-  return pool
-}
+import { ensureEconomyTransactionsTable, linkLegacyTestPurchases, toClientGrant } from './_economy.js'
+import { getDb } from './_db.js'
+import { requirePlayer } from './_auth.js'
 
 // Called from Settings → Restore Purchases
 // Given an email, returns all completed purchases and links the new device to that email.
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
-  const { email, deviceUuid } = req.body ?? {}
-  if (!email) return res.status(400).json({ error: 'Email required' })
-
-  const db = getPool()
+  const { deviceUuid, linkLegacyTest = false } = req.body ?? {}
+  const db = getDb()
 
   try {
-    const normalised = email.trim().toLowerCase()
+    const player = await requirePlayer(db, req, res)
+    if (!player) return
+    if (linkLegacyTest) {
+      return res.json(await linkLegacyTestPurchases(db, { playerId: player.player_id, deviceUuid }))
+    }
 
-    // Find all device UUIDs linked to this email
+    // Legacy device records remain readable only for devices already linked to this account.
     const { rows: players } = await db.query(
-      `SELECT device_uuid FROM fo_players WHERE LOWER(email) = $1`,
-      [normalised]
+      `SELECT device_uuid FROM fo_player_devices WHERE player_id = $1`,
+      [player.player_id]
     )
-
-    if (!players.length) return res.json({ found: false })
-
     const deviceUuids = players.map(p => p.device_uuid)
 
-    // Fetch all completed purchases across all devices
-    const { rows: purchases } = await db.query(
-      `SELECT product_type, coins_granted, decks_granted, extras_granted
-       FROM fo_purchases
-       WHERE device_uuid = ANY($1) AND status = 'completed'`,
-      [deviceUuids]
+    await ensureEconomyTransactionsTable(db)
+
+    // Backfill a stable transaction for purchases completed before the ledger existed.
+    await db.query(`
+      INSERT INTO fo_economy_transactions (transaction_id, device_uuid, source, payload, created_at)
+      SELECT
+        'purchase:' || stripe_session_id,
+        device_uuid,
+        'purchase',
+        jsonb_build_object(
+          'product_id', product_id,
+          'product_type', product_type,
+          'coins', COALESCE(coins_granted, 0),
+          'decks', to_jsonb(COALESCE(decks_granted, ARRAY[]::text[])),
+          'extras', COALESCE(extras_granted, '{}'::jsonb),
+          'removeAds', product_type = 'remove_ads'
+        ),
+        COALESCE(completed_at, NOW())
+      FROM fo_purchases
+      WHERE device_uuid = ANY($1) AND player_id IS NULL AND status = 'completed'
+      ON CONFLICT (transaction_id) DO NOTHING
+    `, [deviceUuids])
+
+    const { rows: transactionRows } = await db.query(
+      `SELECT transaction_id, source, payload
+       FROM fo_economy_transactions
+       WHERE source = 'purchase' AND (player_id = $1 OR (player_id IS NULL AND device_uuid = ANY($2)))
+       ORDER BY created_at, transaction_id`,
+      [player.player_id, deviceUuids]
     )
-
-    // Link new device to this email
-    if (deviceUuid && !deviceUuids.includes(deviceUuid)) {
-      await db.query(
-        `INSERT INTO fo_players (device_uuid, email) VALUES ($1, $2)
-         ON CONFLICT (device_uuid) DO UPDATE SET email = $2, updated_at = NOW()`,
-        [deviceUuid, normalised]
-      )
-    }
-
-    // Aggregate purchases
-    let coins     = 0
-    const decks   = new Set()
-    let removeAds = false
-    const extras  = {}
-
-    for (const p of purchases) {
-      coins += p.coins_granted ?? 0
-      ;(p.decks_granted ?? []).forEach(d => decks.add(d))
-      if (p.product_type === 'remove_ads') removeAds = true
-      for (const [k, v] of Object.entries(p.extras_granted ?? {})) {
-        extras[k] = (extras[k] ?? 0) + v
-      }
-    }
 
     // Fetch game stats — take the best value across all linked devices
     let streakBest = 0, pvpWins = 0
@@ -74,11 +67,11 @@ export default async function handler(req, res) {
       )
       streakBest = statRows[0]?.streak_best ?? 0
       pvpWins    = statRows[0]?.pvp_wins    ?? 0
-    } catch (_) {
+    } catch {
       // fo_game_stats may not exist yet — stats just won't be restored this time
     }
 
-    res.json({ found: true, coins, decks: [...decks], removeAds, extras, streakBest, pvpWins })
+    res.json({ found: transactionRows.length > 0, grants: transactionRows.map(toClientGrant), streakBest, pvpWins })
   } catch (err) {
     console.error('[FO restore]', err)
     res.status(500).json({ error: 'Restore failed' })

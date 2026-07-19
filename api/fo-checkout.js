@@ -1,13 +1,7 @@
 import Stripe from 'stripe'
-import pg from 'pg'
 import { PRODUCTS } from './_products.js'
-
-const { Pool } = pg
-let pool
-function getPool() {
-  if (!pool) pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
-  return pool
-}
+import { getDb } from './_db.js'
+import { requirePlayer } from './_auth.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
@@ -19,9 +13,11 @@ export default async function handler(req, res) {
   if (!product) return res.status(400).json({ error: 'Unknown product' })
 
   const baseUrl = process.env.FO_URL || 'https://flipout.gizmogames.uk'
-  const db = getPool()
+  const db = getDb()
 
   try {
+    const player = await requirePlayer(db, req, res)
+    if (!player) return
     // Ensure player record exists
     await db.query(
       `INSERT INTO fo_players (device_uuid) VALUES ($1) ON CONFLICT (device_uuid) DO NOTHING`,
@@ -41,6 +37,7 @@ export default async function handler(req, res) {
       }],
       metadata: {
         source:       'flipout',
+        player_id:    player.player_id,
         device_uuid:  deviceUuid,
         product_id:   productId,
         product_type: product.type,
@@ -55,10 +52,10 @@ export default async function handler(req, res) {
     // Record as pending (for idempotency)
     await db.query(
       `INSERT INTO fo_purchases
-         (device_uuid, stripe_session_id, product_id, product_type, coins_granted, decks_granted, extras_granted, pence)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         (player_id, device_uuid, stripe_session_id, product_id, product_type, coins_granted, decks_granted, extras_granted, pence)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        ON CONFLICT (stripe_session_id) DO NOTHING`,
-      [deviceUuid, session.id, productId, product.type,
+      [player.player_id, deviceUuid, session.id, productId, product.type,
        product.coins ?? 0, product.decks ?? [], product.extras ?? {}, product.pence]
     )
 

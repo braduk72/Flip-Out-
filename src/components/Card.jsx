@@ -19,8 +19,16 @@ export default function Card({ card, isFlipped, isMatched, isFrozen, isConsumed,
         ${isShuffling    ? styles.shuffling       : ''}
       `}
       onClick={onClick}
+      onKeyDown={event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onClick?.()
+        }
+      }}
+      tabIndex={hideMatched || isMatchedBack || isConsumed ? -1 : 0}
       role="button"
-      aria-label={faceUp ? card.specialType || 'card' : 'face-down card'}
+      aria-disabled={hideMatched || isMatchedBack || isConsumed || isFrozen}
+      aria-label={faceUp ? card.name || card.specialType || 'card' : isFrozen ? 'frozen face-down card' : 'face-down card'}
       style={style}
     >
       <div className={styles.inner}>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 720" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="edge"><stop stop-color="#22d3ee"/><stop offset=".5" stop-color="#a855f7"/><stop offset="1" stop-color="#f5c451"/></linearGradient>
+    <filter id="glow" x="-10%" y="-20%" width="120%" height="140%"><feGaussianBlur stdDeviation="12" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="18" y="18" width="1564" height="684" rx="78" fill="none" stroke="url(#edge)" stroke-width="9" filter="url(#glow)"/>
+  <rect x="34" y="34" width="1532" height="652" rx="64" fill="none" stroke="#fff" stroke-opacity=".24" stroke-width="3"/>
+</svg>

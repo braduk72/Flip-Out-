@@ -98,18 +98,6 @@ function neighbours(index, cols = 4) {
   return result
 }
 
-function rowOrCol(index, cols = 4, rows = 4) {
-  if (Math.random() < 0.5) {
-    // return same row
-    const row = Math.floor(index / cols)
-    return Array.from({ length: cols }, (_, c) => row * cols + c)
-  } else {
-    // return same column
-    const col = index % cols
-    return Array.from({ length: rows }, (_, r) => r * cols + col)
-  }
-}
-
 function otherTurn(turn) { return turn === 'player' ? 'ai' : 'player' }
 
 function checkGameOver(state) {
@@ -549,14 +537,10 @@ function applySpecial(state, index, whose, seed = {}) {
 
     case 'tiebreaker': {
       // Award the card to inventory — only useful to the player (AI can't collect it)
-      if (whose === 'player') {
-        const cur = parseInt(localStorage.getItem('fo_tiebreakers') || '0')
-        localStorage.setItem('fo_tiebreakers', String(cur + 1))
-      }
       return {
         ...base,
         turn: whose,   // player keeps their turn — reward for finding it
-        activeEffect: { type: 'tiebreaker', data: { whose } },
+        activeEffect: { type: 'tiebreaker', data: { whose, index } },
       }
     }
 
@@ -672,7 +656,7 @@ export function useGame(deck, difficulty = 'Medium', prebuiltCards = null, initi
 
     // Random pick
     return available[Math.floor(Math.random() * available.length)].i
-  }, [])
+  }, [aiKnown, aiMem])
 
   const forceGameOver = useCallback(winner => {
     dispatch({ type: 'FORCE_GAME_OVER', winner })

@@ -1,4 +1,7 @@
+/* eslint-disable react-refresh/only-export-components -- app bootstrap imports checkDailyBonus from this established module */
 import styles from './DailyBonus.module.css'
+import { economy } from '../utils/economyService.js'
+import { playerGameApi } from '../utils/gameApi.js'
 
 const DAILY_REWARDS = [5, 10, 15, 20, 25, 50, 50]
 
@@ -15,41 +18,14 @@ function todayStr() {
   return new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local time
 }
 
-function yesterdayStr() {
-  const d = new Date()
-  d.setDate(d.getDate() - 1)
-  return d.toLocaleDateString('en-CA')
-}
-
-/** Call once on app load. Returns { day (0-indexed), coins } or null if already claimed today. */
-export function checkDailyBonus() {
-  const today    = todayStr()
-  const lastDate = localStorage.getItem('fo_dlb_last') || ''
-
-  if (lastDate === today) return null // already claimed today
-
-  const isTuesday = new Date().getDay() === 2
-  let day
-
-  if (isTuesday) {
-    day = 0
-  } else {
-    const savedDay = parseInt(localStorage.getItem('fo_dlb_day') || '0', 10)
-    if (lastDate === yesterdayStr()) {
-      day = Math.min(savedDay + 1, 6)
-    } else {
-      day = 0
-    }
-  }
-
-  const coins = DAILY_REWARDS[day]
-
-  const cur = parseInt(localStorage.getItem('fo_coins') || '0', 10)
-  localStorage.setItem('fo_coins',    String(cur + coins))
-  localStorage.setItem('fo_dlb_last', today)
-  localStorage.setItem('fo_dlb_day',  String(day))
-
-  return { day, coins }
+/** Call once on app load. Returns { day (0-indexed), stars } or null if already claimed today. */
+export async function checkDailyBonus() {
+  const result = await playerGameApi.dailyLogin(Intl.DateTimeFormat().resolvedOptions().timeZone)
+  if (result.duplicate) return null
+  const day = Math.max(0, Number(result.streak ?? 1) - 1)
+  const stars = Number(result.reward?.amount ?? 0)
+  economy.applyTransaction({ id: result.claimId, source: 'daily-login-server', changes: { counters: { stars }, flags: { fo_dlb_last: todayStr(), fo_dlb_day: day } } })
+  return { day, coins: stars }
 }
 
 export default function DailyBonus({ day, coins, onClose }) {
@@ -74,7 +50,7 @@ export default function DailyBonus({ day, coins, onClose }) {
             >
               <span className={styles.dayLabel}>D{i + 1}</span>
               <div className={styles.dayRewardWrap}>
-                <img src={REWARD_IMG[r]} alt={`${r} coins`} className={styles.dayRewardImg} />
+                <img src={REWARD_IMG[r]} alt={`${r * 10} Stars`} className={styles.dayRewardImg} />
                 {i < day && <span className={styles.claimedX}>✕</span>}
               </div>
             </div>
@@ -82,7 +58,7 @@ export default function DailyBonus({ day, coins, onClose }) {
         </div>
 
         {/* Today's reward */}
-        <img src={REWARD_IMG[coins]} alt={`${coins} coins`} className={styles.bigRewardImg} />
+        <img src={REWARD_IMG[coins / 10]} alt={`${coins} Stars`} className={styles.bigRewardImg} />
 
         <button className={styles.collectBtn} onClick={onClose}>
           Collect!

@@ -15,6 +15,9 @@ const BACKUP_KEYS = [
   'fo_dlb_last', 'fo_dlb_day',
   'fo_gold_card', 'fo_rob_names',
   'fo_remove_ads', 'fo_tiebreakers',
+  'fo_economy_transactions', 'fo_spin_bonus', 'fo_free_unlocks',
+  'fo_unlocked_avatars', 'fo_jokers', 'fo_joker_date',
+  'fo_no_ads',
 ]
 
 // ── Cookie helpers ────────────────────────────────────────────────────────────

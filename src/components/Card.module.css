@@ -9,6 +9,19 @@
   aspect-ratio: 1 / 1;
 }
 
+.card:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px #5b21b6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card, .inner, .card.faceUp:not(.matched), .matchedTickInner, .frozenOverlay, .frozenCrystal, .shuffling {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .card.matched {
   opacity: 0;
   cursor: default;

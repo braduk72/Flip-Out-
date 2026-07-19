@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 240" preserveAspectRatio="none">
+  <defs>
+    <linearGradient id="face" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#8b3cff"/><stop offset=".48" stop-color="#6d28d9"/><stop offset="1" stop-color="#3b0764"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff3a0"/><stop offset=".25" stop-color="#f8c934"/><stop offset=".7" stop-color="#f59e0b"/><stop offset="1" stop-color="#9a4d05"/></linearGradient>
+    <filter id="glow" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="11" result="b"/><feFlood flood-color="#a855f7" flood-opacity=".75"/><feComposite in2="b" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="20" y="18" width="680" height="204" rx="100" fill="url(#gold)" filter="url(#glow)"/>
+  <rect x="31" y="29" width="658" height="182" rx="89" fill="#4c1d95" stroke="#fff0a3" stroke-width="4"/>
+  <rect x="41" y="39" width="638" height="160" rx="80" fill="url(#face)" stroke="#d8b4fe" stroke-opacity=".62" stroke-width="3"/>
+  <path d="M85 61c126-34 411-37 545 2" fill="none" stroke="#fff" stroke-opacity=".42" stroke-width="9" stroke-linecap="round"/>
+</svg>

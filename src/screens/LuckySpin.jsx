@@ -3,6 +3,8 @@ import styles from './LuckySpin.module.css'
 import BottomNav from '../components/BottomNav'
 import Interstitial from '../components/Interstitial'
 import confetti from 'canvas-confetti'
+import { createTransactionId, economy } from '../utils/economyService.js'
+import { playerGameApi } from '../utils/gameApi.js'
 
 const MAX_FREE   = 1   // 1 free spin per day
 const MAX_AD     = 1   // 1 extra spin per day after watching an ad
@@ -10,6 +12,7 @@ const MAX_AD     = 1   // 1 extra spin per day after watching an ad
 const DATE_KEY   = 'fo_spin_date'
 const FREE_KEY   = 'fo_spin_free'
 const AD_KEY     = 'fo_spin_ad'
+const COIN_KEY   = 'fo_spin_coins'
 
 function todayKey() { return new Date().toLocaleDateString('en-CA') } // YYYY-MM-DD in local time
 
@@ -35,9 +38,11 @@ function useMidnightCountdown() {
 
 function resetIfNewDay() {
   if (localStorage.getItem(DATE_KEY) !== todayKey()) {
-    localStorage.setItem(DATE_KEY,  todayKey())
-    localStorage.setItem(FREE_KEY,  '0')
-    localStorage.setItem(AD_KEY,    '0')
+    economy.applyTransaction({
+      id: `spin-reset:${todayKey()}`,
+      source: 'spin-reset',
+      changes: { flags: { [DATE_KEY]: todayKey(), [FREE_KEY]: 0, [AD_KEY]: 0, [COIN_KEY]: 0 } },
+    })
   }
 }
 
@@ -45,34 +50,24 @@ function getUsed() {
   resetIfNewDay()
   return {
     free: parseInt(localStorage.getItem(FREE_KEY) || '0'),
-    ad:   parseInt(localStorage.getItem(AD_KEY)   || '0'),
+    ad: parseInt(localStorage.getItem(AD_KEY) || '0'),
+    coins: parseInt(localStorage.getItem(COIN_KEY) || '0'),
   }
 }
 
 const SEGMENTS = [
-  { label: '10',  icon: '🪙', img: 'coin_mult_x10.webp',  type: 'coins', value: 10,  color: '#f97316', weight: 18 },
-  { label: '100', icon: '🪙', img: 'coin_mult_x100.webp', type: 'coins', value: 100, color: '#FFD700', weight: 1  },
-  { label: '5',   icon: '🪙', img: 'coin_mult_x5.webp',   type: 'coins', value: 5,   color: '#e8a838', weight: 25 },
-  { label: '50',  icon: '🪙', img: 'coin_mult_x50.webp',  type: 'coins', value: 50,  color: '#3ecfd4', weight: 2  },
-  { label: '1',   icon: '🪙', img: 'coin_mult_x1.webp',   type: 'coins', value: 1,   color: '#b8721e', weight: 30 },
-  { label: '25',  icon: '🪙', img: 'coin_mult_x25.webp',  type: 'coins', value: 25,  color: '#9b4fe8', weight: 4  },
-  { label: '15',  icon: '🪙', img: 'coin_mult_x15.webp',  type: 'coins', value: 15,  color: '#e84b4b', weight: 12 },
-  { label: '20',  icon: '🪙', img: 'coin_mult_x20.webp',  type: 'coins', value: 20,  color: '#26c25a', weight: 8  },
+  { label: '100',  icon: '⭐', img: 'coin_mult_x10.webp',  type: 'stars', value: 100,  color: '#f97316', weight: 18 },
+  { label: '1000', icon: '⭐', img: 'coin_mult_x100.webp', type: 'stars', value: 1000, color: '#FFD700', weight: 1  },
+  { label: '50',   icon: '⭐', img: 'coin_mult_x5.webp',   type: 'stars', value: 50,   color: '#e8a838', weight: 25 },
+  { label: '500',  icon: '⭐', img: 'coin_mult_x50.webp',  type: 'stars', value: 500,  color: '#3ecfd4', weight: 2  },
+  { label: '10',   icon: '⭐', img: 'coin_mult_x1.webp',   type: 'stars', value: 10,   color: '#b8721e', weight: 30 },
+  { label: '250',  icon: '⭐', img: 'coin_mult_x25.webp',  type: 'stars', value: 250,  color: '#9b4fe8', weight: 4  },
+  { label: '150',  icon: '⭐', img: 'coin_mult_x15.webp',  type: 'stars', value: 150,  color: '#e84b4b', weight: 12 },
+  { label: '200',  icon: '⭐', img: 'coin_mult_x20.webp',  type: 'stars', value: 200,  color: '#26c25a', weight: 8  },
 ]
-
-function weightedRandomSeg() {
-  const total = SEGMENTS.reduce((s, seg) => s + seg.weight, 0)
-  let r = Math.random() * total
-  for (let i = 0; i < SEGMENTS.length; i++) {
-    r -= SEGMENTS[i].weight
-    if (r <= 0) return i
-  }
-  return SEGMENTS.length - 1
-}
 
 const N = SEGMENTS.length
 const SEG_DEG = 360 / N
-const CX = 150, CY = 150, R = 128
 
 // ── Web Audio tada fanfare ───────────────────────────────────────────────────
 function playTadaSound(ctx) {
@@ -91,7 +86,9 @@ function playTadaSound(ctx) {
       osc.start(ctx.currentTime + i * 0.12)
       osc.stop(ctx.currentTime + i * 0.12 + 0.35)
     })
-  } catch (_) {}
+  } catch {
+    // Audio is optional and may be unavailable in restricted browser contexts.
+  }
 }
 
 // ── Web Audio tick ──────────────────────────────────────────────────────────
@@ -110,7 +107,9 @@ function playTickSound(ctx) {
     src.connect(gain)
     gain.connect(ctx.destination)
     src.start()
-  } catch (_) {}
+  } catch {
+    // Audio is optional and may be unavailable in restricted browser contexts.
+  }
 }
 
 // ── Tick schedule: ease-out-cubic matches wheel deceleration ────────────────
@@ -124,21 +123,6 @@ function getTickTimes(totalDeg, duration = 7000) {
   }
   return times
 }
-const toRad = d => d * Math.PI / 180
-
-function sectorPath(i) {
-  const start = -90 + i * SEG_DEG
-  const end   = start + SEG_DEG
-  const x1 = CX + R * Math.cos(toRad(start)), y1 = CY + R * Math.sin(toRad(start))
-  const x2 = CX + R * Math.cos(toRad(end)),   y2 = CY + R * Math.sin(toRad(end))
-  return `M${CX},${CY} L${x1},${y1} A${R},${R} 0 0,1 ${x2},${y2} Z`
-}
-
-function labelPos(i) {
-  const mid = -90 + i * SEG_DEG + SEG_DEG / 2
-  return { x: CX + R * 0.65 * Math.cos(toRad(mid)), y: CY + R * 0.65 * Math.sin(toRad(mid)), mid }
-}
-
 export default function LuckySpin({ onBack, navProps }) {
   const [used, setUsed]         = useState(() => getUsed())
   const [bonusLeft, setBonusLeft] = useState(() => parseInt(localStorage.getItem('fo_spin_bonus') || '0'))
@@ -166,17 +150,31 @@ export default function LuckySpin({ onBack, navProps }) {
 
   const freeLeft     = Math.max(0, MAX_FREE - used.free)
   const adLeft       = Math.max(0, MAX_AD   - used.ad)
+  const coinLeft     = Math.max(0, 1 - used.coins)
   const midnightTimer = useMidnightCountdown()
 
-  function doSpin(type = 'free') { // type: 'free' | 'ad' | 'bonus'
+  async function doSpin(type = 'free', advertCompletionId) {
     if (spinning || prize) return
+    setSpinning(true)
+    let serverResult
+    try {
+      serverResult = await playerGameApi.spinWheel({ spinType: type, advertCompletionId })
+    } catch (error) {
+      setSpinning(false)
+      window.alert(error.message)
+      return
+    }
 
     // Initialise AudioContext on first user gesture
     if (!audioCtxRef.current) {
-      try { audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)() } catch (_) {}
+      try { audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)() } catch {
+        // The wheel remains usable without Web Audio.
+      }
     }
 
-    const targetSeg   = weightedRandomSeg()
+    const targetSeg = SEGMENTS.findIndex(segment => segment.value === Number(serverResult.reward?.amount))
+    if (targetSeg < 0) { setSpinning(false); window.alert('The server returned an unknown wheel reward.'); return }
+    const spinId = serverResult.transactionId
     const targetAngle = (360 - (targetSeg * SEG_DEG + SEG_DEG / 2) + 360) % 360
     const minSpin     = rotRef.current + 9 * 360
     const n           = Math.ceil((minSpin - targetAngle) / 360)
@@ -184,7 +182,6 @@ export default function LuckySpin({ onBack, navProps }) {
     const totalDeg    = finalRot - rotRef.current
     rotRef.current    = finalRot
     setRotation(finalRot)
-    setSpinning(true)
 
     // Schedule pointer ticks + audio
     tickTimers.current.forEach(clearTimeout)
@@ -199,14 +196,12 @@ export default function LuckySpin({ onBack, navProps }) {
     resetIfNewDay()
     if (type === 'ad') {
       const next = parseInt(localStorage.getItem(AD_KEY) || '0') + 1
-      localStorage.setItem(AD_KEY, String(next))
-    } else if (type === 'bonus') {
-      const cur = parseInt(localStorage.getItem('fo_spin_bonus') || '0')
-      localStorage.setItem('fo_spin_bonus', String(Math.max(0, cur - 1)))
-      setBonusLeft(Math.max(0, cur - 1))
+      economy.applyTransaction({ id: `${spinId}:consume`, source: 'spin-consume', changes: { flags: { [AD_KEY]: next } } })
+    } else if (type === 'coins') {
+      economy.applyTransaction({ id: `${spinId}:cost`, source: 'spin-cost-server', changes: { counters: { coins: -25 }, flags: { [COIN_KEY]: 1 } } })
     } else {
       const next = parseInt(localStorage.getItem(FREE_KEY) || '0') + 1
-      localStorage.setItem(FREE_KEY, String(next))
+      economy.applyTransaction({ id: `${spinId}:consume`, source: 'spin-consume', changes: { flags: { [FREE_KEY]: next } } })
     }
     setUsed(getUsed())
 
@@ -216,8 +211,11 @@ export default function LuckySpin({ onBack, navProps }) {
       setSpinning(false)
       if (audioCtxRef.current) playTadaSound(audioCtxRef.current)
       confetti({ particleCount: 120, spread: 80, origin: { y: 0.55 }, zIndex: 200 })
-      const cur = parseInt(localStorage.getItem('fo_coins') || '0')
-      localStorage.setItem('fo_coins', String(cur + seg.value))
+      economy.applyTransaction({
+        id: spinId,
+        source: 'lucky-spin-server',
+        changes: { counters: { stars: seg.value } },
+      })
     }, 7100)
   }
 
@@ -229,13 +227,12 @@ export default function LuckySpin({ onBack, navProps }) {
     if (adLeft > 0 && !spinning && !prize) setShowAd(true)
   }
 
-  function handleAdClose() {
+  function handleAdCancel() {
     setShowAd(false)
-    doSpin('ad')
   }
 
   function handleBonus() {
-    if (bonusLeft > 0 && !spinning && !prize) doSpin('bonus')
+    if (bonusLeft > 0) window.alert('Bonus spins are temporarily unavailable while they are moved to the secure server inventory.')
   }
 
   return (
@@ -247,9 +244,11 @@ export default function LuckySpin({ onBack, navProps }) {
         <div className={styles.spinsLeft}>🕛 {midnightTimer}</div>
         {import.meta.env.VITE_DEV_TOOLS === 'true' && (
           <button className={styles.devReset} title="Reset daily spins" onClick={() => {
-            localStorage.removeItem(DATE_KEY)
-            localStorage.removeItem(FREE_KEY)
-            localStorage.removeItem(AD_KEY)
+            economy.applyTransaction({
+              id: createTransactionId('dev:spin-reset'),
+              source: 'dev',
+              changes: { flags: { [DATE_KEY]: '', [FREE_KEY]: 0, [AD_KEY]: 0, [COIN_KEY]: 0 } },
+            })
             setUsed(getUsed())
             setBonusLeft(parseInt(localStorage.getItem('fo_spin_bonus') || '0'))
           }}>🔄</button>
@@ -319,12 +318,21 @@ export default function LuckySpin({ onBack, navProps }) {
           </button>
         )}
 
+        {freeLeft === 0 && coinLeft > 0 && (
+          <button className={styles.bonusSpinBtn} onClick={() => doSpin('coins')} disabled={spinning || !!prize}>
+            <span className={styles.bonusSpinIcon}>🪙</span>
+            <span className={styles.bonusSpinLabel}>COIN SPIN</span>
+            <span className={styles.bonusSpinCount}>25</span>
+          </button>
+        )}
+
         {/* Bonus spin button — shown when promo spins are available */}
         {bonusLeft > 0 && (
           <button
             className={styles.bonusSpinBtn}
             onClick={handleBonus}
-            disabled={spinning || !!prize}
+            disabled
+            title="Pending secure bonus-spin inventory support"
           >
             <span className={styles.bonusSpinIcon}>🎟️</span>
             <span className={styles.bonusSpinLabel}>BONUS SPIN</span>
@@ -346,7 +354,7 @@ export default function LuckySpin({ onBack, navProps }) {
       )}
 
       {/* Rewarded ad interstitial */}
-      {showAd && <Interstitial onClose={handleAdClose} />}
+      {showAd && <Interstitial onCancel={handleAdCancel} />}
 
       <BottomNav active="shop" {...navProps} />
     </div>
