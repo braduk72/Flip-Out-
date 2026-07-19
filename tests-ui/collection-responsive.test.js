@@ -8,6 +8,7 @@ const source = () => readFile(join(process.cwd(), 'src/screens/Collection.module
 test('Collection is mobile-first, safe-area aware and never uses a fixed phone frame', async () => {
   const css = await source()
   expect(css).toMatch(/height: 100dvh/)
+  expect(css).toMatch(/grid-auto-rows: max-content/)
   expect(css).toMatch(/var\(--fo-safe-top\)/)
   expect(css).toMatch(/var\(--fo-safe-right\)/)
   expect(css).toMatch(/grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/)
