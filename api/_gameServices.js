@@ -19,7 +19,7 @@ export function secureWeightedReward(table = REWARD_TABLES.dailyWheelV1) {
   return selectWeightedReward(table, value)
 }
 
-export async function applyReward(client, { playerId, transactionId, source, reward, metadata = {} }) {
+export async function applyReward(client, { playerId, transactionId, source, reward, metadata = {}, minimumRemaining = 0 }) {
   const id = safeId(transactionId, 'transaction id')
   const existing = await client.query(`SELECT player_id FROM fo_player_transactions WHERE transaction_id=$1`, [id])
   if (existing.rowCount) {
@@ -30,6 +30,7 @@ export async function applyReward(client, { playerId, transactionId, source, rew
   const itemId = reward.itemId ?? null
   const amount = Number(reward.amount)
   if (Boolean(currencyId) === Boolean(itemId) || !Number.isSafeInteger(amount) || amount === 0) throw Object.assign(new Error('Invalid reward'), { status: 400 })
+  if (!Number.isSafeInteger(minimumRemaining) || minimumRemaining < 0 || (currencyId && minimumRemaining !== 0)) throw Object.assign(new Error('Invalid minimum remaining quantity'), { status: 400 })
   const table = currencyId ? 'fo_player_balances' : 'fo_player_inventory'
   const key = currencyId ? 'currency_id' : 'item_id'
   const value = currencyId ? 'balance' : 'quantity'
@@ -46,7 +47,9 @@ export async function applyReward(client, { playerId, transactionId, source, rew
     })
   }
   await client.query(`INSERT INTO ${table}(player_id,${key},${value}) VALUES($1,$2,0) ON CONFLICT DO NOTHING`, [playerId, target])
-  const updated = await client.query(`UPDATE ${table} SET ${value}=${value}+$3,updated_at=NOW() WHERE player_id=$1 AND ${key}=$2 AND ${value}+$3>=0 RETURNING ${value}`, [playerId, target, amount])
+  const floor = currencyId ? '0' : 'GREATEST($4,bound_quantity)'
+  const parameters = currencyId ? [playerId, target, amount] : [playerId, target, amount, minimumRemaining]
+  const updated = await client.query(`UPDATE ${table} SET ${value}=${value}+$3,updated_at=NOW() WHERE player_id=$1 AND ${key}=$2 AND ${value}+$3>=${floor} RETURNING ${value}`, parameters)
   if (!updated.rowCount) throw Object.assign(new Error('Insufficient balance or quantity'), { status: 409 })
   await client.query(`INSERT INTO fo_player_transactions(transaction_id,player_id,source,item_id,currency_id,amount,metadata) VALUES($1,$2,$3,$4,$5,$6,$7)`, [id, playerId, source, itemId, currencyId, amount, metadata])
   return { applied: true, duplicate: false, transactionId: id, value: Number(updated.rows[0][value]) }

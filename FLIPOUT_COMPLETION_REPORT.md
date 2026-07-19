@@ -182,3 +182,8 @@ The UI consolidation package replaced every reachable legacy/prototype route she
 ## Collection 2.0 addendum — 19 July 2026
 
 Collection now provides the production album/set/card experience over the real 653-card catalogue and seven Gold Collector variants. Search, filters, missing/owned states, favourites, recent acquisitions, statistics and milestone progress are implemented without changing ownership or economy rules. Foils and milestone reward claims remain deliberately unavailable until authoritative definitions exist. See `FLIPOUT_COLLECTION_2_REPORT.md`.
+## Duplicate Card Recycler addendum — 19 July 2026
+
+The Collection duplicate-value floor is now implemented. Authenticated guest or protected accounts can recycle complete common-card batches without risking their final copy. Inventory deductions, transaction history, guaranteed Stars and the Recycler receipt are one PostgreSQL transaction; transaction IDs and input fingerprints protect retries, concurrency and account isolation.
+
+Migration `010_duplicate_card_recycler.sql` is applied and verified in Preview only. Focused Preview verification passed 8/8 and the Vite build passed. The first full Preview run passed 115/116; the sole failure was the pre-existing Vercel packaging omission of a gitignored Android native file, not a Recycler failure. The common 5-to-5-Star recipe remains explicitly provisional. Full details: `FLIPOUT_RECYCLER_REPORT.md`.

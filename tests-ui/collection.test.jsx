@@ -69,4 +69,50 @@ describe('Collection 2.0', () => {
     expect(screen.getByText('Standard Lockbox')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Open lockbox' })).toBeInTheDocument()
   })
+
+  it('recycles a complete duplicate batch and displays the authoritative receipt', async () => {
+    const user = userEvent.setup()
+    const recyclerPayload = {
+      state: {
+        ...payload.state,
+        inventory: [{ item_id: 'card:sportscars:1', quantity: 6, bound_quantity: 0 }],
+        recyclerRecipes: [{ recipeId: 'common-stars-v1', rarity: 'common', batchSize: 5, reward: { currencyId: 'stars', amount: 5 }, configVersion: 1 }],
+      },
+    }
+    const loader = vi.fn().mockResolvedValue(recyclerPayload)
+    const action = vi.fn().mockResolvedValue({ duplicate: false, transactionId: 'recycle:test', cardsConsumed: 5, batches: 1, reward: { currencyId: 'stars', amount: 5 }, items: [{ itemId: 'card:sportscars:1', quantity: 5 }] })
+    render(<Inventory onBack={() => {}} navProps={{}} dataLoader={loader} actionRunner={action} storage={localStorage}/>)
+    await screen.findByRole('heading', { name: 'Albums & sets' })
+    await user.click(screen.getByRole('button', { name: 'Duplicate card recycler' }))
+    const add = screen.getByRole('button', { name: 'Add one Ferrari 488 GTB' })
+    for (let count = 0; count < 5; count += 1) await user.click(add)
+    await user.click(screen.getByRole('button', { name: 'Recycle 5 cards' }))
+    expect(await screen.findByRole('dialog', { name: 'Recycling complete' })).toBeInTheDocument()
+    expect(screen.getByText('+5 stars')).toBeInTheDocument()
+    expect(action).toHaveBeenCalledWith(expect.objectContaining({ action: 'recycle-duplicates', recipeId: 'common-stars-v1', items: [{ itemId: 'card:sportscars:1', quantity: 5 }] }))
+  })
+
+  it('reuses the transaction ID after an interrupted recycler response', async () => {
+    const user = userEvent.setup()
+    const recyclerPayload = {
+      state: {
+        ...payload.state,
+        inventory: [{ item_id: 'card:sportscars:1', quantity: 6, bound_quantity: 0 }],
+        recyclerRecipes: [{ recipeId: 'common-stars-v1', rarity: 'common', batchSize: 5, reward: { currencyId: 'stars', amount: 5 }, configVersion: 1 }],
+      },
+    }
+    const loader = vi.fn().mockResolvedValue(recyclerPayload)
+    const action = vi.fn().mockRejectedValueOnce(new Error('Connection lost')).mockResolvedValue({ duplicate: true, transactionId: 'recycle:retry', cardsConsumed: 5, batches: 1, reward: { currencyId: 'stars', amount: 5 }, items: [{ itemId: 'card:sportscars:1', quantity: 5 }] })
+    render(<Inventory onBack={() => {}} navProps={{}} dataLoader={loader} actionRunner={action} storage={localStorage}/>)
+    await screen.findByRole('heading', { name: 'Albums & sets' })
+    await user.click(screen.getByRole('button', { name: 'Duplicate card recycler' }))
+    const add = screen.getByRole('button', { name: 'Add one Ferrari 488 GTB' })
+    for (let count = 0; count < 5; count += 1) await user.click(add)
+    await user.click(screen.getByRole('button', { name: 'Recycle 5 cards' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('same transaction ID')
+    const firstId = action.mock.calls[0][0].transactionId
+    await user.click(screen.getByRole('button', { name: 'Retry secure recycling' }))
+    expect(action.mock.calls[1][0].transactionId).toBe(firstId)
+    expect(await screen.findByText(/Safe retry confirmed/)).toBeInTheDocument()
+  })
 })

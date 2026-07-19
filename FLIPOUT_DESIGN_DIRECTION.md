@@ -88,3 +88,14 @@ Sensitive Coin actions serialize on the account balance, recalculate and verify 
 `scripts/verify-coin-ledger.mjs` is a Preview-only administrative verifier that reports recalculated balances, chain validity, first invalid entry and FIFO creation-source attribution. Full-chain verification is correctness-first; checkpointed verification may be required before high transaction volumes.
 
 Final Preview verification: migration 008 committed at `2026-07-18T17:52:39.594Z`; a subsequent run reported migrations 001-008 already applied. The database suite passed **56/56, 0 failed, 0 skipped** in 38.479 seconds. The administrative verifier checked all 17 Preview ledger accounts and reported every chain valid. Cross-account Exchange provenance was then added and passed locally, bringing the local suite to **57 total, 50 passed, 0 failed, 7 Preview-only skipped**. Final code deployment: `https://flip-45w824r5q-chattocal.vercel.app`. Production was not touched.
+## Duplicate Card Recycler — implemented development foundation (19 July 2026)
+
+- Duplicate cards may be permanently recycled in server-authoritative batches; the final copy of every card can never be recycled.
+- Recycling is a guaranteed floor value for unwanted duplicates and must remain less profitable than trading or normal play.
+- The first Preview recipe is provisional: five common duplicates grant five Stars. Coins are not a Recycler reward.
+- Recipes are versioned server data, so input batch size and reward can be balanced without changing transaction code.
+- The destruction and reward commit atomically before presentation. Animation never decides, rerolls or alters the reward.
+- Transaction IDs, input fingerprints and stored receipts make interrupted and concurrent retries safe. Cross-account reuse is rejected.
+- Exchange escrow naturally excludes listed cards from Recycler availability.
+- Higher rarity, Gold Collector and future Foil recycling is postponed until approved item-specific rules and values exist.
+- Full implementation and remaining balancing risks are recorded in `FLIPOUT_RECYCLER_REPORT.md`.

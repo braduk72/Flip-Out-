@@ -193,3 +193,8 @@ Local verification after full cross-account provenance coverage: **57 total, 50 
 The Preview-only administrative verifier checked all 17 ledger accounts: every chain was valid and balances recalculated successfully. Final code deployment `https://flip-45w824r5q-chattocal.vercel.app`; verifier deployment `https://flip-4tl7z3wpi-chattocal.vercel.app` returned app HTTP 200 and unauthenticated action API 401. Production was not touched.
 
 Remaining risks: O(n) full-chain verification needs signed checkpoints before high volume; HMAC rotation/disaster recovery is not yet specified; payment-provider refund wiring and creator-gift UI/policy remain absent; old wheel/daily Coin-number artwork needs new Star assets; localStorage remains only a compatibility/display cache and must not be used for valuable decisions.
+## 19. Duplicate Card Recycler
+
+Collection's Recycler now converts complete batches of unwanted common duplicates into a guaranteed, configurable Stars reward while protecting the final and bound copies. The backend uses catalogue validation, row/advisory locks, per-card destruction transactions, one atomic reward, idempotency fingerprints and stored account receipts. The UI retains a failed request's transaction ID for safe retry and includes reduced-motion presentation.
+
+Migration 010 committed to Railway Preview at `2026-07-19T14:17:11.289Z`. Focused live database verification passed 8 tests with no failures or skips. The current 5-card/5-Star recipe is a provisional development value and needs economy simulation before release. See `FLIPOUT_RECYCLER_REPORT.md` for commands, files and remaining risks.

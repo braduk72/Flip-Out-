@@ -22,6 +22,9 @@ const paths = {
   heart: <path d="M20.8 5.7a5.2 5.2 0 0 0-7.4 0L12 7.1l-1.4-1.4a5.2 5.2 0 0 0-7.4 7.4L12 21l8.8-7.9a5.2 5.2 0 0 0 0-7.4Z"/>,
   play: <path d="m8 5 11 7-11 7z"/>,
   pause: <path d="M8 5h3v14H8zM14 5h3v14h-3z"/>,
+  recycle: <><path d="m8.5 4 2-2 2 2M10.5 2v5"/><path d="M7.4 7.2 4 13a4 4 0 0 0 3.5 6h2"/><path d="m7.5 22 2-3-2-3"/><path d="M12.5 19H17a4 4 0 0 0 3.4-6.1l-1.1-1.8"/><path d="m22 11-3.4.2-1.5 3"/><path d="m17.5 8-2.6-4.2a4 4 0 0 0-6.8 0L7 5.6"/></>,
+  plus: <path d="M12 5v14M5 12h14"/>,
+  minus: <path d="M5 12h14"/>,
 }
 
 export default function Icon({ name, size = 24, label, className = '' }) {

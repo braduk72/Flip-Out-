@@ -29,7 +29,7 @@ function timestamp(value) {
 }
 
 export function buildCollectionData(state = {}, favouriteIds = []) {
-  const quantities = new Map((state.inventory ?? []).map(row => [row.item_id, Number(row.quantity) || 0]))
+  const inventoryById = new Map((state.inventory ?? []).map(row => [row.item_id, row]))
   const favouriteSet = new Set(favouriteIds)
   const obtained = new Map()
   for (const row of state.transactions ?? []) {
@@ -40,7 +40,9 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
   const cards = ITEM_CATALOG.filter(item => CARD_TYPES.has(item.type)).map(item => {
     const setId = setIdFor(item)
     const deck = deckById.get(setId)
-    const quantity = quantities.get(item.id) ?? 0
+    const inventory = inventoryById.get(item.id)
+    const quantity = Number(inventory?.quantity) || 0
+    const boundQuantity = Number(inventory?.bound_quantity) || 0
     const variant = item.variant ?? 'base'
     return {
       ...item,
@@ -49,6 +51,8 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
       setColour: deck?.borderColor ?? '#22d3ee',
       number: numberFor(item),
       quantity,
+      boundQuantity,
+      recyclableQuantity: Math.max(0, quantity - Math.max(1, boundQuantity)),
       owned: quantity > 0,
       favourite: favouriteSet.has(item.id),
       obtainedAt: obtained.get(item.id) ?? null,
@@ -117,6 +121,7 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
       totalBase: baseCards.length,
       completion: baseCards.length ? Math.round((baseOwned / baseCards.length) * 100) : 0,
       duplicates: cards.reduce((sum, card) => sum + Math.max(0, card.quantity - 1), 0),
+      recyclableDuplicates: cards.reduce((sum, card) => sum + card.recyclableQuantity, 0),
       favourites: cards.filter(card => card.favourite).length,
       completedSets: sets.filter(set => set.complete).length,
       totalSets: sets.length,
@@ -128,6 +133,32 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
       milestones,
       nextMilestone: milestones.find(milestone => !milestone.complete) ?? milestones.at(-1),
     },
+  }
+}
+
+export function buildRecyclerModel(cards = [], recipe = null, selection = {}) {
+  const batchSize = Number(recipe?.batchSize) || 0
+  const eligibleCards = cards.filter(card => card.rarity === recipe?.rarity && card.recyclableQuantity > 0)
+  const selectedItems = eligibleCards.map(card => ({
+    card,
+    quantity: Math.max(0, Math.min(card.recyclableQuantity, Number(selection[card.id]) || 0)),
+  })).filter(entry => entry.quantity > 0)
+  const cardsSelected = selectedItems.reduce((sum, entry) => sum + entry.quantity, 0)
+  const batches = batchSize > 0 ? Math.floor(cardsSelected / batchSize) : 0
+  const complete = batchSize > 1 && cardsSelected > 0 && cardsSelected % batchSize === 0
+  const rewardAmount = complete ? Number(recipe?.reward?.amount ?? 0) * batches : 0
+  const targetCards = batchSize > 0 ? Math.max(batchSize, Math.ceil(cardsSelected / batchSize) * batchSize) : 1
+  return {
+    eligibleCards,
+    selectedItems,
+    cardsSelected,
+    batchSize,
+    batches,
+    complete,
+    reward: complete ? { ...recipe.reward, amount: rewardAmount } : null,
+    nextBatchProgress: batchSize > 0 ? cardsSelected % batchSize : 0,
+    targetCards,
+    cardsNeeded: complete ? 0 : targetCards - cardsSelected,
   }
 }
 

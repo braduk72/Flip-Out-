@@ -69,3 +69,8 @@ The three album groupings are navigation metadata only. Sets remain the canonica
 - Entry bundle `/assets/index-C1HtgBKc.js` was 405,111 bytes and contained `1.4.0-collection2`.
 - Collection bundle `/assets/Inventory-l_c7LhSB.js` returned HTTP 200 and was 23,563 bytes.
 - No production deployment, domain, DNS, database, economy balance or migration was changed.
+## Duplicate Recycler extension — 19 July 2026
+
+Collection now includes a responsive `Recycle` view. It exposes only quantities above the protected final/bound copy, supports mixed-card complete batches, presents the server recipe and guaranteed reward, and retains the same transaction ID after an interrupted response. The server performs permanent destruction and reward grant atomically and returns a stored receipt on safe retry.
+
+Migration 010 and the live Preview database test passed. The initial `common-stars-v1` value (5 common duplicates to 5 Stars) is provisional and must be balanced below Exchange/normal-play value before release. Gold Collector, higher-rarity and future Foil recipes remain disabled. See `FLIPOUT_RECYCLER_REPORT.md`.

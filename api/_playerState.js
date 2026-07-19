@@ -1,3 +1,5 @@
+import { getRecyclerRecipes } from './_recycler.js'
+
 const SAFE_ID = /^[a-z0-9][a-z0-9:_-]{0,127}$/
 
 export function validateId(value, label = 'id') {
@@ -11,17 +13,19 @@ export function validateAmount(value) {
 }
 
 export async function getPlayerState(db, playerId) {
-  const [profile, balances, inventory, transactions] = await Promise.all([
+  const [profile, balances, inventory, transactions, recyclerRecipes] = await Promise.all([
     db.query(`SELECT player_id, account_kind FROM fo_accounts WHERE player_id=$1`, [playerId]),
     db.query(`SELECT currency_id, balance FROM fo_player_balances WHERE player_id=$1 ORDER BY currency_id`, [playerId]),
     db.query(`SELECT item_id, quantity, bound_quantity FROM fo_player_inventory WHERE player_id=$1 AND quantity > 0 ORDER BY item_id`, [playerId]),
     db.query(`SELECT transaction_id, source, item_id, currency_id, amount, metadata, created_at FROM fo_player_transactions WHERE player_id=$1 ORDER BY created_at DESC LIMIT 100`, [playerId]),
+    getRecyclerRecipes(db),
   ])
   return {
     profile: profile.rows[0] ?? { player_id: playerId, account_kind: 'guest' },
     balances: balances.rows,
     inventory: inventory.rows,
     transactions: transactions.rows,
+    recyclerRecipes,
   }
 }
 
