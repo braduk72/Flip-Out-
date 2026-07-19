@@ -214,6 +214,8 @@ The prior level-start defect remains fixed: stale presentation state was the loc
 
 The supplied booster comparison image is bundled as an optimised WebP and shown on Shop. Both product panels are labelled exactly 500 Coins and five cards, but purchasing is disabled pending a server-authoritative booster receipt boundary and approved foil probabilities. Store navigation is global and Shop scroll padding respects safe areas. No production deployment was performed.
 
+Store information polish is complete: “How Booster Packs Work” and “Collecting Every Card Has Its Rewards” sections are responsive, readable, accessible and dark-theme compatible. Purchase controls remain safely disabled until the backend is approved.
+
 ## Real-device gameplay repair revision — 19 July 2026
 
 The prior animation pass was not accepted as visually proven. This revision makes swap motion explicit from opposite-cell offsets, adds pointer capture and drag handling, and adds diagnostics for phase, lock reason, duration and reduced motion. Preview `https://flip-4lw572b7k-chattocal.vercel.app` (`dpl_3tH1ZE26TtJ7ugCUA4pbQ1F5dy7H`) is Ready. Automated verification passed 37/37 Node tests, 8/8 UI/token tests and the 145-module build. Manual iPhone Safari, desktop visual observation and browser coordinate/trace tests remain unverified here; no completion claim is made until those checks pass.

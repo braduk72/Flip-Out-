@@ -497,6 +497,8 @@ Focused lint for the newly added transaction service, backend helper/endpoints, 
 
 Supplied booster artwork is bundled as `public/ui/shop/booster-packs.webp` and displayed on Shop. Themed and Random panels show five cards and 500 Coins, but purchase controls remain disabled because no approved server-authoritative booster endpoint or foil probability configuration exists. Store is in global bottom navigation with safe-area scroll padding. Match-3 line specials now use Rocket artwork and wrapped/colour specials use a Sun graphic.
 
+Store information polish adds accessible Concept 4D panels explaining pack contents, themed/random foil differences, discoverable titles/avatars, Exchange usage and Gold Collector Card rewards. Booster Buy controls remain disabled with a Coming Soon state.
+
 ## Real-device gameplay repair revision — 19 July 2026
 
 - **Status: Preview deployed; manual acceptance still required.** Added per-token swap geometry, pointer capture, touch-action control, drag threshold handling, invalid swap return motion, and a development diagnostics overlay with a 25% slow-motion control.

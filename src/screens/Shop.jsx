@@ -123,6 +123,27 @@ export default function Shop({ onBack, onInventory, onMarketplace, navProps }) {
               <button type="button" disabled aria-disabled="true">Coming soon in Preview</button>
             </article>
           </div>
+          <article className={styles.infoPanel} aria-labelledby="booster-how-title">
+            <span className={styles.infoIcon} aria-hidden="true">✦</span>
+            <div>
+              <h3 id="booster-how-title">How Booster Packs Work</h3>
+              <p>Each Booster Pack contains <strong>5 cards drawn at random</strong>.</p>
+              <p><strong>Themed Booster Packs</strong> let you choose which deck your cards come from, making it easier to complete your favourite collections. They have the <strong>standard chance</strong> of containing a Foil card.</p>
+              <p><strong>Random Booster Packs</strong> can contain cards from <strong>any</strong> deck and have a <strong>higher chance</strong> of containing a Foil card.</p>
+              <p><strong>But that&apos;s not all!</strong> You might also discover:</p>
+              <ul><li>Player Title Prefixes</li><li>Player Title Suffixes</li><li>Player Avatars</li></ul>
+              <p>And remember... if you&apos;re missing a card, visit the <strong>Exchange</strong> to trade with other Flip-Out players, complete your collections and hunt for the cards you really want.</p>
+            </div>
+          </article>
+          <article className={`${styles.infoPanel} ${styles.goldInfoPanel}`} aria-labelledby="collector-rewards-title">
+            <span className={styles.infoIcon} aria-hidden="true">★</span>
+            <div>
+              <h3 id="collector-rewards-title">Collecting Every Card Has Its Rewards</h3>
+              <p><strong>Collecting every card in a themed deck will unlock an exclusive Gold Collector Card!</strong></p>
+              <p>These prestigious cards can&apos;t be found in Booster Packs and can be proudly displayed on your Profile for full-on bragging rights.</p>
+              <p><strong>Are <em>you</em> up to the challenge?</strong></p>
+            </div>
+          </article>
         </section>
 
         {/* Lucky Spin entry */}
