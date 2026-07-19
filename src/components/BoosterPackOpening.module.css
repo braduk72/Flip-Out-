@@ -1,0 +1,52 @@
+.overlay { position: fixed; z-index: 120; inset: 0; display: grid; place-items: center; min-height: 100dvh; padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); overflow: hidden; color: #f8fbff; background: radial-gradient(circle at 50% 42%, #342070 0%, #100c2b 45%, #050712 100%); isolation: isolate; }
+.stage { position: relative; z-index: 1; display: grid; justify-items: center; width: min(100%, 720px); min-height: min(82dvh, 720px); padding: clamp(18px, 5vw, 42px); overflow: hidden; border: 1px solid rgb(196 181 253 / .42); border-radius: clamp(22px, 5vw, 38px); box-shadow: 0 28px 90px rgb(0 0 0 / .58), inset 0 1px rgb(255 255 255 / .12); }
+.status { position: relative; z-index: 4; min-height: 2.8em; margin: 0; color: #e9e4ff; font-weight: 800; text-align: center; }
+.lightBloom { position: absolute; z-index: -1; inset: 16% -25%; background: radial-gradient(ellipse, rgb(168 85 247 / .26), transparent 66%); filter: blur(20px); pointer-events: none; }
+.packScene { position: relative; display: grid; place-items: center; width: min(100%, 560px); min-height: clamp(360px, 64vw, 500px); perspective: 1200px; transform-style: preserve-3d; }
+.packKeyframe { position: absolute; z-index: 3; width: min(88%, 400px); max-height: 82%; object-fit: contain; pointer-events: none; will-change: transform; transform: translate3d(0, 12px, 0) rotateY(0deg) scale(.9); }
+.cards { position: absolute; z-index: 2; width: 330px; height: 236px; transform-style: preserve-3d; }
+.card { position: absolute; top: 20px; left: 50%; width: 116px; height: 174px; padding: 0; overflow: visible; background: transparent; border: 0; border-radius: 12px; cursor: pointer; opacity: 0; perspective: 900px; transform: translate3d(-50%, 20px, -80px) rotate(0deg) scale(.72); transition: transform 620ms cubic-bezier(.18,.86,.22,1.18) var(--fan-delay), opacity 140ms linear; will-change: transform; }
+.cards[data-fanned] .card { opacity: 1; transform: translate3d(calc(-50% + var(--fan-x)), var(--fan-y), 0) rotate(var(--fan-rotate)) scale(1); }
+.card:focus-visible { z-index: 8; outline: 3px solid #fff3a1; outline-offset: 5px; }
+.card:disabled { cursor: default; }
+.cardInner { position: relative; display: block; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 420ms cubic-bezier(.2,.8,.2,1); will-change: transform; }
+.cardRevealed .cardInner { transform: rotateY(180deg); }
+.cardFace { position: absolute; inset: 0; display: block; overflow: hidden; border: 2px solid #f8e9a0; border-radius: 12px; backface-visibility: hidden; box-shadow: 0 8px 20px rgb(0 0 0 / .55); }
+.cardFace img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cardBack { background: #101827; }
+.cardFront { transform: rotateY(180deg); background: #121827; }
+.foilBadge { position: absolute; right: 4px; bottom: 5px; padding: 2px 5px; color: #fff; background: linear-gradient(135deg, #8b5cf6, #e879f9); border-radius: 999px; font-size: .55rem; font-weight: 900; letter-spacing: .06em; }
+.actions { position: relative; z-index: 8; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; min-height: 52px; }
+.openButton, .revealAllButton, .closeButton { min-width: 166px; min-height: 52px; padding: 12px 20px; color: #fff; border: 1px solid #fff0aa; border-radius: 999px; box-shadow: 0 8px 22px rgb(0 0 0 / .38), inset 0 1px rgb(255 255 255 / .42); font-size: 1rem; font-weight: 900; cursor: pointer; }
+.openButton { background: linear-gradient(180deg, #8b34e8, #4a148c); }
+.revealAllButton { background: linear-gradient(180deg, #f6c742, #ca7d09); color: #291800; }
+.closeButton { background: linear-gradient(180deg, #31456f, #17213d); }
+.openButton:disabled, .revealAllButton:disabled { cursor: wait; filter: grayscale(.4); opacity: .62; }
+.phase_appearing .packKeyframe { animation: packAppear 180ms cubic-bezier(.2,.9,.2,1) both; }
+.phase_enlarging .packKeyframe { transform: translate3d(0, 4px, 10px) rotateY(0deg) scale(1); transition: transform 130ms cubic-bezier(.2,.85,.25,1); }
+.phase_lifting .packKeyframe { transform: translate3d(0, -14px, 20px) rotateY(-5deg) scale(1); transition: transform 260ms cubic-bezier(.2,.85,.25,1); }
+.phase_turning .packKeyframe { transform: translate3d(0, -8px, 10px) rotateY(78deg) scale(.98); transition: transform 340ms cubic-bezier(.25,.8,.2,1); }
+.phase_settling .packKeyframe { transform: translate3d(0, 6px, 0) rotateY(180deg) scale(1); animation: settle 170ms ease-out both; }
+.phase_tearing .packKeyframe { transform: translate3d(0, 3px, 0) rotateY(180deg) scale(1.01); filter: brightness(1.18) drop-shadow(0 0 12px rgb(250 204 21 / .6)); transition: transform 150ms cubic-bezier(.2,.8,.2,1), filter 150ms ease; }
+.phase_opening .packKeyframe { transform: translate3d(0, -2px, 0) rotateY(180deg) scale(1.03); animation: seamOpen 360ms cubic-bezier(.2,.86,.2,1) both; }
+.phase_dealing .packKeyframe { transform: translate3d(0, 55px, -5px) rotateY(180deg) scale(1.01); transition: transform 160ms cubic-bezier(.2,.8,.2,1); }
+.phase_uncovering .packKeyframe { transform: translate3d(0, 205px, -20px) rotateY(180deg) scale(.98); transition: transform 420ms cubic-bezier(.2,.75,.2,1); }
+.phase_fan-ready .cards { animation: fanFinish 620ms cubic-bezier(.18,.86,.22,1.18) both; }
+.foilEffects { position: absolute; z-index: 7; width: 380px; height: 300px; pointer-events: none; mix-blend-mode: screen; animation: foilBloom 820ms ease-out both; }
+.foilEffects span { position: absolute; width: 130px; height: 130px; border-radius: 50%; filter: blur(22px); opacity: .7; animation: smokeRise 780ms ease-out both; }
+.foilEffects span:nth-child(1) { left: 26px; bottom: 28px; }.foilEffects span:nth-child(2) { left: 126px; bottom: 52px; animation-delay: 70ms; }.foilEffects span:nth-child(3) { right: 22px; bottom: 32px; animation-delay: 120ms; }
+.smoke_purple span { background: radial-gradient(circle, #f0abfc, #7e22ce 45%, transparent 72%); }.smoke_gold span { background: radial-gradient(circle, #fff5a8, #f59e0b 45%, transparent 72%); }
+.glow_violet { filter: drop-shadow(0 0 28px #d946ef); }.glow_gold { filter: drop-shadow(0 0 32px #fbbf24); }
+.foilEffects i { position: absolute; width: 9px; height: 9px; background: #fff7be; border-radius: 50%; box-shadow: 0 0 15px #fff; animation: sparkleFly 680ms ease-out both; }.foilEffects i:nth-of-type(1) { left: 22%; top: 30%; }.foilEffects i:nth-of-type(2) { left: 52%; top: 10%; animation-delay: 80ms; }.foilEffects i:nth-of-type(3) { right: 18%; top: 38%; animation-delay: 140ms; }
+.cardFoil { z-index: 7; filter: drop-shadow(0 0 16px #e879f9) brightness(1.16); }
+@keyframes packAppear { from { opacity: 0; transform: translate3d(0, 70px, -60px) scale(.68); } to { opacity: 1; transform: translate3d(0, 12px, 0) scale(.9); } }
+@keyframes settle { 0% { transform: translate3d(0, -8px, 0) rotateY(180deg) scale(1); } 65% { transform: translate3d(0, 11px, 0) rotateY(180deg) scale(.98); } 100% { transform: translate3d(0, 6px, 0) rotateY(180deg) scale(1); } }
+@keyframes seamOpen { 0% { filter: brightness(1); } 55% { filter: brightness(1.2) drop-shadow(0 0 14px rgb(250 204 21 / .7)); } 100% { filter: brightness(1); } }
+@keyframes fanFinish { 0% { transform: translate3d(0, 8px, 0) scale(.9); } 75% { transform: translate3d(0, -5px, 0) scale(1.03); } 100% { transform: translate3d(0, 0, 0) scale(1); } }
+@keyframes foilBloom { 0% { opacity: 0; transform: scale(.64); } 22% { opacity: 1; } 100% { opacity: 0; transform: scale(1.25); } }
+@keyframes smokeRise { from { transform: translate3d(0, 35px, 0) scale(.6); opacity: 0; } 32% { opacity: .78; } to { transform: translate3d(0, -75px, 0) scale(1.35); opacity: 0; } }
+@keyframes sparkleFly { from { transform: translate3d(0, 30px, 0) scale(.2); opacity: 0; } 24% { opacity: 1; } to { transform: translate3d(0, -80px, 0) scale(1.35); opacity: 0; } }
+@media (max-width: 420px) { .stage { min-height: 76dvh; padding: 18px 10px; } .packScene { min-height: 330px; transform: scale(.88); transform-origin: center; margin: -18px 0; } .cards { width: 300px; } .card { width: 100px; height: 150px; } }
+@media (prefers-reduced-motion: reduce) { .packKeyframe, .card, .cardInner { transition-duration: 100ms !important; } .phase_appearing .packKeyframe, .phase_settling .packKeyframe, .phase_opening .packKeyframe, .phase_fan-ready .cards, .foilEffects, .foilEffects span, .foilEffects i { animation-duration: 120ms !important; } }
+:global([data-motion='reduced']) .packKeyframe, :global([data-motion='off']) .packKeyframe, :global([data-motion='reduced']) .card, :global([data-motion='off']) .card, :global([data-motion='reduced']) .cardInner, :global([data-motion='off']) .cardInner { transition-duration: 100ms !important; }
+:global([data-motion='off']) .packKeyframe, :global([data-motion='off']) .foilEffects, :global([data-motion='off']) .foilEffects span, :global([data-motion='off']) .foilEffects i { animation: none !important; }

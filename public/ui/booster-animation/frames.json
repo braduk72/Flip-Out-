@@ -1,0 +1,219 @@
+{
+  "source": {
+    "width": 1024,
+    "height": 571,
+    "grid": "5x2"
+  },
+  "frames": [
+    {
+      "frame": 1,
+      "file": "booster_01.webp",
+      "sourceSlice": {
+        "left": 0,
+        "top": 0,
+        "width": 205,
+        "height": 286
+      },
+      "contentBounds": {
+        "left": 33,
+        "top": 29,
+        "width": 146,
+        "height": 219
+      },
+      "canvas": "512x512",
+      "content": {
+        "width": 146,
+        "height": 219
+      }
+    },
+    {
+      "frame": 2,
+      "file": "booster_02.webp",
+      "sourceSlice": {
+        "left": 205,
+        "top": 0,
+        "width": 205,
+        "height": 286
+      },
+      "contentBounds": {
+        "left": 57,
+        "top": 37,
+        "width": 101,
+        "height": 210
+      },
+      "canvas": "512x512",
+      "content": {
+        "width": 101,
+        "height": 210
+      }
+    },
+    {
+      "frame": 3,
+      "file": "booster_03.webp",
+      "sourceSlice": {
+        "left": 410,
+        "top": 0,
+        "width": 205,
+        "height": 286
+      },
+      "contentBounds": {
+        "left": 94,
+        "top": 30,
+        "width": 15,
+        "height": 218
+      },
+      "canvas": "512x512",
+      "content": {
+        "width": 15,
+        "height": 218
+      }
+    },
+    {
+      "frame": 4,
+      "file": "booster_04.webp",
+      "sourceSlice": {
+        "left": 615,
+        "top": 0,
+        "width": 205,
+        "height": 286
+      },
+      "contentBounds": {
+        "left": 55,
+        "top": 32,
+        "width": 97,
+        "height": 217
+      },
+      "canvas": "512x512",
+      "content": {
+        "width": 97,
+        "height": 217
+      }
+    },
+    {
+      "frame": 5,
+      "file": "booster_05.webp",
+      "sourceSlice": {
+        "left": 820,
+        "top": 0,
+        "width": 204,
+        "height": 286
+      },
+      "contentBounds": {
+        "left": 38,
+        "top": 30,
+        "width": 129,
+        "height": 218
+      },
+      "canvas": "512x512",
+      "content": {
+        "width": 129,
+        "height": 218
+      }
+    },
+    {
+      "frame": 6,
+      "file": "booster_06.webp",
+      "sourceSlice": {
+        "left": 0,
+        "top": 286,
+        "width": 205,
+        "height": 285
+      },
+      "contentBounds": {
+        "left": 40,
+        "top": 36,
+        "width": 134,
+        "height": 216
+      },
+      "canvas": "512x512",
+      "content": {
+        "width": 134,
+        "height": 216
+      }
+    },
+    {
+      "frame": 7,
+      "file": "booster_07.webp",
+      "sourceSlice": {
+        "left": 205,
+        "top": 286,
+        "width": 205,
+        "height": 285
+      },
+      "contentBounds": {
+        "left": 44,
+        "top": 28,
+        "width": 124,
+        "height": 225
+      },
+      "canvas": "512x512",
+      "content": {
+        "width": 124,
+        "height": 225
+      }
+    },
+    {
+      "frame": 8,
+      "file": "booster_08.webp",
+      "sourceSlice": {
+        "left": 410,
+        "top": 286,
+        "width": 205,
+        "height": 285
+      },
+      "contentBounds": {
+        "left": 39,
+        "top": 27,
+        "width": 125,
+        "height": 231
+      },
+      "canvas": "512x512",
+      "content": {
+        "width": 125,
+        "height": 231
+      }
+    },
+    {
+      "frame": 9,
+      "file": "booster_09.webp",
+      "sourceSlice": {
+        "left": 615,
+        "top": 286,
+        "width": 205,
+        "height": 285
+      },
+      "contentBounds": {
+        "left": 12,
+        "top": 76,
+        "width": 177,
+        "height": 172
+      },
+      "canvas": "512x512",
+      "content": {
+        "width": 177,
+        "height": 172
+      }
+    },
+    {
+      "frame": 10,
+      "file": "booster_10.webp",
+      "sourceSlice": {
+        "left": 820,
+        "top": 286,
+        "width": 204,
+        "height": 285
+      },
+      "contentBounds": {
+        "left": 1,
+        "top": 83,
+        "width": 198,
+        "height": 128
+      },
+      "canvas": "512x512",
+      "content": {
+        "width": 198,
+        "height": 128
+      }
+    }
+  ]
+}

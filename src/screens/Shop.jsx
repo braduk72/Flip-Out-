@@ -2,6 +2,7 @@ import { useState } from 'react'
 import styles from './Shop.module.css'
 import BottomNav from '../components/BottomNav'
 import RemoveAdsModal from '../components/RemoveAdsModal'
+import BoosterPackOpening from '../components/BoosterPackOpening.jsx'
 import { startCheckout, restorePurchases } from '../utils/foShop.js'
 import { economy } from '../utils/economyService.js'
 import { getDeviceUuid } from '../utils/deviceId.js'
@@ -31,6 +32,15 @@ const BUNDLES = [
   },
 ]
 
+// Visual Preview only: these existing cards never enter a player inventory.
+const PACK_OPENING_PREVIEW_CARDS = Object.freeze([
+  { id: 'preview-baby-1', name: 'Baby Animals card 1', asset: '/images/cards/babyAnimals/1.webp' },
+  { id: 'preview-baby-2', name: 'Baby Animals card 2', asset: '/images/cards/babyAnimals/2.webp', foil: true, foilTier: 'standard' },
+  { id: 'preview-baby-3', name: 'Baby Animals card 3', asset: '/images/cards/babyAnimals/3.webp' },
+  { id: 'preview-baby-4', name: 'Baby Animals card 4', asset: '/images/cards/babyAnimals/4.webp' },
+  { id: 'preview-baby-5', name: 'Baby Animals card 5', asset: '/images/cards/babyAnimals/5.webp', foil: true, foilTier: 'rare' },
+])
+
 export default function Shop({ onBack, onInventory, onMarketplace, navProps }) {
   const [, setNoAds] = useState(() => !!localStorage.getItem('fo_no_ads'))
   const [showRemoveAdsModal, setShowRemoveAdsModal] = useState(false)
@@ -47,6 +57,7 @@ export default function Shop({ onBack, onInventory, onMarketplace, navProps }) {
     } catch { setRestoreState('error') }
   }
   const [coinModal, setCoinModal] = useState(null)
+  const [showPackOpeningPreview, setShowPackOpeningPreview] = useState(() => new URLSearchParams(window.location.search).has('packOpeningPreview'))
   const [codeInput, setCodeInput] = useState('')
   const [codeResult, setCodeResult] = useState(null) // null | { loading } | { ok: true, ... } | { ok: false, msg }
 
@@ -123,6 +134,7 @@ export default function Shop({ onBack, onInventory, onMarketplace, navProps }) {
               <button type="button" disabled aria-disabled="true">Coming soon in Preview</button>
             </article>
           </div>
+          <button type="button" className={styles.packOpeningPreviewButton} onClick={() => setShowPackOpeningPreview(true)}>Preview the pack opening <span>No cards awarded</span></button>
           <article className={styles.infoPanel} aria-labelledby="booster-how-title">
             <span className={styles.infoIcon} aria-hidden="true">✦</span>
             <div>
@@ -349,6 +361,7 @@ export default function Shop({ onBack, onInventory, onMarketplace, navProps }) {
           </div>
         </div>
       )}
+      {showPackOpeningPreview && <BoosterPackOpening packId="preview:themed-booster" cards={PACK_OPENING_PREVIEW_CARDS} onClose={() => setShowPackOpeningPreview(false)} />}
     </div>
   )
 }
