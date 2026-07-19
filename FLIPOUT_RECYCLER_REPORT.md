@@ -83,10 +83,10 @@ Migration 010 committed to the Railway Preview database at `2026-07-19T14:17:11.
 - Full local Node suite: **116 discovered; 107 passed, 0 failed, 9 Preview-only skipped**.
 - Full local UI suite: **33 passed, 0 failed**.
 - Local production build: **passed**, 139 modules in 1.21 seconds, main JS 405.54 kB / 128.17 kB gzip and Collection chunk 31.34 kB / 9.18 kB gzip.
-- Preview Recycler verification: **9 passed, 0 failed, 0 skipped**, including exact 1-Star reward, live PostgreSQL concurrency, idempotency, cross-account rejection and last-copy protection.
-- Preview verification build: **passed**, 139 modules in 1.80 seconds.
+- Preview Recycler verification: **10 passed, 0 failed, 0 skipped**, including exact 1-Star reward, live PostgreSQL concurrency, idempotency, cross-account rejection and last-copy protection.
+- Preview verification build: **passed**, 139 modules in 1.11 seconds.
 - Ready verification deployment: `https://flip-2byq6y99m-chattocal.vercel.app` (`dpl_FHvohRLGLRDrPu2pm7byUoDeZXKt`).
-- Balance-correction Preview deployment: `https://flip-rec88ruhg-chattocal.vercel.app` (`dpl_DaiGwp6JiBhdPjW4oniMzo6dM6t3`), Ready after migration 011 and the 9-test focused verification build.
+- Final balance-correction Preview deployment: `https://flip-r2k6hd99c-chattocal.vercel.app` (`dpl_DNHovuYCSAC6VwmAXro8xr9rsPGS`), Ready after migration 011, the 10-test focused verification build and the singular Star-copy update.
 - Dev-branch commit: `2d8eefb` (`Build secure duplicate card recycler`). Standard Vercel deployment `dpl_Pe11GoVn1HEQwY97ktuzYbWx74WW` reached Ready at `https://flip-8lnylx40e-chattocal.vercel.app`.
 - Permanent development URL: `https://dev.flipout.gizmogames.uk` returned HTTP 200, used the same `/assets/index-DHG-xlKH.js` bundle and ETag as the generated deployment, and contained build version `1.5.0-recycler`.
 
