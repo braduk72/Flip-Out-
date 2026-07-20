@@ -144,18 +144,28 @@ test('Match-3 presentation renders multiplier, announcer and special effect laye
   expect(container.querySelector('[class*="specialImpact"]')).toBeInTheDocument()
 })
 
-test('idle Match-3 board reveals one move hint after the configured delay and resets on interaction', async () => {
+test('idle Match-3 board creates one hint timer, reveals one move hint and resets on interaction', async () => {
   vi.useFakeTimers()
+  const timeoutSpy = vi.spyOn(window, 'setTimeout')
+  const clearSpy = vi.spyOn(window, 'clearTimeout')
   try {
     localStorage.removeItem('fo_move_hints')
     const game = createGame(MATCH3_LEVELS[0], 88)
-    render(<GameBoard {...props} hintDelayMs={250} session={{ state: game }}/>)
+    const { rerender, unmount } = render(<GameBoard {...props} hintDelayMs={250} session={{ state: game }}/>)
+    expect(timeoutSpy).toHaveBeenCalledTimes(1)
+    rerender(<GameBoard {...props} hintDelayMs={250} session={{ state: game }}/>)
+    expect(timeoutSpy).toHaveBeenCalledTimes(1)
     expect(document.querySelectorAll('[class*="hintedTile"]').length).toBe(0)
     await act(async () => { await vi.advanceTimersByTimeAsync(260) })
     expect(document.querySelectorAll('[class*="hintedTile"]').length).toBe(2)
     fireEvent.click(document.querySelector('[class*="hintedTile"]'))
     expect(document.querySelectorAll('[class*="hintedTile"]').length).toBe(0)
+    expect(timeoutSpy).toHaveBeenCalledTimes(2)
+    unmount()
+    expect(clearSpy).toHaveBeenCalled()
   } finally {
+    timeoutSpy.mockRestore()
+    clearSpy.mockRestore()
     vi.useRealTimers()
   }
 })
@@ -170,6 +180,29 @@ test('disabled Match-3 move hints never highlight a settled board', async () => 
     expect(document.querySelectorAll('[class*="hintedTile"]').length).toBe(0)
   } finally {
     localStorage.removeItem('fo_move_hints')
+    vi.useRealTimers()
+  }
+})
+
+test('Match-3 hint timer is cancelled while the browser tab is hidden', async () => {
+  vi.useFakeTimers()
+  const originalVisibility = Object.getOwnPropertyDescriptor(Document.prototype, 'visibilityState')
+  try {
+    localStorage.removeItem('fo_move_hints')
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' })
+    const game = createGame(MATCH3_LEVELS[0], 91)
+    render(<GameBoard {...props} hintDelayMs={250} session={{ state: game }}/>)
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' })
+    act(() => document.dispatchEvent(new Event('visibilitychange')))
+    await act(async () => { await vi.advanceTimersByTimeAsync(300) })
+    expect(document.querySelectorAll('[class*="hintedTile"]').length).toBe(0)
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' })
+    act(() => document.dispatchEvent(new Event('visibilitychange')))
+    await act(async () => { await vi.advanceTimersByTimeAsync(260) })
+    expect(document.querySelectorAll('[class*="hintedTile"]').length).toBe(2)
+  } finally {
+    delete document.visibilityState
+    if (originalVisibility) Object.defineProperty(Document.prototype, 'visibilityState', originalVisibility)
     vi.useRealTimers()
   }
 })

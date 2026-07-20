@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.21.0-rc-match3-polish'
+export const APP_VERSION = '1.21.1-match3-performance-fix'

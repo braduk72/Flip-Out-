@@ -251,6 +251,7 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
   const [hintMove, setHintMove] = useState(null)
   const [interactionRevision, setInteractionRevision] = useState(0)
   const [reviveOutcome, setReviveOutcome] = useState(null)
+  const [documentVisible, setDocumentVisible] = useState(() => typeof document === 'undefined' || document.visibilityState !== 'hidden')
   const drag = useRef(null)
   const dragReturnTimer = useRef(null)
   const suppressClick = useRef(false)
@@ -269,12 +270,26 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
   useEffect(() => () => clearTimeout(dragReturnTimer.current), [])
 
   useEffect(() => {
-    if (!playerSettings.moveHints || locked || power || legalMoveCount <= 0) return undefined
+    const updateVisibility = () => setDocumentVisible(document.visibilityState !== 'hidden')
+    document.addEventListener('visibilitychange', updateVisibility)
+    return () => document.removeEventListener('visibilitychange', updateVisibility)
+  }, [])
+
+  useEffect(() => {
+    if (documentVisible) return
+    queueMicrotask(() => {
+      setHintMove(null)
+      if (drag.current) clearDrag()
+    })
+  }, [documentVisible])
+
+  useEffect(() => {
+    if (!playerSettings.moveHints || !documentVisible || locked || power || legalMoveCount <= 0) return undefined
     const timer = window.setTimeout(() => {
       setHintMove({ move: chooseMatch3HintMove(state), boardSignature })
     }, hintDelayMs)
     return () => window.clearTimeout(timer)
-  }, [playerSettings.moveHints, locked, power, legalMoveCount, boardSignature, state, hintDelayMs, interactionRevision])
+  }, [playerSettings.moveHints, documentVisible, locked, power, legalMoveCount, boardSignature, state, hintDelayMs, interactionRevision])
 
   function recordInteraction() {
     setHintMove(null)
