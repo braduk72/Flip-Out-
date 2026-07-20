@@ -1,5 +1,64 @@
 # Flip-Out Duplicate Card Recycler Report
 
+## Card Shredder replacement - 20 July 2026
+
+**Status:** Implemented and verified on development Preview. The old duplicate-only Recycler is now superseded by the approved Card Shredder.
+
+The active Preview recipes are now data-driven:
+
+- `shredder-normal-cards-v1`: 5 unbound normal Inventory cards -> 10 Coins.
+- `shredder-foil-card-v1`: 1 unbound Foil Inventory card -> 25 Coins.
+
+Duplicates are no longer required. Bound Theme Album cards are protected by `bound_quantity`; Collector Cards are rejected; Exchange escrow remains protected because listed cards are not in Inventory. The Shredder never grants Stars and never bypasses the economy boundary: Coin rewards are written through the tamper-evident Coin ledger as `shredder-reward` transactions with the original Shredder transaction ID as the source reference.
+
+Schema/migration:
+
+- Added migration `api/migrations/018_shredder_recipes.sql`.
+- Added `selection_type` to `fo_recycler_recipes`.
+- Disabled legacy `common-stars-v1`.
+- Relaxed `fo_recycler_recipes_batch_size_check` from `batch_size > 1` to `batch_size > 0` so a one-Foil recipe is valid.
+- Inserted/updated the two active Shredder recipes above.
+
+Files changed:
+
+- `api/_coinLedger.js`
+- `api/_foActions.js`
+- `api/_recycler.js`
+- `api/migrations/018_shredder_recipes.sql`
+- `src/screens/Collection.module.css`
+- `src/screens/Inventory.jsx`
+- `src/ui/collectionData.js`
+- `src/version.js`
+- `tests-ui/collection.test.jsx`
+- `tests/collection-data.test.js`
+- `tests/recycler-db.test.js`
+- `tests/recycler.test.js`
+- `vercel.shredder-verify.json`
+
+Verification:
+
+- Focused local Node: `node --test tests/recycler.test.js tests/recycler-db.test.js tests/collection-data.test.js tests/coin-ledger.test.js` -> **22 passed / 1 expected Preview DB skip**.
+- Focused Collection UI: `npx.cmd vitest run tests-ui/collection.test.jsx` -> **9/9 passed**.
+- Project aggregate: `npm.cmd test` -> Node **152 passed / 16 expected Preview-only skips**, UI **58/58 passed**.
+- Focused lint: changed JS/JSX/tests passed with no findings. A direct CSS filename passed to ESLint produced the expected config warning because CSS is not linted by ESLint in this repo.
+- Production build: `npm.cmd run build` -> passed, **155 transformed modules**.
+- Preview build: `npm.cmd run build:preview` -> passed, **155 transformed modules**.
+
+Preview deployment and database verification:
+
+- First Preview attempt `dpl_BfXUiBttQ13L84vomqz7TkoHP4ow` correctly failed before deploy because the old `batch_size > 1` constraint rejected the one-Foil recipe; the migration rolled back.
+- Migration fix commit `0b40e21` applied `018_shredder_recipes.sql` to Railway Preview database `railway`, schema `public`, host `yamanote.proxy.rlwy.net`, user `postgres`, with `VERCEL_ENV=preview`; `fo_schema_migrations` records `018_shredder_recipes.sql` at `2026-07-20T11:55:00.592Z`.
+- Two follow-up Preview failures were test-cleanup issues only: the test initially tried to delete ledger-backed accounts, then tried to delete immutable ledger rows. The final test now leaves unique Preview test ledger rows intact, matching the ledger security model.
+- Final Ready Preview: `dpl_BoSaausQxUQHDTW8YXDLpiXiWVFu` at `https://flip-85kzpzdta-chattocal.vercel.app`.
+- Remote Preview verification: migration already applied; Preview Shredder DB test passed; focused remote test command passed **23/23**; remote Vite build passed with **155 transformed modules** and main bundle `/assets/index-C_lvjHpx.js`.
+- Permanent development URL `https://dev.flipout.gizmogames.uk` returned HTTP 200 with matching ETag `"ba640f0ca9628d791acd6ffae3a8b096"`, served the same HTML as the generated Preview, contained app marker `1.15.0-shredder`, and lazy Inventory bundle `/assets/Inventory-DAzhP3w8.js` contained `shred-cards`, `Card Shredder` and Coin recipe copy.
+
+Remaining risks:
+
+- Foil inventory definitions are still not broadly available in the catalogue, so the Foil recipe is backend/UI-ready but normal play cannot yet generate real Foil Shredder candidates.
+- Preview DB verification leaves unique test accounts/ledger rows in place because the Coin ledger is intentionally immutable. This is acceptable in development Preview and should be handled later with a dedicated test namespace/archive policy if needed.
+- The API function name `recycleDuplicateCards` remains as a compatibility alias even though the player-facing feature is now Shredder.
+
 **Date:** 19 July 2026  
 **Environment:** local development and Vercel Preview only  
 **Production:** not accessed or changed

@@ -1,5 +1,54 @@
 # Flip-Out continuation report
 
+## Card Shredder replacement - 20 July 2026
+
+Priority 3 is implemented and verified on development Preview. The Duplicate Card Recycler has been replaced by the approved Card Shredder while preserving the existing idempotent transaction/receipt architecture.
+
+Implemented rules:
+
+- 5 unbound normal Inventory cards -> 10 Coins.
+- 1 unbound Foil Inventory card -> 25 Coins.
+- Duplicates are not required.
+- Bound Theme Album cards cannot be shredded.
+- Collector Cards cannot be shredded.
+- Coin rewards flow through the tamper-evident Coin ledger as `shredder-reward`.
+
+The recipe system remains data-driven. Migration `018_shredder_recipes.sql` adds `selection_type`, disables the old `common-stars-v1` recipe, relaxes the old recycler batch-size constraint to allow one-card batches, and inserts the active normal/Foil Shredder recipes. The UI now exposes `Card Shredder`, a recipe selector, unbound counts, Coin reward copy and retry-safe `shred-cards` requests.
+
+Commits:
+
+- `df6fa76` - `Implement authoritative card shredder`
+- `0b40e21` - `Relax shredder recipe batch constraint`
+- `2d8e2f1` - `Fix shredder preview test cleanup`
+- `6350672` - `Keep shredder preview ledger immutable`
+
+Verification:
+
+- `node --test tests/recycler.test.js tests/recycler-db.test.js tests/collection-data.test.js tests/coin-ledger.test.js` -> **22 passed / 1 expected Preview DB skip** locally.
+- `npx.cmd vitest run tests-ui/collection.test.jsx` -> **9/9 passed**.
+- `npm.cmd test` -> Node **152 passed / 16 expected Preview-only skips**, UI **58/58 passed**.
+- Focused lint on changed JS/JSX/tests -> passed with no output. Passing CSS directly to ESLint produced only the expected “file ignored” config warning.
+- `npm.cmd run build` -> passed with **155 transformed modules**.
+- `npm.cmd run build:preview` -> passed with **155 transformed modules**.
+
+Preview verification:
+
+- Initial deployment `dpl_BfXUiBttQ13L84vomqz7TkoHP4ow` failed safely because `fo_recycler_recipes_batch_size_check` still required `batch_size > 1`; migration 018 rolled back.
+- Deployment `dpl_63gikV1bVo6rwFAmRhHH7KCKYwQe` applied migration 018 successfully to Railway Preview `railway/public` at `yamanote.proxy.rlwy.net`, user `postgres`, schema `public`, with `VERCEL_ENV=preview`; `fo_schema_migrations` records `018_shredder_recipes.sql` at `2026-07-20T11:55:00.592Z`.
+- Two follow-up deployment failures were Preview DB test cleanup mistakes against the immutable Coin ledger, not Shredder logic. The test now leaves unique ledger-backed Preview rows intact rather than deleting immutable audit history.
+- Final Ready deployment: `dpl_BoSaausQxUQHDTW8YXDLpiXiWVFu`, `https://flip-85kzpzdta-chattocal.vercel.app`.
+- Remote focused verification passed **23/23**, including live Preview DB concurrency/idempotency, ledgered 10-Coin reward, idempotency conflict, cross-account rejection and bound-copy protection.
+- Remote build passed with **155 transformed modules** and main bundle `/assets/index-C_lvjHpx.js`.
+- Permanent dev URL `https://dev.flipout.gizmogames.uk` returned HTTP 200, same ETag `"ba640f0ca9628d791acd6ffae3a8b096"` and same HTML as the generated Preview. The main bundle contains `1.15.0-shredder`; lazy Inventory bundle `/assets/Inventory-DAzhP3w8.js` contains `shred-cards`, `Card Shredder` and Coin recipe copy.
+
+Production was not touched.
+
+Remaining risks:
+
+- Foil Shredder support is ready, but real Foil inventory definitions/sources remain a future package.
+- Preview DB verification intentionally leaves unique test ledger rows because `fo_coin_ledger` is immutable. If this becomes noisy, add a Preview-only test data archive policy rather than deleting ledger history.
+- The exported backend function name still says `recycleDuplicateCards` for compatibility, although the user-facing feature is now Shredder.
+
 ## Authoritative Achievement framework - 20 July 2026
 
 Priority 2 is implemented and verified on development Preview. The new achievement system is server-authoritative and persistent: definitions live in code, raw progress events are stored as idempotent receipts, unlocks are one-per-player/achievement, transaction IDs are protected by input fingerprints, and player state now returns achievement definitions, progress and unlocked records.

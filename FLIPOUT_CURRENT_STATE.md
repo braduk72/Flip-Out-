@@ -1,5 +1,17 @@
 # Flip-Out! current-state audit
 
+## Card Shredder replacement - 20 July 2026
+
+- **Status: Implemented and verified on development Preview.** The previous duplicate-only Recycler is superseded by the Card Shredder.
+- What changed: `shredder-normal-cards-v1` destroys 5 unbound normal Inventory cards for 10 Coins; `shredder-foil-card-v1` destroys 1 unbound Foil Inventory card for 25 Coins. Recipes remain server data, not hard-coded payout logic. The Collection UI now shows a `Card Shredder` view and recipe selector. The public action accepts `shred-cards` while keeping the older recycler API name internally for compatibility.
+- Economy boundary: Shredder Coin rewards go through the tamper-evident Coin ledger as `shredder-reward`; receipts remain idempotent by transaction ID and fingerprint; repeated/concurrent requests return one reward only. Collector Cards are rejected, bound Theme Album copies are protected by `bound_quantity`, and Exchange escrowed cards remain unavailable because they are outside Inventory.
+- Schema: additive migration `018_shredder_recipes.sql` adds `selection_type`, disables `common-stars-v1`, relaxes `fo_recycler_recipes_batch_size_check` to `batch_size > 0`, and inserts/updates the two active Shredder recipes.
+- Files changed: `api/_coinLedger.js`, `api/_foActions.js`, `api/_recycler.js`, `api/migrations/018_shredder_recipes.sql`, `src/screens/Inventory.jsx`, `src/screens/Collection.module.css`, `src/ui/collectionData.js`, `src/version.js`, Shredder/Collection tests and `vercel.shredder-verify.json`.
+- Verification: focused local Node **22 passed / 1 Preview DB skip**; focused Collection UI **9/9**; project aggregate `npm test` Node **152 passed / 16 Preview-only skips** and UI **58/58**; focused lint passed for changed JS/JSX/tests; production build passed with **155 modules**; Preview build passed with **155 modules**.
+- Preview deployment: first migration attempt rolled back because the old batch-size constraint rejected the one-Foil recipe; fixed in `0b40e21`. `018_shredder_recipes.sql` was committed to Railway Preview `railway/public` at `2026-07-20T11:55:00.592Z`. Final Ready Preview `dpl_BoSaausQxUQHDTW8YXDLpiXiWVFu` at `https://flip-85kzpzdta-chattocal.vercel.app` passed remote focused tests **23/23** and built `/assets/index-C_lvjHpx.js`.
+- Permanent dev URL: `https://dev.flipout.gizmogames.uk` returned HTTP 200 with matching ETag `"ba640f0ca9628d791acd6ffae3a8b096"`, served the same HTML as the generated Preview, contained `1.15.0-shredder`, and lazy Inventory bundle `/assets/Inventory-DAzhP3w8.js` contained `shred-cards` and `Card Shredder`. Production was not touched.
+- Remaining risks: Foil catalogue/inventory generation is still incomplete, so Foil shredding is ready but not normally reachable. Preview DB tests leave unique ledger-backed test rows because `fo_coin_ledger` is intentionally immutable.
+
 ## Authoritative Achievement framework - 20 July 2026
 
 - **Status: Implemented and verified on development Preview.** Added persistent, server-authoritative achievement definitions, achievement event receipts, unlock receipts, player-state readback and Preview Admin Toolkit unlock/reset controls.
