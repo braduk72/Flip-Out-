@@ -2,7 +2,7 @@
 
 ## Authoritative Achievement framework - 20 July 2026
 
-Priority 2 is implemented locally and ready for focused Preview migration verification. The new achievement system is server-authoritative and persistent: definitions live in code, raw progress events are stored as idempotent receipts, unlocks are one-per-player/achievement, transaction IDs are protected by input fingerprints, and player state now returns achievement definitions, progress and unlocked records.
+Priority 2 is implemented and verified on development Preview. The new achievement system is server-authoritative and persistent: definitions live in code, raw progress events are stored as idempotent receipts, unlocks are one-per-player/achievement, transaction IDs are protected by input fingerprints, and player state now returns achievement definitions, progress and unlocked records.
 
 Implemented definitions:
 
@@ -23,7 +23,11 @@ Verification so far:
 - `npm.cmd run build` -> passed with **155 transformed modules**, entry `dist/assets/index-CqnLlx_m.js`.
 - `npm.cmd run build:preview` first failed because it was run in parallel with the production build and both builds tried to clean `dist`; rerunning serially passed with **155 transformed modules**, entry `dist/assets/index-DHCxARqh.js`.
 
-Remaining before closing the milestone: deploy the focused Preview verification config so `017_achievements.sql` is applied to Preview only and `tests/achievements-db.test.js` runs against the migrated database.
+Focused Preview verification succeeded. Deployment `dpl_4AKpTT81WGGxyzTisYVU8FaPPAar` at `https://flip-n1hlqbpok-chattocal.vercel.app` applied `017_achievements.sql` to Railway Preview `railway/public` on `yamanote.proxy.rlwy.net`; `fo_schema_migrations` records `017_achievements.sql` at `2026-07-20T11:22:48.751Z`. Remote tests passed **14/14** with no skips, including the Preview DB test for unlock, retry, reset and Raider event completion. The remote build passed with **155 transformed modules** and entry `assets/index-BUBrTjkF.js`.
+
+The permanent development URL `https://dev.flipout.gizmogames.uk` returned HTTP 200 with the same ETag `"4547fddfdd032798d2820891bd0a9a92"`, served `/assets/index-BUBrTjkF.js` containing `1.14.0-achievements`, and served `/assets/DevToolkit-Dg4cfxj_.js` containing `achievement-unlock`. Production was not touched.
+
+Remaining risk: gameplay and booster systems do not yet emit achievement events automatically; this milestone provides the authoritative framework and Preview tools.
 
 ## Preview Admin Toolkit expansion - 20 July 2026
 

@@ -1,5 +1,17 @@
 # Flip-Out deployment
 
+## Verification record - Authoritative Achievement framework, 20 July 2026
+
+- Commit `eded2fd` was pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or production database was changed.
+- Focused Preview deployment: `dpl_4AKpTT81WGGxyzTisYVU8FaPPAar`, generated URL `https://flip-n1hlqbpok-chattocal.vercel.app`, target Preview, created Mon 20 Jul 2026.
+- Build command from `vercel.achievements-verify.json`: `node scripts/run-economy-migration.mjs --apply && node --test tests/achievements.test.js tests/achievements-db.test.js tests/dev-tools.test.js && vite build`.
+- Migration target: Railway Preview `railway/public`, host `yamanote.proxy.rlwy.net`, user `postgres`, schema `public`, `VERCEL_ENV=preview`, read replica false.
+- Migration result: previous migrations 001-016 were already applied; `017_achievements.sql` was committed at `2026-07-20T11:22:48.751Z`.
+- Schema verification output included new tables `fo_achievement_events` and `fo_achievement_unlocks`, columns for event IDs/types/keys/metadata and unlock transaction IDs/fingerprints/rewards/result/metadata, plus indexes `fo_achievement_events_player_idx` and `fo_achievement_unlocks_player_idx`.
+- Remote focused tests passed **14/14** with no skips, including the Preview DB test for achievement unlock, retry, reset and Raider event completion.
+- Remote Vite build passed with **155 transformed modules** and entry `assets/index-BUBrTjkF.js`.
+- `https://dev.flipout.gizmogames.uk` returned HTTP 200 with the same ETag `"4547fddfdd032798d2820891bd0a9a92"` as the focused generated Preview URL, served `/assets/index-BUBrTjkF.js` at 412,869 bytes containing `1.14.0-achievements`, and served `/assets/DevToolkit-Dg4cfxj_.js` at 16,864 bytes containing `achievement-unlock`.
+
 ## Verification record - Preview Admin Toolkit expansion, 20 July 2026
 
 - Commit `355cfa3` was pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or database was changed.
