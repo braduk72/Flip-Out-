@@ -1,0 +1,5 @@
+{
+  "framework": "vite",
+  "buildCommand": "node scripts/run-economy-migration.mjs && node --test tests/theme-albums.test.js tests/theme-albums-db.test.js tests/collection-data.test.js && vite build",
+  "outputDirectory": "dist"
+}

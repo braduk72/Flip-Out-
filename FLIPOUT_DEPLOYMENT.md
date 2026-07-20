@@ -134,3 +134,13 @@ The supplied booster artwork is bundled as `public/ui/shop/booster-packs.webp`. 
 - Vercel inspection confirms `https://dev.flipout.gizmogames.uk` aliases that Ready Preview deployment. The permanent development URL returned HTTP 200 with ETag `"30351a96e2565d210ba42a58681aa805"` and entry `assets/index-ChIs5IAc.js`.
 - The permanent URL returned HTTP 200 for `/ui/booster-opening/themed/frames.json` (11 frames), `/ui/booster-opening/themed/booster-open-10.webp` (`image/webp`) and `/?dev=booster-opening`.
 - The Preview-only review route was browser-checked and rendered the expected Frame 01 metadata/control surface. Production was not touched.
+
+## Verification record - Theme Album ownership boundary, 20 July 2026
+
+- Commit `beb609e` was pushed from `dev`; no production branch, production deployment, production domain, root DNS record or nameserver was changed.
+- Preview migration deployment `https://flip-qarcd90x7-chattocal.vercel.app` applied `014_theme_albums.sql` to Railway Preview `railway/public` at `yamanote.proxy.rlwy.net`; `fo_schema_migrations` records `014_theme_albums.sql` at `2026-07-20T00:07:32.319Z`.
+- New Preview tables verified by migration output: `fo_theme_album_entries`, `fo_theme_album_collectors`, `fo_theme_album_transactions`, including `fo_theme_album_entries_player_theme_idx`, `fo_theme_album_collectors_player_idx`, `fo_theme_album_transactions_player_idx` and the unique Theme slot index.
+- The all-tests migration deployment failed after migration because `tests/mobile-ux.test.js` expects the gitignored Android file `android/app/src/main/java/uk/gizmogames/flipout/MainActivity.java` inside Vercel's packaged source. This was the same known packaging issue, not a Theme Album migration failure.
+- Focused remote verification deployment `dpl_3M3Uzqbjwk89718krBfbAnwWYbWt` is Ready at `https://flip-p36h9raqr-chattocal.vercel.app`; its build command checked migrations, ran `tests/theme-albums.test.js`, `tests/theme-albums-db.test.js` and `tests/collection-data.test.js`, then ran `vite build`.
+- Focused remote verification passed **11/11** tests with no skips and built 152 modules.
+- `https://dev.flipout.gizmogames.uk` returned HTTP 200 with ETag `"be3912ae6871ac7573eac57951315bfd"`, served `assets/index-CA3iEtWW.js`, and that asset contains `1.6.0-theme-albums`. The generated Preview URL returned the same ETag, same asset and same build marker.
