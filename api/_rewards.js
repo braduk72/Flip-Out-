@@ -20,6 +20,18 @@ export const REWARD_TABLES = Object.freeze({
       { reward: { itemId: 'powerup:tiebreaker', amount: 1 }, weight: 5 },
     ],
   },
+  rewardTheatreV1: {
+    id: 'reward-theatre-v1',
+    entries: [
+      { reward: { currencyId: 'coins', amount: 10 }, weight: 32 },
+      { reward: { currencyId: 'coins', amount: 25 }, weight: 16 },
+      { reward: { itemId: 'powerup:match3-hammer', amount: 1 }, weight: 18 },
+      { reward: { itemId: 'powerup:match3-shuffle', amount: 1 }, weight: 14 },
+      { reward: { itemId: 'powerup:match3-line-blast', amount: 1 }, weight: 10 },
+      { reward: { itemId: 'booster:themed', amount: 1 }, weight: 7 },
+      { reward: { itemId: 'booster:random', amount: 1 }, weight: 3 },
+    ],
+  },
 })
 
 export function validateRewardTable(table) {

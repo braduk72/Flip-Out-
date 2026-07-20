@@ -43,6 +43,8 @@ export const ITEM_CATALOG = Object.freeze([
   { id: 'inventory:spin', type: 'unlock', name: 'Bonus Spin', asset: '/images/spin1.webp', rarity: 'common', releasedAt: DEFAULT_RELEASE, tradable: false, stackable: true, status: 'available' },
   { id: 'inventory:lockbox:standard', type: 'lockbox', name: 'Standard Lockbox', asset: '/images/chest.webp', rarity: 'rare', releasedAt: DEFAULT_RELEASE, tradable: false, stackable: true, status: 'available' },
   { id: 'inventory:key:standard', type: 'key', name: 'Standard Key', asset: '/images/padlock.webp', rarity: 'rare', releasedAt: DEFAULT_RELEASE, tradable: false, stackable: true, status: 'available' },
+  { id: 'booster:themed', type: 'booster', name: 'Themed Booster Pack', asset: '/ui/shop/booster-packs.webp', rarity: 'rare', releasedAt: DEFAULT_RELEASE, tradable: false, stackable: true, status: 'available' },
+  { id: 'booster:random', type: 'booster', name: 'Random Booster Pack', asset: '/ui/shop/booster-packs.webp', rarity: 'epic', releasedAt: DEFAULT_RELEASE, tradable: false, stackable: true, status: 'available' },
   ...['hammer', 'shuffle', 'line-blast', 'color-clear', 'extra-moves'].map(id => ({ id: `powerup:match3-${id}`, type: 'powerup', name: `Match-3 ${id.replaceAll('-', ' ')}`, asset: '/images/specialcards/tiebreaker.webp', rarity: 'common', releasedAt: DEFAULT_RELEASE, tradable: false, stackable: true, status: 'available' })),
 ])
 

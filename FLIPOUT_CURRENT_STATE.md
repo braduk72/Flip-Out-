@@ -1,5 +1,15 @@
 # Flip-Out! current-state audit
 
+## Reward Theatre milestone - 20 July 2026
+
+- **Status: Implemented locally; Preview deployment verification pending.** Reward Theatre now unlocks after every five completed Match-3 levels and uses server-committed rewards before any presentation plays.
+- What changed: added reusable `reward-theatre-v1` reward table with Coins, Match-3 power-ups and stackable booster inventory rewards. Match-3 state/completion now reports pending 5/10/15/20 milestones. The authenticated Match-3 API can claim `reward-theatre` idempotently, and the result screen shows an animated three-reel presentation from the committed result.
+- Economy boundary: Coin prizes are written through the tamper-evident Coin ledger as authorised `promotional-grant` entries with `source: reward-theatre`; item prizes go through `applyReward()`. Claim IDs are stable per player/milestone, duplicate/retry claims return the original prize, and presentation metadata is deterministic from the committed claim.
+- Admin Toolkit: Preview toolkit Match-3 page can trigger a real pending Reward Theatre claim; Economy page can grant the new stackable booster inventory items for testing. Foil grants and Daily Wheel forcing remain intentionally unimplemented.
+- Files changed: `api/_rewardTheatre.js`, `api/_rewards.js`, `api/_match3Sessions.js`, `api/_foMatch3.js`, `api/_foDevTools.js`, `src/data/itemCatalog.js`, `src/screens/Match3.jsx`, `src/screens/Match3.module.css`, `src/screens/DevToolkit.jsx`, `src/version.js`, `tests/reward-theatre.test.js`, `tests/reward-theatre-db.test.js`, `tests/foundation.test.js`, `tests-ui/dev-toolkit.test.jsx`.
+- Verification so far: focused Reward Theatre/Foundation Node **14/14** passed; focused toolkit UI **6/6** passed; focused lint passed; local Preview DB test skipped without Preview credentials; project aggregate `npm test` Node **158 passed / 17 Preview-only skips** and UI **59/59**; production build passed with **155 modules**; Preview build passed with **155 modules** after rerunning serially because the first attempt overlapped `dist` cleanup with the production build.
+- Remaining risks: booster opening/purchase ownership is still not live, so Reward Theatre can award booster inventory items but they cannot yet be opened through the secure backend. The reel animation is CSS-based and needs deployed mobile visual QA. No schema migration was required and Production was not touched.
+
 ## Card Shredder replacement - 20 July 2026
 
 - **Status: Implemented and verified on development Preview.** The previous duplicate-only Recycler is superseded by the Card Shredder.

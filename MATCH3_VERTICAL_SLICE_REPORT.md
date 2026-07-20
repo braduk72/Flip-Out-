@@ -1,5 +1,11 @@
 # Flip-Out Match-3 vertical slice
 
+## Reward Theatre addendum - 20 July 2026
+
+Match-3 completion now surfaces Reward Theatre eligibility after every five completed levels. The server owns milestone detection, commits the prize through a stable claim ID, writes Coin prizes through the authoritative Coin ledger, and returns deterministic reel metadata for the client animation. The UI result screen can spin animated reels only after the committed reward exists; presentation cannot reroll or upgrade the prize.
+
+Local verification: focused Reward Theatre/Foundation Node 14/14 passed, toolkit UI 6/6 passed, aggregate `npm test` Node 158 passed / 17 Preview-only skips and UI 59/59 passed. Production was not touched.
+
 ## Gameplay completion addendum — 19 July 2026
 
 The engine now supports four/five, T, L, cross and enabled 2x2-square special creation; all single-special activations; seven distinct special pairings; recursive chain reactions; richer deterministic cascade/combo scoring; and legacy `bomb` compatibility. The server-authoritative React board now renders bounded swap/resolution timing, combo labels, particles, beams, explosion rings, colour effects, special/idle animations and motion-aware haptics without client prediction. All 20 level definitions and the 30/60-Star reward path are unchanged. Exact results and files are in `MATCH3_GAMEPLAY_COMPLETION_REPORT.md`.

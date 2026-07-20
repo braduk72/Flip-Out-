@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.15.0-shredder'
+export const APP_VERSION = '1.16.0-reward-theatre'

@@ -1,5 +1,9 @@
 # Flip-Out Match-3 balancing and device-preparation report
 
+## Reward Theatre addendum - 20 July 2026
+
+Reward Theatre now attaches to the Match-3 progression cadence at 5/10/15/20 completed levels. This does not rebalance any level, move count, objective or simulation result. It adds a milestone reward layer above completion: the reward is selected and committed server-side, then presented with animated reels. Future balancing should evaluate whether every-five-level rewards affect perceived difficulty/retry motivation, but no level tuning was changed in this package.
+
 Date: 18 July 2026. Scope: deterministic auto-play, structured balancing, performance, development feedback, device-test preparation and route-level code splitting. Preview/development only; production was not touched.
 
 Final ready Preview: `https://flip-ocz8184ts-chattocal.vercel.app`. HTTP smoke test returned page 200 and unauthenticated Match-3 API 401.

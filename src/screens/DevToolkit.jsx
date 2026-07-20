@@ -165,11 +165,12 @@ function PlayerPage({ state, dev, cap }) {
   </div>
 }
 
-function Match3Page({ levelId, setLevelId, status, run, onJumpMatch3 }) {
+function Match3Page({ dev, levelId, setLevelId, status, run, onJumpMatch3 }) {
+  const theatre = dev.rewardTheatre ?? { available: false }
   return <div className={styles.grid}>
     <CardPanel><h2>Jump to level</h2><label>Level<input type="number" min="1" max="20" value={levelId} onChange={event => setLevelId(event.target.value)} /></label><ActionButton onClick={() => onJumpMatch3?.(Number(levelId))}>Open Match-3 level</ActionButton></CardPanel>
     <CardPanel><h2>Progress tools</h2><ActionButton disabled={status === 'saving'} onClick={() => run({ action: 'match3-mark-complete', levelId: Number(levelId) })}>Mark level complete</ActionButton><ActionButton disabled={status === 'saving'} onClick={() => run({ action: 'match3-unlock-all' })}>Unlock all levels</ActionButton><ActionButton tone="danger" disabled={status === 'saving'} onClick={() => run({ action: 'reset', scope: 'match3-progress' })}>Reset Match progression</ActionButton></CardPanel>
-    <Unsupported title="Reward Theatre trigger not live" detail="Every-fifth-completion persistence is not implemented yet, so the toolkit will not fake a reward-theatre claim."/>
+    <CardPanel><h2>Reward Theatre</h2><p>{theatre.available ? `Milestone ${theatre.milestone} is ready.` : 'Complete 5, 10, 15 or 20 Match-3 levels to unlock the next reel reward.'}</p><ActionButton disabled={status === 'saving' || !theatre.available} onClick={() => run({ action: 'match3-reward-theatre', milestone: theatre.milestone })}>Trigger Reward Theatre</ActionButton></CardPanel>
     <Unsupported title="Daily Wheel trigger uses player UI" detail="Daily Wheel claims remain available through the Rewards service; direct toolkit forcing is postponed to avoid bypassing claim rules."/>
   </div>
 }
@@ -198,7 +199,7 @@ function EconomyPage({ state, dev, coinAmount, setCoinAmount, powerQuantity, set
     <CardPanel><h2>Grant power-ups</h2><p>{powerOptions.length} power-up definitions available.</p><label>Quantity each<input type="number" min="1" max="100" value={powerQuantity} onChange={event => setPowerQuantity(event.target.value)} /></label><ActionButton disabled={status === 'saving'} onClick={() => run({ action: 'grant-power-ups', quantity: Number(powerQuantity) })}>Grant all power-ups</ActionButton></CardPanel>
     <CardPanel className={styles.wide}><h2>Coin ledger</h2><Table rows={dev.coinLedger ?? []} columns={['ledger_sequence', 'amount', 'transaction_type', 'source_reference_id', 'created_at']}/></CardPanel>
     <CardPanel className={styles.wide}><h2>Inventory items</h2><Table rows={state.inventory ?? []} columns={['item_id', 'quantity', 'bound_quantity']}/></CardPanel>
-    <Unsupported title="Booster grants not live" detail="No secure booster ownership/receipt table exists yet, so the toolkit will not mint fake boosters."/>
+    <CardPanel><h2>Grant boosters</h2><p>Preview-only stackable booster inventory items. Purchases and opening remain disabled until the secure backend is approved.</p><ActionButton disabled={status === 'saving'} onClick={() => run({ action: 'grant-item', itemId: 'booster:themed', quantity: 1 })}>Grant Themed Booster</ActionButton><ActionButton disabled={status === 'saving'} onClick={() => run({ action: 'grant-item', itemId: 'booster:random', quantity: 1 })}>Grant Random Booster</ActionButton></CardPanel>
   </div>
 }
 

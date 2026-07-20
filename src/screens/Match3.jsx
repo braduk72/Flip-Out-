@@ -31,6 +31,9 @@ export default function Match3({ onBack, initialLevel = null }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [coins, setCoins] = useState(0)
+  const [rewardTheatre, setRewardTheatre] = useState(null)
+  const [theatreClaim, setTheatreClaim] = useState(null)
+  const [theatreBusy, setTheatreBusy] = useState(false)
   const [presentation, setPresentation] = useState(null)
   const presentationTimer = useRef(null)
   const motionMode = useMotionMode()
@@ -41,6 +44,7 @@ export default function Match3({ onBack, initialLevel = null }) {
       if (!live) return
       const saved = { highestUnlockedLevel: Number(data.progress?.highest_unlocked_level ?? 1), completedLevels: data.progress?.completed_levels ?? {} }
       setProgress(saved)
+      setRewardTheatre(data.rewardTheatre?.available ? data.rewardTheatre : null)
       saveMatch3Progress(saved)
       if (requestedInitialLevel) {
         saveMatch3Resume(null)
@@ -134,6 +138,8 @@ export default function Match3({ onBack, initialLevel = null }) {
     try {
       const response = await action({ action: 'complete' })
       setCoins(response.totalCoins)
+      setRewardTheatre(response.rewardTheatre?.available ? response.rewardTheatre : null)
+      setTheatreClaim(null)
       const saved = {
         highestUnlockedLevel: Math.min(20, Math.max(progress.highestUnlockedLevel, selectedLevel + 1)),
         completedLevels: { ...progress.completedLevels, [selectedLevel]: { coins: 10, score: completedSession.state.score } },
@@ -150,7 +156,23 @@ export default function Match3({ onBack, initialLevel = null }) {
 
   if (view === 'map') return <LevelMap progress={progress} onBack={onBack} onSelect={id => { setSelectedLevel(id); setView('brief') }} onReset={() => { if (confirm('Reset Match-3 development progress?')) { resetMatch3Development(); setProgress({ highestUnlockedLevel: 1, completedLevels: {} }) } }} />
   if (view === 'brief') return <Brief level={getMatch3Level(selectedLevel)} busy={busy} error={error} onBack={() => setView('map')} onStart={start} />
-  if (view === 'win') return <Result coins={coins} level={selectedLevel} movesUsed={session.state.level.moves - session.state.movesRemaining} error={error} onDouble={async () => { try { const advert = await playerGameApi.verifyAdvert({ provider: 'configured-provider', receipt: uid('receipt'), placement: 'match3-double', matchId: session.sessionId }); const response = await action({ action: 'double', advertCompletionId: advert.completionId }); setCoins(response.totalCoins); recordMatch3Event('coins-granted', { coins: 10, reason: 'advert-double' }) } catch { return null } }} onMap={() => { clearTimeout(presentationTimer.current); setPresentation(null); setView('map') }} onNext={() => { clearTimeout(presentationTimer.current); setPresentation(null); setSelectedLevel(Math.min(20, selectedLevel + 1)); setView('brief') }} />
+  async function claimTheatre() {
+    if (!rewardTheatre?.available || theatreBusy) return
+    setTheatreBusy(true)
+    setError('')
+    try {
+      const claim = await playerGameApi.match3({ action: 'reward-theatre', milestone: rewardTheatre.milestone })
+      setTheatreClaim(claim)
+      setRewardTheatre(null)
+      recordMatch3Event('reward-theatre', { milestone: claim.milestone, reward: claim.reward })
+    } catch (caught) {
+      setError(caught.message)
+    } finally {
+      setTheatreBusy(false)
+    }
+  }
+
+  if (view === 'win') return <Result coins={coins} level={selectedLevel} movesUsed={session.state.level.moves - session.state.movesRemaining} error={error} rewardTheatre={rewardTheatre} theatreClaim={theatreClaim} theatreBusy={theatreBusy} onClaimTheatre={claimTheatre} onDouble={async () => { try { const advert = await playerGameApi.verifyAdvert({ provider: 'configured-provider', receipt: uid('receipt'), placement: 'match3-double', matchId: session.sessionId }); const response = await action({ action: 'double', advertCompletionId: advert.completionId }); setCoins(response.totalCoins); recordMatch3Event('coins-granted', { coins: 10, reason: 'advert-double' }) } catch { return null } }} onMap={() => { clearTimeout(presentationTimer.current); setPresentation(null); setView('map') }} onNext={() => { clearTimeout(presentationTimer.current); setPresentation(null); setSelectedLevel(Math.min(20, selectedLevel + 1)); setView('brief') }} />
   return <><GameBoard session={session} busy={busy} error={error} presentation={presentation} onMove={(from, to) => action({ action: 'move', actionId: uid('move'), from, to })} onPower={(powerUp, target) => action({ action: 'power-up', actionId: uid('power'), powerUp, target }).then(() => recordMatch3Event('power-up-used', { powerUp }))} onRestart={() => { clearTimeout(presentationTimer.current); setPresentation(null); action({ action: 'restart', actionId: uid('restart') }) }} onQuit={() => { clearTimeout(presentationTimer.current); setPresentation(null); if (confirm('Quit this level? Your current board will remain available to resume.')) setView('map') }} />{import.meta.env.DEV && <Match3FeedbackPanel level={selectedLevel} result={session.state.status === 'won' ? 'won' : session.state.status === 'lost' ? 'lost' : 'quit'} movesUsed={session.state.level.moves - session.state.movesRemaining} />}</>
 }
 
@@ -169,8 +191,43 @@ function Brief({ level, busy, error, onBack, onStart }) {
   return <main className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="match3-brief"><header className={styles.header}><button className={styles.backBtn} onClick={onBack} aria-label="Back to level journey"><span aria-hidden="true">‹</span></button><h1>{level.name}</h1></header><div className={styles.briefContent}>{level.teaching && <CardPanel className={styles.teach}><span className={styles.eyebrow}>Level lesson</span><p>{level.teaching}</p></CardPanel>}<CardPanel className={styles.card}><span className={styles.eyebrow}>Level {level.id}</span><h2>Objectives</h2><ul>{level.objectives.map((objective, index) => <li key={index}>{objectiveLabel(objective)}</li>)}</ul><p className={styles.moveBudget}>{level.moves} moves</p></CardPanel><button className={styles.primary} disabled={busy} onClick={onStart}>{busy ? 'Preparing…' : 'Play Match-3'}</button><p role="alert">{error}</p></div></main>
 }
 
-function Result({ coins, level, movesUsed, error, onDouble, onMap, onNext }) {
-  return <main className={`${styles.result} foTheme`} data-concept-screen="route" data-screen="match3-result"><div aria-hidden="true" className={styles.resultIcon}>●</div><h1>Level complete!</h1><p className={styles.starAward}>+{coins} Coins</p><p role="alert">{error}</p>{coins === 10 && <button onClick={onDouble}>Watch verified advert to double to 20 Coins</button>}<button className={styles.primary} onClick={onNext}>Next level</button><button onClick={onMap}>Level journey</button>{import.meta.env.DEV && <Match3FeedbackPanel level={level} result="won" movesUsed={movesUsed} />}</main>
+function Result({ coins, level, movesUsed, error, rewardTheatre, theatreClaim, theatreBusy, onClaimTheatre, onDouble, onMap, onNext }) {
+  return <main className={`${styles.result} foTheme`} data-concept-screen="route" data-screen="match3-result"><div aria-hidden="true" className={styles.resultIcon}>●</div><h1>Level complete!</h1><p className={styles.starAward}>+{coins} Coins</p><p role="alert">{error}</p>{rewardTheatre?.available && <RewardTheatrePanel rewardTheatre={rewardTheatre} busy={theatreBusy} onClaim={onClaimTheatre}/>} {theatreClaim && <RewardTheatreReels claim={theatreClaim}/>} {coins === 10 && <button onClick={onDouble}>Watch verified advert to double to 20 Coins</button>}<button className={styles.primary} onClick={onNext}>Next level</button><button onClick={onMap}>Level journey</button>{import.meta.env.DEV && <Match3FeedbackPanel level={level} result="won" movesUsed={movesUsed} />}</main>
+}
+
+function RewardTheatrePanel({ rewardTheatre, busy, onClaim }) {
+  return <section className={styles.theatrePanel} aria-labelledby="reward-theatre-title">
+    <span className={styles.eyebrow}>Every 5 levels</span>
+    <h2 id="reward-theatre-title">Reward Theatre unlocked!</h2>
+    <p>Milestone {rewardTheatre.milestone}: spin the reels for a committed server reward.</p>
+    <button className={styles.theatreButton} type="button" disabled={busy} onClick={onClaim}>{busy ? 'Preparing reels…' : 'Spin Reward Theatre'}</button>
+  </section>
+}
+
+function RewardTheatreReels({ claim }) {
+  const presentation = claim.presentation
+  const label = presentation?.label ?? rewardText(claim.reward)
+  return <section className={styles.theatreStage} aria-live="polite" aria-label={`Reward Theatre prize: ${label}`}>
+    <div className={styles.reels} aria-hidden="true">
+      {presentation?.reels?.map(reel => <div key={reel.reel} className={styles.reel} style={{ '--reel-delay': `${(reel.reel - 1) * 180}ms` }}>
+        {reel.symbols.map((symbol, index) => <span key={`${symbol.id}:${index}`} className={`${styles.reelSymbol} ${styles[`symbol_${symbol.kind}`] ?? ''}`}>{symbolIcon(symbol.kind)}<small>{symbol.label}</small></span>)}
+      </div>)}
+    </div>
+    <div className={styles.theatrePrize}><span>Prize</span><strong>{label}</strong></div>
+  </section>
+}
+
+function rewardText(reward = {}) {
+  if (reward.currencyId) return `${reward.amount} ${reward.currencyId === 'coins' ? 'Coins' : reward.currencyId}`
+  if (reward.itemId?.includes('random')) return 'Random Booster'
+  if (reward.itemId?.includes('themed')) return 'Themed Booster'
+  return reward.itemId?.split(':').at(-1)?.replaceAll('-', ' ') ?? 'Reward'
+}
+
+function symbolIcon(kind) {
+  if (kind === 'coins') return '●'
+  if (kind === 'booster') return '▣'
+  return '✦'
 }
 
 export function GameBoard({ session, busy, error, presentation, onMove, onPower, onRestart, onQuit }) {

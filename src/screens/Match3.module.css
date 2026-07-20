@@ -259,6 +259,35 @@
 .result { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; }
 .resultIcon { color: #ffd94d; font-size: 90px; filter: drop-shadow(0 0 18px #ffb52e); animation: resultBounce 1s cubic-bezier(.15, .8, .2, 1.3); }
 .starAward { color: #ffd94d; font-size: 32px; font-weight: 900; }
+.theatrePanel,
+.theatreStage {
+  width: min(100%, 560px);
+  padding: clamp(16px, 4vw, 24px);
+  border: 1px solid #9e6dff8a;
+  border-radius: clamp(20px, 5vw, 30px);
+  background:
+    radial-gradient(circle at 50% 0%, rgb(255 220 96 / .28), transparent 34%),
+    linear-gradient(150deg, rgb(69 28 132 / .95), rgb(11 18 46 / .96));
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / .28),
+    0 0 28px rgb(168 85 247 / .38),
+    0 20px 50px rgb(0 0 0 / .38);
+}
+.theatrePanel h2,
+.theatrePanel p { margin: 6px 0 0; }
+.theatrePanel p { color: #dce9ff; }
+.theatreButton { margin-top: 12px !important; color: #2b114e !important; border-color: #fff2a8 !important; background: linear-gradient(180deg, #fff4a8, #ffbe2e) !important; box-shadow: inset 0 2px rgb(255 255 255 / .65), 0 0 24px rgb(255 202 64 / .55) !important; }
+.theatreStage { display: grid; gap: 14px; overflow: hidden; }
+.reels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 2.4vw, 14px); min-height: clamp(128px, 34vw, 168px); padding: clamp(8px, 2vw, 12px); border: 1px solid #6ee7ff6b; border-radius: 22px; background: #05091fcc; box-shadow: inset 0 0 24px #00163f; }
+.reel { display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; min-width: 0; transform: translate3d(0, -520%, 0); animation: reelSpin 2.2s cubic-bezier(.12, .8, .12, 1) var(--reel-delay, 0ms) both; will-change: transform; }
+.reelSymbol { display: grid; min-height: clamp(40px, 12vw, 56px); place-items: center; padding: 5px; border: 1px solid #ffffff38; border-radius: 16px; color: #fff; background: linear-gradient(145deg, #172b63, #080b24); box-shadow: inset 0 1px #ffffff33, 0 4px 10px #0007; font-size: clamp(20px, 7vw, 34px); font-weight: 1000; text-shadow: 0 0 10px #fff8; }
+.reelSymbol small { display: block; max-width: 100%; overflow: hidden; color: #d9f7ff; font-size: clamp(8px, 2.2vw, 11px); line-height: 1.05; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.symbol_coins { color: #ffd85d; box-shadow: inset 0 1px #ffffff55, 0 0 16px rgb(255 188 45 / .42); }
+.symbol_booster { color: #f0a8ff; box-shadow: inset 0 1px #ffffff55, 0 0 16px rgb(199 93 255 / .42); }
+.symbol_powerup { color: #70e8ff; box-shadow: inset 0 1px #ffffff55, 0 0 16px rgb(54 211 255 / .42); }
+.theatrePrize { display: grid; gap: 2px; padding: 12px 16px; border: 1px solid #fff2a84d; border-radius: 999px; color: #fff7bc; background: rgb(44 19 91 / .86); box-shadow: inset 0 0 16px rgb(255 213 92 / .12), 0 0 22px rgb(255 213 92 / .25); text-transform: uppercase; }
+.theatrePrize span { color: #93efff; font-size: .7rem; font-weight: 1000; letter-spacing: .12em; }
+.theatrePrize strong { font-size: clamp(18px, 5vw, 26px); }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
 
 @keyframes starDrift { to { background-position: 91px 83px, -127px 119px, 151px -137px; } }
@@ -286,6 +315,7 @@
 @keyframes ringBlast { 0% { opacity: 1; transform: translate(-50%, -50%) scale(.15); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(7); } }
 @keyframes rainbowBlast { 0% { opacity: .7; transform: scale(.05) rotate(0); } 70% { opacity: .45; } 100% { opacity: 0; transform: scale(1.4) rotate(120deg); } }
 @keyframes resultBounce { 0% { opacity: 0; transform: translateY(35px) scale(.2) rotate(-18deg); } 65% { transform: translateY(-8px) scale(1.18) rotate(4deg); } 100% { opacity: 1; transform: none; } }
+@keyframes reelSpin { 0% { transform: translate3d(0, -520%, 0); } 62% { transform: translate3d(0, -8%, 0); } 82% { transform: translate3d(0, -18%, 0); } 100% { transform: translate3d(0, 0, 0); } }
 
 @media (min-width: 760px) {
   .levels { grid-template-columns: repeat(4, minmax(0, 1fr)); }
@@ -314,7 +344,8 @@
   .special_color::after,
   .resultIcon { animation: none !important; }
   .comboBanner,
-  .scoreBurst { animation-duration: 180ms !important; }
+  .scoreBurst,
+  .reel { animation-duration: 180ms !important; animation-delay: 0ms !important; }
   .particleBurst,
   .blastBeam,
   .explosionRing,

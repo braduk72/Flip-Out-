@@ -6,6 +6,7 @@ import { recordAuthorizedCoinGrant } from './_coinLedger.js'
 import { createListing, expireMarketListings } from './_operations.js'
 import { getPlayerState } from './_playerState.js'
 import { ACHIEVEMENT_DEFINITIONS, resetAchievements, unlockAchievement } from './_achievements.js'
+import { claimRewardTheatre, getPendingRewardTheatre } from './_rewardTheatre.js'
 import { ITEM_BY_ID, ITEM_CATALOG } from '../src/data/itemCatalog.js'
 import { DECKS } from '../src/data/decks.js'
 import { MATCH3_LEVELS } from '../src/match3/levels.js'
@@ -59,26 +60,26 @@ function toolkitCatalogue() {
       coverAsset: deck.backFile ? `${deck.path}/${deck.backFile}` : '/images/back.webp',
     })),
     grantableItems: ITEM_CATALOG
-      .filter(item => ['card', 'card_variant', 'powerup', 'lockbox', 'key', 'unlock'].includes(item.type))
+      .filter(item => ['card', 'card_variant', 'powerup', 'lockbox', 'key', 'unlock', 'booster'].includes(item.type))
       .map(item => ({ id: item.id, name: item.name, type: item.type, rarity: item.rarity, asset: item.asset })),
     unsupported: {
       foilCards: 'Prepared only: no authoritative Foil item definitions exist yet.',
-      boosters: 'Prepared only: no secure booster ownership/receipt table exists yet.',
-      rewardTheatre: 'Prepared only: reward presentation exists, but every-fifth-completion persistence is not live yet.',
+      boosters: 'Booster inventory items can now be granted as stackable Preview rewards; secure purchase/opening is still postponed.',
     },
     achievements: ACHIEVEMENT_DEFINITIONS,
   }
 }
 
 async function devSnapshot(db, playerId) {
-  const [coinLedger, exchange, match3, flags, adverts] = await Promise.all([
+  const [coinLedger, exchange, match3, flags, adverts, rewardTheatre] = await Promise.all([
     db.query(`SELECT transaction_id,amount,transaction_type,source_reference_id,ledger_sequence,created_at FROM fo_coin_ledger WHERE account_id=$1 ORDER BY ledger_sequence DESC LIMIT 50`, [playerId]).catch(() => ({ rows: [] })),
     db.query(`SELECT listing_id,seller_id,buyer_id,item_id,quantity,price_coins,status,expires_at,created_at,completed_at FROM fo_market_listings WHERE seller_id=$1 OR buyer_id=$1 ORDER BY created_at DESC LIMIT 50`, [playerId]).catch(() => ({ rows: [] })),
     db.query(`SELECT highest_unlocked_level,completed_levels,updated_at FROM fo_match3_progress WHERE player_id=$1`, [playerId]).catch(() => ({ rows: [] })),
     db.query(`SELECT flag_key,flag_value,updated_at FROM fo_player_flags WHERE player_id=$1 ORDER BY flag_key`, [playerId]).catch(() => ({ rows: [] })),
     db.query(`SELECT completion_id,placement,match_id,created_at FROM fo_advert_completions WHERE player_id=$1 ORDER BY created_at DESC LIMIT 25`, [playerId]).catch(() => ({ rows: [] })),
+    getPendingRewardTheatre(db, { playerId }).catch(error => ({ available: false, error: error.message })),
   ])
-  return { coinLedger: coinLedger.rows, exchange: exchange.rows, match3: match3.rows[0] ?? null, featureFlags: flags.rows, advertCompletions: adverts.rows }
+  return { coinLedger: coinLedger.rows, exchange: exchange.rows, match3: match3.rows[0] ?? null, featureFlags: flags.rows, advertCompletions: adverts.rows, rewardTheatre }
 }
 
 export function initialMarketSeedItems(limit = 15) {
@@ -347,6 +348,7 @@ export async function runDevToolkitAction(db, { playerId, body = {} }) {
   if (body.action === 'grant-collector-cards') return grantCollectorCards(db, { playerId, ...body })
   if (body.action === 'match3-unlock-all') return unlockAllMatch3(db, { playerId })
   if (body.action === 'match3-mark-complete') return markLevelComplete(db, { playerId, ...body })
+  if (body.action === 'match3-reward-theatre') return claimRewardTheatre(db, { playerId, milestone: body.milestone })
   if (body.action === 'exchange-expire') return expireMarketListings(db, { sellerId: playerId })
   if (body.action === 'exchange-clear') return clearExchangeListings(db, { playerId, includeSeed: Boolean(body.includeSeed) })
   if (body.action === 'achievement-unlock') return unlockAchievement(db, { playerId, achievementId: body.achievementId, transactionId: body.transactionId ?? `dev-achievement:${body.achievementId}:${crypto.randomUUID()}`, trigger: 'dev-toolkit', metadata: { reason: 'Preview developer toolkit' } })

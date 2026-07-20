@@ -66,6 +66,13 @@ test('wheel keeps exact existing weighted boundaries and deterministic seeded ro
   assert.equal(first, seededRandom(42)())
 })
 
+test('Reward Theatre reward table validates and includes premium milestone rewards', () => {
+  const table = REWARD_TABLES.rewardTheatreV1
+  assert.deepEqual(validateRewardTable(table), [])
+  assert.ok(table.entries.some(entry => entry.reward.currencyId === 'coins'))
+  assert.ok(table.entries.some(entry => entry.reward.itemId === 'booster:random'))
+})
+
 test('100,000 wheel rolls remain within statistical sanity tolerance', () => {
   const result = simulateRewards(REWARD_TABLES.dailyWheelV1, 100000, 20260718)
   const expected = { 'stars:10': 30000, 'stars:50': 25000, 'stars:100': 18000, 'stars:150': 12000, 'stars:200': 8000, 'stars:250': 4000, 'stars:500': 2000, 'stars:1000': 1000 }

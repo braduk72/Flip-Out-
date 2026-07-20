@@ -1,5 +1,40 @@
 # Flip-Out continuation report
 
+## Reward Theatre milestone - 20 July 2026
+
+Priority 5 is implemented locally as the next coherent sprint milestone. Reward Theatre now unlocks after every five completed Match-3 levels and preserves the approved design rule: the server chooses and commits the prize first, then the UI presents it.
+
+Implemented:
+
+- `reward-theatre-v1` reusable reward table with Coins, Match-3 power-ups and stackable booster inventory prizes.
+- Stable per-player/per-milestone claim IDs: `reward-theatre:<playerId>:match3:<milestone>`.
+- Milestone detection for Match-3 completions at 5, 10, 15 and 20 completed levels.
+- Idempotent claim path through the authenticated Match-3 API action `reward-theatre`.
+- Coin prizes written to the tamper-evident Coin ledger as authorised promotional grants with `source: reward-theatre`.
+- Item prizes written through the existing controlled `applyReward()` boundary.
+- Deterministic three-reel presentation metadata generated from the committed claim/reward.
+- Player-facing Match-3 result panel with animated reels and a committed prize display.
+- Preview Admin Toolkit trigger for real pending Reward Theatre claims.
+- Stackable booster catalogue items for Preview rewards only; secure purchase/opening remains postponed.
+
+Verification so far:
+
+- `node --test tests\reward-theatre.test.js tests\foundation.test.js` -> **14/14 passed**.
+- `node --test tests\reward-theatre-db.test.js` -> **1 expected Preview-only skip** locally.
+- `npx.cmd vitest run tests-ui\dev-toolkit.test.jsx` -> **6/6 passed**.
+- Focused ESLint on changed files -> passed with no output.
+- `npm.cmd test` -> Node **158 passed / 17 expected Preview-only skips**, UI **59/59 passed**.
+- `npm.cmd run build` -> passed with **155 transformed modules**.
+- `npm.cmd run build:preview` -> first failed because it was run in parallel with production build and both commands attempted to clean `dist`; rerunning serially passed with **155 transformed modules**.
+
+No schema migration was required. Production was not touched.
+
+Remaining risks:
+
+- Reward Theatre can award booster inventory items, but booster opening and purchase ownership remain future backend work.
+- The reels are implemented as a responsive CSS presentation and need deployed mobile visual QA.
+- The live Preview database test will run during Preview deployment verification.
+
 ## Card Shredder replacement - 20 July 2026
 
 Priority 3 is implemented and verified on development Preview. The Duplicate Card Recycler has been replaced by the approved Card Shredder while preserving the existing idempotent transaction/receipt architecture.
