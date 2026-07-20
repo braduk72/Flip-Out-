@@ -7,8 +7,9 @@ import liveOps from './_foLiveOps.js'
 import analytics from './_foDevAnalytics.js'
 import matches from './_foMatches.js'
 import match3 from './_foMatch3.js'
+import devTools from './_foDevTools.js'
 
-const SERVICES = { rewards, adverts, actions, market, cloud, 'live-ops': liveOps, analytics, matches, match3 }
+const SERVICES = { rewards, adverts, actions, market, cloud, 'live-ops': liveOps, analytics, matches, match3, 'dev-tools': devTools }
 
 export default async function handler(req, res) {
   const service = String(req.query?.service ?? '')

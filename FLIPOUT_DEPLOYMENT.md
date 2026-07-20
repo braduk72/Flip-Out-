@@ -55,7 +55,16 @@ npx vercel inspect https://dev.flipout.gizmogames.uk --scope chattocal
 npx vercel ls flip-out --scope chattocal
 ```
 
-The application currently reports `1.9.0-theme-albums-ui` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+The application currently reports `1.10.0-preview-dev-toolkit` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+
+## Verification record - Preview Developer Toolkit, 20 July 2026
+
+- Hidden route: `https://dev.flipout.gizmogames.uk/?dev=toolkit` after deployment.
+- Backend service: `/api/fo-game?service=dev-tools`.
+- Required Preview env var: `DEV_TOOLKIT_SECRET`.
+- Production guard: service returns 404 outside `VERCEL_ENV=preview`; normal authenticated player session is still required.
+- Local verification before deployment: focused Node **4/4**, focused UI **2/2**, focused lint passed, production build passed.
+- Production was not touched.
 
 ## Verification record — Official Theme Album Collection UI, 20 July 2026
 

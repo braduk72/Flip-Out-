@@ -1,10 +1,10 @@
 import { currentSessionToken, ensureGuestIdentity } from './platformIdentity.js'
 import { getDeviceTimeZone } from './timeZone.js'
 
-async function request(path, body) {
+async function request(path, body, extraHeaders = {}) {
   let token = currentSessionToken()
   if (!token) { await ensureGuestIdentity(); token = currentSessionToken() }
-  const response = await fetch(path, { method: body ? 'POST' : 'GET', headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), Authorization: `Bearer ${token}` }, ...(body ? { body: JSON.stringify(body) } : {}) })
+  const response = await fetch(path, { method: body ? 'POST' : 'GET', headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...extraHeaders, Authorization: `Bearer ${token}` }, ...(body ? { body: JSON.stringify(body) } : {}) })
   const data = await response.json()
   if (!response.ok) throw Object.assign(new Error(data.error ?? 'Request failed'), { status: response.status, code: data.code })
   return data
@@ -29,4 +29,6 @@ export const playerGameApi = {
   match3: body => request('/api/fo-game?service=match3', body),
   match3State: sessionId => request(`/api/fo-game?service=match3${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ''}`),
   verifyAdvert: body => request('/api/fo-game?service=adverts', body),
+  devTools: (body, secret) => request('/api/fo-game?service=dev-tools', body, { 'X-Flipout-Dev-Secret': secret }),
+  devToolsState: secret => request('/api/fo-game?service=dev-tools', null, { 'X-Flipout-Dev-Secret': secret }),
 }

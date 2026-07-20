@@ -1,5 +1,20 @@
 # Flip-Out continuation report
 
+## Preview Developer Toolkit - 20 July 2026
+
+Added the first restricted QA toolkit for Preview only. The hidden `?dev=toolkit` route lets an authenticated Preview player inspect authoritative state, grant catalogue items, grant one full Normal Theme into Inventory, grant authorised promotional Coins via the protected Coin ledger, and reset their own Inventory, Theme Album entries/collector records or Exchange listings. It is not linked from player navigation.
+
+Security boundary: `/api/fo-game?service=dev-tools` returns 404 outside Preview, requires a configured `DEV_TOOLKIT_SECRET`, requires the normal Bearer player session, and never exposes a client-authoritative balance path. Coin creation uses the existing `promotional-grant` ledger route. Item grants use `applyReward`, preserving transaction IDs, Inventory-capacity checks and duplicate protection.
+
+Foil grants and achievement resets remain prepared but inactive because the repository still has no authoritative Foil item definitions or achievement tables. No schema migration was added and Production was not touched.
+
+Verification:
+
+- Focused Node: `node --test tests\dev-tools.test.js` - **4/4 passed**.
+- Focused UI: `npx.cmd vitest run --config vitest.config.js tests-ui\dev-toolkit.test.jsx` - **2/2 passed**.
+- Focused lint: `npx.cmd eslint api\_foDevTools.js api\fo-game.js src\utils\gameApi.js src\ui\devToolkitAccess.js src\screens\DevToolkit.jsx tests\dev-tools.test.js tests-ui\dev-toolkit.test.jsx` - passed.
+- Production build: `npm.cmd run build` - passed; main JS `412.66 kB / 130.50 kB gzip`; toolkit lazy chunk `DevToolkit-BmIjXaLs.js`, `5.32 kB / 1.88 kB gzip`.
+
 ## Official Theme Album Collection UI — 20 July 2026
 
 The first working Official Theme Album presentation is implemented and deployed to development Preview. The previous generic album/set presentation has been replaced by themed album covers, reusable theme presentation metadata, a Collector Card pyramid page, numbered album pages with paired Normal/Foil slots, rarity stars with text labels, and title plaques. Inventory ownership is now clearly separate from permanent Official Album completion.

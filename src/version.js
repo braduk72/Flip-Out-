@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.9.0-theme-albums-ui'
+export const APP_VERSION = '1.10.0-preview-dev-toolkit'
