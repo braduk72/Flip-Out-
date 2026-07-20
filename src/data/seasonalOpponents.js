@@ -10,7 +10,7 @@ const ROB_NAMES_POOL = [
 
 export function getRobNames() {
   const stored = localStorage.getItem('fo_rob_names')
-  if (stored) { try { const p = JSON.parse(stored); if (p.length === 5) return p } catch {} }
+  if (stored) { try { const p = JSON.parse(stored); if (p.length === 5) return p } catch { /* ignore corrupt local seasonal opponent cache */ } }
   const pool = [...ROB_NAMES_POOL]
   const picked = []
   while (picked.length < 5) {

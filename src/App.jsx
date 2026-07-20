@@ -135,11 +135,11 @@ export default function App() {
     if (!deckObj) return
     const numPairs    = { Easy: 6, Medium: 6, Hard: 8, Lethal: 8 }[mp.difficulty] ?? 6
     const numSpecials = { Easy: 1, Medium: 2, Hard: 3, Lethal: 3 }[mp.difficulty] ?? 2
-    setMpDeck(deckObj)
+    queueMicrotask(() => setMpDeck(deckObj))
     if (mp.isHost) {
       const devSpecials = new URLSearchParams(window.location.search).has('specials')
       const cards = buildBoard(deckObj, devSpecials ? 1 : numPairs, devSpecials ? 14 : numSpecials)
-      setMpCards(cards)
+      queueMicrotask(() => setMpCards(cards))
       mp.sendBoard(cards)
     }
   }, [mp.status, mp.isHost, mp.deckId, mp.difficulty]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -147,13 +147,15 @@ export default function App() {
   // Guest receives board
   useEffect(() => {
     if (!mp.prebuiltCards) return
-    setMpCards(mp.prebuiltCards)
-    setMpDeck(DECKS.find(d => d.id === mp.deckId) ?? null)
+    queueMicrotask(() => {
+      setMpCards(mp.prebuiltCards)
+      setMpDeck(DECKS.find(d => d.id === mp.deckId) ?? null)
+    })
   }, [mp.prebuiltCards]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Navigate to game once both deck + cards are ready
   useEffect(() => {
-    if (mp.status === 'playing' && mpCards && mpDeck) setScreen('mpgame')
+    if (mp.status === 'playing' && mpCards && mpDeck) queueMicrotask(() => setScreen('mpgame'))
   }, [mp.status, mpCards, mpDeck])
 
   useEffect(() => {
@@ -189,11 +191,11 @@ export default function App() {
       window.history.replaceState({}, '', window.location.pathname)
     }
     if (params.has('testprize')) {
-      setScreen('luckyspin')
+      queueMicrotask(() => setScreen('luckyspin'))
     }
     if (params.has('gameover')) {
       const freeDeck = DECKS.find(d => d.free)
-      if (freeDeck) { setDeck(freeDeck); setScreen('game') }
+      if (freeDeck) queueMicrotask(() => { setDeck(freeDeck); setScreen('game') })
     }
 
     // ── Post-Stripe redirect: verify purchase and credit to localStorage ──────
@@ -201,7 +203,7 @@ export default function App() {
     const foDevice  = params.get('fo_device')
     if (foSession && foDevice) {
       window.history.replaceState({}, '', window.location.pathname)
-      setPurchaseStatus('verifying')
+      queueMicrotask(() => setPurchaseStatus('verifying'))
       verifySession(foSession, foDevice)
         .then(result => {
           applyPurchase(result)

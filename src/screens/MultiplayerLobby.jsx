@@ -28,7 +28,7 @@ export default function MultiplayerLobby({
   // 30-second CPU fallback timer — starts when matchmaking begins
   useEffect(() => {
     if (mp.status === 'searching') {
-      setSecondsLeft(MATCHMAKE_TIMEOUT)
+      queueMicrotask(() => setSecondsLeft(MATCHMAKE_TIMEOUT))
 
       tickRef.current = setInterval(() => {
         setSecondsLeft(s => (s > 1 ? s - 1 : 0))
@@ -41,7 +41,7 @@ export default function MultiplayerLobby({
     } else {
       clearTimeout(timerRef.current)
       clearInterval(tickRef.current)
-      setSecondsLeft(null)
+      queueMicrotask(() => setSecondsLeft(null))
     }
     return () => {
       clearTimeout(timerRef.current)

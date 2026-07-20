@@ -288,7 +288,7 @@ export const DECKS = [
   },
 ]
 
-export function getDeckBackImage(deck) {
+export function getDeckBackImage() {
   return '/images/back.webp'
 }
 

@@ -406,7 +406,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
   // Stopwatch countdown display — rAF loop updates secsLeft each frame
   useEffect(() => {
-    if (!stopwatchEnd) { setSwSecsLeft(null); cancelAnimationFrame(swRafRef.current); return }
+    if (!stopwatchEnd) { queueMicrotask(() => setSwSecsLeft(null)); cancelAnimationFrame(swRafRef.current); return }
     function tick() {
       const rem = stopwatchEnd - Date.now()
       if (rem <= 0) { setSwSecsLeft(null); return }
@@ -423,7 +423,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   useEffect(() => {
     clearTimeout(turnTimerRef.current)
     clearInterval(turnCountdownRef.current)
-    setTurnSecsLeft(null)
+    queueMicrotask(() => setTurnSecsLeft(null))
 
     if (mode === 'solo' || mode === 'local' || gameOver || (stopwatchEnd && Date.now() < stopwatchEnd) || turn !== 'player') return
 
@@ -455,7 +455,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
     if (pendingResolve || flipped.length >= 1) {
       clearTimeout(turnTimerRef.current)
       clearInterval(turnCountdownRef.current)
-      setTurnSecsLeft(null)
+      queueMicrotask(() => setTurnSecsLeft(null))
     }
   }, [pendingResolve, flipped.length])
 
@@ -514,7 +514,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
   useEffect(() => {
     clearTimeout(localTimerRef.current)
     clearInterval(localCountRef.current)
-    setTurnSecsLeft(null)
+    queueMicrotask(() => setTurnSecsLeft(null))
     if (mode !== 'local' || gameOver || passDevice) return
     localTimerRef.current = setTimeout(() => {
       setTurnSecsLeft(5)
@@ -585,7 +585,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
   // Tornado — snake sweep one card at a time (row 0 L→R, row 1 R→L, etc.)
   useEffect(() => {
-    if (activeEffect?.type !== 'tornado') { setTornadoStep(-1); return }
+    if (activeEffect?.type !== 'tornado') { queueMicrotask(() => setTornadoStep(-1)); return }
     const numRows = Math.ceil(cards.length / 4)
     const snakeOrder = []
     for (let r = 0; r < numRows; r++) {
@@ -605,7 +605,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
   // Rocket — step through line one card at a time as rocket flies past
   useEffect(() => {
-    if (activeEffect?.type !== 'rocket') { setRocketStep(-1); return }
+    if (activeEffect?.type !== 'rocket') { queueMicrotask(() => setRocketStep(-1)); return }
     const { line } = activeEffect.data
     const timers = []
     for (let s = 0; s < line.length; s++) {
@@ -617,9 +617,9 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
   // Dice — roll animation then reveal final values
   useEffect(() => {
-    if (activeEffect?.type !== 'dice') { setDiceRevealed(false); return }
+    if (activeEffect?.type !== 'dice') { queueMicrotask(() => setDiceRevealed(false)); return }
     const { die1, die2 } = activeEffect.data
-    setDiceRevealed(false)
+    queueMicrotask(() => setDiceRevealed(false))
     // Build timing schedule: fast → slow
     const delays = [
       ...Array(10).fill(60),
@@ -778,7 +778,7 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
   // X-ray — peek mode: player taps up to 2 cards to sneak a look, then takes their turn
   useEffect(() => {
-    if (activeEffect?.type !== 'xray') { setXrayPeeked([]); return }
+    if (activeEffect?.type !== 'xray') { queueMicrotask(() => setXrayPeeked([])); return }
 
     // AI played xray — briefly reveal all cards to the player, then AI continues its turn
     if (activeEffect.data?.playedBy === 'ai') {
@@ -796,8 +796,8 @@ export default function Game({ deck, portrait = 1, onBack, musicOn, sfxOn, onTog
 
   // Shuffle — animate cards out/in, then clear
   useEffect(() => {
-    if (activeEffect?.type !== 'shuffle') { setShuffleAnimating(false); return }
-    setShuffleAnimating(true)
+    if (activeEffect?.type !== 'shuffle') { queueMicrotask(() => setShuffleAnimating(false)); return }
+    queueMicrotask(() => setShuffleAnimating(true))
     const t = setTimeout(() => { setShuffleAnimating(false); clearEffect() }, 1000)
     return () => clearTimeout(t)
   }, [activeEffect, clearEffect])

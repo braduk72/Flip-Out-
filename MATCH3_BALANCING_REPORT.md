@@ -8,7 +8,7 @@ No-moves handling remains server-authoritative. The existing engine reshuffle is
 
 Cascade multiplier communication is clearer: the banner now reports `Cascade chain` and counts only automatic cascade matches after the original move. The current scoring model already keeps the original move at x1 and increases later cascades; this pass changed the display metadata/copy, not the score math.
 
-Verification: focused Match-3 Node 40/40 passed, focused Match-3/Settings UI 11/11 passed, focused lint passed, aggregate local test passed with Node 175 passed / 20 expected Preview-only skips and UI 67/67, and production/Preview builds passed with 160 modules. Commit `94674d4` deployed Ready to development Preview `dpl_GKMMdVFUern3fgNiV94Fb8vxLd8y`; `https://dev.flipout.gizmogames.uk` serves bundle version `1.21.0-rc-match3-polish`. Production was not touched.
+Verification: focused Match-3 Node 40/40 passed, focused Match-3/Settings UI 11/11 passed, broad source lint passed after follow-up legacy cleanup, aggregate local test passed with Node 175 passed / 20 expected Preview-only skips and UI 67/67, and production/Preview builds passed with 160 modules. Commit `94674d4` deployed Ready to development Preview `dpl_GKMMdVFUern3fgNiV94Fb8vxLd8y`; `https://dev.flipout.gizmogames.uk` serves bundle version `1.21.0-rc-match3-polish`. Production was not touched.
 
 ## Season Journey addendum - 20 July 2026
 

@@ -37,7 +37,9 @@ function writeCookie(data) {
     const expires = new Date()
     expires.setDate(expires.getDate() + COOKIE_DAYS)
     document.cookie = `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(data))}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`
-  } catch {}
+  } catch {
+    /* ignore storage/cookie failures in restricted browser modes */
+  }
 }
 
 export function snapshotToCookie() {

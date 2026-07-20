@@ -8,7 +8,7 @@ Dead-board reshuffles are no longer silent in the presentation layer. When the a
 
 Cascade multiplier display now distinguishes the original player move from automatic cascade matches by labelling the banner `Cascade chain` and counting only matches formed after the move. Existing score calculation, moves, objectives, levels, rewards and economy values were not changed.
 
-Verification: focused Match-3 Node 40/40 passed, focused Match-3/Settings UI 11/11 passed, focused lint passed, aggregate local `npm.cmd run test` passed with Node 175 passed / 20 expected Preview-only skips and UI 67/67, production and Preview builds passed with 160 modules. Commit `94674d4` deployed Ready as Preview `dpl_GKMMdVFUern3fgNiV94Fb8vxLd8y` at `https://flip-1ultpg9ih-chattocal.vercel.app`; `https://dev.flipout.gizmogames.uk` serves the same HTML and bundle version `1.21.0-rc-match3-polish`. Production was not touched.
+Verification: focused Match-3 Node 40/40 passed, focused Match-3/Settings UI 11/11 passed, broad source lint passed after follow-up legacy cleanup, aggregate local `npm.cmd run test` passed with Node 175 passed / 20 expected Preview-only skips and UI 67/67, production and Preview builds passed with 160 modules. Commit `94674d4` deployed Ready as Preview `dpl_GKMMdVFUern3fgNiV94Fb8vxLd8y` at `https://flip-1ultpg9ih-chattocal.vercel.app`; `https://dev.flipout.gizmogames.uk` serves the same HTML and bundle version `1.21.0-rc-match3-polish`. Production was not touched.
 
 ## Season Journey addendum - 20 July 2026
 

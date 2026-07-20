@@ -23,7 +23,7 @@ Verification:
 - `npm.cmd run test:preview` -> **20 expected local skips** because no local Preview `DATABASE_URL` is exposed.
 - `npm.cmd run build` -> passed with **160 transformed modules**.
 - `npm.cmd run build:preview` -> passed with **160 transformed modules**.
-- Broad `npm.cmd run lint:source -- --quiet` -> still fails with **17 pre-existing legacy errors** outside this slice.
+- Broad `npm.cmd run lint:source -- --quiet` -> passed after a follow-up cleanup of the 17 pre-existing legacy errors in `src/App.jsx`, `src/screens/Game.jsx`, `src/screens/MultiplayerLobby.jsx`, `src/data/decks.js`, `src/data/seasonalOpponents.js` and `src/utils/gameStorage.js`.
 
 Preview deployment:
 
