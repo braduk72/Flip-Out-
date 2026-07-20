@@ -1,5 +1,9 @@
 # Flip-Out Match-3 balancing and device-preparation report
 
+## Player header/title addendum - 20 July 2026
+
+Player Titles are now part of the shared profile/header surface. This does not affect Match-3 balance, auto-player simulations, cascade scoring, level objectives, revive odds or Reward Theatre cadence. Development Preview build `1.18.0-player-titles` is live; future Match-3 QA should simply confirm the header remains readable around gameplay routes. Production was not touched.
+
 ## Revives addendum - 20 July 2026
 
 Match-3 revive balance now follows the approved Coin-only ladder: 25 Coins at 75%, 50 Coins at 50%, then 100 Coins at 25%. This changes the out-of-moves recovery economy but does not rebalance any level, objective, move count or auto-player simulation result. The implementation is live on development Preview build `1.17.0-revives`; future balancing should measure whether the escalating Coin cost and declining odds affect retry behaviour and perceived fairness. Production was not touched.

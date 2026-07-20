@@ -1,5 +1,18 @@
 # Flip-Out deployment
 
+## Verification record - Player Profile Header and Titles, 20 July 2026
+
+- Commits `4d8ec43` and `5c5303a` were pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or production database was changed.
+- Focused Preview deployment: `dpl_5B4cZL231eADQrg2JUViQiX7JRHY`, generated URL `https://flip-gjswlf8v1-chattocal.vercel.app`, target Preview, created Mon 20 Jul 2026.
+- Initial deployment attempt was rejected because `projectSettings.buildCommand` exceeded Vercel's 256-character limit; the verifier was moved to `scripts/verify-player-titles-preview.mjs` and the short build command `node scripts/verify-player-titles-preview.mjs` was used. One later retry failed with transient `fetch failed`; the next retry succeeded.
+- Migration target: Railway Preview `railway/public`, host `yamanote.proxy.rlwy.net`, user `postgres`, schema `public`, `VERCEL_ENV=preview`, read replica false.
+- Migration result: previous migrations 001-018 were already applied; `019_player_titles.sql` was committed at `2026-07-20T13:53:44.127Z`.
+- Schema verification output included new `fo_accounts` columns `selected_title_prefix_id` and `selected_title_suffix_id`, plus constraints `fo_accounts_title_prefix_format` and `fo_accounts_title_suffix_format`.
+- Remote focused Node tests passed **14/14** with no skips, including the live Preview DB test for persisting and hydrating Player Titles.
+- Remote focused UI tests passed **15/15**.
+- Remote Vite build passed with **156 transformed modules** and entry `assets/index-DsOxMNG0.js`.
+- `https://dev.flipout.gizmogames.uk` returned HTTP 200 with the same ETag `"e6ee00db494dd60d8afa88f68e83edd7"` as the generated Preview URL, served byte-identical HTML, and served `/assets/index-DsOxMNG0.js` containing `1.18.0-player-titles`, `Player Title`, `set-player-title` and `Choose a title`.
+
 ## Verification record - Coin-only Match-3 Revives, 20 July 2026
 
 - Commit `076e6bd` was pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or production database was changed.

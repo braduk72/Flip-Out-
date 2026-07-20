@@ -1,5 +1,52 @@
 # Flip-Out continuation report
 
+## Player Profile Header and Titles - 20 July 2026
+
+Priority 1 is implemented and verified on development Preview as the first coherent slice of the new sprint. The shared header now uses the selected curated avatar and displays a Player Title instead of the old `Level not set` placeholder.
+
+Implemented:
+
+- Player Title catalogue with Prefix-only, Suffix-only and Prefix + Suffix formatting.
+- Starter title examples including `The Collector`, `Captain`, `the Magnificent`, `Puzzle Ace` and `of the Arcade`.
+- Server-side title validation and persistence through `fo_accounts`.
+- Settings `Player Title` panel with live preview, responsive selectors and disabled save state until a real change exists.
+- Registered title catalogue entries as non-tradable cosmetic items for future reward/shop/season unlocks.
+
+Schema:
+
+- Added additive migration `019_player_titles.sql`.
+- Added nullable `fo_accounts.selected_title_prefix_id`.
+- Added nullable `fo_accounts.selected_title_suffix_id`.
+- Added format constraints for `title:prefix:*` and `title:suffix:*` IDs.
+
+Verification:
+
+- Focused local Node title/header tests -> **16/16 passed**.
+- Focused local UI title/header tests -> **15/15 passed**.
+- Focused lint on changed files -> passed.
+- `npm.cmd test` -> Node **162 passed / 19 expected Preview-only skips**, UI **62/62 passed**.
+- `npm.cmd run build` -> passed with **156 transformed modules**.
+- `npm.cmd run build:preview` -> passed with **156 transformed modules** after rerunning serially because the first parallel run overlapped `dist` cleanup.
+- Vercel Preview verifier -> migration applied, Node **14/14 passed**, UI **15/15 passed**, Vite build **156 modules**.
+
+Preview deployment:
+
+- Deployment ID: `dpl_5B4cZL231eADQrg2JUViQiX7JRHY`.
+- Generated Preview URL: `https://flip-gjswlf8v1-chattocal.vercel.app`.
+- Permanent development URL: `https://dev.flipout.gizmogames.uk`.
+- Permanent dev verification: generated Preview and permanent dev URL both returned HTTP 200 with matching ETag `"e6ee00db494dd60d8afa88f68e83edd7"` and byte-identical HTML.
+- Main bundle `/assets/index-DsOxMNG0.js` contains `1.18.0-player-titles`, `Player Title`, `set-player-title` and `Choose a title`.
+
+Notes:
+
+- The first Vercel attempt failed because the inline build command exceeded the 256-character project-settings limit; this was fixed with `scripts/verify-player-titles-preview.mjs`.
+- A subsequent retry hit transient `fetch failed`; the next retry succeeded.
+- Production was not touched.
+
+Remaining risks:
+
+- Starter titles are selectable now. Future locked/premium/achievement/season titles still need grant sources and a richer title inventory/equip UI.
+
 ## Coin-only Match-3 Revives - 20 July 2026
 
 Priority 6 is implemented and verified on development Preview as a coherent gameplay/economy milestone. The Match-3 out-of-moves flow now uses the approved Coin-only revive ladder and no longer offers advert-based or Extra Moves loss-screen continuation.

@@ -1,5 +1,16 @@
 # Flip-Out! current-state audit
 
+## Player Profile Header and Titles - 20 July 2026
+
+- **Status: Implemented and verified on development Preview.** The shared player header now displays the selected curated avatar and a Player Title line instead of the old `Level not set` fallback.
+- What changed: added a reusable Player Title catalogue supporting Prefix-only, Suffix-only and Prefix + Suffix display (`The Collector`, `Captain Brad`, `Brad the Magnificent`, `Captain Brad the Magnificent`). Settings now includes a responsive `Player Title` panel with live preview and server save. Starter titles are available immediately; title item IDs are also registered as non-tradable cosmetic catalogue items so future rewards/shop/season systems can unlock more titles without changing the header contract.
+- Persistence: additive migration `019_player_titles.sql` adds nullable `selected_title_prefix_id` and `selected_title_suffix_id` to `fo_accounts` with format constraints. The server validates selections against the catalogue/owned title availability through `setPlayerTitle()`.
+- Files changed: `src/data/playerTitles.js`, `api/_playerTitles.js`, `api/_playerState.js`, `api/fo-player-state.js`, `api/migrations/019_player_titles.sql`, `src/screens/Settings.jsx`, `src/screens/Settings.module.css`, `src/ui/components.jsx`, `src/ui/homeData.js`, `src/utils/gameApi.js`, `src/data/itemCatalog.js`, `public/ui/icons/player-title.svg`, title/header tests and `vercel.player-titles-verify.json`.
+- Verification: focused local title/header Node **16/16** passed; focused local UI **15/15** passed; focused lint passed; project aggregate `npm test` Node **162 passed / 19 Preview-only skips** and UI **62/62**; production build passed with **156 modules**; Preview build passed with **156 modules** after rerunning serially because the first parallel attempt overlapped `dist` cleanup.
+- Preview deployment: initial Vercel attempt was rejected because the inline verifier exceeded the 256-character build-command limit; fixed by `scripts/verify-player-titles-preview.mjs`. One retry then hit transient `fetch failed`; the next retry succeeded. `dpl_5B4cZL231eADQrg2JUViQiX7JRHY` reached Ready at `https://flip-gjswlf8v1-chattocal.vercel.app`; migration `019_player_titles.sql` committed to Railway Preview `railway/public` at `2026-07-20T13:53:44.127Z`; remote verifier passed Node **14/14**, UI **15/15** and Vite build **156 modules**.
+- Permanent dev URL: `https://dev.flipout.gizmogames.uk` returned HTTP 200 with the same ETag `"e6ee00db494dd60d8afa88f68e83edd7"` and byte-identical HTML as the generated Preview. Main bundle `/assets/index-DsOxMNG0.js` contains `1.18.0-player-titles`, `Player Title`, `set-player-title` and `Choose a title`.
+- Remaining risks: there is not yet a full title unlock/equip inventory UI beyond starter titles; future paid/achievement/season titles should grant the registered title item IDs before becoming selectable. Production was not touched.
+
 ## Coin-only Match-3 Revives - 20 July 2026
 
 - **Status: Implemented and verified on development Preview.** The Match-3 loss flow now uses Coin-only Revives instead of the old loss-screen Extra Moves continuation. Advert revives are not used.

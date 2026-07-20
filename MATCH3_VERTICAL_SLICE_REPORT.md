@@ -1,5 +1,9 @@
 # Flip-Out Match-3 vertical slice
 
+## Player header/title addendum - 20 July 2026
+
+The shared player header now displays the selected avatar and Player Title instead of the legacy `Level not set` fallback. This milestone did not change Match-3 mechanics, scoring, levels, revives, Reward Theatre or board input. Development Preview build `1.18.0-player-titles` is live at `https://dev.flipout.gizmogames.uk`; Production was not touched.
+
 ## Revives addendum - 20 July 2026
 
 Match-3 loss continuation now uses Coin-only Revives: 25 Coins at 75%, 50 Coins at 50%, then 100 Coins at 25%. The server spends Coins, rolls odds and stores the revive outcome in authoritative session state; duplicate action IDs do not charge twice. The loss modal presents the cost/odds and spinner and no longer offers advert or Extra Moves continuation. No level balance or Match-3 board rules changed.
