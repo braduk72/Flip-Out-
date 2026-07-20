@@ -1,5 +1,11 @@
 # Flip-Out Match-3 vertical slice
 
+## Season Journey addendum - 20 July 2026
+
+Match-3 completion now also emits an idempotent server-side Season Score event worth 100 Season Score. This is recorded by `api/_seasonJourney.js` using event ID `season-score:match3:<sessionId>` inside the same completion transaction, so repeated completion calls cannot grant extra Season Score or Season Tickets. Journey levels and Tickets are separate from Coins/Stars; no Match-3 level, objective, move count, cascade logic, revive rule or Reward Theatre cadence changed in this milestone.
+
+Verification: local Season Node 7/7 passed, aggregate Node 171 passed / 20 Preview-only skips and UI 63/63 passed, production and Preview builds passed with 158 modules. Vercel Preview `dpl_33P5ogFSFfRzUem391FhNBChyTL8` at `https://flip-h5thfjj6c-chattocal.vercel.app` applied `020_season_journey.sql` to Railway Preview and passed remote Season tests 8/8; `https://dev.flipout.gizmogames.uk` serves the same build with `1.20.0-season-journey`. Production was not touched.
+
 ## Effect framework and juice addendum - 20 July 2026
 
 Match-3 now has a presentation/effect framework layered on top of the authoritative engine. The engine still owns matches, specials, cascades, scoring and final board state. The client now maps the returned cascade data into deterministic effect plans with scalable particles, board shake, multiplier display, rare announcer text, special creation shockwaves and special activation impacts.
@@ -130,3 +136,4 @@ The preceding repair statement was source-level only and is superseded here. The
 An Edge test ran against the deployed Preview and measured the tile before pointer-down, halfway while the button remained held, immediately after release while the request was deliberately held for observation, and after authoritative settlement. Mouse results were 32.125 px held source motion, −6.905 px neighbour preview and +63.865/−63.865 px committed exchange; pointer capture and threshold both reported active, scroll remained zero, and the legal move settled to 17 moves. A 390×844 Chromium touch-input pass recorded 22.488 px held motion, +44.785/−44.785 px exchange and no page scroll. Physical iPhone Safari remains a manual acceptance item.
 
 Preview `https://flip-lyw0sei3q-chattocal.vercel.app` (`dpl_4XS8iNjXw9yAvjG4ters36txHMmJ`) is Ready. Cloud verification passed 37/37 Node tests and 9/9 UI/token tests; focused lint and the production build passed. The permanent development URL served the identical HTML and `assets/index-CgoQHe9q.js` entry. Trace JSON, four desktop frames, two mobile-touch frames and `browser-trace.zip` are stored under `artifacts/match3-drag-preview/` locally.
+

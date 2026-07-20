@@ -20,7 +20,7 @@ function profileOverrides(storage) {
   }
 }
 
-export function normaliseHomeData({ playerPayload, match3Payload, liveOpsPayload, seasonStep = 0, storage = globalThis.localStorage } = {}) {
+export function normaliseHomeData({ playerPayload, match3Payload, liveOpsPayload, seasonPayload, seasonStep = 0, storage = globalThis.localStorage } = {}) {
   const state = playerPayload?.state ?? {}
   const balances = balanceMap(state.balances)
   const inventory = state.inventory ?? []
@@ -69,7 +69,14 @@ export function normaliseHomeData({ playerPayload, match3Payload, liveOpsPayload
       target: 10,
       available: foilRows.length > 0,
     },
-    season: { current: Math.max(0, Number(seasonStep)), total: 32, label: 'Season 1' },
+    season: {
+      current: Number(seasonPayload?.progress?.journeyLevel ?? Math.max(0, Number(seasonStep))),
+      total: 100,
+      label: seasonPayload?.season?.name ?? 'Season 1',
+      tickets: Number(seasonPayload?.progress?.seasonTickets ?? 0),
+      score: Number(seasonPayload?.progress?.seasonScore ?? 0),
+      collectorAwardedAt: seasonPayload?.progress?.collectorAwardedAt ?? null,
+    },
     dailyLogin: playerPayload?.dailyLogin ?? { available: false },
     community: activeChallenge ? {
       id: activeChallenge.challenge_id,
@@ -81,16 +88,18 @@ export function normaliseHomeData({ playerPayload, match3Payload, liveOpsPayload
 }
 
 export async function fetchHomeData({ seasonStep = 0, storage = globalThis.localStorage } = {}) {
-  const [player, match3, liveOps] = await Promise.allSettled([
+  const [player, match3, liveOps, seasons] = await Promise.allSettled([
     playerGameApi.state(),
     playerGameApi.match3State(),
     playerGameApi.liveOps(),
+    playerGameApi.seasons(),
   ])
   if (player.status === 'rejected') throw player.reason
   return normaliseHomeData({
     playerPayload: player.value,
     match3Payload: match3.status === 'fulfilled' ? match3.value : null,
     liveOpsPayload: liveOps.status === 'fulfilled' ? liveOps.value : null,
+    seasonPayload: seasons.status === 'fulfilled' ? seasons.value : null,
     seasonStep,
     storage,
   })

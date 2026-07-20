@@ -1,5 +1,11 @@
 # Flip-Out Match-3 balancing and device-preparation report
 
+## Season Journey addendum - 20 July 2026
+
+Season Journey now listens to Match-3 completion and grants 100 Season Score per completed level through an idempotent server event. This adds a progression layer above Match-3 but does not change level layouts, move counts, objectives, auto-player assumptions, cascade scoring, revives or Reward Theatre cadence. Season Tickets are awarded only from journey level-ups and are not directly earned from gameplay actions. Future balancing should evaluate Season Score pacing separately from level difficulty.
+
+Development Preview build `1.20.0-season-journey` is live at `https://dev.flipout.gizmogames.uk`; migration `020_season_journey.sql` applied to Railway Preview and remote Season tests passed 8/8. Production was not touched.
+
 ## Effect framework and juice addendum - 20 July 2026
 
 The Match-3 effect framework adds presentation intensity without changing level balance, objective targets, legal moves, auto-player behaviour, revive odds or Reward Theatre cadence. Cascade multiplier display is now visible and derived only from automatic cascades already produced by the engine. Exceptional announcer lines remain rare and are gated by cascade count. Development Preview build `1.19.0-match3-juice` is live; future balancing/device QA should judge whether the longer special/cascade presentation pause feels rewarding or slows retry cadence too much. Production was not touched.
@@ -182,3 +188,4 @@ No balance values changed. Preview `https://flip-4lw572b7k-chattocal.vercel.app`
 ## Deployed drag-verification addendum — 19 July 2026
 
 No balance, objective, move, reward or economy value changed. The visible drag defect was isolated to input presentation: the deployed board had no pointer-move-driven render state. Final dev-branch Preview `https://flip-lyw0sei3q-chattocal.vercel.app` now has a measured desktop held-drag and a measured 390×844 Chromium touch-drag trace, including opposite-cell release movement and zero page scrolling. Physical iPhone Safari remains a human acceptance check; none of these presentation changes alter the simulation results in this report.
+

@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.19.0-match3-juice'
+export const APP_VERSION = '1.20.0-season-journey'

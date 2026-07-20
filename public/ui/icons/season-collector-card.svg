@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Season collector card">
+  <defs>
+    <linearGradient id="card" x1="24" y1="12" x2="104" y2="116" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffe996"/>
+      <stop offset=".5" stop-color="#ff9f1a"/>
+      <stop offset="1" stop-color="#6d38ff"/>
+    </linearGradient>
+  </defs>
+  <rect x="25" y="10" width="78" height="108" rx="14" fill="#071127" stroke="url(#card)" stroke-width="7"/>
+  <rect x="36" y="22" width="56" height="84" rx="9" fill="#152354" stroke="#ffe56d" stroke-width="3"/>
+  <path d="m64 33 9 18 20 3-14 14 3 20-18-10-18 10 3-20-14-14 20-3z" fill="#ffdf5a"/>
+  <path d="M44 96h40" stroke="#8ff7ff" stroke-linecap="round" stroke-width="6"/>
+</svg>

@@ -21,6 +21,8 @@ export const playerGameApi = {
   market: body => request('/api/fo-game?service=market', body),
   marketListings: () => request('/api/fo-game?service=market'),
   liveOps: () => request('/api/fo-game?service=live-ops'),
+  seasons: (timeZone = getDeviceTimeZone()) => request(`/api/fo-game?service=seasons&timeZone=${encodeURIComponent(timeZone)}`),
+  seasonAction: body => request('/api/fo-game?service=seasons', body),
   cloud: () => request('/api/fo-game?service=cloud'),
   saveCloud: body => request('/api/fo-game?service=cloud', body),
   createMatch: body => request('/api/fo-game?service=matches', { action: 'create', ...body }),

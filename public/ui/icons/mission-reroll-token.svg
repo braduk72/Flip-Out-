@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Mission reroll token">
+  <defs>
+    <linearGradient id="g" x1="18" y1="16" x2="110" y2="112" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#39e6ff"/>
+      <stop offset=".52" stop-color="#8d4dff"/>
+      <stop offset="1" stop-color="#ffb32c"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="54" fill="#081432" stroke="url(#g)" stroke-width="8"/>
+  <path d="M87 42a31 31 0 0 0-51 11" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="10"/>
+  <path d="m88 22 4 28-28-5" fill="none" stroke="#ffdf5a" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
+  <path d="M41 86a31 31 0 0 0 51-11" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="10"/>
+  <path d="m40 106-4-28 28 5" fill="none" stroke="#56f0ff" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
+</svg>

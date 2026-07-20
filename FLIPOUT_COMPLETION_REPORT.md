@@ -1,5 +1,59 @@
 # Flip-Out continuation report
 
+## Season Journey architecture - 20 July 2026
+
+The Season Journey foundation is implemented and verified on development Preview. This is not a new season screen yet; it is the authoritative backend/data boundary needed before a production-quality journey UI, mission UI or seasonal reward shop can safely exist.
+
+Implemented:
+
+- Data-driven active Preview Season definition.
+- Separate **Season Score** and **Season Tickets**.
+- Match-3 completion grants **100 Season Score** through an idempotent event ID.
+- Journey levels require **1,000 Season Score** and award **1 Season Ticket** per level gained.
+- Authenticated `/api/fo-game?service=seasons` state endpoint.
+- Authenticated Season choice-claim endpoint with ticket spending and reward application.
+- Mission reroll receipt endpoint with two free rerolls/day, future token fallback and Coin-cost fallback support.
+- Gameplay-only daily/weekly mission definitions.
+- Choice reward pages unlocked by journey level.
+- Level-100 Season Collector Card archive and inventory grant, once only.
+- Post-100 supply reward definitions that never award Coins or the level-100 Collector Card.
+- Mission Reroll Token and Preview Season Collector Card catalogue entries.
+
+Schema:
+
+- Added additive migration `020_season_journey.sql`.
+- New tables: `fo_seasons`, `fo_season_progress`, `fo_season_score_events`, `fo_season_ticket_transactions`, `fo_season_reward_claims`, `fo_season_missions`, `fo_mission_reroll_usage`, `fo_mission_reroll_transactions`, `fo_season_archive`.
+- New indexes include player/season lookup indexes and unique ticket reference protection.
+- Active Preview Season is seeded as free-only metadata.
+
+Verification:
+
+- Focused local Season Node tests -> **7/7 passed**.
+- Focused changed-file lint -> passed.
+- Local DB-backed tests -> skipped as expected because local `.env.preview.local` does not expose `DATABASE_URL`.
+- Full local Node suite -> **171 passed / 20 expected Preview-only skips**.
+- Full local UI suite -> **63/63 passed**.
+- Production build -> passed with **158 transformed modules**.
+- Preview build -> passed with **158 transformed modules**.
+- First Vercel verifier applied migration 020 successfully but failed after that because the unrelated legacy Match-3 DB cleanup tried to delete a test account referenced by immutable Coin ledger rows.
+- Final focused Vercel verifier -> **8/8 Season tests passed** with no skips and Vite build passed with **158 modules**.
+
+Preview deployment:
+
+- Deployment ID: `dpl_33P5ogFSFfRzUem391FhNBChyTL8`.
+- Generated Preview URL: `https://flip-h5thfjj6c-chattocal.vercel.app`.
+- Permanent development URL: `https://dev.flipout.gizmogames.uk`.
+- Migration target: Railway Preview `railway/public`, host `yamanote.proxy.rlwy.net`, user `postgres`, schema `public`, `VERCEL_ENV=preview`.
+- Migration record: `020_season_journey.sql` applied at `2026-07-20T14:36:50.243Z`.
+- Permanent dev verification: generated Preview and permanent dev URL both returned HTTP 200 with ETag `"1982ad0a43e290de3c4d72422913c9cb"` and byte-identical HTML.
+- Main bundle `/assets/index-DOFOMsJ-.js` contains `1.20.0-season-journey` and `service=seasons`.
+
+Remaining risks:
+
+- Season Journey UI, mission assignment/progress processing, post-100 supply claiming and seasonal shop/archive browsing remain future work.
+- The old Match-3 DB Preview test needs cleanup adjustment for immutable Coin ledger rows before it is safe to include in every remote verifier again.
+- Production was not touched.
+
 ## Match-3 Effect Framework and Juice - 20 July 2026
 
 Priorities 2, 3, 4, 5, 6, 7 and 8 have their first production-quality presentation slice implemented and verified on development Preview. The mechanics remain server-authoritative; the new work is a reusable client presentation layer driven by the authoritative cascade/special data already returned by the engine.
@@ -700,3 +754,4 @@ Preview verification passed on focused deployment `dpl_25Up7bWqFHdTdKTwuihHWM991
 Permanent development URL status: `https://dev.flipout.gizmogames.uk` returns HTTP 200 and serves the same ETag `"2e3dd0f773c9aa762d8f80c044472f14"` and `assets/index-Bpenq1xH.js` as the focused Preview URL; the bundle contains `1.8.0-inventory-capacity`. Production was not touched.
 
 Deployment note: earlier focused deploy attempts got stuck in Vercel `QUEUED` state and were removed. A Git-triggered Preview build reached Ready before the final focused build, but it only ran the default app build and was superseded by the focused verification deployment above.
+
