@@ -1,5 +1,15 @@
 # Flip-Out deployment
 
+## Verification record - Coin-only Match-3 Revives, 20 July 2026
+
+- Commit `076e6bd` was pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or production database was changed.
+- Focused Preview deployment: `dpl_A1obk4oMo5mLvruXJzY8RxpSm5UV`, generated URL `https://flip-c4wrhmp54-chattocal.vercel.app`, target Preview, created Mon 20 Jul 2026.
+- Build command from `vercel.revives-verify.json`: `node --test tests/progression.test.js tests/match3-revive-db.test.js tests/match3-engine.test.js && npx vitest run tests-ui/match3-input.test.jsx && vite build`.
+- Remote focused Node tests passed **38/38** with the live Preview DB revive spend/idempotency test enabled.
+- Remote focused Match-3 UI tests passed **4/4**.
+- Remote Vite build passed with **155 transformed modules** and entry `assets/index-JRly8bNa.js`.
+- `https://dev.flipout.gizmogames.uk` returned HTTP 200 with the same ETag `"2e02a61bd3eb33f948d10ecfce7624fd"` as the generated Preview URL, served byte-identical HTML, served `/assets/index-JRly8bNa.js` containing `1.17.0-revives`, and served `/assets/Match3-Bu_g7lyd.js` containing `Revive One`, `Reward Theatre` and the revive spinner UI.
+
 ## Verification record - Authoritative Achievement framework, 20 July 2026
 
 - Commit `eded2fd` was pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or production database was changed.

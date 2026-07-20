@@ -4,6 +4,8 @@
 
 Match-3 loss continuation now uses Coin-only Revives: 25 Coins at 75%, 50 Coins at 50%, then 100 Coins at 25%. The server spends Coins, rolls odds and stores the revive outcome in authoritative session state; duplicate action IDs do not charge twice. The loss modal presents the cost/odds and spinner and no longer offers advert or Extra Moves continuation. No level balance or Match-3 board rules changed.
 
+Verification: focused local Node 37 passed / 1 Preview-only skip, focused Match-3 UI 4/4 passed, aggregate `npm test` Node 158 passed / 18 Preview-only skips and UI 60/60 passed. Vercel Preview `dpl_A1obk4oMo5mLvruXJzY8RxpSm5UV` at `https://flip-c4wrhmp54-chattocal.vercel.app` passed the live Preview DB revive spend/idempotency test during its 38/38 Node verifier run, and `https://dev.flipout.gizmogames.uk` serves the same build with `1.17.0-revives`. Production was not touched.
+
 ## Reward Theatre addendum - 20 July 2026
 
 Match-3 completion now surfaces Reward Theatre eligibility after every five completed levels. The server owns milestone detection, commits the prize through a stable claim ID, writes Coin prizes through the authoritative Coin ledger, and returns deterministic reel metadata for the client animation. The UI result screen can spin animated reels only after the committed reward exists; presentation cannot reroll or upgrade the prize.

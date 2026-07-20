@@ -1,5 +1,9 @@
 # Flip-Out Match-3 balancing and device-preparation report
 
+## Revives addendum - 20 July 2026
+
+Match-3 revive balance now follows the approved Coin-only ladder: 25 Coins at 75%, 50 Coins at 50%, then 100 Coins at 25%. This changes the out-of-moves recovery economy but does not rebalance any level, objective, move count or auto-player simulation result. The implementation is live on development Preview build `1.17.0-revives`; future balancing should measure whether the escalating Coin cost and declining odds affect retry behaviour and perceived fairness. Production was not touched.
+
 ## Reward Theatre addendum - 20 July 2026
 
 Reward Theatre now attaches to the Match-3 progression cadence at 5/10/15/20 completed levels. This does not rebalance any level, move count, objective or simulation result. It adds a milestone reward layer above completion: the reward is selected and committed server-side, then presented with animated reels. The implementation is live on the development Preview build `1.16.0-reward-theatre`; future balancing should evaluate whether every-five-level rewards affect perceived difficulty/retry motivation, but no level tuning was changed in this package.

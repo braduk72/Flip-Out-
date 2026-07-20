@@ -2,7 +2,7 @@
 
 ## Coin-only Match-3 Revives - 20 July 2026
 
-Priority 6 is implemented locally as a coherent gameplay/economy milestone. The Match-3 out-of-moves flow now uses the approved Coin-only revive ladder and no longer offers advert-based or Extra Moves loss-screen continuation.
+Priority 6 is implemented and verified on development Preview as a coherent gameplay/economy milestone. The Match-3 out-of-moves flow now uses the approved Coin-only revive ladder and no longer offers advert-based or Extra Moves loss-screen continuation.
 
 Implemented rules:
 
@@ -15,7 +15,7 @@ Implemented rules:
 
 The server performs the roll and records the outcome in authoritative Match-3 session state. Coin spend goes through the existing controlled reward/ledger boundary as `revive-cost`. Match-3 revive actions are idempotent by action ID, so retries return the original outcome without another Coin charge. The older generic `continue` backend service was also switched to Coin-only revive semantics.
 
-Verification so far:
+Verification:
 
 - `node --test tests\progression.test.js tests\match3-revive-db.test.js tests\match3-engine.test.js` -> **37 passed / 1 expected Preview-only skip**.
 - `npx.cmd vitest run tests-ui\match3-input.test.jsx` -> **4/4 passed**.
@@ -23,12 +23,21 @@ Verification so far:
 - `npm.cmd test` -> Node **158 passed / 18 expected Preview-only skips**, UI **60/60 passed**.
 - `npm.cmd run build` -> passed with **155 transformed modules**.
 - `npm.cmd run build:preview` -> passed with **155 transformed modules**.
+- Vercel Preview verifier using `vercel.revives-verify.json` -> Node **38/38 passed** with the live Preview DB revive spend/idempotency test enabled, Match-3 UI **4/4 passed**, and production build **155 modules**.
+
+Preview deployment:
+
+- Deployment ID: `dpl_A1obk4oMo5mLvruXJzY8RxpSm5UV`.
+- Generated Preview URL: `https://flip-c4wrhmp54-chattocal.vercel.app`.
+- Permanent development URL: `https://dev.flipout.gizmogames.uk`.
+- Permanent dev verification: generated Preview and permanent dev URL both returned HTTP 200 with matching ETag `"2e02a61bd3eb33f948d10ecfce7624fd"` and byte-identical HTML.
+- Main bundle `/assets/index-JRly8bNa.js` contains `1.17.0-revives`.
+- Match-3 lazy bundle `/assets/Match3-Bu_g7lyd.js` contains `Revive One`, `Reward Theatre` and the revive spinner UI.
 
 No schema migration was required. Production was not touched.
 
 Remaining risks:
 
-- Live Preview DB revive spend/idempotency test will run during deployment verification.
 - The animated spinner needs physical mobile QA for feel and timing.
 - The `extra-moves` power-up still exists as a normal owned power-up; only the loss-screen revive has changed.
 
