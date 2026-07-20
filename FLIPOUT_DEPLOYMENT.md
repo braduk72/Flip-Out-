@@ -61,6 +61,9 @@ The application currently reports `1.10.2-exchange-rules` from `src/version.js`.
 
 - Rule changes: 10 Coin minimum listing price, 20 active listings per seller, seven-day default expiry, automatic lazy expiry return, no maximum listing price.
 - Local verification before deployment: focused Node **14 passed / 0 failed / 1 Preview DB skip**, focused lint passed, production build passed.
+- Deployment: commit `8f90d49`, Vercel Ready Preview `https://flip-686nznc9k-chattocal.vercel.app`.
+- URL verification: `https://dev.flipout.gizmogames.uk` and the generated Preview both returned HTTP 200 and ETag `"ff418892f441076e69cbb8be53496de6"`.
+- Bundle verification: permanent URL served `/assets/index-f85Rls0H.js` at 412,665 bytes and contained `1.10.2-exchange-rules`.
 - No schema migration was required.
 - Production was not touched.
 

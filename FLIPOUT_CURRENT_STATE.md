@@ -2,12 +2,12 @@
 
 ## Exchange listing rules - 20 July 2026
 
-- **Status: Implemented locally; Preview deployment pending in this milestone.** Exchange listings now enforce a 10 Coin minimum price, a maximum of 20 active listings per seller and a default seven-day expiry. There remains no maximum listing price.
+- **Status: Implemented and deployed to development Preview.** Exchange listings now enforce a 10 Coin minimum price, a maximum of 20 active listings per seller and a default seven-day expiry. There remains no maximum listing price.
 - Expired active listings are processed lazily by the server when the Exchange is browsed or when a listing is touched. Expired escrowed items are returned automatically to the seller through a `market-return` transaction. Returns bypass Inventory-capacity checks because the card was already owned and escrowed by that seller.
 - Buying an expired listing now marks it expired, returns the escrowed item and rejects the purchase with `EXCHANGE_LISTING_EXPIRED`.
 - Player-facing Exchange copy now states the 20% fee, 80% seller receipt, 10 Coin minimum and seven-day expiry.
 - Files changed: `api/_progressionRules.js`, `api/_operations.js`, `api/_foMarket.js`, `api/_gameServices.js`, `src/screens/Marketplace.jsx`, `tests/progression.test.js`, `src/version.js`.
-- Verification so far: focused progression/game-services tests **14 passed / 0 failed / 1 Preview DB skip**; focused lint passed; production build passed with main JS `412.66 kB / 130.49 kB gzip`. No schema migration was required and Production was not touched.
+- Verification: focused progression/game-services tests **14 passed / 0 failed / 1 Preview DB skip**; focused lint passed; production build passed with main JS `412.66 kB / 130.49 kB gzip`. Vercel Ready Preview `https://flip-686nznc9k-chattocal.vercel.app` updated `https://dev.flipout.gizmogames.uk`; both URLs returned HTTP 200 and ETag `"ff418892f441076e69cbb8be53496de6"`. The permanent URL served `/assets/index-f85Rls0H.js` at 412,665 bytes and contained `1.10.2-exchange-rules`. No schema migration was required and Production was not touched.
 - Remaining risks: seller listing management UI and a scheduled expiry job remain future work; current expiry is automatic but lazy.
 
 ## Exchange commission update - 20 July 2026

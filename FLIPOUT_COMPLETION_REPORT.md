@@ -11,6 +11,8 @@ Verification:
 - Focused Node: `node --test tests\progression.test.js tests\game-services.test.js tests\game-services-db.test.js` - **14 passed / 0 failed / 1 Preview DB skip**.
 - Focused lint: `npx.cmd eslint api\_progressionRules.js api\_operations.js api\_foMarket.js api\_gameServices.js src\screens\Marketplace.jsx tests\progression.test.js tests\game-services-db.test.js` - passed.
 - Production build: `npm.cmd run build` - passed; main JS `412.66 kB / 130.49 kB gzip`.
+- Deployment: commit `8f90d49` was pushed to `dev`; Vercel Ready Preview `https://flip-686nznc9k-chattocal.vercel.app` updated `https://dev.flipout.gizmogames.uk`.
+- Live verification: permanent and generated URLs returned HTTP 200 and matching ETag `"ff418892f441076e69cbb8be53496de6"`; permanent bundle `/assets/index-f85Rls0H.js` was 412,665 bytes and contained `1.10.2-exchange-rules`.
 - No schema migration was required. Production was not touched.
 
 ## Exchange commission update - 20 July 2026
