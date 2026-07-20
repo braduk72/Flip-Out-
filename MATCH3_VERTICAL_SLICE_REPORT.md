@@ -4,7 +4,7 @@
 
 Match-3 completion now surfaces Reward Theatre eligibility after every five completed levels. The server owns milestone detection, commits the prize through a stable claim ID, writes Coin prizes through the authoritative Coin ledger, and returns deterministic reel metadata for the client animation. The UI result screen can spin animated reels only after the committed reward exists; presentation cannot reroll or upgrade the prize.
 
-Local verification: focused Reward Theatre/Foundation Node 14/14 passed, toolkit UI 6/6 passed, aggregate `npm test` Node 158 passed / 17 Preview-only skips and UI 59/59 passed. Production was not touched.
+Verification: focused Reward Theatre/Foundation Node 14/14 passed, toolkit UI 6/6 passed, aggregate `npm test` Node 158 passed / 17 Preview-only skips and UI 59/59 passed. Vercel Preview `dpl_2Djfty34rSmqeSyQqDWV4xivzvcB` at `https://flip-otq5c9ry4-chattocal.vercel.app` passed remote Preview DB Reward Theatre tests 15/15, and `https://dev.flipout.gizmogames.uk` serves the same build with `1.16.0-reward-theatre`. Production was not touched.
 
 ## Gameplay completion addendum — 19 July 2026
 

@@ -2,7 +2,7 @@
 
 ## Reward Theatre addendum - 20 July 2026
 
-Reward Theatre now attaches to the Match-3 progression cadence at 5/10/15/20 completed levels. This does not rebalance any level, move count, objective or simulation result. It adds a milestone reward layer above completion: the reward is selected and committed server-side, then presented with animated reels. Future balancing should evaluate whether every-five-level rewards affect perceived difficulty/retry motivation, but no level tuning was changed in this package.
+Reward Theatre now attaches to the Match-3 progression cadence at 5/10/15/20 completed levels. This does not rebalance any level, move count, objective or simulation result. It adds a milestone reward layer above completion: the reward is selected and committed server-side, then presented with animated reels. The implementation is live on the development Preview build `1.16.0-reward-theatre`; future balancing should evaluate whether every-five-level rewards affect perceived difficulty/retry motivation, but no level tuning was changed in this package.
 
 Date: 18 July 2026. Scope: deterministic auto-play, structured balancing, performance, development feedback, device-test preparation and route-level code splitting. Preview/development only; production was not touched.
 

@@ -2,7 +2,7 @@
 
 ## Reward Theatre milestone - 20 July 2026
 
-Priority 5 is implemented locally as the next coherent sprint milestone. Reward Theatre now unlocks after every five completed Match-3 levels and preserves the approved design rule: the server chooses and commits the prize first, then the UI presents it.
+Priority 5 is implemented and verified on development Preview as the next coherent sprint milestone. Reward Theatre now unlocks after every five completed Match-3 levels and preserves the approved design rule: the server chooses and commits the prize first, then the UI presents it.
 
 Implemented:
 
@@ -26,6 +26,16 @@ Verification so far:
 - `npm.cmd test` -> Node **158 passed / 17 expected Preview-only skips**, UI **59/59 passed**.
 - `npm.cmd run build` -> passed with **155 transformed modules**.
 - `npm.cmd run build:preview` -> first failed because it was run in parallel with production build and both commands attempted to clean `dist`; rerunning serially passed with **155 transformed modules**.
+- Vercel Preview verifier `vercel.reward-theatre-verify.json` -> remote Preview DB + build **15/15 passed**, no skips.
+
+Preview deployment:
+
+- Ready deployment: `dpl_2Djfty34rSmqeSyQqDWV4xivzvcB`.
+- Generated Preview URL: `https://flip-otq5c9ry4-chattocal.vercel.app`.
+- Permanent development URL: `https://dev.flipout.gizmogames.uk`.
+- Both URLs returned HTTP 200 with matching ETag `"f1d3134bc090261407c2350510dc3a73"` and byte-identical HTML.
+- Main bundle `/assets/index-DjQjx2Sv.js` contains `1.16.0-reward-theatre`.
+- Match-3 lazy bundle `/assets/Match3-BvBShpeZ.js` contains `Reward Theatre`, `Every 5 levels` and `reward-theatre`.
 
 No schema migration was required. Production was not touched.
 
