@@ -6,7 +6,7 @@ Reward Theatre remains attached to the existing Match-3 cadence of one reward at
 
 The Match-3 result screen now presents a finite 24-segment Prize Wheel that lands on the committed reward, then shows the reward result, advert-double option where applicable, Next Level and Level Journey. No Match-3 objective, level, scoring, revive, cascade or auto-player logic changed in this package. Production was not touched.
 
-Verification before Preview deployment: focused Reward Theatre Node **7 passed / 1 expected Preview DB skip**, focused Reward Theatre UI **3/3** passed, full test passed with Node **178 passed / 20 expected Preview-only skips** and UI **71/71**, lint passed with no errors, and production/Preview builds passed with **160 modules**.
+Verification: focused Reward Theatre Node **7 passed / 1 expected Preview DB skip**, focused Reward Theatre UI **3/3** passed, full test passed with Node **178 passed / 20 expected Preview-only skips** and UI **71/71**, lint passed with no errors, and production/Preview builds passed with **160 modules**. Ready Preview `dpl_4HXi31D9XxcBrGGFfAmASzAmKjcR` serves `1.22.0-reward-theatre-wheel` at `https://dev.flipout.gizmogames.uk`; lazy Match-3 bundle `/assets/Match3-BMbhU_p3.js` contains `lucky-prize-wheel`. Browser smoke at 390×844 and 1024×768 showed no horizontal overflow. Production was not touched.
 
 ## Urgent idle performance fix - 20 July 2026
 

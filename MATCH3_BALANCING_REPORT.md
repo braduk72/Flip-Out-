@@ -6,7 +6,7 @@ Reward Theatre presentation changed from animated reels to the Lucky Prize Wheel
 
 Balancing implication: future simulations do not need adjustment for this change because the wheel is presentation-only. Future player testing should evaluate whether every-five-level wheel rewards improve motivation or make milestones feel too generous, but that is progression/economy tuning rather than Match-3 difficulty tuning.
 
-Performance implication: the wheel uses finite spin/glow/confetti animations only and includes a regression test guarding against infinite theatre animations. Production was not touched.
+Performance implication: the wheel uses finite spin/glow/confetti animations only and includes a regression test guarding against infinite theatre animations. Ready Preview `dpl_4HXi31D9XxcBrGGFfAmASzAmKjcR` serves `1.22.0-reward-theatre-wheel`; deployed Match-3 CSS contains `prizeWheelSpin`, does not contain `reelSpin`, and did not match the theatre/wheel infinite-animation guard. Production was not touched.
 
 ## Urgent idle performance fix - 20 July 2026
 

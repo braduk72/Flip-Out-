@@ -1,5 +1,24 @@
 # Flip-Out deployment
 
+## Verification record - Reward Theatre Lucky Prize Wheel, 20 July 2026
+
+- Commit `92a851c` was pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or production database was changed.
+- Preview deployment: `dpl_4HXi31D9XxcBrGGFfAmASzAmKjcR`, generated URL `https://flip-l1pnx6gqr-chattocal.vercel.app`, target Preview, created Mon 20 Jul 2026 23:04:14 BST.
+- Local verification before deployment:
+  - `node --test tests/reward-theatre.test.js tests/reward-theatre-db.test.js` -> **7 passed / 1 expected Preview DB skip**.
+  - `npm.cmd run test:ui -- --run tests-ui/reward-theatre-wheel.test.jsx` -> **3/3 passed**.
+  - `npm.cmd run lint:source` -> **0 errors**, with **4 pre-existing hook warnings** in legacy `Game.jsx`/`RevealGame.jsx`.
+  - `npm.cmd test` -> Node **178 passed / 20 expected Preview-only skips**, UI **71/71 passed**.
+  - `npm.cmd run test:preview` -> **20 expected local skips** because local Preview `DATABASE_URL` is not exposed.
+  - `npm.cmd run build` -> passed with **160 transformed modules**.
+  - `npm.cmd run build:preview` -> passed with **160 transformed modules**.
+- Vercel inspect: `npx.cmd vercel inspect https://dev.flipout.gizmogames.uk --scope chattocal --wait --timeout 300s` reported status **Ready**, target Preview and aliases `https://dev.flipout.gizmogames.uk`, `https://flip-out-git-dev-chattocal.vercel.app` and the old historical `https://dev.flipout.app` alias. The old historical alias was not changed or used.
+- HTTP verification: generated Preview and `https://dev.flipout.gizmogames.uk` both returned HTTP 200, matching ETag `"d4cdace75627a431067f10335c450455"` and byte-identical HTML SHA-256 `0CCDB902F74F6B00F8D55CE5FA68CA9344A37544C710745B3D751E5C52F62788`.
+- Bundle verification: `https://dev.flipout.gizmogames.uk/assets/index-CfieckUb.js` returned HTTP 200, 424,273 bytes and contains `1.22.0-reward-theatre-wheel`. Lazy Match-3 bundle `https://dev.flipout.gizmogames.uk/assets/Match3-BMbhU_p3.js` returned HTTP 200 and contains `lucky-prize-wheel`. Match-3 CSS `https://dev.flipout.gizmogames.uk/assets/Match3-Bua61NmA.css` returned HTTP 200, 36,763 bytes, contains `prizeWheelSpin`, does not contain `reelSpin`, and did not match the theatre/wheel infinite-animation guard.
+- Browser smoke on the permanent development URL:
+  - 390×844 viewport -> app ready, Home rendered, build version `1.22.0-reward-theatre-wheel`, no horizontal overflow.
+  - 1024×768 viewport -> app ready, Home rendered, build version `1.22.0-reward-theatre-wheel`, no horizontal overflow.
+
 ## Verification record - Urgent Match-3 idle performance fix, 20 July 2026
 
 - Commit `2df3319` was pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or production database was changed.

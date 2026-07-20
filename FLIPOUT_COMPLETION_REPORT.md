@@ -36,6 +36,20 @@ Verification before Preview deployment:
 - `npm.cmd run build`: passed with **160 transformed modules**.
 - `npm.cmd run build:preview`: passed with **160 transformed modules**.
 
+Preview deployment:
+
+- Commit: `92a851c Implement Reward Theatre prize wheel`.
+- Deployment ID: `dpl_4HXi31D9XxcBrGGFfAmASzAmKjcR`.
+- Generated Preview URL: `https://flip-l1pnx6gqr-chattocal.vercel.app`.
+- Permanent development URL: `https://dev.flipout.gizmogames.uk`.
+- Target: Vercel Preview.
+- Vercel inspect reported status **Ready** and aliases `https://dev.flipout.gizmogames.uk`, `https://flip-out-git-dev-chattocal.vercel.app` and the old historical `https://dev.flipout.app` alias. The old historical alias was not changed or used.
+- HTTP verification: generated Preview and permanent dev URL both returned **HTTP 200**, matching ETag `"d4cdace75627a431067f10335c450455"` and byte-identical HTML SHA-256 `0CCDB902F74F6B00F8D55CE5FA68CA9344A37544C710745B3D751E5C52F62788`.
+- Entry bundle `/assets/index-CfieckUb.js` returned HTTP 200, 424,273 bytes and contains `1.22.0-reward-theatre-wheel`.
+- Lazy Match-3 bundle `/assets/Match3-BMbhU_p3.js` returned HTTP 200 and contains `lucky-prize-wheel`.
+- Match-3 CSS `/assets/Match3-Bua61NmA.css` returned HTTP 200, contains `prizeWheelSpin`, does not contain `reelSpin`, and did not match the theatre/wheel infinite-animation guard.
+- Browser smoke on `https://dev.flipout.gizmogames.uk`: 390×844 and 1024×768 both served `1.22.0-reward-theatre-wheel`, rendered Home and had no horizontal overflow.
+
 Remaining risks:
 
 - This implements the framework and first wheel presentation, not future theatres such as Chest, Plinko, Claw Machine or Card Flip.
