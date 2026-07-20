@@ -39,8 +39,8 @@ test('lockbox opening consumes one box and key and rejects duplicates or missing
   assert.equal(openLockbox({ boxes: 1, keys: 1, alreadyOpened: true }).duplicate, true)
 })
 
-test('auction fee is exactly 10 percent using integer coins', () => {
-  assert.deepEqual(auctionAmounts(101), { grossCoins: 101, feeCoins: 10, netCoins: 91 })
+test('auction fee is exactly 20 percent using integer coins', () => {
+  assert.deepEqual(auctionAmounts(101), { grossCoins: 101, feeCoins: 20, netCoins: 81 })
   assert.throws(() => auctionAmounts(10.5), /integer/)
   assert.equal(validateListing({ item: { tradable: true }, quantity: 1, priceCoins: 50, sellerId: 'a', buyerId: 'b' }).allowed, true)
   assert.equal(validateListing({ item: { tradable: false }, quantity: 1, priceCoins: 50 }).reason, 'item-not-tradable')

@@ -1,5 +1,18 @@
 # Flip-Out continuation report
 
+## Exchange commission update - 20 July 2026
+
+Changed the Exchange commission from 10% to 20% in the shared `auctionAmounts` rule. Marketplace settlement still uses the existing server-side flow: the buyer pays Coins, the seller receives the gross amount, the Exchange fee is deducted, the buyer receives the item, and the listing is marked sold atomically.
+
+Updated player-facing Exchange copy to say sellers receive 80% and the Exchange fee is 20%. Updated local and Preview DB settlement expectations to `{ gross: 101, fee: 20, net: 81 }`.
+
+Verification:
+
+- Focused Node: `node --test tests\progression.test.js tests\game-services.test.js tests\game-services-db.test.js` - **14 passed / 0 failed / 1 Preview DB skip**.
+- Focused lint: `npx.cmd eslint api\_progressionRules.js api\_operations.js src\screens\Marketplace.jsx tests\progression.test.js tests\game-services-db.test.js` - passed.
+- Production build: `npm.cmd run build` - passed; main JS `412.66 kB / 130.49 kB gzip`.
+- No schema migration was required. Production was not touched.
+
 ## Preview Developer Toolkit - 20 July 2026
 
 Added the first restricted QA toolkit for Preview only. The hidden `?dev=toolkit` route lets an authenticated Preview player inspect authoritative state, grant catalogue items, grant one full Normal Theme into Inventory, grant authorised promotional Coins via the protected Coin ledger, and reset their own Inventory, Theme Album entries/collector records or Exchange listings. It is not linked from player navigation.
@@ -13,7 +26,7 @@ Verification:
 - Focused Node: `node --test tests\dev-tools.test.js` - **4/4 passed**.
 - Focused UI: `npx.cmd vitest run --config vitest.config.js tests-ui\dev-toolkit.test.jsx` - **2/2 passed**.
 - Focused lint: `npx.cmd eslint api\_foDevTools.js api\fo-game.js src\utils\gameApi.js src\ui\devToolkitAccess.js src\screens\DevToolkit.jsx tests\dev-tools.test.js tests-ui\dev-toolkit.test.jsx` - passed.
-- Production build: `npm.cmd run build` - passed; main JS `412.66 kB / 130.50 kB gzip`; toolkit lazy chunk `DevToolkit-BmIjXaLs.js`, `5.32 kB / 1.88 kB gzip`.
+- Production build: `npm.cmd run build` - passed; main JS `412.66 kB / 130.50 kB gzip`; toolkit lazy chunk stayed independently split at `5.32 kB / 1.88 kB gzip`.
 - Deployment: toolkit commit `e093a6a` and report/env trigger commit `6575843` were pushed to `dev`; Vercel Ready Preview `https://flip-6axzz5ohh-chattocal.vercel.app` updated `https://dev.flipout.gizmogames.uk`.
 - Live verification: permanent and generated URLs returned HTTP 200 with matching ETag `"859865aa8a9dc13357b1cd0adc3896e7"`; permanent bundle `/assets/index-BHpPfOdN.js` contained `1.10.0-preview-dev-toolkit`; dev-tools API with the saved local secret and no Bearer session returned HTTP 401.
 

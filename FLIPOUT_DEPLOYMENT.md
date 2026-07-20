@@ -55,7 +55,14 @@ npx vercel inspect https://dev.flipout.gizmogames.uk --scope chattocal
 npx vercel ls flip-out --scope chattocal
 ```
 
-The application currently reports `1.10.0-preview-dev-toolkit` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+The application currently reports `1.10.1-exchange-fee` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+
+## Verification record - Exchange commission update, 20 July 2026
+
+- Rule change: Exchange commission is now 20%; sellers receive 80%.
+- Local verification before deployment: focused Node **14 passed / 0 failed / 1 Preview DB skip**, focused lint passed, production build passed.
+- No schema migration was required.
+- Production was not touched.
 
 ## Verification record - Preview Developer Toolkit, 20 July 2026
 

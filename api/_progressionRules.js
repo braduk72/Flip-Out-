@@ -35,7 +35,7 @@ export function openLockbox({ boxes, keys, alreadyOpened }) {
   return { allowed: true, boxDelta: -1, keyDelta: -1 }
 }
 
-export function auctionAmounts(grossCoins, feeBasisPoints = 1000) {
+export function auctionAmounts(grossCoins, feeBasisPoints = 2000) {
   if (!Number.isSafeInteger(grossCoins) || grossCoins <= 0) throw new Error('Price must be a positive integer')
   if (!Number.isSafeInteger(feeBasisPoints) || feeBasisPoints < 0 || feeBasisPoints > 10000) throw new Error('Invalid fee')
   const feeCoins = Math.floor(grossCoins * feeBasisPoints / 10000)

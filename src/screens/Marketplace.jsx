@@ -55,7 +55,7 @@ export default function Marketplace({ onBack, navProps }) {
     <div className={styles.scroll}>
       <CardPanel className={styles.exchangeIntro}>
         <h2>Trade eligible duplicate items</h2>
-        <p>Every listing uses Coins, audited ownership and a complete transaction history. Sellers receive 90%; the Exchange fee is 10%.</p>
+        <p>Every listing uses Coins, audited ownership and a complete transaction history. Sellers receive 80%; the Exchange fee is 20%.</p>
       </CardPanel>
       {message && status !== 'error' && <p className={styles.notice} role="status">{message}</p>}
       {status === 'loading' && <LoadingState label="Loading Exchange listings…" />}

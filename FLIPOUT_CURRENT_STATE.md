@@ -1,5 +1,13 @@
 # Flip-Out! current-state audit
 
+## Exchange commission update - 20 July 2026
+
+- **Status: Implemented locally; Preview deployment pending in this milestone.** Exchange settlement now uses the current sprint rule of a 20% commission instead of the previous 10% fee.
+- The existing settlement boundary remains unchanged: buyer spend, seller gross receipt, Exchange fee and item receipt are still separate audited ledger/player transactions inside the locked listing settlement.
+- Files changed: `api/_progressionRules.js`, `src/screens/Marketplace.jsx`, `tests/progression.test.js`, `tests/game-services-db.test.js`, `src/version.js`.
+- Verification so far: focused progression/game-services tests **14 passed / 0 failed / 1 Preview DB skip**; focused lint passed; production build passed. No schema migration was required and Production was not touched.
+- Remaining risks: minimum listing price, maximum active listings, expiry return jobs and seller listing management remain future Exchange work.
+
 ## Preview Developer Toolkit - 20 July 2026
 
 - **Status: Implemented and deployed to development Preview.** A hidden Preview-only developer toolkit has been added at `?dev=toolkit` so QA accounts can seed and inspect real player state before testing Official Theme Albums, Inventory, Exchange and Recycler flows.
@@ -7,7 +15,7 @@
 - Implemented controls: inspect authoritative player state, grant catalogue items, grant complete Normal Theme inventory, grant authorised promotional Coins through the tamper-evident Coin ledger, reset the current player's Inventory, reset their Theme Album entries/collector records, and reset their Exchange listings.
 - Foil grants and achievement resets are deliberately labelled prepared but unavailable because there are no authoritative Foil item definitions or achievement persistence tables yet.
 - Files changed: `api/_foDevTools.js`, `api/fo-game.js`, `src/utils/gameApi.js`, `src/ui/devToolkitAccess.js`, `src/screens/DevToolkit.jsx`, `src/screens/DevToolkit.module.css`, `src/App.jsx`, `src/version.js`, `tests/dev-tools.test.js`, `tests-ui/dev-toolkit.test.jsx`.
-- Verification: focused Node `4/4` passed; focused UI `2/2` passed; focused lint passed; production build passed with the toolkit split into its own lazy chunk (`DevToolkit-BmIjXaLs.js`, 5.32 kB / 1.88 kB gzip). Commit `e093a6a` added the toolkit; commit `6575843` recorded the Preview secret setup and triggered Ready Preview `https://flip-6axzz5ohh-chattocal.vercel.app`.
+- Verification: focused Node `4/4` passed; focused UI `2/2` passed; focused lint passed; production build passed with the toolkit split into its own lazy chunk. Commit `e093a6a` added the toolkit; commit `6575843` recorded the Preview secret setup and triggered Ready Preview `https://flip-6axzz5ohh-chattocal.vercel.app`.
 - Live Preview verification: `https://dev.flipout.gizmogames.uk` returned HTTP 200, matched the generated Preview ETag `"859865aa8a9dc13357b1cd0adc3896e7"`, served `/assets/index-BHpPfOdN.js` at 412,670 bytes, and contained `1.10.0-preview-dev-toolkit`. With the saved local developer secret but no Bearer session, the dev-tools API returned HTTP 401, confirming the secret gate is configured and normal authentication still blocks access. Production was not touched.
 - Remaining risks: `DEV_TOOLKIT_SECRET` is saved locally in ignored `.dev-toolkit-secret.local`; a signed-in Preview account is still needed for live grant/inspect acceptance. The complete-theme grant may still respect Inventory capacity, which is intentional because it uses the real grant boundary.
 

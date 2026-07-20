@@ -44,10 +44,10 @@ test('Preview wheel, lockbox and marketplace settlement are atomic and retry-saf
     ])
     assert.equal(attempts.filter(result => result.status === 'fulfilled').length, 1)
     const settled = attempts.find(result => result.status === 'fulfilled').value
-    assert.deepEqual({ gross: settled.grossCoins, fee: settled.feeCoins, net: settled.netCoins }, { gross: 101, fee: 10, net: 91 })
+    assert.deepEqual({ gross: settled.grossCoins, fee: settled.feeCoins, net: settled.netCoins }, { gross: 101, fee: 20, net: 81 })
     const listingRow = await pool.query(`SELECT status,buyer_id,fee_coins,net_coins FROM fo_market_listings WHERE listing_id=$1`, [listingId])
     assert.equal(listingRow.rows[0].status, 'sold')
-    assert.equal(Number(listingRow.rows[0].fee_coins), 10)
+    assert.equal(Number(listingRow.rows[0].fee_coins), 20)
   } finally {
     try {
       if (listingId) await pool.query(`DELETE FROM fo_market_listings WHERE listing_id=$1`, [listingId])
