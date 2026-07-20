@@ -53,6 +53,7 @@ export default function DevToolkit({ onBack, navProps, onJumpMatch3 }) {
   const [themeId, setThemeId] = useState('')
   const [collectorTier, setCollectorTier] = useState('all')
   const [levelId, setLevelId] = useState(1)
+  const [selectedAchievement, setSelectedAchievement] = useState('')
   const [notice, setNotice] = useState('')
 
   const catalogue = payload?.catalogue
@@ -67,6 +68,7 @@ export default function DevToolkit({ onBack, navProps, onJumpMatch3 }) {
     setPayload(data)
     setSelectedItem(current => current || data.catalogue?.grantableItems?.[0]?.id || '')
     setThemeId(current => current || data.catalogue?.themes?.[0]?.id || '')
+    setSelectedAchievement(current => current || data.catalogue?.achievements?.[0]?.id || '')
   }
 
   const load = async nextSecret => {
@@ -108,7 +110,7 @@ export default function DevToolkit({ onBack, navProps, onJumpMatch3 }) {
     }
   }
 
-  const pageProps = { state, dev, catalogue, itemOptions, cardOptions, powerOptions, selectedItem, setSelectedItem, quantity, setQuantity, coinAmount, setCoinAmount, powerQuantity, setPowerQuantity, themeId, setThemeId, collectorTier, setCollectorTier, levelId, setLevelId, status, run, onJumpMatch3 }
+  const pageProps = { state, dev, catalogue, itemOptions, cardOptions, powerOptions, selectedItem, setSelectedItem, quantity, setQuantity, coinAmount, setCoinAmount, powerQuantity, setPowerQuantity, themeId, setThemeId, collectorTier, setCollectorTier, levelId, setLevelId, selectedAchievement, setSelectedAchievement, status, run, onJumpMatch3 }
 
   return (
     <main className="fo-route-shell" data-concept-screen="dev-toolkit">
@@ -209,10 +211,15 @@ function ExchangePage({ dev, status, run }) {
   </div>
 }
 
-function AchievementsPage({ catalogue }) {
+function AchievementsPage({ state, catalogue, selectedAchievement, setSelectedAchievement, status, run }) {
+  const definitions = catalogue?.achievements ?? state.achievements?.definitions ?? []
+  const selected = definitions.find(achievement => achievement.id === selectedAchievement) ?? definitions[0]
+  const unlocked = state.achievements?.unlocked ?? []
+  const progress = state.achievements?.progress ?? []
   return <div className={styles.grid}>
-    <Unsupported title="Achievement persistence not live" detail={catalogue?.unsupported?.achievements}/>
-    <CardPanel><h2>Planned initial achievements</h2><ul className={styles.list}><li><b>Unicorn Poop</b><span>Find first Rare Foil.</span></li><li><b>Raider of the Lost Arc-hive</b><span>Open boosters from five different Themes.</span></li></ul></CardPanel>
+    <CardPanel><h2>Unlock / reset</h2><label>Achievement<select value={selected?.id ?? ''} onChange={event => setSelectedAchievement(event.target.value)}>{definitions.map(achievement => <option key={achievement.id} value={achievement.id}>{achievement.name}</option>)}</select></label>{selected && <p>{selected.description}</p>}<ActionButton disabled={status === 'saving' || !selected} onClick={() => run({ action: 'achievement-unlock', achievementId: selected.id })}>Unlock achievement</ActionButton><ActionButton tone="danger" disabled={status === 'saving' || !selected} onClick={() => run({ action: 'achievement-reset', achievementId: selected.id })}>Reset achievement</ActionButton><ActionButton tone="danger" disabled={status === 'saving'} onClick={() => run({ action: 'achievement-reset', achievementId: 'all' })}>Reset all achievements</ActionButton></CardPanel>
+    <CardPanel><h2>Progress</h2><Table rows={progress} columns={['achievementId', 'current', 'target', 'complete', 'unlocked']}/></CardPanel>
+    <CardPanel className={styles.wide}><h2>Unlocked</h2><Table rows={unlocked} columns={['achievement_id', 'transaction_id', 'unlocked_at']}/></CardPanel>
   </div>
 }
 

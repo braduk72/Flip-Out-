@@ -1,5 +1,14 @@
 # Flip-Out! current-state audit
 
+## Authoritative Achievement framework - 20 July 2026
+
+- **Status: Implemented locally; focused Preview migration verification pending in this session.** Added persistent, server-authoritative achievement definitions, achievement event receipts, unlock receipts, player-state readback and Preview Admin Toolkit unlock/reset controls.
+- What changed: migration `017_achievements.sql` adds `fo_achievement_events` and `fo_achievement_unlocks`. New service `api/_achievements.js` defines the framework, stable fingerprints, idempotent unlocks, event-driven progress evaluation, reset support and data-driven rewards. Coin rewards, if added to achievement definitions later, must be written through the tamper-evident Coin ledger as authorised promotional grants; item rewards go through the existing `applyReward()` boundary.
+- Implemented achievements: `Unicorn Poop` tracks discovery of a Rare Foil card event; `Raider of the Lost Arc-hive` tracks opening boosters from five distinct Themes. These definitions currently have no automatic Coin rewards, preventing an unapproved economy balance change.
+- Files changed: `api/_achievements.js`, `api/migrations/017_achievements.sql`, `api/_playerState.js`, `api/_foDevTools.js`, `src/screens/DevToolkit.jsx`, `src/version.js`, `tests/achievements.test.js`, `tests/achievements-db.test.js`, `tests/dev-tools.test.js`, `tests-ui/dev-toolkit.test.jsx`, `vercel.achievements-verify.json`.
+- Verification so far: focused achievement/dev-toolkit Node **13 passed / 1 expected Preview DB skip**; focused toolkit UI **5/5** passed; full local Node **151 passed / 16 expected Preview-only skips**; full UI **58/58** passed; focused changed-file lint passed; production build passed with **155 transformed modules**; Preview build passed with **155 transformed modules**; app marker `1.14.0-achievements`.
+- Remaining risks: migration `017_achievements.sql` and the Preview DB achievement test still need remote Preview verification. Gameplay and booster systems do not yet emit achievement events automatically; the framework is ready, but normal event wiring is intentionally limited until those features are implemented.
+
 ## Preview Admin Toolkit expansion - 20 July 2026
 
 - **Status: Implemented and deployed to development Preview.** The hidden `?dev=toolkit` route has been expanded from a small backend-capable utility into a responsive in-game Preview-only Admin Toolkit.

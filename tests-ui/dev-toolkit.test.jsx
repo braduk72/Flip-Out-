@@ -20,6 +20,11 @@ const payload = {
     transactions: [],
     themeAlbums: { entries: [] },
     personalAlbums: { albums: [] },
+    achievements: {
+      definitions: [],
+      unlocked: [],
+      progress: [{ achievementId: 'unicorn-poop', current: 0, target: 1, complete: false, unlocked: false }],
+    },
   },
   dev: {
     match3: { highest_unlocked_level: 1, completed_levels: {} },
@@ -30,9 +35,12 @@ const payload = {
   catalogue: {
     themes: [{ id: 'cats', name: 'Cats', cardCount: 70, coverAsset: '/images/cards/cats/back.webp' }],
     grantableItems: [{ id: 'card:cats:1', name: 'Cat Card 1', type: 'card', rarity: 'common', asset: '/images/cards/cats/1.webp' }],
+    achievements: [
+      { id: 'unicorn-poop', name: 'Unicorn Poop', description: 'Discover your first Rare Foil card.' },
+      { id: 'raider-of-the-lost-arc-hive', name: 'Raider of the Lost Arc-hive', description: 'Open boosters from five different Themes.' },
+    ],
     unsupported: {
       foilCards: 'Prepared only: no authoritative Foil item definitions exist yet.',
-      achievements: 'Prepared only: no achievement persistence tables exist yet.',
       boosters: 'Prepared only: no secure booster ownership/receipt table exists yet.',
       rewardTheatre: 'Prepared only: reward presentation exists, but every-fifth-completion persistence is not live yet.',
     },
@@ -87,5 +95,15 @@ describe('Preview developer toolkit screen', () => {
     fireEvent.click(within(screen.getByRole('navigation', { name: 'Admin toolkit pages' })).getByRole('button', { name: 'Exchange' }))
     fireEvent.click(screen.getByRole('button', { name: 'Clear listings + seed' }))
     await waitFor(() => expect(mockApi.devTools).toHaveBeenCalledWith({ action: 'exchange-clear', includeSeed: true }, 'preview-secret'))
+  })
+
+  test('submits achievement unlocks through the Preview toolkit API', async () => {
+    sessionStorage.setItem('fo_dev_toolkit_secret', 'preview-secret')
+    render(<DevToolkit onBack={() => {}} navProps={{ active: 'more', onHome: () => {}, onCollection: () => {}, onRewards: () => {}, onMore: () => {} }} />)
+    await screen.findByText('BradSC')
+    fireEvent.click(within(screen.getByRole('navigation', { name: 'Admin toolkit pages' })).getByRole('button', { name: 'Achievements' }))
+    expect(await screen.findByText('Unicorn Poop')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Unlock achievement' }))
+    await waitFor(() => expect(mockApi.devTools).toHaveBeenCalledWith({ action: 'achievement-unlock', achievementId: 'unicorn-poop' }, 'preview-secret'))
   })
 })

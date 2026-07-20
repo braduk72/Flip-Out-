@@ -1,5 +1,30 @@
 # Flip-Out continuation report
 
+## Authoritative Achievement framework - 20 July 2026
+
+Priority 2 is implemented locally and ready for focused Preview migration verification. The new achievement system is server-authoritative and persistent: definitions live in code, raw progress events are stored as idempotent receipts, unlocks are one-per-player/achievement, transaction IDs are protected by input fingerprints, and player state now returns achievement definitions, progress and unlocked records.
+
+Implemented definitions:
+
+- `Unicorn Poop` — completes from a Rare Foil card-obtained event.
+- `Raider of the Lost Arc-hive` — completes after booster-opened events from five distinct Themes.
+
+The framework supports data-driven rewards through the existing controlled boundaries. Future Coin achievement rewards are written through the tamper-evident Coin ledger as authorised promotional grants. Star and item rewards go through `applyReward()`. The first two achievement definitions deliberately have no automatic Coin reward, so this milestone does not change economy balance.
+
+Preview Admin Toolkit integration is now live in code for achievements: inspect progress/unlocks, unlock a selected achievement, reset one achievement and reset all achievements. This is Preview-only and still requires `DEV_TOOLKIT_SECRET` plus an authenticated player session.
+
+Verification so far:
+
+- `node --test tests\achievements.test.js tests\achievements-db.test.js tests\dev-tools.test.js` -> **13 passed / 1 expected Preview DB skip**.
+- `npm.cmd run test:ui -- tests-ui/dev-toolkit.test.jsx` -> **5/5 passed**.
+- `npm.cmd run test:node` -> **151 passed / 16 expected Preview-only skips**.
+- `npm.cmd run test:ui` -> **58/58 passed**.
+- Focused changed-file lint -> passed with no output.
+- `npm.cmd run build` -> passed with **155 transformed modules**, entry `dist/assets/index-CqnLlx_m.js`.
+- `npm.cmd run build:preview` first failed because it was run in parallel with the production build and both builds tried to clean `dist`; rerunning serially passed with **155 transformed modules**, entry `dist/assets/index-DHCxARqh.js`.
+
+Remaining before closing the milestone: deploy the focused Preview verification config so `017_achievements.sql` is applied to Preview only and `tests/achievements-db.test.js` runs against the migrated database.
+
 ## Preview Admin Toolkit expansion - 20 July 2026
 
 Priority 1 is implemented and deployed to development Preview as a coherent milestone. The hidden `?dev=toolkit` route is now a proper Preview-only Admin Toolkit with responsive pages for Player, Match-3, Collection, Albums, Economy, Exchange, Achievements and Debug. Server access still fails closed outside Vercel Preview, requires `DEV_TOOLKIT_SECRET`, and requires the normal authenticated player session.

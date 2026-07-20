@@ -5,6 +5,7 @@ import { applyReward } from './_gameServices.js'
 import { recordAuthorizedCoinGrant } from './_coinLedger.js'
 import { createListing, expireMarketListings } from './_operations.js'
 import { getPlayerState } from './_playerState.js'
+import { ACHIEVEMENT_DEFINITIONS, resetAchievements, unlockAchievement } from './_achievements.js'
 import { ITEM_BY_ID, ITEM_CATALOG } from '../src/data/itemCatalog.js'
 import { DECKS } from '../src/data/decks.js'
 import { MATCH3_LEVELS } from '../src/match3/levels.js'
@@ -62,10 +63,10 @@ function toolkitCatalogue() {
       .map(item => ({ id: item.id, name: item.name, type: item.type, rarity: item.rarity, asset: item.asset })),
     unsupported: {
       foilCards: 'Prepared only: no authoritative Foil item definitions exist yet.',
-      achievements: 'Prepared only: no achievement persistence tables exist yet.',
       boosters: 'Prepared only: no secure booster ownership/receipt table exists yet.',
       rewardTheatre: 'Prepared only: reward presentation exists, but every-fifth-completion persistence is not live yet.',
     },
+    achievements: ACHIEVEMENT_DEFINITIONS,
   }
 }
 
@@ -348,6 +349,8 @@ export async function runDevToolkitAction(db, { playerId, body = {} }) {
   if (body.action === 'match3-mark-complete') return markLevelComplete(db, { playerId, ...body })
   if (body.action === 'exchange-expire') return expireMarketListings(db, { sellerId: playerId })
   if (body.action === 'exchange-clear') return clearExchangeListings(db, { playerId, includeSeed: Boolean(body.includeSeed) })
+  if (body.action === 'achievement-unlock') return unlockAchievement(db, { playerId, achievementId: body.achievementId, transactionId: body.transactionId ?? `dev-achievement:${body.achievementId}:${crypto.randomUUID()}`, trigger: 'dev-toolkit', metadata: { reason: 'Preview developer toolkit' } })
+  if (body.action === 'achievement-reset') return resetAchievements(db, { playerId, achievementId: body.achievementId === 'all' ? null : body.achievementId })
   if (body.action === 'seed-initial-market') return seedInitialMarket(db)
   if (body.action === 'reset') return resetPlayerScope(db, { playerId, scope: body.scope, themeId: body.themeId })
   fail('Invalid developer toolkit action')

@@ -1,0 +1,5 @@
+{
+  "framework": "vite",
+  "buildCommand": "node scripts/run-economy-migration.mjs --apply && node --test tests/achievements.test.js tests/achievements-db.test.js tests/dev-tools.test.js && vite build",
+  "outputDirectory": "dist"
+}
