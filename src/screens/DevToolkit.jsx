@@ -143,6 +143,12 @@ export default function DevToolkit({ onBack, navProps }) {
           </CardPanel>
 
           <CardPanel>
+            <h2>Seed Initial Market</h2>
+            <p>Create deterministic Preview listings from the developer market-maker account. If seed listings already exist, this safely does nothing.</p>
+            <button type="button" onClick={() => run({ action: 'seed-initial-market' })} disabled={status === 'saving'}>Seed initial Exchange</button>
+          </CardPanel>
+
+          <CardPanel>
             <h2>Reset Tools</h2>
             <div className={styles.resetList}>
               {RESET_SCOPES.map(([scope, label]) => <button key={scope} type="button" onClick={() => run({ action: 'reset', scope })} disabled={status === 'saving'}>{label}</button>)}

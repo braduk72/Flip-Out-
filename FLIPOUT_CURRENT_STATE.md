@@ -1,5 +1,14 @@
 # Flip-Out! current-state audit
 
+## Preview initial Exchange seed - 20 July 2026
+
+- **Status: Implemented locally; Preview deployment pending in this milestone.** The Preview Developer Toolkit can now seed the initial Exchange market through `seed-initial-market`.
+- The seed uses a deterministic protected market-maker account (`dev-market-maker@flipout.preview.invalid`) and one early card from each active theme, capped at 15 listings so it remains below the 20 active-listing limit. Prices start at 25 Coins and rise by 5 Coins per theme.
+- The action is rerun-safe: if the market-maker already has active listings, it returns a duplicate response; if the original seed transactions were already consumed, it does not mint a second initial market.
+- Files changed: `api/_foDevTools.js`, `src/screens/DevToolkit.jsx`, `tests/dev-tools.test.js`, `src/version.js`.
+- Verification so far: focused dev-toolkit Node tests **5/5** passed; focused toolkit UI tests **2/2** passed; focused lint passed; production build passed. No schema migration was required and Production was not touched.
+- Remaining risks: live Preview seed execution still needs to be run after deployment with an authenticated Preview account and the local developer secret.
+
 ## Exchange listing rules - 20 July 2026
 
 - **Status: Implemented and deployed to development Preview.** Exchange listings now enforce a 10 Coin minimum price, a maximum of 20 active listings per seller and a default seven-day expiry. There remains no maximum listing price.

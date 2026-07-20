@@ -1,5 +1,19 @@
 # Flip-Out continuation report
 
+## Preview initial Exchange seed - 20 July 2026
+
+Added a Preview-only `seed-initial-market` action to the Developer Toolkit. It creates or reuses a deterministic protected market-maker account and seeds up to 15 initial listings, one early Normal card per active theme. This keeps the initial Exchange below the 20 active-listing limit and lets the market begin with developer-supplied supply before later becoming player-driven.
+
+The seed is rerun-safe: existing active seed listings return a duplicate result, and previously consumed seed transactions are not minted again. The action stays behind the existing Preview-only toolkit secret and normal authenticated player session.
+
+Verification:
+
+- Focused Node: `node --test tests\dev-tools.test.js` - **5/5 passed**.
+- Focused UI: `npx.cmd vitest run --config vitest.config.js tests-ui\dev-toolkit.test.jsx` - **2/2 passed**.
+- Focused lint: `npx.cmd eslint api\_foDevTools.js src\screens\DevToolkit.jsx tests\dev-tools.test.js tests-ui\dev-toolkit.test.jsx` - passed.
+- Production build: `npm.cmd run build` - passed.
+- No schema migration was required. Production was not touched.
+
 ## Exchange listing rules - 20 July 2026
 
 Extended the Exchange server rules beyond the 20% commission slice. Listings now have a 10 Coin minimum, a maximum of 20 active listings per seller, a default seven-day expiry and no maximum price. Expiry is handled lazily by the server when the Exchange is browsed or an expired listing is touched; escrowed items are returned with a `market-return` transaction.

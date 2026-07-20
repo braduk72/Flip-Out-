@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.10.2-exchange-rules'
+export const APP_VERSION = '1.10.3-market-seed'

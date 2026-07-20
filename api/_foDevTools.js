@@ -3,12 +3,15 @@ import { getDb } from './_db.js'
 import { requirePlayer } from './_auth.js'
 import { applyReward } from './_gameServices.js'
 import { recordAuthorizedCoinGrant } from './_coinLedger.js'
+import { createListing } from './_operations.js'
 import { getPlayerState } from './_playerState.js'
 import { ITEM_BY_ID, ITEM_CATALOG } from '../src/data/itemCatalog.js'
 import { DECKS } from '../src/data/decks.js'
 
 const SAFE_ID = /^[a-z0-9][a-z0-9:_-]{0,127}$/i
 const MAX_GRANT_QUANTITY = 500
+const MARKET_SEED_EMAIL = 'dev-market-maker@flipout.preview.invalid'
+const MARKET_SEED_ID = 'initial-v1'
 
 function fail(message, status = 400, code = 'DEV_TOOLKIT_INVALID') {
   throw Object.assign(new Error(message), { status, code })
@@ -61,6 +64,16 @@ function toolkitCatalogue() {
       achievements: 'Prepared only: no achievement persistence tables exist yet.',
     },
   }
+}
+
+export function initialMarketSeedItems(limit = 15) {
+  return DECKS
+    .map((deck, index) => {
+      const card = cardItemsForTheme(deck.id)[0]
+      return card ? { itemId: card.id, themeId: deck.id, priceCoins: 25 + (index * 5) } : null
+    })
+    .filter(Boolean)
+    .slice(0, limit)
 }
 
 async function grantItem(db, { playerId, itemId, quantity, transactionId }) {
@@ -157,10 +170,54 @@ async function resetPlayerScope(db, { playerId, scope }) {
   }
 }
 
+async function ensureMarketMaker(client) {
+  const result = await client.query(
+    `INSERT INTO fo_accounts(email,password_hash,account_kind)
+     VALUES($1,'!dev-toolkit','protected')
+     ON CONFLICT(email) DO UPDATE SET account_kind='protected', updated_at=NOW()
+     RETURNING player_id`,
+    [MARKET_SEED_EMAIL]
+  )
+  return result.rows[0].player_id
+}
+
+async function seedInitialMarket(db) {
+  const client = await db.connect()
+  let sellerId
+  try {
+    await client.query('BEGIN')
+    sellerId = await ensureMarketMaker(client)
+    const active = await client.query(`SELECT COUNT(*)::int AS count FROM fo_market_listings WHERE seller_id=$1 AND status='active' AND (expires_at IS NULL OR expires_at>NOW())`, [sellerId])
+    const seeded = await client.query(`SELECT COUNT(*)::int AS count FROM fo_player_transactions WHERE player_id=$1 AND transaction_id LIKE $2`, [sellerId, `dev-market-seed:${MARKET_SEED_ID}:%`])
+    await client.query('COMMIT')
+    if (Number(active.rows[0].count) > 0) return { duplicate: true, sellerId, listingsCreated: 0, reason: 'seed-market-already-active' }
+    if (Number(seeded.rows[0].count) > 0) return { duplicate: true, sellerId, listingsCreated: 0, reason: 'seed-market-already-consumed' }
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
+  }
+
+  const seedItems = initialMarketSeedItems()
+  const created = []
+  for (const item of seedItems) {
+    await grantItem(db, {
+      playerId: sellerId,
+      itemId: item.itemId,
+      quantity: 1,
+      transactionId: `dev-market-seed:${MARKET_SEED_ID}:${item.itemId.replaceAll(':', '-')}`,
+    })
+    created.push(await createListing(db, { playerId: sellerId, itemId: item.itemId, quantity: 1, priceCoins: item.priceCoins }))
+  }
+  return { duplicate: false, sellerId, listingsCreated: created.length, seedId: MARKET_SEED_ID, listings: created }
+}
+
 export async function runDevToolkitAction(db, { playerId, body = {} }) {
   if (body.action === 'grant-item') return grantItem(db, { playerId, ...body })
   if (body.action === 'grant-coins') return grantCoins(db, { playerId, ...body })
   if (body.action === 'grant-complete-theme') return grantThemeInventory(db, { playerId, ...body })
+  if (body.action === 'seed-initial-market') return seedInitialMarket(db)
   if (body.action === 'reset') return resetPlayerScope(db, { playerId, scope: body.scope })
   fail('Invalid developer toolkit action')
 }
