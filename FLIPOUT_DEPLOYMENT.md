@@ -55,7 +55,18 @@ npx vercel inspect https://dev.flipout.gizmogames.uk --scope chattocal
 npx vercel ls flip-out --scope chattocal
 ```
 
-The application currently reports `1.10.3-market-seed` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+The application currently reports `1.11.0-theme-collector-cards` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+
+## Verification record - Official Theme Album Collector Cards, 20 July 2026
+
+- Rule changes: Gold Collector catalogue variants are non-tradable and non-stackable; Recycler validation explicitly rejects Collector cards.
+- UI/read-model changes: Official Theme Albums expose Gold/Bronze/Silver `collectorCards`, and the album first page renders them as permanent card-shaped trophies with premium placeholders until earned.
+- Local verification before deployment: focused Node **31/31**, focused Collection UI **9/9**, full local Node **144 passed / 15 expected Preview-only skips**, full UI **55/55**, focused lint passed, production build passed.
+- Deployment: commit `e85819d`, Vercel Ready Preview `https://flip-bu4xfy8ff-chattocal.vercel.app`, deployment `dpl_CUgp1W5L9sRmrt7m8tFNvAoUQTBQ`.
+- URL verification: `https://dev.flipout.gizmogames.uk` and the generated Preview both returned HTTP 200 and ETag `"1b8311e87d1b5c98aba8818480eff402"`.
+- Bundle verification: permanent URL served `/assets/index-D9qfM_MM.js` at 412,672 bytes and contained `1.11.0-theme-collector-cards`.
+- No schema migration was required.
+- Production was not touched.
 
 ## Verification record - Preview initial Exchange seed, 20 July 2026
 

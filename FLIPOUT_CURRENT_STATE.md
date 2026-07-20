@@ -2,10 +2,11 @@
 
 ## Official Theme Album Collector Cards - 20 July 2026
 
-- **Status: Implemented locally; Preview deployment pending in this milestone.** The Collection/Official Album first page now uses stable Collector Card read-model data for Gold, Bronze and Silver tiers instead of loose UI-only placeholders.
+- **Status: Implemented and verified on development Preview.** The Collection/Official Album first page now uses stable Collector Card read-model data for Gold, Bronze and Silver tiers instead of loose UI-only placeholders.
 - What changed: Gold Collector catalogue variants are now non-tradable and non-stackable, Recycler selection explicitly rejects Collector cards, and each Official Theme Album exposes `collectorCards` with tier, label, requirement, earned state and available Gold artwork. The album first page renders these as card-shaped permanent trophies with premium placeholders until earned.
 - Files changed: `src/data/itemCatalog.js`, `api/_recycler.js`, `src/ui/collectionData.js`, `src/screens/Inventory.jsx`, `src/screens/Collection.module.css`, `tests/foundation.test.js`, `tests/recycler.test.js`, `tests/collection-data.test.js`, `tests-ui/collection.test.jsx`, `src/version.js`.
 - Verification: focused Node **31/31** passed; focused Collection UI **9/9** passed; full local Node **144 passed / 15 expected Preview-only skips** after rerunning with `node --test tests\*.test.js`; full UI **55/55** passed; focused lint passed; production build passed with **155 transformed modules** and bundle marker `1.11.0-theme-collector-cards`.
+- Preview deployment `dpl_CUgp1W5L9sRmrt7m8tFNvAoUQTBQ` reached Ready at `https://flip-bu4xfy8ff-chattocal.vercel.app`; `https://dev.flipout.gizmogames.uk` returned HTTP 200 with matching ETag `"1b8311e87d1b5c98aba8818480eff402"`, served `/assets/index-D9qfM_MM.js`, and the bundle contains `1.11.0-theme-collector-cards`.
 - Remaining risks: Bronze and Silver do not yet have bespoke final artwork, so earned states use premium tier placeholders. Foil item definitions remain the blocker for genuine Silver/Gold completion in normal play.
 
 ## Preview initial Exchange seed - 20 July 2026

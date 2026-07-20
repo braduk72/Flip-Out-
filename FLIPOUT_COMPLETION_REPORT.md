@@ -14,6 +14,7 @@ Verification:
 - Full UI: `npx.cmd vitest run --config vitest.config.js tests-ui` - **55/55 passed**.
 - Focused lint: `npx.cmd eslint api\_recycler.js src\data\itemCatalog.js src\ui\collectionData.js src\screens\Inventory.jsx tests\foundation.test.js tests\collection-data.test.js tests\recycler.test.js tests-ui\collection.test.jsx` - passed.
 - Production build: `npm.cmd run build` - passed with **155 transformed modules** and bundle marker `1.11.0-theme-collector-cards`.
+- Deployment: commit `e85819d` reached Ready as `dpl_CUgp1W5L9sRmrt7m8tFNvAoUQTBQ` at `https://flip-bu4xfy8ff-chattocal.vercel.app`; `https://dev.flipout.gizmogames.uk` returned HTTP 200 with matching ETag `"1b8311e87d1b5c98aba8818480eff402"`, served `/assets/index-D9qfM_MM.js`, and the bundle contains `1.11.0-theme-collector-cards`.
 
 Remaining risks: Bronze and Silver Collector Cards still need final bespoke artwork. Foil item definitions remain the dependency for real Silver and Gold completion through normal play. Production was not touched.
 
