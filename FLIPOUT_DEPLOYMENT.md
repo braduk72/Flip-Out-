@@ -144,3 +144,14 @@ The supplied booster artwork is bundled as `public/ui/shop/booster-packs.webp`. 
 - Focused remote verification deployment `dpl_3M3Uzqbjwk89718krBfbAnwWYbWt` is Ready at `https://flip-p36h9raqr-chattocal.vercel.app`; its build command checked migrations, ran `tests/theme-albums.test.js`, `tests/theme-albums-db.test.js` and `tests/collection-data.test.js`, then ran `vite build`.
 - Focused remote verification passed **11/11** tests with no skips and built 152 modules.
 - `https://dev.flipout.gizmogames.uk` returned HTTP 200 with ETag `"be3912ae6871ac7573eac57951315bfd"`, served `assets/index-CA3iEtWW.js`, and that asset contains `1.6.0-theme-albums`. The generated Preview URL returned the same ETag, same asset and same build marker.
+
+## Verification record - Personal Album ownership boundary, 20 July 2026
+
+- Commit `ddac2a0` was pushed from `dev`; no production branch, production deployment, production domain, root DNS record or nameserver was changed.
+- Focused Preview deployment `dpl_6ccL6Ax8ruuTcQ4EsaygnxnKbyoy` is Ready at `https://flip-e5h8vfaq9-chattocal.vercel.app`.
+- Its build command ran `node scripts/run-economy-migration.mjs --apply`, then `node --test tests/personal-albums.test.js tests/personal-albums-db.test.js tests/collection-data.test.js tests/nickname.test.js`, then `vite build`.
+- Migration output targeted Railway Preview `railway/public` at `yamanote.proxy.rlwy.net` with `VERCEL_ENV=preview`; `fo_schema_migrations` records `015_personal_albums.sql` at `2026-07-20T00:34:00.384Z`.
+- New Preview tables verified by migration output: `fo_personal_albums`, `fo_personal_album_cards`, `fo_personal_album_transactions`, including `fo_personal_albums_player_idx`, `fo_personal_album_cards_player_idx` and `fo_personal_album_transactions_player_idx`.
+- Focused remote verification passed **18/18** tests with no skips and built 152 modules.
+- `https://dev.flipout.gizmogames.uk` returned HTTP 200 with ETag `"d3051c0efe0a55d4215bc78e917a8646"`, served `assets/index-kPR7Ipt_.js`, and that asset contains `1.7.0-personal-albums`. The generated Preview URL returned the same ETag, same asset and same build marker.
+- A first focused deployment attempt timed out locally and left `flip-dvrd1c1j3-chattocal.vercel.app` queued with no permanent dev alias; it was removed before rerunning verification.
