@@ -1,6 +1,12 @@
 ALTER TABLE fo_recycler_recipes
   ADD COLUMN IF NOT EXISTS selection_type TEXT NOT NULL DEFAULT 'duplicates-by-rarity';
 
+ALTER TABLE fo_recycler_recipes
+  DROP CONSTRAINT IF EXISTS fo_recycler_recipes_batch_size_check;
+
+ALTER TABLE fo_recycler_recipes
+  ADD CONSTRAINT fo_recycler_recipes_batch_size_check CHECK (batch_size > 0);
+
 -- The old duplicate-card Recycler recipe is superseded by the Shredder.
 UPDATE fo_recycler_recipes
 SET enabled=FALSE,
