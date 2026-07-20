@@ -33,6 +33,8 @@ test('collection model builds albums, sets, ownership, recency and statistics fr
   assert.equal(cars.inventoryOwned, 1)
   assert.equal(cars.eligibleInventory, 1)
   assert.equal(cars.goldOwned, true)
+  assert.deepEqual(cars.collectorCards.map(card => [card.tier, card.earned]), [['gold', false], ['bronze', false], ['silver', false]])
+  assert.equal(cars.collectorCards[0].asset.endsWith('/gold.webp'), true)
 })
 
 test('official Theme Album entries count as collected without remaining in Inventory', () => {
@@ -51,6 +53,7 @@ test('official Theme Album entries count as collected without remaining in Inven
   assert.equal(card.recyclableQuantity, 0)
   assert.equal(cats.owned, 1)
   assert.equal(cats.collectors.bronze, true)
+  assert.equal(cats.collectorCards.find(card => card.tier === 'bronze').earned, true)
 })
 
 test('official Theme Album model separates Inventory ownership from filled Normal and Foil slots', () => {

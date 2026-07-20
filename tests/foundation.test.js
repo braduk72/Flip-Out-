@@ -44,7 +44,9 @@ test('canonical catalogue validates without duplicate IDs or invalid deck refere
 })
 
 test('gold variants are canonical items and annual cutoff includes 25 December only', () => {
-  assert.ok(ITEM_CATALOG.some(item => item.variant === 'gold' && item.baseDeckId))
+  const goldCards = ITEM_CATALOG.filter(item => item.variant === 'gold' && item.baseDeckId)
+  assert.ok(goldCards.length > 0)
+  assert.ok(goldCards.every(item => item.tradable === false && item.stackable === false))
   const choices = annualChoiceEligibility([
     { id: 'a', type: 'card', status: 'available', releasedAt: '2025-12-25' },
     { id: 'b', type: 'card', status: 'available', releasedAt: '2025-12-26' },

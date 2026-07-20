@@ -29,7 +29,7 @@ function deckItems(deck) {
   if (deck.goldFile) items.push({
     id: `card:${deck.id}:gold`, type: 'card_variant', variant: 'gold', baseDeckId: `deck:${deck.id}`,
     name: `${deck.name} Gold Collector Card`, asset: `${deck.path}/${deck.goldFile}`, rarity: 'legendary',
-    releasedAt: deck.releasedAt ?? DEFAULT_RELEASE, tradable: true, stackable: true, status: 'available',
+    releasedAt: deck.releasedAt ?? DEFAULT_RELEASE, tradable: false, stackable: false, status: 'available',
   })
   return items
 }

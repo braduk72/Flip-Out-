@@ -7,6 +7,7 @@ const catalog = new Map([
   ['card:test:1', { id: 'card:test:1', type: 'card', rarity: 'common' }],
   ['card:test:2', { id: 'card:test:2', type: 'card', rarity: 'common' }],
   ['card:test:rare', { id: 'card:test:rare', type: 'card', rarity: 'rare' }],
+  ['card:test:gold', { id: 'card:test:gold', type: 'card_variant', variant: 'gold', rarity: 'common' }],
   ['inventory:key', { id: 'inventory:key', type: 'key', rarity: 'common' }],
 ])
 
@@ -45,5 +46,6 @@ test('exactly five eligible common duplicates calculate exactly one Star', () =>
 test('recycler rejects incomplete, wrong-rarity and non-card selections', () => {
   assert.throws(() => validateRecyclerSelection([{ itemId: 'card:test:1', quantity: 4 }], recipe, catalog), error => error.code === 'RECYCLER_INCOMPLETE_BATCH')
   assert.throws(() => validateRecyclerSelection([{ itemId: 'card:test:rare', quantity: 5 }], recipe, catalog), error => error.code === 'RECYCLER_RARITY_MISMATCH')
+  assert.throws(() => validateRecyclerSelection([{ itemId: 'card:test:gold', quantity: 5 }], recipe, catalog), error => error.code === 'RECYCLER_COLLECTOR_CARD')
   assert.throws(() => validateRecyclerSelection([{ itemId: 'inventory:key', quantity: 5 }], recipe, catalog), /Only collectible cards/)
 })

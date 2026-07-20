@@ -35,6 +35,7 @@ export function validateRecyclerSelection(items, recipe, catalog = ITEM_BY_ID) {
   for (const entry of selection) {
     const card = catalog.get(entry.itemId)
     if (!card || !['card', 'card_variant'].includes(card.type)) fail('Only collectible cards can be recycled')
+    if (card.variant === 'gold') fail('Collector cards cannot be recycled', 409, 'RECYCLER_COLLECTOR_CARD')
     if (card.rarity !== recipe.rarity) fail(`This recipe accepts ${recipe.rarity} cards only`, 409, 'RECYCLER_RARITY_MISMATCH')
     cardsConsumed += entry.quantity
   }

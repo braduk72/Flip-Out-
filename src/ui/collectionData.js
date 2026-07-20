@@ -100,6 +100,36 @@ function collectorKey(themeId, tier) {
   return `${themeId}:${tier}`
 }
 
+function collectorCardsFor({ deck, collectors, variants }) {
+  const goldVariant = variants.find(card => card.isGold)
+  return [
+    {
+      tier: 'gold',
+      label: 'Gold Collector Card',
+      requirement: 'Complete Normal and Foil sets',
+      earned: collectors.gold,
+      asset: goldVariant?.asset ?? null,
+      name: goldVariant?.name ?? `${deck.name} Gold Collector Card`,
+    },
+    {
+      tier: 'bronze',
+      label: 'Bronze Collector Card',
+      requirement: 'Complete every Normal card',
+      earned: collectors.bronze,
+      asset: null,
+      name: `${deck.name} Bronze Collector Card`,
+    },
+    {
+      tier: 'silver',
+      label: 'Silver Collector Card',
+      requirement: 'Complete every Foil card',
+      earned: collectors.silver,
+      asset: null,
+      name: `${deck.name} Silver Collector Card`,
+    },
+  ]
+}
+
 function themePresentation(deck) {
   return THEME_ALBUM_PRESENTATION[deck.id] ?? {
     family: 'classic',
@@ -189,6 +219,7 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
       silver: collectorEntries.has(collectorKey(deck.id, 'silver')),
       gold: collectorEntries.has(collectorKey(deck.id, 'gold')),
     }
+    const collectorCards = collectorCardsFor({ deck, collectors, variants })
     return {
       id: deck.id,
       name: deck.name,
@@ -218,6 +249,7 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
       goldOwned: variants.some(card => card.isGold && card.owned),
       goldAvailable: variants.some(card => card.isGold),
       collectors,
+      collectorCards,
     }
   })
   const setById = new Map(sets.map(set => [set.id, set]))

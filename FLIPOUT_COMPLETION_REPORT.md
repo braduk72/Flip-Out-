@@ -1,5 +1,22 @@
 # Flip-Out continuation report
 
+## Official Theme Album Collector Cards - 20 July 2026
+
+Implemented the next album milestone without changing booster, reward or revive economy. Gold Collector catalogue variants are now marked non-tradable and non-stackable, and Recycler validation explicitly rejects Collector cards so future recipes cannot accidentally shred them. Exchange listing validation already respects the catalogue `tradable` flag, so Collector cards are blocked from player listing through the existing boundary.
+
+The Official Theme Album read model now exposes a stable `collectorCards` array for each Theme: Gold, Bronze and Silver, with labels, requirements, earned state and available Gold artwork. The album first page renders those as card-shaped permanent account-bound trophies with premium placeholders until earned, while the existing Stick in Album flow remains unchanged and server-authoritative.
+
+Verification:
+
+- Focused Node: `node --test tests\foundation.test.js tests\collection-data.test.js tests\recycler.test.js tests\progression.test.js` - **31/31 passed**.
+- Focused UI: `npx.cmd vitest run --config vitest.config.js tests-ui\collection.test.jsx` - **9/9 passed**.
+- Full Node: `node --test tests\*.test.js` - **144 passed / 15 expected Preview-only skips**. The initial command `node --test tests` failed because this Node version treats the directory as a module path on Windows; the corrected glob passed.
+- Full UI: `npx.cmd vitest run --config vitest.config.js tests-ui` - **55/55 passed**.
+- Focused lint: `npx.cmd eslint api\_recycler.js src\data\itemCatalog.js src\ui\collectionData.js src\screens\Inventory.jsx tests\foundation.test.js tests\collection-data.test.js tests\recycler.test.js tests-ui\collection.test.jsx` - passed.
+- Production build: `npm.cmd run build` - passed with **155 transformed modules** and bundle marker `1.11.0-theme-collector-cards`.
+
+Remaining risks: Bronze and Silver Collector Cards still need final bespoke artwork. Foil item definitions remain the dependency for real Silver and Gold completion through normal play. Production was not touched.
+
 ## Preview initial Exchange seed - 20 July 2026
 
 Added a Preview-only `seed-initial-market` action to the Developer Toolkit. It creates or reuses a deterministic protected market-maker account and seeds up to 15 initial listings, one early Normal card per active theme. This keeps the initial Exchange below the 20 active-listing limit and lets the market begin with developer-supplied supply before later becoming player-driven.

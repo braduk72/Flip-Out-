@@ -17,12 +17,6 @@ const VIEWS = [
 ]
 const PAGE_SIZE = 30
 const ALBUM_PAGE_SIZE = 6
-const COLLECTOR_TIERS = [
-  ['gold', 'Gold Collector Card', 'Complete Normal and Foil sets'],
-  ['bronze', 'Bronze Collector Card', 'Complete every Normal card'],
-  ['silver', 'Silver Collector Card', 'Complete every Foil card'],
-]
-
 function rarityLabel(card) {
   const count = card.rarityStars ?? 1
   return `${'★'.repeat(count)}${'☆'.repeat(5 - count)} ${card.rarity}`
@@ -60,12 +54,15 @@ function CardGrid({ cards, total, onOpen, onFavourite, onMore }) {
 
 function CollectorPyramid({ theme }) {
   return <div className={styles.collectorPyramid} role="list" aria-label={`${theme.name} Collector Cards`}>
-    {COLLECTOR_TIERS.map(([tier, label, requirement]) => {
-      const earned = Boolean(theme.collectors?.[tier])
-      return <article key={tier} role="listitem" className={`${styles.collectorSlot} ${styles[`collector${tier}`]} ${earned ? styles.collectorEarned : ''}`}>
-        <span>{tier}</span>
-        <strong>{label}</strong>
-        <small>{earned ? 'Earned and permanently account-bound' : requirement}</small>
+    {(theme.collectorCards ?? []).map(card => {
+      const earned = Boolean(card.earned)
+      return <article key={card.tier} role="listitem" className={`${styles.collectorSlot} ${styles[`collector${card.tier}`]} ${earned ? styles.collectorEarned : ''}`}>
+        <span>{card.tier}</span>
+        <div className={styles.collectorCardArt} aria-hidden="true">
+          {earned && card.asset ? <img src={card.asset} alt="" loading="lazy" decoding="async"/> : <b>{card.tier[0].toUpperCase()}</b>}
+        </div>
+        <strong>{card.label}</strong>
+        <small>{earned ? 'Earned and permanently account-bound' : card.requirement}</small>
       </article>
     })}
   </div>

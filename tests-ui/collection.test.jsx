@@ -57,6 +57,31 @@ describe('Collection 2.0', () => {
     expect(within(ferrari).getByRole('heading', { name: 'Ferrari 488 GTB' })).toBeInTheDocument()
   })
 
+  it('displays earned Collector Cards as permanent account-bound album trophies', async () => {
+    const user = userEvent.setup()
+    const earnedPayload = {
+      state: {
+        ...payload.state,
+        themeAlbums: {
+          entries: [],
+          collectors: [
+            { theme_id: 'sportscars', collector_tier: 'bronze' },
+            { theme_id: 'sportscars', collector_tier: 'silver' },
+            { theme_id: 'sportscars', collector_tier: 'gold' },
+          ],
+        },
+      },
+    }
+    const loader = vi.fn().mockResolvedValue(earnedPayload)
+    render(<Inventory onBack={() => {}} navProps={{}} dataLoader={loader} actionRunner={vi.fn()} storage={localStorage}/>)
+    await screen.findByRole('heading', { name: 'Official Theme Albums' })
+    await user.click(screen.getByRole('button', { name: /Open Super Cars Official Theme Album/ }))
+    expect(screen.getAllByText('Earned and permanently account-bound')).toHaveLength(3)
+    expect(screen.getByText('Gold Collector Card')).toBeInTheDocument()
+    expect(screen.getByText('Bronze Collector Card')).toBeInTheDocument()
+    expect(screen.getByText('Silver Collector Card')).toBeInTheDocument()
+  })
+
   it('searches, favourites and reuses the account-scoped favourite in the showcase', async () => {
     const user = userEvent.setup()
     renderCollection()
