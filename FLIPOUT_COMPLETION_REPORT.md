@@ -283,12 +283,14 @@ Local verification passed: focused Personal Album/Collection/Nickname Node tests
 
 ## Inventory capacity boundary - 20 July 2026
 
-Milestone 3 is implemented, committed and pushed to `dev` as `e9659ae`, but it is **not yet Preview-verified** because Vercel is currently leaving the focused Preview deployment queued.
+Milestone 3 is implemented and Preview-verified. Code commit `e9659ae` and report commit `496f301` were pushed to `dev`.
 
 The implementation adds additive migration `016_inventory_capacity.sql`, per-player Inventory capacity settings, readback in player state, Collection model exposure and a shared card-grant guard inside `applyReward()`. Capacity defaults to 1,000 card/card-variant Inventory slots. Only Inventory copies count; Official Theme Album entries do not. Positive card grants are transaction-safe and serialised on the account row before Inventory is counted, so concurrent new-card grants cannot overfill an empty account.
 
 Local verification passed: focused Inventory/Collection tests **10 passed / 2 expected Preview DB skips**, focused changed-file lint passed, full local suite **137 Node passed / 15 expected Preview-only skips** and **50 UI passed**, and production build passed with **152 transformed modules**.
 
-Preview deployment remains blocked. `npx.cmd vercel deploy --yes --scope chattocal --local-config vercel.inventory-capacity-verify.json` and a forced retry both timed out while Vercel left deployments queued. The queued deployment pages returned Vercel's "Deployment is building" placeholder, not Flip-Out. The stuck queued URLs were removed. A local `vercel build --target=preview` fallback failed before project code with `spawn cmd.exe ENOENT`; `vercel env ls preview` confirms encrypted `DATABASE_URL` exists for Preview branch `dev`, but `vercel env pull` does not expose it locally. Therefore migration `016_inventory_capacity.sql` has not yet been verified as applied and the Preview DB tests have not yet run remotely.
+Preview verification passed on focused deployment `dpl_25Up7bWqFHdTdKTwuihHWM991L52` at `https://flip-i960o2j5u-chattocal.vercel.app`. The build command applied migrations, committed `016_inventory_capacity.sql` to Railway Preview at `2026-07-20T01:31:19.497Z`, ran the focused Inventory/Collection database tests **12/12 passed / 0 skipped**, then built 152 modules. The migration output confirmed `fo_player_inventory_settings` and `fo_player_inventory_settings_pkey`.
 
-Permanent development URL status: `https://dev.flipout.gizmogames.uk` returns HTTP 200 but still serves `assets/index-Bg_oms7A.js` containing `1.7.0-personal-albums`; it does not yet serve `1.8.0-inventory-capacity`. Production was not touched.
+Permanent development URL status: `https://dev.flipout.gizmogames.uk` returns HTTP 200 and serves the same ETag `"2e3dd0f773c9aa762d8f80c044472f14"` and `assets/index-Bpenq1xH.js` as the focused Preview URL; the bundle contains `1.8.0-inventory-capacity`. Production was not touched.
+
+Deployment note: earlier focused deploy attempts got stuck in Vercel `QUEUED` state and were removed. A Git-triggered Preview build reached Ready before the final focused build, but it only ran the default app build and was superseded by the focused verification deployment above.
