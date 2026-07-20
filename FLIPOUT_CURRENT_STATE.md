@@ -1,5 +1,15 @@
 # Flip-Out! current-state audit
 
+## Coin-only Match-3 Revives - 20 July 2026
+
+- **Status: Implemented locally; Preview deployment verification pending.** The Match-3 loss flow now uses Coin-only Revives instead of the old loss-screen Extra Moves continuation. Advert revives are not used.
+- What changed: added the approved three-attempt ladder: Revive One costs 25 Coins with 75% success, Revive Two costs 50 Coins with 50% success, and Revive Three costs 100 Coins with 25% success. The Match-3 loss modal displays the current cost/odds and an animated spinner, then either resumes the board with 5 moves on success or keeps the player in the lost state for the next attempt/retry.
+- Economy boundary: the server rolls the revive odds, spends Coins through the tamper-evident ledger via `applyReward()`/`revive-cost`, stores the revive outcome in authoritative session state, and records an idempotent Match-3 action. Duplicate action IDs return the original result and cannot charge twice.
+- Scope note: the normal `extra-moves` power-up remains a regular power-up, but it is no longer the loss-screen revive path. The older generic `continue` backend service has also been changed to Coin-only revive semantics so it no longer requires or consumes adverts.
+- Files changed: `api/_progressionRules.js`, `api/_operations.js`, `api/_match3Sessions.js`, `api/_foMatch3.js`, `src/screens/Match3.jsx`, `src/screens/Match3.module.css`, `src/version.js`, `tests/progression.test.js`, `tests/match3-revive-db.test.js`, `tests-ui/match3-input.test.jsx`, `vercel.revives-verify.json`.
+- Verification so far: focused Node **37 passed / 1 Preview-only skip**; focused Match-3 UI **4/4**; focused lint passed; project aggregate `npm test` Node **158 passed / 18 Preview-only skips** and UI **60/60**; production build passed with **155 modules**; Preview build passed with **155 modules**.
+- Remaining risks: live Preview DB revive spend/idempotency still needs remote verification; the spinner needs physical mobile visual QA. No schema migration was required and Production was not touched.
+
 ## Reward Theatre milestone - 20 July 2026
 
 - **Status: Implemented and verified on development Preview.** Reward Theatre now unlocks after every five completed Match-3 levels and uses server-committed rewards before any presentation plays.

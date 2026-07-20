@@ -4,6 +4,11 @@ export const WHEEL_ACTIONS = Object.freeze(['wheel:free', 'wheel:advert', 'wheel
 export const EXCHANGE_MIN_LISTING_PRICE_COINS = 10
 export const EXCHANGE_MAX_ACTIVE_LISTINGS = 20
 export const EXCHANGE_DEFAULT_EXPIRY_DAYS = 7
+export const REVIVE_TIERS = Object.freeze([
+  { attempt: 1, label: 'Revive One', costCoins: 25, successChance: 0.75 },
+  { attempt: 2, label: 'Revive Two', costCoins: 50, successChance: 0.50 },
+  { attempt: 3, label: 'Revive Three', costCoins: 100, successChance: 0.25 },
+])
 
 export function localDateKey(date, timeZone = 'UTC') {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(date)
@@ -11,11 +16,30 @@ export function localDateKey(date, timeZone = 'UTC') {
   return `${get('year')}-${get('month')}-${get('day')}`
 }
 
-export function continuationDecision({ advertUsed, coinUsed, advertVerified, coins, coinCost = 25 }) {
-  if (!advertUsed) return advertVerified ? { allowed: true, method: 'advert', coinDelta: 0 } : { allowed: false, reason: 'verified-advert-required' }
-  if (coinUsed) return { allowed: false, reason: 'continuation-limit' }
-  if (coins < coinCost) return { allowed: false, reason: 'insufficient-coins' }
-  return { allowed: true, method: 'coins', coinDelta: -coinCost }
+export function reviveTier(attempt) {
+  return REVIVE_TIERS.find(tier => tier.attempt === Number(attempt)) ?? null
+}
+
+export function reviveDecision({ attempt, coins = 0, randomValue = 0 }) {
+  const tier = reviveTier(attempt)
+  if (!tier) return { allowed: false, reason: 'revive-limit' }
+  if (!Number.isFinite(randomValue) || randomValue < 0 || randomValue >= 1) throw new Error('Revive random value must be in [0, 1)')
+  if (Number(coins) < tier.costCoins) return { allowed: false, reason: 'insufficient-coins', tier }
+  return {
+    allowed: true,
+    method: 'coins',
+    attempt: tier.attempt,
+    label: tier.label,
+    costCoins: tier.costCoins,
+    successChance: tier.successChance,
+    oddsPercent: Math.round(tier.successChance * 100),
+    success: randomValue < tier.successChance,
+    coinDelta: -tier.costCoins,
+  }
+}
+
+export function continuationDecision({ attemptsUsed = 0, coins, randomValue = 0 }) {
+  return reviveDecision({ attempt: Number(attemptsUsed) + 1, coins, randomValue })
 }
 
 export function claimDailyAction(previousActions, action, dateKey) {

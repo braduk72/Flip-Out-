@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.16.0-reward-theatre'
+export const APP_VERSION = '1.17.0-revives'

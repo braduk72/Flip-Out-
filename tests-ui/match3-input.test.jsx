@@ -10,6 +10,7 @@ const props = {
   presentation: null,
   onMove: vi.fn(() => Promise.resolve()),
   onPower: vi.fn(() => Promise.resolve()),
+  onRevive: vi.fn(() => Promise.resolve({ revive: { attempt: 1, label: 'Revive One', costCoins: 25, oddsPercent: 75, success: false } })),
   onRestart: vi.fn(),
   onQuit: vi.fn(),
 }
@@ -91,4 +92,18 @@ test('held drag visibly moves both cells and an invalid release returns safely',
   expect(invalidMove).not.toHaveBeenCalled()
   expect(corner.dataset.dragPhase).toBe('returning')
   expect(corner.style.getPropertyValue('--drag-x')).toBe('0px')
+})
+
+test('lost Match-3 board offers Coin-only revive spinner and no advert revive', async () => {
+  const game = createGame(MATCH3_LEVELS[0], 20260720)
+  game.status = 'lost'
+  game.movesRemaining = 0
+  game.revives = []
+  const onRevive = vi.fn(() => Promise.resolve({ revive: { attempt: 1, label: 'Revive One', costCoins: 25, oddsPercent: 75, success: false } }))
+  render(<GameBoard {...props} onRevive={onRevive} session={{ state: game }}/>)
+  expect(screen.getByText('Revive One: spend 25 Coins for a 75% revive chance.')).toBeInTheDocument()
+  expect(screen.queryByText(/advert/i)).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Revive One - 25 Coins' }))
+  await waitFor(() => expect(onRevive).toHaveBeenCalledTimes(1))
+  expect(await screen.findByText('No luck this time. You can try the next revive or retry the level.')).toBeInTheDocument()
 })

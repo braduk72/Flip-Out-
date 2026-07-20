@@ -13,6 +13,11 @@ import styles from './Match3.module.css'
 
 const uid = prefix => `${prefix}:${crypto.randomUUID()}`
 const TOKEN = new Map(MATCH3_TOKENS.map(token => [token.id, token]))
+const REVIVE_TIERS = Object.freeze([
+  { attempt: 1, label: 'Revive One', costCoins: 25, oddsPercent: 75 },
+  { attempt: 2, label: 'Revive Two', costCoins: 50, oddsPercent: 50 },
+  { attempt: 3, label: 'Revive Three', costCoins: 100, oddsPercent: 25 },
+])
 const objectiveLabel = objective => objective.type === 'score'
   ? `Score ${objective.target}`
   : objective.type === 'collect'
@@ -173,7 +178,7 @@ export default function Match3({ onBack, initialLevel = null }) {
   }
 
   if (view === 'win') return <Result coins={coins} level={selectedLevel} movesUsed={session.state.level.moves - session.state.movesRemaining} error={error} rewardTheatre={rewardTheatre} theatreClaim={theatreClaim} theatreBusy={theatreBusy} onClaimTheatre={claimTheatre} onDouble={async () => { try { const advert = await playerGameApi.verifyAdvert({ provider: 'configured-provider', receipt: uid('receipt'), placement: 'match3-double', matchId: session.sessionId }); const response = await action({ action: 'double', advertCompletionId: advert.completionId }); setCoins(response.totalCoins); recordMatch3Event('coins-granted', { coins: 10, reason: 'advert-double' }) } catch { return null } }} onMap={() => { clearTimeout(presentationTimer.current); setPresentation(null); setView('map') }} onNext={() => { clearTimeout(presentationTimer.current); setPresentation(null); setSelectedLevel(Math.min(20, selectedLevel + 1)); setView('brief') }} />
-  return <><GameBoard session={session} busy={busy} error={error} presentation={presentation} onMove={(from, to) => action({ action: 'move', actionId: uid('move'), from, to })} onPower={(powerUp, target) => action({ action: 'power-up', actionId: uid('power'), powerUp, target }).then(() => recordMatch3Event('power-up-used', { powerUp }))} onRestart={() => { clearTimeout(presentationTimer.current); setPresentation(null); action({ action: 'restart', actionId: uid('restart') }) }} onQuit={() => { clearTimeout(presentationTimer.current); setPresentation(null); if (confirm('Quit this level? Your current board will remain available to resume.')) setView('map') }} />{import.meta.env.DEV && <Match3FeedbackPanel level={selectedLevel} result={session.state.status === 'won' ? 'won' : session.state.status === 'lost' ? 'lost' : 'quit'} movesUsed={session.state.level.moves - session.state.movesRemaining} />}</>
+  return <><GameBoard session={session} busy={busy} error={error} presentation={presentation} onMove={(from, to) => action({ action: 'move', actionId: uid('move'), from, to })} onPower={(powerUp, target) => action({ action: 'power-up', actionId: uid('power'), powerUp, target }).then(() => recordMatch3Event('power-up-used', { powerUp }))} onRevive={() => action({ action: 'revive', actionId: uid('revive') })} onRestart={() => { clearTimeout(presentationTimer.current); setPresentation(null); action({ action: 'restart', actionId: uid('restart') }) }} onQuit={() => { clearTimeout(presentationTimer.current); setPresentation(null); if (confirm('Quit this level? Your current board will remain available to resume.')) setView('map') }} />{import.meta.env.DEV && <Match3FeedbackPanel level={selectedLevel} result={session.state.status === 'won' ? 'won' : session.state.status === 'lost' ? 'lost' : 'quit'} movesUsed={session.state.level.moves - session.state.movesRemaining} />}</>
 }
 
 function LevelMap({ progress, onBack, onSelect, onReset }) {
@@ -230,7 +235,7 @@ function symbolIcon(kind) {
   return '✦'
 }
 
-export function GameBoard({ session, busy, error, presentation, onMove, onPower, onRestart, onQuit }) {
+export function GameBoard({ session, busy, error, presentation, onMove, onPower, onRevive, onRestart, onQuit }) {
   const state = session.state
   const motionMode = useMotionMode()
   const [selected, setSelected] = useState(null)
@@ -238,6 +243,7 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
   const [paused, setPaused] = useState(false)
   const [slowAnimations, setSlowAnimations] = useState(false)
   const [dragState, setDragState] = useState(null)
+  const [reviveOutcome, setReviveOutcome] = useState(null)
   const drag = useRef(null)
   const dragReturnTimer = useRef(null)
   const suppressClick = useRef(false)
@@ -249,6 +255,7 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
   const columns = state.board[0].length
   const summary = useMemo(() => `Level ${level.id}. ${state.movesRemaining} moves left. Score ${state.score}.`, [level.id, state.movesRemaining, state.score])
   const diagnosticsEnabled = import.meta.env.DEV || (typeof window !== 'undefined' && window.location.hostname !== 'flipout.app' && new URLSearchParams(window.location.search).has('match3Diagnostics'))
+  const nextRevive = REVIVE_TIERS[state.revives?.length ?? 0] ?? null
 
   useEffect(() => () => clearTimeout(dragReturnTimer.current), [])
 
@@ -396,6 +403,18 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
     }
   }
 
+  async function tryRevive() {
+    if (!nextRevive || busy || !onRevive) return
+    setReviveOutcome({ spinning: true, ...nextRevive })
+    try {
+      const response = await onRevive()
+      setReviveOutcome({ spinning: false, ...(response.revive ?? nextRevive) })
+      window.setTimeout(() => setReviveOutcome(null), 1800)
+    } catch (caught) {
+      setReviveOutcome({ spinning: false, success: false, error: caught.message, ...nextRevive })
+    }
+  }
+
   const boardClass = [styles.board, presentation?.phase === 'swap' ? styles.swapping : '', presentation?.invalidSwap ? styles.invalidSwap : '', presentation?.phase === 'shuffle' ? styles.shuffling : '', presentation?.cascadeCount ? styles.resolving : '', presentation?.comboType ? styles.specialResolution : ''].filter(Boolean).join(' ')
   return <main className={`${styles.game} foTheme`} data-concept-screen="gameplay" data-screen="match3-game">
     <div className={styles.gameTop}><button onClick={onQuit}>Quit</button><strong>Level {level.id}</strong><button onClick={() => setPaused(true)}>Pause</button></div>
@@ -414,7 +433,8 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
     <div className={styles.powers}>{['hammer', 'shuffle', 'line-blast', 'color-clear', 'extra-moves'].map(current => <button key={current} disabled={locked} className={power === current ? styles.active : ''} onClick={() => { if (current === 'shuffle' || current === 'extra-moves') onPower(current, null).catch(() => {}); else setPower(power === current ? null : current) }}>{current.replaceAll('-', ' ')}</button>)}</div>
     {busy && <p className={styles.resolvingText} aria-live="polite">Resolving…</p>}
     <p role="alert">{error}</p>
-    {state.status === 'lost' && <div className={styles.modal}><div><h2>Out of moves</h2><p>Use Extra Moves if available, or retry the level.</p><button onClick={() => { recordMatch3Event('continue-used', { method: 'extra-moves' }); onPower('extra-moves', null).catch(() => {}) }}>Continue with Extra Moves</button><button onClick={onRestart}>Retry</button><button onClick={onQuit}>Level map</button></div></div>}
+    {reviveOutcome && state.status !== 'lost' && <div className={`${styles.reviveToast} ${reviveOutcome.success ? styles.reviveSuccess : styles.reviveFail}`} role="status">{reviveOutcome.success ? 'Revived! 5 moves added.' : 'Revive missed.'}</div>}
+    {state.status === 'lost' && <div className={styles.modal}><div><h2>Out of moves</h2>{nextRevive ? <><p>{nextRevive.label}: spend {nextRevive.costCoins} Coins for a {nextRevive.oddsPercent}% revive chance.</p><div className={`${styles.reviveSpinner} ${reviveOutcome?.spinning ? styles.reviveSpinning : ''}`} aria-hidden="true"><span /></div>{reviveOutcome && !reviveOutcome.spinning && <p className={reviveOutcome.success ? styles.reviveSuccessText : styles.reviveFailText}>{reviveOutcome.error ?? (reviveOutcome.success ? 'Success! The board is coming back with 5 moves.' : 'No luck this time. You can try the next revive or retry the level.')}</p>}<button onClick={() => { recordMatch3Event('continue-used', { method: 'revive', attempt: nextRevive.attempt }); tryRevive() }} disabled={busy || reviveOutcome?.spinning}>{reviveOutcome?.spinning ? 'Spinning…' : `${nextRevive.label} - ${nextRevive.costCoins} Coins`}</button></> : <p>No revives remaining for this level.</p>}<button onClick={onRestart}>Retry</button><button onClick={onQuit}>Level map</button></div></div>}
     {paused && <div className={styles.modal}><div><h2>Paused</h2><button onClick={() => setPaused(false)}>Resume</button><button onClick={onRestart}>Restart</button><button onClick={onQuit}>Quit</button></div></div>}
     {diagnosticsEnabled && <aside className={styles.diagnostics} aria-label="Match-3 drag diagnostics"><strong>DEV DRAG DIAGNOSTICS</strong><span>Phase: {dragState?.phase ?? presentation?.phase ?? 'idle'}</span><span>Lock: {locked ? lockReason : 'none'}</span><span>Pointer down: {dragState ? `${Math.round(dragState.startX)}, ${Math.round(dragState.startY)}` : 'none'}</span><span>Pointer now: {dragState ? `${Math.round(dragState.currentX)}, ${Math.round(dragState.currentY)}` : 'none'}</span><span>Delta: {dragState ? `${Math.round(dragState.deltaX)}, ${Math.round(dragState.deltaY)}` : '0, 0'}</span><span>Token: {dragState?.tokenId ?? 'none'}</span><span>Source: {dragState ? `${dragState.source.r}:${dragState.source.c}` : 'none'}</span><span>Destination: {dragState?.destination ? `${dragState.destination.r}:${dragState.destination.c}` : 'none'}</span><span>Capture: {dragState?.capture ? 'yes' : 'no'}</span><span>Threshold: {dragState?.thresholdPassed ? 'passed' : 'waiting'}</span><span>Transform: {dragState ? `translate3d(${Math.round(dragState.deltaX)}px, ${Math.round(dragState.deltaY)}px, 0)` : 'none'}</span><span>Motion: {motionMode}</span><span>Revision: {state.revision ?? state.movesRemaining}</span><button onClick={() => setSlowAnimations(value => !value)}>{slowAnimations ? 'Normal speed' : 'Slow to 25%'}</button></aside>}
   </main>

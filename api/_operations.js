@@ -2,10 +2,10 @@ import crypto from 'node:crypto'
 import { ITEM_BY_ID } from '../src/data/itemCatalog.js'
 import { REWARD_TABLES } from './_rewards.js'
 import { applyReward, enforceRateLimit, secureWeightedReward } from './_gameServices.js'
-import { auctionAmounts, EXCHANGE_DEFAULT_EXPIRY_DAYS, EXCHANGE_MAX_ACTIVE_LISTINGS, EXCHANGE_MIN_LISTING_PRICE_COINS, validateListing } from './_progressionRules.js'
+import { auctionAmounts, EXCHANGE_DEFAULT_EXPIRY_DAYS, EXCHANGE_MAX_ACTIVE_LISTINGS, EXCHANGE_MIN_LISTING_PRICE_COINS, reviveDecision, validateListing } from './_progressionRules.js'
 
-export async function continueMatch(db, { playerId, matchId, method, advertCompletionId, requestId }) {
-  const transactionId = String(requestId ?? `continue:${matchId}:${method}`)
+export async function continueMatch(db, { playerId, matchId, requestId }) {
+  const transactionId = String(requestId ?? `revive:${matchId}:${crypto.randomUUID()}`)
   const client = await db.connect()
   try {
     await client.query('BEGIN')
@@ -14,18 +14,21 @@ export async function continueMatch(db, { playerId, matchId, method, advertCompl
     if (!match.rowCount) throw Object.assign(new Error('Match not found'), { status: 404 })
     const row = match.rows[0]
     if (!['active', 'lost'].includes(row.status)) throw Object.assign(new Error('Match cannot be continued'), { status: 409 })
-    if (method === 'advert') {
-      if (row.advert_continue_used) throw Object.assign(new Error('Advert continuation already used'), { status: 409, code: 'CONTINUE_LIMIT' })
-      const advert = await client.query(`DELETE FROM fo_advert_completions WHERE completion_id=$1 AND player_id=$2 AND placement='continue' AND match_id=$3 RETURNING completion_id`, [advertCompletionId, playerId, matchId])
-      if (!advert.rowCount) throw Object.assign(new Error('Verified advert completion required'), { status: 403, code: 'ADVERT_NOT_VERIFIED' })
-      await client.query(`UPDATE fo_matches SET advert_continue_used=TRUE,status='active',updated_at=NOW() WHERE match_id=$1`, [matchId])
-    } else if (method === 'coins') {
-      if (!row.advert_continue_used || row.coin_continue_used) throw Object.assign(new Error('Coin continuation is unavailable'), { status: 409, code: 'CONTINUE_LIMIT' })
-      await applyReward(client, { playerId, transactionId, source: 'continue-cost', reward: { currencyId: 'coins', amount: -Number(process.env.CONTINUE_COIN_COST ?? 25) }, metadata: { matchId } })
-      await client.query(`UPDATE fo_matches SET coin_continue_used=TRUE,status='active',updated_at=NOW() WHERE match_id=$1`, [matchId])
-    } else throw Object.assign(new Error('Invalid continuation method'), { status: 400 })
+    const state = row.state && typeof row.state === 'object' ? row.state : {}
+    const prior = (state.revives ?? []).find(revive => revive.transactionId === transactionId)
+    if (prior) { await client.query('COMMIT'); return { continued: prior.success, duplicate: true, method: 'coins', transactionId, revive: prior, state } }
+    if (row.status !== 'lost') throw Object.assign(new Error('Revive is available only after a loss'), { status: 409, code: 'REVIVE_NOT_AVAILABLE' })
+    const balance = await client.query(`SELECT balance FROM fo_player_balances WHERE player_id=$1 AND currency_id='coins' FOR UPDATE`, [playerId])
+    const randomValue = crypto.randomInt(0, 10000) / 10000
+    const decision = reviveDecision({ attempt: (state.revives?.length ?? 0) + 1, coins: Number(balance.rows[0]?.balance ?? 0), randomValue })
+    if (!decision.allowed) throw Object.assign(new Error(decision.reason === 'insufficient-coins' ? 'Insufficient Coins' : 'No revives remaining'), { status: decision.reason === 'insufficient-coins' ? 409 : 400, code: decision.reason.toUpperCase().replaceAll('-', '_') })
+    await applyReward(client, { playerId, transactionId: `${transactionId}:cost`, source: 'revive-cost', reward: { currencyId: 'coins', amount: -decision.costCoins }, metadata: { matchId, attempt: decision.attempt, odds: decision.oddsPercent } })
+    const revive = { transactionId, attempt: decision.attempt, label: decision.label, costCoins: decision.costCoins, oddsPercent: decision.oddsPercent, success: decision.success }
+    const nextState = { ...state, revives: [...(state.revives ?? []), revive] }
+    const nextStatus = decision.success ? 'active' : 'lost'
+    await client.query(`UPDATE fo_matches SET state=$2,status=$3,coin_continue_used=TRUE,updated_at=NOW() WHERE match_id=$1`, [matchId, nextState, nextStatus])
     await client.query('COMMIT')
-    return { continued: true, method, transactionId, state: row.state }
+    return { continued: decision.success, method: 'coins', transactionId, revive, state: nextState }
   } catch (error) { await client.query('ROLLBACK'); throw error } finally { client.release() }
 }
 

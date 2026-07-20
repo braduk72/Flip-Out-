@@ -1,0 +1,5 @@
+{
+  "framework": "vite",
+  "buildCommand": "node --test tests/progression.test.js tests/match3-revive-db.test.js tests/match3-engine.test.js && npx vitest run tests-ui/match3-input.test.jsx && vite build",
+  "outputDirectory": "dist"
+}

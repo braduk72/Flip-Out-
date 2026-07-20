@@ -1,5 +1,9 @@
 # Flip-Out Match-3 vertical slice
 
+## Revives addendum - 20 July 2026
+
+Match-3 loss continuation now uses Coin-only Revives: 25 Coins at 75%, 50 Coins at 50%, then 100 Coins at 25%. The server spends Coins, rolls odds and stores the revive outcome in authoritative session state; duplicate action IDs do not charge twice. The loss modal presents the cost/odds and spinner and no longer offers advert or Extra Moves continuation. No level balance or Match-3 board rules changed.
+
 ## Reward Theatre addendum - 20 July 2026
 
 Match-3 completion now surfaces Reward Theatre eligibility after every five completed levels. The server owns milestone detection, commits the prize through a stable claim ID, writes Coin prizes through the authoritative Coin ledger, and returns deterministic reel metadata for the client animation. The UI result screen can spin animated reels only after the committed reward exists; presentation cannot reroll or upgrade the prize.
