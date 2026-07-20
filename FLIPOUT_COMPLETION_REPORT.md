@@ -23,6 +23,18 @@ Verification:
 - `npm.cmd run test:preview` -> **20 expected local skips** because no local Preview `DATABASE_URL` is exposed.
 - `npm.cmd run build` -> passed with **160 transformed modules**.
 - `npm.cmd run build:preview` -> passed with **160 transformed modules**.
+- Broad `npm.cmd run lint:source -- --quiet` -> still fails with **17 pre-existing legacy errors** outside this slice.
+
+Preview deployment:
+
+- Commit: `94674d4 Add Match-3 RC polish controls`.
+- Deployment ID: `dpl_GKMMdVFUern3fgNiV94Fb8vxLd8y`.
+- Generated Preview URL: `https://flip-1ultpg9ih-chattocal.vercel.app`.
+- Permanent development URL: `https://dev.flipout.gizmogames.uk`.
+- Target: Vercel Preview.
+- Permanent dev verification: generated Preview and permanent dev URL both returned HTTP 200 with matching ETag `"877c48c9aa19c753994b4f17a64786f2"` and byte-identical HTML SHA-256 `80A7E2157FF7D414F9016E3B599A93621E7069BF754F510B833D8224064E7E10`.
+- Entry bundle `/assets/index-DbS1GjYG.js` contains `1.21.0-rc-match3-polish`.
+- Match-3 lazy bundle `/assets/Match3-CtEHZd6J.js` contains `No more moves`, `Cascade chain` and `hintedTile`.
 
 Files changed:
 
@@ -45,7 +57,7 @@ Remaining risks:
 
 - Needs physical-device QA for hint timing, shake strength and shuffle feel.
 - This pass intentionally did not rebalance levels, modify rewards, alter Coin economy, or implement new booster/foil/Exchange systems.
-- Preview deployment verification is the next step for this milestone. Production was not touched.
+- Production was not touched.
 
 ## Season Journey architecture - 20 July 2026
 
