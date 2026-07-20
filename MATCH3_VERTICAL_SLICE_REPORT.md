@@ -1,5 +1,13 @@
 # Flip-Out Match-3 vertical slice
 
+## Effect framework and juice addendum - 20 July 2026
+
+Match-3 now has a presentation/effect framework layered on top of the authoritative engine. The engine still owns matches, specials, cascades, scoring and final board state. The client now maps the returned cascade data into deterministic effect plans with scalable particles, board shake, multiplier display, rare announcer text, special creation shockwaves and special activation impacts.
+
+Special creation feedback now distinguishes four-match rocket impact, five-match sun materialise, square pop, T formation and L formation. Rocket/Sun special pieces are visually much larger and occupy most of the tile. Cascade x2+ can display a multiplier banner; exceptional cascades can show rare announcer copy such as `OUTSTANDING!` or `FLIP OUT!!`. Reduced-motion mode removes heavy shake/particles while preserving the semantic feedback.
+
+Verification: local Match-3 Node 36/36 passed, Match-3 UI 5/5 passed, aggregate `npm test` Node 164 passed / 19 Preview-only skips and UI 63/63 passed. Vercel Preview `dpl_HuFgbuFBBLVe1rrNeMBmRHkAWFRN` at `https://flip-1zui1nn3z-chattocal.vercel.app` passed remote Match-3 Node 36/36 and UI 5/5; `https://dev.flipout.gizmogames.uk` serves the same build with `1.19.0-match3-juice`. Production was not touched.
+
 ## Player header/title addendum - 20 July 2026
 
 The shared player header now displays the selected avatar and Player Title instead of the legacy `Level not set` fallback. This milestone did not change Match-3 mechanics, scoring, levels, revives, Reward Theatre or board input. Development Preview build `1.18.0-player-titles` is live at `https://dev.flipout.gizmogames.uk`; Production was not touched.

@@ -1,5 +1,15 @@
 # Flip-Out deployment
 
+## Verification record - Match-3 Effect Framework and Juice, 20 July 2026
+
+- Commit `47f48a8` was pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or production database was changed.
+- Focused Preview deployment: `dpl_HuFgbuFBBLVe1rrNeMBmRHkAWFRN`, generated URL `https://flip-1zui1nn3z-chattocal.vercel.app`, target Preview, created Mon 20 Jul 2026.
+- Build command from `vercel.match3-juice-verify.json`: `node --test tests/match3-presentation.test.js tests/match3-engine.test.js tests/match3-input.test.js && npx vitest run tests-ui/match3-input.test.jsx && vite build`.
+- Remote focused Match-3 Node tests passed **36/36**.
+- Remote focused Match-3 UI tests passed **5/5**.
+- Remote Vite build passed with **157 transformed modules** and entry `assets/index-CVYgN8Tb.js`.
+- `https://dev.flipout.gizmogames.uk` returned HTTP 200 with the same ETag `"3967554339b4cca24ec1de6331f60dae"` as the generated Preview URL, served byte-identical HTML, served `/assets/index-CVYgN8Tb.js` containing `1.19.0-match3-juice`, served `/assets/Match3-zXk2pYDe.js` containing `Cascade multiplier`, `FLIP OUT!!`, `sun-materialise` and `boardShake`, and served `/assets/Match3-sx1txtFF.css` containing `boardShake`, `multiplierBanner` and `creationShockwave`.
+
 ## Verification record - Player Profile Header and Titles, 20 July 2026
 
 - Commits `4d8ec43` and `5c5303a` were pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or production database was changed.

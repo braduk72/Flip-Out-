@@ -1,5 +1,55 @@
 # Flip-Out continuation report
 
+## Match-3 Effect Framework and Juice - 20 July 2026
+
+Priorities 2, 3, 4, 5, 6, 7 and 8 have their first production-quality presentation slice implemented and verified on development Preview. The mechanics remain server-authoritative; the new work is a reusable client presentation layer driven by the authoritative cascade/special data already returned by the engine.
+
+Implemented:
+
+- `src/match3/effects.js` reusable effect framework.
+- Classic effect pack with named presentation variants for single-tile, 2x2, 3x3, line, wrapped and colour/sun mechanics.
+- Future seasonal override template so a Dinosaur Season or similar can replace presentation choices without changing mechanics.
+- Deterministic effect selection from cascade data.
+- Scalable particle intensity and board-shake intensity.
+- Large cascade multiplier display.
+- Rare announcer support reserved for exceptional cascades.
+- Creation-specific special feedback:
+  - four-match -> rocket impact
+  - five-match -> sun materialise
+  - square -> square pop
+  - T shape -> T formation
+  - L shape -> L formation
+- Rocket/Sun special pieces enlarged to occupy most of the tile.
+- Creation shockwaves and special activation impact pulses.
+- Reduced-motion handling that removes heavy motion but preserves semantic feedback.
+
+Verification:
+
+- Focused local Match-3 Node -> **36/36 passed**.
+- Focused local Match-3 UI -> **5/5 passed**.
+- Focused lint on changed JS/JSX/tests -> passed. Passing `Match3.module.css` directly to ESLint produced one non-failing ignored-file warning because CSS modules are not part of the ESLint target.
+- `npm.cmd test` -> Node **164 passed / 19 expected Preview-only skips**, UI **63/63 passed**.
+- `npm.cmd run build` -> passed with **157 transformed modules**.
+- `npm.cmd run build:preview` -> passed with **157 transformed modules**.
+- Vercel Preview verifier -> Match-3 Node **36/36 passed**, Match-3 UI **5/5 passed**, Vite build **157 modules**.
+
+Preview deployment:
+
+- Deployment ID: `dpl_HuFgbuFBBLVe1rrNeMBmRHkAWFRN`.
+- Generated Preview URL: `https://flip-1zui1nn3z-chattocal.vercel.app`.
+- Permanent development URL: `https://dev.flipout.gizmogames.uk`.
+- Permanent dev verification: generated Preview and permanent dev URL both returned HTTP 200 with matching ETag `"3967554339b4cca24ec1de6331f60dae"` and byte-identical HTML.
+- Main bundle `/assets/index-CVYgN8Tb.js` contains `1.19.0-match3-juice`.
+- Match-3 lazy bundle `/assets/Match3-zXk2pYDe.js` contains `Cascade multiplier`, `FLIP OUT!!`, `sun-materialise` and `boardShake`.
+- Match-3 CSS `/assets/Match3-sx1txtFF.css` contains `boardShake`, `multiplierBanner` and `creationShockwave`.
+
+Remaining risks:
+
+- Final art/audio/haptic polish is still pending.
+- Physical device QA is needed to tune screen shake and particle intensity.
+- The effect framework has the seasonal override shape, but no seasonal effect pack content has been built yet.
+- Production was not touched.
+
 ## Player Profile Header and Titles - 20 July 2026
 
 Priority 1 is implemented and verified on development Preview as the first coherent slice of the new sprint. The shared header now uses the selected curated avatar and displays a Player Title instead of the old `Level not set` placeholder.

@@ -1,5 +1,9 @@
 # Flip-Out Match-3 balancing and device-preparation report
 
+## Effect framework and juice addendum - 20 July 2026
+
+The Match-3 effect framework adds presentation intensity without changing level balance, objective targets, legal moves, auto-player behaviour, revive odds or Reward Theatre cadence. Cascade multiplier display is now visible and derived only from automatic cascades already produced by the engine. Exceptional announcer lines remain rare and are gated by cascade count. Development Preview build `1.19.0-match3-juice` is live; future balancing/device QA should judge whether the longer special/cascade presentation pause feels rewarding or slows retry cadence too much. Production was not touched.
+
 ## Player header/title addendum - 20 July 2026
 
 Player Titles are now part of the shared profile/header surface. This does not affect Match-3 balance, auto-player simulations, cascade scoring, level objectives, revive odds or Reward Theatre cadence. Development Preview build `1.18.0-player-titles` is live; future Match-3 QA should simply confirm the header remains readable around gameplay routes. Production was not touched.
