@@ -55,7 +55,19 @@ npx vercel inspect https://dev.flipout.gizmogames.uk --scope chattocal
 npx vercel ls flip-out --scope chattocal
 ```
 
-The application currently reports `1.11.0-theme-collector-cards` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+The application currently reports `1.12.0-match3-coin-rewards` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+
+## Verification record - Match-3 Coin rewards, 20 July 2026
+
+- Rule changes: Match-3 completion now grants 10 Coins; one verified advert double grants 10 more Coins for 20 total. Rewards route through the tamper-evident Coin ledger as authorised server grants.
+- Compatibility note: existing `fo_match3_sessions.base_stars_granted` and `advert_stars_granted` columns remain as legacy reward-claimed booleans; no rename migration was added.
+- Local verification before deployment: focused Node **45 passed / 1 expected Preview DB skip**, focused Match-3 UI **5/5**, full local Node **144 passed / 15 expected Preview-only skips**, full UI **55/55**, focused lint passed, production build passed.
+- Deployment: commit `4cf0263`, Vercel Ready Preview `https://flip-49dscb8zb-chattocal.vercel.app`.
+- URL verification: `https://dev.flipout.gizmogames.uk` and the generated Preview both returned HTTP 200 and ETag `"07732658a3c25d3c4c8160169cce5ee0"`.
+- Bundle verification: permanent URL served `/assets/index-DBP55ZB2.js` at 412,670 bytes and contained `1.12.0-match3-coin-rewards`.
+- Focused Preview DB verification config: `vercel.match3-coin-rewards-verify.json`. Launching it with `npx.cmd vercel --scope chattocal --local-config vercel.match3-coin-rewards-verify.json` timed out twice in escalation approval review, so the migrated Preview database path remains unverified in this pass.
+- No schema migration was required.
+- Production was not touched.
 
 ## Verification record - Official Theme Album Collector Cards, 20 July 2026
 

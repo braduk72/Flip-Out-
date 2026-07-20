@@ -15,7 +15,9 @@ Verification so far:
 - Focused lint: `npx.cmd eslint api\_match3Sessions.js api\_foMatch3.js src\screens\Match3.jsx tests\match3-db.test.js` - passed.
 - Production build: `npm.cmd run build` - passed with **155 transformed modules** and bundle marker `1.12.0-match3-coin-rewards`.
 
-Remaining risks: Preview DB verification is still pending for the live Coin ledger write path. No schema migration was required. Production was not touched.
+- Preview deployment: commit `4cf0263` reached Ready at `https://flip-49dscb8zb-chattocal.vercel.app`; `https://dev.flipout.gizmogames.uk` returned HTTP 200 with matching ETag `"07732658a3c25d3c4c8160169cce5ee0"`, served `/assets/index-DBP55ZB2.js`, and the bundle contains `1.12.0-match3-coin-rewards`.
+
+Remaining risks: Preview DB verification is still pending for the live Coin ledger write path. A focused Vercel verification config was added, but `npx.cmd vercel --scope chattocal --local-config vercel.match3-coin-rewards-verify.json` could not be launched because the escalation approval review timed out twice. No schema migration was required. Production was not touched.
 
 ## Official Theme Album Collector Cards - 20 July 2026
 

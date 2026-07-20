@@ -2,11 +2,12 @@
 
 ## Match-3 Coin reward boundary - 20 July 2026
 
-- **Status: Implemented locally; Preview DB verification pending in this milestone.** Match-3 completion rewards now follow the approved sprint direction: a completed level grants **10 Coins**, and one verified advert double grants **10 more Coins** for **20 Coins** total.
+- **Status: Implemented and deployed to development Preview; focused Preview DB verification blocked by tool approval timeout.** Match-3 completion rewards now follow the approved sprint direction: a completed level grants **10 Coins**, and one verified advert double grants **10 more Coins** for **20 Coins** total.
 - What changed: Match-3 rewards now use the tamper-evident Coin ledger through authorised server grants instead of generic Star balance writes. The existing database booleans `base_stars_granted` and `advert_stars_granted` are kept as legacy reward-claimed flags to avoid a risky rename migration. The client result screen and local Match-3 progress copy now show Coins rather than Stars.
 - Files changed: `api/_match3Sessions.js`, `api/_foMatch3.js`, `src/screens/Match3.jsx`, `tests/match3-db.test.js`, `src/version.js`, `vercel.match3-coin-rewards-verify.json`.
 - Verification so far: focused Node **45 passed / 1 expected Preview DB skip**; focused Match-3 UI **5/5** passed; full local Node **144 passed / 15 expected Preview-only skips**; full UI **55/55** passed; focused lint passed; production build passed with **155 transformed modules** and bundle marker `1.12.0-match3-coin-rewards`.
-- Remaining risks: the end-to-end Coin ledger grant path still needs to run against the migrated Preview database because local tests skip Preview-only PostgreSQL checks. The legacy column names are intentionally left in place until a future additive cleanup is worth doing.
+- Preview deployment `https://flip-49dscb8zb-chattocal.vercel.app` reached Ready from `dev`; `https://dev.flipout.gizmogames.uk` returned HTTP 200 with matching ETag `"07732658a3c25d3c4c8160169cce5ee0"`, served `/assets/index-DBP55ZB2.js`, and the bundle contains `1.12.0-match3-coin-rewards`.
+- Remaining risks: the end-to-end Coin ledger grant path still needs to run against the migrated Preview database because local tests skip Preview-only PostgreSQL checks and the focused Vercel verification deploy could not be launched after two approval-review timeouts. The legacy column names are intentionally left in place until a future additive cleanup is worth doing.
 
 ## Official Theme Album Collector Cards - 20 July 2026
 
