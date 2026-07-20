@@ -1,5 +1,16 @@
 # Flip-Out! current-state audit
 
+## Urgent Match-3 idle performance fix - 20 July 2026
+
+- **Status: Implemented and verified on development Preview.** Root cause was the deployed Match-3 idle board running one infinite CSS animation per tile while the board was settled and input was unlocked.
+- Evidence from live Preview before fix: `https://dev.flipout.gizmogames.uk` on version `1.21.0-rc-match3-polish` showed **64 board tiles**, `data-input-locked="false"`, **0 active effect elements**, and **64 infinite `_tileIdle` CSS animations** on the settled board. The Home screen had 5 infinite decorative animations, but the Match-3 board regression was materially worse because every tile was animated continuously.
+- Fix: removed the full-screen Match-3 starfield animation, replaced the per-tile infinite idle bob with a finite `tileSettle` animation, changed idle selected/special indicators to static high-contrast styling, and changed hint pulse from infinite to two finite pulses. The 30-second hint system remains; it now cancels while the tab is hidden and restarts only when visible.
+- Files changed: `src/screens/Match3.jsx`, `src/screens/Match3.module.css`, `src/version.js`, `tests-ui/match3-input.test.jsx`, `tests/match3-performance.test.js`.
+- Verification: focused Match-3 Node **42/42** passed; focused Match-3/Settings UI **12/12** passed; full `npm.cmd run test` passed with Node **177 passed / 20 expected Preview-only skips** and UI **68/68**; `npm.cmd run test:preview` locally skipped all **20** Preview DB tests because no local Preview `DATABASE_URL` is exposed; broad `npm.cmd run lint:source -- --quiet` passed; production build passed with **160 modules**; Preview build passed with **160 modules**.
+- Preview deployment: commit `2df3319` deployed Ready as `dpl_8w3sZvkqH6fvD9grDTJVHpAfV1Mr`, generated URL `https://flip-8qhnbhsln-chattocal.vercel.app`, target Preview. `https://dev.flipout.gizmogames.uk` returned HTTP 200 with matching ETag `"4a34cad3053874488561efcb02191695"` and byte-identical HTML SHA-256 `0B5A40DDFD32A4251E46E9427D86D635079D31933CC507BB3B7A8C5DBCDF2914`. Entry bundle `/assets/index-iURhDn5i.js` contains `1.21.1-match3-performance-fix`; lazy Match-3 bundle `/assets/Match3-CKRqK5SW.js` and CSS `/assets/Match3-DzuCjHby.css` are served.
+- Live after-fix idle sample: settled level-1 board showed **64 board tiles**, `data-input-locked="false"`, **0 active effect elements**, and **0 infinite animations**. Computed tile animation styles were finite only: 62 `tileSettle` entries at one iteration and 2 finite `hintPulse` entries at two iterations after the hint appeared.
+- Remaining limitations: browser automation cannot directly report Brad's physical fan speed, GPU wattage or mobile thermals. Physical iPhone Safari and Android Chrome thermal checks are still required, but the proven continuous idle animation load has been removed. Production was not touched.
+
 ## RC Match-3 polish pass - 20 July 2026
 
 - **Status: Implemented and verified on development Preview.** This release-candidate hardening slice focused on playability/usability rather than new economy or collection systems.

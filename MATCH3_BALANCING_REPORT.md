@@ -1,5 +1,15 @@
 # Flip-Out Match-3 balancing and device-preparation report
 
+## Urgent idle performance fix - 20 July 2026
+
+No level balance, objectives, move budgets, scoring constants, revive odds, Reward Theatre cadence or economy values were changed. This was a presentation/performance correction only.
+
+Live Preview evidence before the fix showed a settled level-1 board with 64 infinite `_tileIdle` animations despite no active effects and input being unlocked. That continuous board-wide animation is unsuitable for RC because it can keep desktop fans active and would likely be worse on mobile.
+
+The settled board now performs no infinite animation work. Normal tiles settle once, selected/special indicators are static, hints pulse twice after the delayed hint appears, and document visibility cancels/defer hints while the tab is hidden. The 30-second hint behaviour, reshuffle presentation, cascade multiplier and gameplay logic remain intact.
+
+Verification: focused Match-3 Node 42/42 passed, focused Match-3/Settings UI 12/12 passed, full test passed with Node 177 passed / 20 expected Preview-only skips and UI 68/68, broad lint passed, production/Preview builds passed with 160 modules. Ready Preview `dpl_8w3sZvkqH6fvD9grDTJVHpAfV1Mr` serves `1.21.1-match3-performance-fix` at `https://dev.flipout.gizmogames.uk`; live after-fix board sample showed 0 infinite animations. Production was not touched.
+
 ## RC polish addendum - 20 July 2026
 
 The RC polish pass did not alter level layouts, move budgets, objectives, scoring constants, revive odds, Reward Theatre cadence or economy values. The new hint system is presentation/support only: it selects one deterministic legal move using objective progress, score gain, specials and cascades, then highlights the two involved cells after 30 seconds of idle settled play.

@@ -1,5 +1,51 @@
 # Flip-Out continuation report
 
+## Urgent Match-3 idle performance fix - 20 July 2026
+
+The Match-3 fan-ramp regression was traced to continuous decorative work on the settled board, not to the authoritative engine or reward/economy systems.
+
+Root cause:
+
+- The deployed `1.21.0-rc-match3-polish` board applied `_tileIdle` as an infinite CSS animation to every non-hole tile.
+- Live Preview measurement on a settled level-1 board showed **64 infinite tile animations**, **64 board tiles**, **0 effect elements** and `data-input-locked="false"`.
+- The hint system was audited: it uses a single timeout, not polling. It was improved to cancel/defer while the document is hidden.
+
+Implemented:
+
+- Removed the full-screen infinite Match-3 starfield drift.
+- Replaced per-tile infinite idle bobbing with finite `tileSettle`.
+- Converted idle selected and special-piece decoration to static high-contrast styling.
+- Changed hint pulse from infinite to two finite pulses after the delayed hint appears.
+- Added document visibility handling so hidden tabs clear active hints/drag state and do not schedule hint timers.
+- Added CSS and UI regression coverage for no infinite settled-board animations, one hint timer, timer cleanup, hidden-tab cancellation and no duplicate timers on rerender.
+
+Verification:
+
+- Focused Match-3 Node -> **42/42 passed**.
+- Focused Match-3/Settings UI -> **12/12 passed**.
+- Full `npm.cmd run test` -> Node **177 passed / 20 expected Preview-only skips**, UI **68/68 passed**.
+- `npm.cmd run test:preview` -> **20 expected local skips** because no local Preview `DATABASE_URL` is exposed.
+- Broad `npm.cmd run lint:source -- --quiet` -> passed.
+- `npm.cmd run build` -> passed with **160 transformed modules**.
+- `npm.cmd run build:preview` -> passed with **160 transformed modules**.
+
+Preview deployment:
+
+- Commit: `2df3319 Fix Match-3 idle performance regression`.
+- Deployment ID: `dpl_8w3sZvkqH6fvD9grDTJVHpAfV1Mr`.
+- Generated Preview URL: `https://flip-8qhnbhsln-chattocal.vercel.app`.
+- Permanent development URL: `https://dev.flipout.gizmogames.uk`.
+- Target: Vercel Preview.
+- Permanent dev verification: generated Preview and permanent dev URL both returned HTTP 200 with matching ETag `"4a34cad3053874488561efcb02191695"` and byte-identical HTML SHA-256 `0B5A40DDFD32A4251E46E9427D86D635079D31933CC507BB3B7A8C5DBCDF2914`.
+- Entry bundle `/assets/index-iURhDn5i.js` contains `1.21.1-match3-performance-fix`.
+- Match-3 lazy bundle `/assets/Match3-CKRqK5SW.js` returned HTTP 200; Match-3 CSS `/assets/Match3-DzuCjHby.css` contains finite `tileSettle`, no `tileIdle` infinite loop and no infinite hint pulse.
+- Live after-fix idle sample: **0 infinite animations** on the settled board; **0 effect elements**; input remained unlocked.
+
+Remaining limitations:
+
+- Browser automation cannot measure Brad's physical PC fan speed or mobile thermals directly. Physical iPhone Safari and Android Chrome checks remain required, but the proven idle GPU loop has been removed.
+- Production was not touched.
+
 ## RC Match-3 polish pass - 20 July 2026
 
 This milestone moves Match-3 closer to release-candidate feel without adding new economy systems or changing level balance.

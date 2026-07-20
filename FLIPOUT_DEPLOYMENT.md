@@ -1,5 +1,22 @@
 # Flip-Out deployment
 
+## Verification record - Urgent Match-3 idle performance fix, 20 July 2026
+
+- Commit `2df3319` was pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or production database was changed.
+- Preview deployment: `dpl_8w3sZvkqH6fvD9grDTJVHpAfV1Mr`, generated URL `https://flip-8qhnbhsln-chattocal.vercel.app`, target Preview, created Mon 20 Jul 2026 18:58:09 BST.
+- Local verification before deployment:
+  - `node --test tests\match3-performance.test.js tests\match3-hints.test.js tests\match3-presentation.test.js tests\match3-input.test.js tests\match3-engine.test.js` -> **42/42 passed**.
+  - `npx.cmd vitest run --config vitest.config.js tests-ui\match3-input.test.jsx tests-ui\settings-title.test.jsx` -> **12/12 passed**.
+  - `npm.cmd run test` -> Node **177 passed / 20 expected Preview-only skips**, UI **68/68 passed**.
+  - `npm.cmd run test:preview` -> **20 expected local skips** because local Preview `DATABASE_URL` is not exposed.
+  - `npm.cmd run lint:source -- --quiet` -> passed.
+  - `npm.cmd run build` -> passed with **160 transformed modules**.
+  - `npm.cmd run build:preview` -> passed with **160 transformed modules**.
+- Vercel inspect: `npx.cmd vercel inspect https://flip-8qhnbhsln-chattocal.vercel.app --scope chattocal` reported status Ready, target Preview and aliases `https://dev.flipout.gizmogames.uk`, `https://flip-out-git-dev-chattocal.vercel.app` and the old historical `https://dev.flipout.app` alias. The old historical alias was not changed or used.
+- HTTP verification: generated Preview and `https://dev.flipout.gizmogames.uk` both returned HTTP 200, matching ETag `"4a34cad3053874488561efcb02191695"` and byte-identical HTML SHA-256 `0B5A40DDFD32A4251E46E9427D86D635079D31933CC507BB3B7A8C5DBCDF2914`.
+- Bundle verification: `https://dev.flipout.gizmogames.uk/assets/index-iURhDn5i.js` returned HTTP 200, 424,275 bytes and contains `1.21.1-match3-performance-fix`. Lazy Match-3 bundle `https://dev.flipout.gizmogames.uk/assets/Match3-CKRqK5SW.js` returned HTTP 200, 35,931 bytes. Match-3 CSS `https://dev.flipout.gizmogames.uk/assets/Match3-DzuCjHby.css` returned HTTP 200, 30,600 bytes, contains `tileSettle`, does not contain the old `tileIdle` infinite loop and does not contain an infinite hint pulse.
+- Live browser verification on the permanent development URL: before the fix, a settled level-1 board showed **64 infinite tile animations**, **64 board tiles**, `data-input-locked="false"` and **0 effect elements**. After the fix, the same permanent URL on `1.21.1-match3-performance-fix` showed **0 infinite animations**, **64 board tiles**, `data-input-locked="false"` and **0 effect elements**.
+
 ## Verification record - RC Match-3 polish pass, 20 July 2026
 
 - Commits `94674d4`, `49f3dc7` and `0144fea` were pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or production database was changed.

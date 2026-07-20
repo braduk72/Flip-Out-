@@ -1,5 +1,13 @@
 # Flip-Out Match-3 vertical slice
 
+## Urgent idle performance fix - 20 July 2026
+
+The deployed RC polish build caused continuous idle work on the Match-3 board. Live Preview profiling showed the settled board had 64 cells, input unlocked, no active effect elements and 64 infinite `_tileIdle` CSS animations. This explained the immediate fan-ramp behaviour: the GPU/compositor never reached an idle state while Match-3 was open.
+
+The fix keeps the RC polish features but removes continuous decorative work from the settled board. The Match-3 starfield no longer animates, normal tiles use a finite `tileSettle`, idle special indicators are static, selected tiles are static, and the hint pulse is finite. Hint scheduling is visibility-aware and remains a single delayed timeout rather than a polling loop.
+
+Verification: focused Match-3 Node 42/42 passed, focused Match-3/Settings UI 12/12 passed, full local test passed with Node 177 passed / 20 expected Preview-only skips and UI 68/68, broad source lint passed, production and Preview builds passed with 160 modules. Preview `dpl_8w3sZvkqH6fvD9grDTJVHpAfV1Mr` is Ready at `https://flip-8qhnbhsln-chattocal.vercel.app`; `https://dev.flipout.gizmogames.uk` serves bundle version `1.21.1-match3-performance-fix`. Live after-fix sample showed 0 infinite animations on the settled board. Production was not touched.
+
 ## RC polish addendum - 20 July 2026
 
 Match-3 now includes a deterministic objective-aware hint system: after at least 30 seconds of a settled idle board, one legal move is highlighted with a subtle pulse/sparkle treatment. The hint does not move tokens or change state, and it resets on click, drag, keyboard input, board changes, animations and power-up interactions. Settings now includes Move Hints, Animation intensity and Screen Shake controls backed by a shared player-settings utility.
