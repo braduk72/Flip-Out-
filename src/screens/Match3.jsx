@@ -201,28 +201,47 @@ function Brief({ level, busy, error, onBack, onStart }) {
 }
 
 function Result({ coins, level, movesUsed, error, rewardTheatre, theatreClaim, theatreBusy, onClaimTheatre, onDouble, onMap, onNext }) {
-  return <main className={`${styles.result} foTheme`} data-concept-screen="route" data-screen="match3-result"><div aria-hidden="true" className={styles.resultIcon}>●</div><h1>Level complete!</h1><p className={styles.starAward}>+{coins} Coins</p><p role="alert">{error}</p>{rewardTheatre?.available && <RewardTheatrePanel rewardTheatre={rewardTheatre} busy={theatreBusy} onClaim={onClaimTheatre}/>} {theatreClaim && <RewardTheatreReels claim={theatreClaim}/>} {coins === 10 && <button onClick={onDouble}>Watch verified advert to double to 20 Coins</button>}<button className={styles.primary} onClick={onNext}>Next level</button><button onClick={onMap}>Level journey</button>{import.meta.env.DEV && <Match3FeedbackPanel level={level} result="won" movesUsed={movesUsed} />}</main>
+  return <main className={`${styles.result} foTheme`} data-concept-screen="route" data-screen="match3-result"><div aria-hidden="true" className={styles.resultIcon}>●</div><h1>Level complete!</h1><p className={styles.starAward}>+{coins} Coins</p><p role="alert">{error}</p>{rewardTheatre?.available && <RewardTheatrePanel rewardTheatre={rewardTheatre} busy={theatreBusy} onClaim={onClaimTheatre}/>} {theatreClaim && <RewardTheatreDisplay claim={theatreClaim}/>} {coins === 10 && <button onClick={onDouble}>Watch verified advert to double to 20 Coins</button>}<button className={styles.primary} onClick={onNext}>Next level</button><button onClick={onMap}>Level journey</button>{import.meta.env.DEV && <Match3FeedbackPanel level={level} result="won" movesUsed={movesUsed} />}</main>
 }
 
-function RewardTheatrePanel({ rewardTheatre, busy, onClaim }) {
+export function RewardTheatrePanel({ rewardTheatre, busy, onClaim }) {
   return <section className={styles.theatrePanel} aria-labelledby="reward-theatre-title">
     <span className={styles.eyebrow}>Every 5 levels</span>
     <h2 id="reward-theatre-title">Reward Theatre unlocked!</h2>
-    <p>Milestone {rewardTheatre.milestone}: spin the reels for a committed server reward.</p>
-    <button className={styles.theatreButton} type="button" disabled={busy} onClick={onClaim}>{busy ? 'Preparing reels…' : 'Spin Reward Theatre'}</button>
+    <p>Milestone {rewardTheatre.milestone}: spin the Lucky Prize Wheel for a committed server reward.</p>
+    <button className={styles.theatreButton} type="button" disabled={busy} onClick={onClaim}>{busy ? 'Preparing wheel…' : 'Spin Prize Wheel'}</button>
   </section>
 }
 
-function RewardTheatreReels({ claim }) {
+export function RewardTheatrePresentation({ claim }) {
+  if (claim.presentation?.type === 'lucky-prize-wheel') return <PrizeWheelTheatre claim={claim} />
+  return <PrizeWheelTheatre claim={{ ...claim, presentation: fallbackWheelPresentation(claim) }} />
+}
+
+function RewardTheatreDisplay({ claim }) {
+  return <RewardTheatrePresentation claim={claim} />
+}
+
+function PrizeWheelTheatre({ claim }) {
   const presentation = claim.presentation
   const label = presentation?.label ?? rewardText(claim.reward)
-  return <section className={styles.theatreStage} aria-live="polite" aria-label={`Reward Theatre prize: ${label}`}>
-    <div className={styles.reels} aria-hidden="true">
-      {presentation?.reels?.map(reel => <div key={reel.reel} className={styles.reel} style={{ '--reel-delay': `${(reel.reel - 1) * 180}ms` }}>
-        {reel.symbols.map((symbol, index) => <span key={`${symbol.id}:${index}`} className={`${styles.reelSymbol} ${styles[`symbol_${symbol.kind}`] ?? ''}`}>{symbolIcon(symbol.kind)}<small>{symbol.label}</small></span>)}
-      </div>)}
+  const wheel = presentation?.wheel
+  const segments = wheel?.segments ?? []
+  return <section className={styles.theatreStage} aria-live="polite" aria-label={`Reward Theatre prize: ${label}`} data-theatre-type="lucky-prize-wheel">
+    <div className={styles.wheelMachine}>
+      <div className={styles.wheelPointer} aria-hidden="true"><span /></div>
+      <div className={styles.prizeWheel} aria-hidden="true" style={{ '--wheel-final-rotation': `${wheel?.finalRotationDeg ?? 2160}deg`, '--wheel-gradient': prizeWheelGradient(segments) }}>
+        <div className={styles.wheelFace}>
+          {segments.map((segment, index) => <span key={`${segment.id}:${index}`} className={`${styles.wheelSegmentLabel} ${segment.winning ? styles.winningSegment : ''}`} style={{ '--segment-angle': `${(index * (wheel?.segmentAngleDeg ?? 15)) + ((wheel?.segmentAngleDeg ?? 15) / 2)}deg` }}>
+            <b>{symbolIcon(segment.kind, segment.icon)}</b>
+          </span>)}
+          <span className={styles.wheelHub}>FLIP<br/>OUT!</span>
+        </div>
+      </div>
+      <div className={styles.pointerClickRail} aria-hidden="true">{Array.from({ length: 12 }, (_, index) => <i key={index} />)}</div>
     </div>
-    <div className={styles.theatrePrize}><span>Prize</span><strong>{label}</strong></div>
+    <div className={styles.theatrePrize}><span>Prize won</span><strong>{label}</strong><small>Reward committed before the wheel spun.</small></div>
+    <div className={styles.theatreConfetti} aria-hidden="true">{Array.from({ length: 12 }, (_, index) => <i key={index} />)}</div>
   </section>
 }
 
@@ -233,10 +252,37 @@ function rewardText(reward = {}) {
   return reward.itemId?.split(':').at(-1)?.replaceAll('-', ' ') ?? 'Reward'
 }
 
+function fallbackWheelPresentation(claim) {
+  const reward = claim.reward ?? {}
+  const kind = reward.currencyId ? 'coins' : reward.itemId?.includes('booster') ? 'booster' : 'powerup'
+  const target = {
+    id: 'fallback',
+    kind,
+    label: rewardText(reward),
+    reward,
+    winning: true,
+    color: '#ffd84d',
+    icon: symbolIcon(kind),
+  }
+  return {
+    type: 'lucky-prize-wheel',
+    label: rewardText(reward),
+    reward,
+    wheel: { segmentCount: 1, targetIndex: 0, segmentAngleDeg: 360, finalRotationDeg: 2160, segments: [target] },
+  }
+}
+
+function prizeWheelGradient(segments) {
+  if (!segments.length) return 'conic-gradient(#ffd84d 0deg 360deg)'
+  const step = 360 / segments.length
+  const stops = segments.map((segment, index) => `${segment.color ?? '#9b6cff'} ${index * step}deg ${(index + 1) * step}deg`).join(', ')
+  return `conic-gradient(from -90deg, ${stops})`
+}
+
 function symbolIcon(kind) {
   if (kind === 'coins') return '●'
   if (kind === 'booster') return '▣'
-  return '✦'
+  return '◆'
 }
 
 export function GameBoard({ session, busy, error, presentation, onMove, onPower, onRevive, onRestart, onQuit, hintDelayMs = MATCH3_HINT_DELAY_MS }) {

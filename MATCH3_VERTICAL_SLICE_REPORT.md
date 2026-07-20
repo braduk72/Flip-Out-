@@ -1,5 +1,13 @@
 # Flip-Out Match-3 vertical slice
 
+## Reward Theatre Lucky Prize Wheel addendum - 20 July 2026
+
+Reward Theatre remains attached to the existing Match-3 cadence of one reward at every five completed levels, but the presentation is no longer the reel prototype. The server still commits the reward first and now returns a `reward-theatre-presentation-v1` envelope for the first theatre presentation: `lucky-prize-wheel`.
+
+The Match-3 result screen now presents a finite 24-segment Prize Wheel that lands on the committed reward, then shows the reward result, advert-double option where applicable, Next Level and Level Journey. No Match-3 objective, level, scoring, revive, cascade or auto-player logic changed in this package. Production was not touched.
+
+Verification before Preview deployment: focused Reward Theatre Node **7 passed / 1 expected Preview DB skip**, focused Reward Theatre UI **3/3** passed, full test passed with Node **178 passed / 20 expected Preview-only skips** and UI **71/71**, lint passed with no errors, and production/Preview builds passed with **160 modules**.
+
 ## Urgent idle performance fix - 20 July 2026
 
 The deployed RC polish build caused continuous idle work on the Match-3 board. Live Preview profiling showed the settled board had 64 cells, input unlocked, no active effect elements and 64 infinite `_tileIdle` CSS animations. This explained the immediate fan-ramp behaviour: the GPU/compositor never reached an idle state while Match-3 was open.

@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import fs from 'node:fs'
 import { REWARD_TABLES, selectWeightedReward, simulateRewards, validateRewardTable } from '../api/_rewards.js'
 import {
   buildRewardTheatrePresentation,
@@ -36,19 +37,30 @@ test('Reward Theatre claim IDs are stable and account-scoped', () => {
   assert.throws(() => rewardTheatreClaimId(player, 6), error => error.code === 'REWARD_THEATRE_INVALID_MILESTONE')
 })
 
-test('Reward Theatre reels are deterministic and end on the committed prize', () => {
+test('Reward Theatre prize wheel is deterministic and lands on the committed prize', () => {
   const claimId = rewardTheatreClaimId('11111111-1111-4111-8111-111111111111', 5)
   const reward = { itemId: 'booster:random', amount: 1, tableId: 'reward-theatre-v1', milestone: 5 }
   const first = buildRewardTheatrePresentation({ claimId, reward, milestone: 5 })
   const second = buildRewardTheatrePresentation({ claimId, reward, milestone: 5 })
   assert.deepEqual(first, second)
-  assert.equal(first.type, 'animated-reels')
-  assert.equal(first.reels.length, 3)
+  assert.equal(first.type, 'lucky-prize-wheel')
+  assert.equal(first.framework, 'reward-theatre-presentation-v1')
+  assert.equal(first.wheel.segmentCount, 24)
+  assert.equal(first.wheel.segments.length, 24)
   assert.equal(first.label, 'Random Booster Pack')
-  for (const reel of first.reels) {
-    assert.equal(reel.symbols.at(-1).label, 'Random Booster')
-    assert.equal(reel.targetIndex, reel.symbols.length - 1)
-  }
+  assert.equal(first.wheel.segments[first.wheel.targetIndex].label, 'Random Booster')
+  assert.equal(first.wheel.segments[first.wheel.targetIndex].winning, true)
+  const stoppedAngle = ((first.wheel.finalRotationDeg + first.wheel.targetAngleDeg) % 360 + 360) % 360
+  assert.equal(stoppedAngle, 0)
+})
+
+test('Reward Theatre presentation remains separate from committed reward data', () => {
+  const claimId = rewardTheatreClaimId('11111111-1111-4111-8111-111111111111', 10)
+  const reward = { currencyId: 'coins', amount: 25, tableId: 'reward-theatre-v1', milestone: 10 }
+  const presentation = buildRewardTheatrePresentation({ claimId, reward, milestone: 10 })
+  assert.deepEqual(presentation.reward, reward)
+  assert.equal(presentation.wheel.segments[presentation.wheel.targetIndex].reward.currencyId, 'coins')
+  assert.equal(presentation.wheel.segments[presentation.wheel.targetIndex].reward.amount, 25)
 })
 
 test('Reward Theatre weighted simulation is deterministic', () => {
@@ -57,4 +69,13 @@ test('Reward Theatre weighted simulation is deterministic', () => {
   assert.equal(Object.values(report.counts).reduce((sum, count) => sum + count, 0), 10000)
   assert.equal(selectWeightedReward(REWARD_TABLES.rewardTheatreV1, 0).amount, 10)
   assert.equal(rewardLabel({ currencyId: 'coins', amount: 25 }), '25 Coins')
+})
+
+test('Reward Theatre presentation CSS does not use infinite theatre animations', () => {
+  const css = fs.readFileSync(new URL('../src/screens/Match3.module.css', import.meta.url), 'utf8')
+  const theatreCss = css
+    .split('\n')
+    .filter(line => /theatre|wheel|prize/i.test(line))
+    .join('\n')
+  assert.equal(/animation[^;{}]*infinite/i.test(theatreCss), false)
 })

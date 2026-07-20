@@ -1,5 +1,13 @@
 # Flip-Out Match-3 balancing and device-preparation report
 
+## Reward Theatre Lucky Prize Wheel addendum - 20 July 2026
+
+Reward Theatre presentation changed from animated reels to the Lucky Prize Wheel framework presentation. This does **not** change level balance, auto-player assumptions, move budgets, objectives, scoring constants, revive odds, reward cadence or the weighted reward table. The reward continues to be selected and committed server-side before the client receives presentation metadata.
+
+Balancing implication: future simulations do not need adjustment for this change because the wheel is presentation-only. Future player testing should evaluate whether every-five-level wheel rewards improve motivation or make milestones feel too generous, but that is progression/economy tuning rather than Match-3 difficulty tuning.
+
+Performance implication: the wheel uses finite spin/glow/confetti animations only and includes a regression test guarding against infinite theatre animations. Production was not touched.
+
 ## Urgent idle performance fix - 20 July 2026
 
 No level balance, objectives, move budgets, scoring constants, revive odds, Reward Theatre cadence or economy values were changed. This was a presentation/performance correction only.

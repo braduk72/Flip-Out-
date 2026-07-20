@@ -1,5 +1,15 @@
 # Flip-Out! current-state audit
 
+## Reward Theatre Lucky Prize Wheel - 20 July 2026
+
+- **Status: Implemented locally and ready for Preview deployment verification.** Reward Theatre is no longer hard-coded as an animated reel/slot-machine presentation. The reward backend remains authoritative and commits the reward before the client receives presentation data.
+- What changed: `api/_rewardTheatre.js` now returns a `reward-theatre-presentation-v1` envelope with `type: lucky-prize-wheel`, a committed `reward`, deterministic 24-segment wheel data, target index/angle and final rotation. `src/screens/Match3.jsx` renders the Lucky Prize Wheel and includes a fallback adapter for older claim payloads. `src/screens/Match3.module.css` adds a finite premium wheel animation, fixed pointer, winning wedge glow, prize reveal and confetti. `src/screens/DevToolkit.jsx` no longer calls it a reel reward.
+- Evidence from code: `claimRewardTheatre()` still applies/stores the reward before returning `buildRewardTheatrePresentation()`. Tests assert the wheel is deterministic, separate from committed reward data, and mathematically lands the winning segment at the fixed pointer.
+- Performance guardrail: Reward Theatre CSS uses finite animations only. A new test scans theatre/wheel CSS for accidental `infinite` animation use.
+- Files changed: `api/_rewardTheatre.js`, `src/screens/Match3.jsx`, `src/screens/Match3.module.css`, `src/screens/DevToolkit.jsx`, `src/version.js`, `tests/reward-theatre.test.js`, `tests/reward-theatre-db.test.js`, `tests-ui/reward-theatre-wheel.test.jsx`.
+- Verification before Preview deployment: focused Reward Theatre Node **7 passed / 1 expected Preview DB skip**; focused Reward Theatre UI **3/3**; full `npm.cmd test` passed with Node **178 passed / 20 expected Preview-only skips** and UI **71/71**; local `npm.cmd run test:preview` skipped all **20** Preview DB tests because no local Preview `DATABASE_URL` is exposed; `npm.cmd run lint:source` passed with **0 errors** and **4 pre-existing hook warnings**; production and Preview builds passed with **160 modules**.
+- Remaining risks: future theatre presentation types are not implemented; final sound/haptic production is not implemented; physical mobile QA is still required for wheel feel. Production was not touched.
+
 ## Urgent Match-3 idle performance fix - 20 July 2026
 
 - **Status: Implemented and verified on development Preview.** Root cause was the deployed Match-3 idle board running one infinite CSS animation per tile while the board was settled and input was unlocked.

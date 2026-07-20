@@ -1,5 +1,48 @@
 # Flip-Out continuation report
 
+## Reward Theatre Lucky Prize Wheel - 20 July 2026
+
+Reward Theatre has been refactored away from the slot-machine reel prototype into a presentation framework with the first presentation implemented as the **Lucky Prize Wheel**.
+
+Implemented:
+
+- Server-authoritative reward selection remains unchanged: the reward is selected, applied and stored before any presentation data is returned.
+- `buildRewardTheatrePresentation()` now returns a presentation envelope with `type: lucky-prize-wheel`, `framework: reward-theatre-presentation-v1`, committed `reward`, and deterministic wheel metadata.
+- The first theatre presentation is a 24-segment prize wheel with deterministic target segment, target angle, final rotation and segment contents seeded from the claim ID.
+- The wheel rotates beneath a fixed pointer using finite acceleration/deceleration/settle animation and always lands with the committed winning segment under the pointer.
+- Result UI now says **Spin Prize Wheel**, shows the committed prize, confetti/celebration, and keeps the existing advert-double, Next Level and Level Journey actions.
+- Presentation components include a fallback wheel adapter for older claim payloads so the frontend no longer depends on the former reel shape.
+- Dev Toolkit copy now refers to theatre rewards rather than reel rewards.
+- In-app version bumped to `1.22.0-reward-theatre-wheel`.
+
+Files changed:
+
+- `api/_rewardTheatre.js`
+- `src/screens/Match3.jsx`
+- `src/screens/Match3.module.css`
+- `src/screens/DevToolkit.jsx`
+- `src/version.js`
+- `tests/reward-theatre.test.js`
+- `tests/reward-theatre-db.test.js`
+- `tests-ui/reward-theatre-wheel.test.jsx`
+
+Verification before Preview deployment:
+
+- Focused Reward Theatre Node: **7 passed / 1 expected Preview DB skip**.
+- Focused Reward Theatre UI: **3/3 passed**.
+- `npm.cmd run lint:source`: passed with **0 errors** and the same **4 pre-existing hook warnings** in legacy screens.
+- `npm.cmd test`: Node **178 passed / 20 expected Preview-only skips**, UI **71/71 passed**.
+- `npm.cmd run test:preview`: **20 expected local skips** because local Preview `DATABASE_URL` is not exposed.
+- `npm.cmd run build`: passed with **160 transformed modules**.
+- `npm.cmd run build:preview`: passed with **160 transformed modules**.
+
+Remaining risks:
+
+- This implements the framework and first wheel presentation, not future theatres such as Chest, Plinko, Claw Machine or Card Flip.
+- Sound and haptic hooks are represented by presentation timing/CSS affordances only; final audio/haptic production is still future work.
+- Physical mobile QA is still required to judge the wheel feel and pointer timing on iPhone Safari and Android Chrome.
+- Production was not touched.
+
 ## Urgent Match-3 idle performance fix - 20 July 2026
 
 The Match-3 fan-ramp regression was traced to continuous decorative work on the settled board, not to the authoritative engine or reward/economy systems.

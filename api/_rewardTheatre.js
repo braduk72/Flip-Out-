@@ -8,14 +8,20 @@ export const REWARD_THEATRE_TABLE = REWARD_TABLES.rewardTheatreV1
 export const REWARD_THEATRE_INTERVAL = 5
 export const REWARD_THEATRE_MAX_MATCH3_LEVEL = 20
 
+export const REWARD_THEATRE_PRESENTATIONS = Object.freeze({
+  prizeWheel: 'lucky-prize-wheel',
+})
+
+export const PRIZE_WHEEL_SEGMENT_COUNT = 24
+
 const SYMBOLS = Object.freeze([
-  { id: 'coins-10', kind: 'coins', label: '10 Coins', reward: { currencyId: 'coins', amount: 10 } },
-  { id: 'coins-25', kind: 'coins', label: '25 Coins', reward: { currencyId: 'coins', amount: 25 } },
-  { id: 'hammer', kind: 'powerup', label: 'Hammer', reward: { itemId: 'powerup:match3-hammer', amount: 1 } },
-  { id: 'shuffle', kind: 'powerup', label: 'Shuffle', reward: { itemId: 'powerup:match3-shuffle', amount: 1 } },
-  { id: 'line-blast', kind: 'powerup', label: 'Line Blast', reward: { itemId: 'powerup:match3-line-blast', amount: 1 } },
-  { id: 'themed-booster', kind: 'booster', label: 'Themed Booster', reward: { itemId: 'booster:themed', amount: 1 } },
-  { id: 'random-booster', kind: 'booster', label: 'Random Booster', reward: { itemId: 'booster:random', amount: 1 } },
+  { id: 'coins-10', kind: 'coins', icon: '●', color: '#ffd84d', label: '10 Coins', reward: { currencyId: 'coins', amount: 10 } },
+  { id: 'coins-25', kind: 'coins', icon: '●', color: '#ffb12d', label: '25 Coins', reward: { currencyId: 'coins', amount: 25 } },
+  { id: 'hammer', kind: 'powerup', icon: '◆', color: '#5ee8ff', label: 'Hammer', reward: { itemId: 'powerup:match3-hammer', amount: 1 } },
+  { id: 'shuffle', kind: 'powerup', icon: '↻', color: '#9b6cff', label: 'Shuffle', reward: { itemId: 'powerup:match3-shuffle', amount: 1 } },
+  { id: 'line-blast', kind: 'powerup', icon: '➜', color: '#ff5aa8', label: 'Line Blast', reward: { itemId: 'powerup:match3-line-blast', amount: 1 } },
+  { id: 'themed-booster', kind: 'booster', icon: '▣', color: '#49e282', label: 'Themed Booster', reward: { itemId: 'booster:themed', amount: 1 } },
+  { id: 'random-booster', kind: 'booster', icon: '?', color: '#ff7a2d', label: 'Random Booster', reward: { itemId: 'booster:random', amount: 1 } },
 ])
 
 const SAFE_ID = /^[a-z0-9][a-z0-9:_-]{0,127}$/i
@@ -85,19 +91,34 @@ function seededIndex(seed, max) {
 
 export function buildRewardTheatrePresentation({ claimId, reward, milestone }) {
   const target = symbolForReward(reward)
-  const reels = Array.from({ length: 3 }, (_, reelIndex) => {
-    const offset = seededIndex(`${claimId}:reel:${reelIndex}`, SYMBOLS.length)
-    const decoys = Array.from({ length: 8 }, (_, symbolIndex) => SYMBOLS[(offset + symbolIndex + reelIndex) % SYMBOLS.length])
-    return { reel: reelIndex + 1, symbols: [...decoys, target], targetIndex: decoys.length }
+  const targetIndex = seededIndex(`${claimId}:wheel-target`, PRIZE_WHEEL_SEGMENT_COUNT)
+  const segments = Array.from({ length: PRIZE_WHEEL_SEGMENT_COUNT }, (_, segmentIndex) => {
+    if (segmentIndex === targetIndex) return { ...target, winning: true }
+    const offset = seededIndex(`${claimId}:wheel:${segmentIndex}`, SYMBOLS.length)
+    return { ...SYMBOLS[(offset + segmentIndex) % SYMBOLS.length], winning: false }
   })
+  const segmentAngleDeg = 360 / PRIZE_WHEEL_SEGMENT_COUNT
+  const targetAngleDeg = (targetIndex * segmentAngleDeg) + (segmentAngleDeg / 2)
+  const rotations = 6 + seededIndex(`${claimId}:wheel-rotations`, 3)
+  const finalRotationDeg = (rotations * 360) - targetAngleDeg
   return {
-    type: 'animated-reels',
+    type: REWARD_THEATRE_PRESENTATIONS.prizeWheel,
     skin: 'classic',
+    framework: 'reward-theatre-presentation-v1',
     milestone,
     label: rewardLabel(reward),
     reward,
-    reels,
-    durationMs: 2200,
+    wheel: {
+      segmentCount: PRIZE_WHEEL_SEGMENT_COUNT,
+      targetIndex,
+      segmentAngleDeg,
+      targetAngleDeg,
+      finalRotationDeg,
+      rotations,
+      pointerAngleDeg: 0,
+      segments,
+    },
+    durationMs: 3600,
   }
 }
 
