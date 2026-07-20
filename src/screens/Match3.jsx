@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Match3FeedbackPanel from '../components/Match3FeedbackPanel.jsx'
-import { objectiveProgress } from '../match3/engine.js'
+import { legalMoves, objectiveProgress } from '../match3/engine.js'
 import { createdSpecialPresentation } from '../match3/effects.js'
+import { chooseMatch3HintMove } from '../match3/hints.js'
 import { MATCH3_LEVELS, MATCH3_TOKENS, getMatch3Level } from '../match3/levels.js'
 import { cellIsInPresentation, createMatch3Presentation, isMatch3BoardInputLocked } from '../match3/presentation.js'
 import Match3TokenImage from '../match3/Match3TokenImage.jsx'
@@ -10,6 +11,7 @@ import { useMotionMode } from '../ui/motion.js'
 import { playerGameApi } from '../utils/gameApi.js'
 import { haptic, recordMatch3Event } from '../utils/match3Analytics.js'
 import { loadMatch3Progress, loadMatch3Resume, resetMatch3Development, saveMatch3Progress, saveMatch3Resume } from '../utils/match3Storage.js'
+import { usePlayerSettings } from '../utils/playerSettings.js'
 import styles from './Match3.module.css'
 
 const uid = prefix => `${prefix}:${crypto.randomUUID()}`
@@ -19,6 +21,7 @@ const REVIVE_TIERS = Object.freeze([
   { attempt: 2, label: 'Revive Two', costCoins: 50, oddsPercent: 50 },
   { attempt: 3, label: 'Revive Three', costCoins: 100, oddsPercent: 25 },
 ])
+export const MATCH3_HINT_DELAY_MS = 30000
 const objectiveLabel = objective => objective.type === 'score'
   ? `Score ${objective.target}`
   : objective.type === 'collect'
@@ -236,14 +239,17 @@ function symbolIcon(kind) {
   return '✦'
 }
 
-export function GameBoard({ session, busy, error, presentation, onMove, onPower, onRevive, onRestart, onQuit }) {
+export function GameBoard({ session, busy, error, presentation, onMove, onPower, onRevive, onRestart, onQuit, hintDelayMs = MATCH3_HINT_DELAY_MS }) {
   const state = session.state
   const motionMode = useMotionMode()
+  const playerSettings = usePlayerSettings()
   const [selected, setSelected] = useState(null)
   const [power, setPower] = useState(null)
   const [paused, setPaused] = useState(false)
   const [slowAnimations, setSlowAnimations] = useState(false)
   const [dragState, setDragState] = useState(null)
+  const [hintMove, setHintMove] = useState(null)
+  const [interactionRevision, setInteractionRevision] = useState(0)
   const [reviveOutcome, setReviveOutcome] = useState(null)
   const drag = useRef(null)
   const dragReturnTimer = useRef(null)
@@ -255,13 +261,29 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
   const rows = state.board.length
   const columns = state.board[0].length
   const summary = useMemo(() => `Level ${level.id}. ${state.movesRemaining} moves left. Score ${state.score}.`, [level.id, state.movesRemaining, state.score])
+  const boardSignature = useMemo(() => JSON.stringify(state.board), [state.board])
+  const legalMoveCount = useMemo(() => state.status === 'active' ? legalMoves(state.board).length : 0, [state.board, state.status])
   const diagnosticsEnabled = import.meta.env.DEV || (typeof window !== 'undefined' && window.location.hostname !== 'flipout.app' && new URLSearchParams(window.location.search).has('match3Diagnostics'))
   const nextRevive = REVIVE_TIERS[state.revives?.length ?? 0] ?? null
 
   useEffect(() => () => clearTimeout(dragReturnTimer.current), [])
 
+  useEffect(() => {
+    if (!playerSettings.moveHints || locked || power || legalMoveCount <= 0) return undefined
+    const timer = window.setTimeout(() => {
+      setHintMove({ move: chooseMatch3HintMove(state), boardSignature })
+    }, hintDelayMs)
+    return () => window.clearTimeout(timer)
+  }, [playerSettings.moveHints, locked, power, legalMoveCount, boardSignature, state, hintDelayMs, interactionRevision])
+
+  function recordInteraction() {
+    setHintMove(null)
+    setInteractionRevision(value => value + 1)
+  }
+
   function choose(row, column) {
     if (locked || moveInFlight.current || suppressClick.current) return
+    recordInteraction()
     if (power) {
       onPower(power, { r: row, c: column }).then(() => setPower(null)).catch(() => {})
       return
@@ -287,6 +309,7 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
 
   function beginDrag(event, row, column, tokenId) {
     if (locked || moveInFlight.current) return
+    recordInteraction()
     event.preventDefault()
     let capture = false
     try {
@@ -355,6 +378,7 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
   }
 
   function keyDown(event, row, column) {
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', ' '].includes(event.key)) recordInteraction()
     let next
     if (event.key === 'ArrowLeft') next = { r: row, c: Math.max(0, column - 1) }
     if (event.key === 'ArrowRight') next = { r: row, c: Math.min(columns - 1, column + 1) }
@@ -416,25 +440,27 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
     }
   }
 
-  const boardClass = [styles.board, presentation?.phase === 'swap' ? styles.swapping : '', presentation?.invalidSwap ? styles.invalidSwap : '', presentation?.phase === 'shuffle' ? styles.shuffling : '', presentation?.cascadeCount ? styles.resolving : '', presentation?.comboType ? styles.specialResolution : ''].filter(Boolean).join(' ')
-  const shellClass = [styles.boardShell, presentation?.effectPlan?.boardShake ? styles.boardShake : '', presentation?.effectPlan?.intensity >= 6 ? styles.megaIntensity : presentation?.effectPlan?.intensity >= 4 ? styles.highIntensity : ''].filter(Boolean).join(' ')
+  const boardClass = [styles.board, presentation?.phase === 'swap' ? styles.swapping : '', presentation?.invalidSwap ? styles.invalidSwap : '', presentation?.shuffle ? styles.shuffling : '', presentation?.cascadeCount ? styles.resolving : '', presentation?.comboType ? styles.specialResolution : ''].filter(Boolean).join(' ')
+  const shellClass = [styles.boardShell, presentation?.effectPlan?.boardShake && playerSettings.screenShake ? styles.boardShake : '', presentation?.effectPlan?.intensity >= 6 ? styles.megaIntensity : presentation?.effectPlan?.intensity >= 4 ? styles.highIntensity : ''].filter(Boolean).join(' ')
   return <main className={`${styles.game} foTheme`} data-concept-screen="gameplay" data-screen="match3-game">
     <div className={styles.gameTop}><button onClick={onQuit}>Quit</button><strong>Level {level.id}</strong><button onClick={() => setPaused(true)}>Pause</button></div>
     <div className={styles.stats}><span>Score <strong>{state.score.toLocaleString()}</strong></span><span>Moves <strong>{state.movesRemaining}</strong></span></div>
     <div className={styles.objectives}>{level.objectives.map((objective, index) => <span key={index}>{objectiveLabel(objective)}: {objectiveProgress(state, objective)}/{objective.target}</span>)}</div>
     <p className={styles.sr} aria-live="polite">{summary}{selected ? ` Selected row ${selected.r + 1}, column ${selected.c + 1}.` : ''}{presentation?.label ? ` ${presentation.label} Plus ${presentation.scoreGained} points.` : ''}</p>
-    <div className={shellClass} style={{ '--board-rows': rows, '--board-columns': columns, '--animation-scale': slowAnimations ? 4 : 1, '--shake-strength': `${presentation?.effectPlan?.boardShake ?? 0}px` }}>
+    <div className={shellClass} style={{ '--board-rows': rows, '--board-columns': columns, '--animation-scale': slowAnimations ? 4 : 1, '--shake-strength': `${playerSettings.screenShake ? presentation?.effectPlan?.boardShake ?? 0 : 0}px` }}>
       {presentation?.invalidSwap && <div className={styles.invalidBanner} aria-live="polite">Try another swap</div>}
-      {presentation?.label && <div className={styles.comboBanner} aria-hidden="true"><strong>{presentation.label}</strong>{presentation.cascadeCount > 1 && <span>×{presentation.cascadeCount} cascade</span>}</div>}
-      {presentation?.effectPlan?.multiplierDisplay && <div className={styles.multiplierBanner} aria-hidden="true"><span>Cascade multiplier</span><strong>Ã—{presentation.effectPlan.multiplierDisplay.value}</strong></div>}
+      {presentation?.shuffleLabel && <div className={styles.noMovesBanner} aria-live="polite">{presentation.shuffleLabel}</div>}
+      {legalMoveCount === 0 && !presentation?.shuffle && state.status === 'active' && <div className={styles.noMovesBanner} aria-live="polite">No more moves</div>}
+      {presentation?.label && <div className={styles.comboBanner} aria-hidden="true"><strong>{presentation.label}</strong>{presentation.cascadeCount > 1 && <span>{presentation.cascadeCount - 1} cascade match{presentation.cascadeCount === 2 ? '' : 'es'}</span>}</div>}
+      {presentation?.effectPlan?.multiplierDisplay && <div className={styles.multiplierBanner} aria-hidden="true"><span>Cascade chain</span><strong>×{presentation.effectPlan.multiplierDisplay.value}</strong><small>{presentation.effectPlan.multiplierDisplay.cascadeMatches} cascade match{presentation.effectPlan.multiplierDisplay.cascadeMatches === 1 ? '' : 'es'}</small></div>}
       {presentation?.effectPlan?.announcer && <div className={styles.announcerBanner} aria-hidden="true">{presentation.effectPlan.announcer}</div>}
       {presentation?.scoreGained > 0 && <div className={styles.scoreBurst} aria-hidden="true">+{presentation.scoreGained.toLocaleString()}</div>}
       <div className={boardClass} role="grid" aria-label={summary} aria-busy={locked} data-input-locked={locked ? 'true' : 'false'}>
-        {state.board.map((row, rowIndex) => row.map((cell, columnIndex) => <Tile key={`${rowIndex}:${columnIndex}`} cell={cell} row={rowIndex} column={columnIndex} columns={columns} selected={selected?.r === rowIndex && selected?.c === columnIndex} presentation={presentation} dragState={dragState} onChoose={choose} onKeyDown={keyDown} onPointerDown={event => beginDrag(event, rowIndex, columnIndex, cell.token)} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={() => { if (drag.current) returnDraggedToken(drag.current) }} />))}
+        {state.board.map((row, rowIndex) => row.map((cell, columnIndex) => <Tile key={`${rowIndex}:${columnIndex}`} cell={cell} row={rowIndex} column={columnIndex} columns={columns} selected={selected?.r === rowIndex && selected?.c === columnIndex} hinted={Boolean(hintMove?.boardSignature === boardSignature && hintMove.move && ((hintMove.move.from.r === rowIndex && hintMove.move.from.c === columnIndex) || (hintMove.move.to.r === rowIndex && hintMove.move.to.c === columnIndex)))} presentation={presentation} dragState={dragState} onChoose={choose} onKeyDown={keyDown} onPointerDown={event => beginDrag(event, rowIndex, columnIndex, cell.token)} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={() => { if (drag.current) returnDraggedToken(drag.current) }} />))}
       </div>
       <BoardEffects presentation={presentation} rows={rows} columns={columns} />
     </div>
-    <div className={styles.powers}>{['hammer', 'shuffle', 'line-blast', 'color-clear', 'extra-moves'].map(current => <button key={current} disabled={locked} className={power === current ? styles.active : ''} onClick={() => { if (current === 'shuffle' || current === 'extra-moves') onPower(current, null).catch(() => {}); else setPower(power === current ? null : current) }}>{current.replaceAll('-', ' ')}</button>)}</div>
+    <div className={styles.powers}>{['hammer', 'shuffle', 'line-blast', 'color-clear', 'extra-moves'].map(current => <button key={current} disabled={locked} className={power === current ? styles.active : ''} onClick={() => { recordInteraction(); if (current === 'shuffle' || current === 'extra-moves') onPower(current, null).catch(() => {}); else setPower(power === current ? null : current) }}>{current.replaceAll('-', ' ')}</button>)}</div>
     {busy && <p className={styles.resolvingText} aria-live="polite">Resolving…</p>}
     <p role="alert">{error}</p>
     {reviveOutcome && state.status !== 'lost' && <div className={`${styles.reviveToast} ${reviveOutcome.success ? styles.reviveSuccess : styles.reviveFail}`} role="status">{reviveOutcome.success ? 'Revived! 5 moves added.' : 'Revive missed.'}</div>}
@@ -460,7 +486,7 @@ function BoardEffects({ presentation, rows, columns }) {
   </div>
 }
 
-function Tile({ cell, row, column, columns, selected, presentation, dragState, onChoose, onKeyDown, ...events }) {
+function Tile({ cell, row, column, columns, selected, hinted, presentation, dragState, onChoose, onKeyDown, ...events }) {
   if (cell.hole) return <span className={`${styles.tile} ${styles.hole}`} role="gridcell" aria-label={`Row ${row + 1}, column ${column + 1}, unusable`} />
   const token = TOKEN.get(cell.token)
   const special = cell.special === 'bomb' ? 'wrapped' : cell.special
@@ -474,6 +500,7 @@ function Tile({ cell, row, column, columns, selected, presentation, dragState, o
   const classes = [
     styles.tile,
     selected ? styles.selected : '',
+    hinted ? styles.hintedTile : '',
     special ? styles[`special_${special}`] : '',
     cellIsInPresentation(presentation, 'swapped', row, column) ? styles.swapTile : '',
     cellIsInPresentation(presentation, 'cleared', row, column) ? styles.clearedTile : '',

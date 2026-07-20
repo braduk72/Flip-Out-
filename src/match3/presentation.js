@@ -19,6 +19,15 @@ export function match3SwapDuration(motionMode = 'full') {
   return motionMode === 'reduced' ? 100 : 280
 }
 
+export function match3ShuffleDuration(motionMode = 'full') {
+  if (motionMode === 'off') return 0
+  return motionMode === 'reduced' ? 180 : 820
+}
+
+function analyticsCount(state, type) {
+  return (state?.analytics ?? []).filter(event => event?.type === type).length
+}
+
 export function createMatch3Presentation(previousState, nextState, action = {}, motionMode = 'full') {
   const cascades = nextState?.cascades ?? []
   const cleared = uniquePositions(cascades.flatMap(cascade => cascade.clearedCells ?? []))
@@ -33,7 +42,12 @@ export function createMatch3Presentation(previousState, nextState, action = {}, 
 
   const isMove = action.action === 'move'
   const hasResolution = cascades.length > 0
-  const phase = hasResolution ? 'resolve' : isMove ? 'invalid-swap' : action.action === 'shuffle' ? 'shuffle' : 'settled'
+  const deadBoardShuffle = analyticsCount(nextState, 'dead-board-shuffle') > analyticsCount(previousState, 'dead-board-shuffle')
+  const playerShuffle = action.action === 'power-up' && action.powerUp === 'shuffle'
+  const hasShuffle = deadBoardShuffle || playerShuffle || action.action === 'shuffle'
+  const phase = hasResolution ? hasShuffle ? 'resolve-shuffle' : 'resolve' : hasShuffle ? 'shuffle' : isMove ? 'invalid-swap' : 'settled'
+  const resolutionDuration = hasResolution ? match3ResolutionDuration(cascades, motionMode) : 0
+  const shuffleDuration = hasShuffle ? match3ShuffleDuration(motionMode) : 0
   return {
     swapped: action.from && action.to ? [action.from, action.to] : [],
     cleared,
@@ -48,7 +62,10 @@ export function createMatch3Presentation(previousState, nextState, action = {}, 
     effectPlan,
     phase,
     invalidSwap: phase === 'invalid-swap',
-    durationMs: hasResolution ? match3ResolutionDuration(cascades, motionMode) : match3SwapDuration(motionMode),
+    deadBoardShuffle,
+    shuffle: hasShuffle,
+    shuffleLabel: deadBoardShuffle ? 'No more moves' : playerShuffle ? 'Board shuffled' : '',
+    durationMs: hasResolution ? resolutionDuration + shuffleDuration : hasShuffle ? shuffleDuration : match3SwapDuration(motionMode),
   }
 }
 

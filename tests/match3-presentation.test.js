@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { buildMatch3EffectPlan, cascadeAnnouncer } from '../src/match3/effects.js'
-import { cellIsInPresentation, createMatch3Presentation, match3ResolutionDuration, match3SwapDuration } from '../src/match3/presentation.js'
+import { cellIsInPresentation, createMatch3Presentation, match3ResolutionDuration, match3ShuffleDuration, match3SwapDuration } from '../src/match3/presentation.js'
 
 const previous = { score: 100 }
 const next = {
@@ -24,6 +24,7 @@ test('presentation data is deterministic and deduplicates affected cells', () =>
   assert.equal(first.scoreGained, 750)
   assert.equal(first.effectPlan.stages.length, 2)
   assert.equal(first.effectPlan.multiplierDisplay.cascadeCount, 2)
+  assert.equal(first.effectPlan.multiplierDisplay.cascadeMatches, 1)
 })
 
 test('presentation membership supports tile animation classes', () => {
@@ -55,6 +56,31 @@ test('reduced motion preserves semantic phases with shorter timings', () => {
   assert.ok(presentation.label)
   assert.ok(presentation.effectPlan.particleCount <= 18)
   assert.equal(presentation.effectPlan.boardShake, 0)
+})
+
+test('dead-board reshuffles are presented explicitly instead of silently teleporting', () => {
+  const presentation = createMatch3Presentation(
+    { score: 200, analytics: [] },
+    { score: 200, cascades: [], analytics: [{ type: 'dead-board-shuffle' }] },
+    { action: 'move', from: { r: 0, c: 0 }, to: { r: 0, c: 1 } },
+  )
+  assert.equal(presentation.phase, 'shuffle')
+  assert.equal(presentation.shuffle, true)
+  assert.equal(presentation.deadBoardShuffle, true)
+  assert.equal(presentation.shuffleLabel, 'No more moves')
+  assert.equal(presentation.durationMs, match3ShuffleDuration('full'))
+})
+
+test('player shuffle power-up gets a visible shuffle phase', () => {
+  const presentation = createMatch3Presentation(
+    { score: 200, analytics: [] },
+    { score: 200, cascades: [], analytics: [{ type: 'power-up-used', powerUp: 'shuffle' }] },
+    { action: 'power-up', powerUp: 'shuffle' },
+    'reduced',
+  )
+  assert.equal(presentation.phase, 'shuffle')
+  assert.equal(presentation.shuffleLabel, 'Board shuffled')
+  assert.equal(presentation.durationMs, match3ShuffleDuration('reduced'))
 })
 
 test('effect framework maps special creation reasons to distinct animations', () => {

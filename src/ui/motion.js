@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
+import { PLAYER_SETTINGS_EVENT, getPlayerSettings } from '../utils/playerSettings.js'
 
 export function getMotionMode() {
   if (typeof window === 'undefined') return 'off'
-  const stored = window.localStorage?.getItem('fo_motion')
-  if (stored === 'off' || stored === 'reduced' || stored === 'full') return stored
-  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'reduced' : 'full'
+  return getPlayerSettings().motionMode
 }
 
 export function useMotionMode() {
@@ -14,9 +13,11 @@ export function useMotionMode() {
     const update = () => setMode(getMotionMode())
     query?.addEventListener?.('change', update)
     window.addEventListener('storage', update)
+    window.addEventListener(PLAYER_SETTINGS_EVENT, update)
     return () => {
       query?.removeEventListener?.('change', update)
       window.removeEventListener('storage', update)
+      window.removeEventListener(PLAYER_SETTINGS_EVENT, update)
     }
   }, [])
   return mode

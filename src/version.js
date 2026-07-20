@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.20.0-season-journey'
+export const APP_VERSION = '1.21.0-rc-match3-polish'

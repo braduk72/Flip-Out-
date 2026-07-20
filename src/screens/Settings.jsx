@@ -5,6 +5,7 @@ import { APP_VERSION } from '../version.js'
 import { playHoverTick } from '../hooks/useSfx'
 import { PLAYER_TITLE_PREFIXES, PLAYER_TITLE_SUFFIXES, formatPlayerTitle } from '../data/playerTitles.js'
 import { playerGameApi } from '../utils/gameApi.js'
+import { savePlayerSettings, usePlayerSettings } from '../utils/playerSettings.js'
 
 const DIFFICULTIES = [
   { id: 'Easy', label: 'Easy' },
@@ -14,6 +15,7 @@ const DIFFICULTIES = [
 
 export default function Settings({ onBack, onAbout, onPrivacy, onPatchNotes, musicOn, sfxOn, onToggleMusic, onToggleSfx, musicVol = 0.45, sfxVol = 0.7, onMusicVol, onSfxVol, difficulty, onDifficulty, navProps, profileLoader = playerGameApi.state, titleSaver = playerGameApi.setPlayerTitle }) {
   const [profileState, setProfileState] = useState(null)
+  const playerSettings = usePlayerSettings()
   const [prefixId, setPrefixId] = useState('')
   const [suffixId, setSuffixId] = useState('')
   const [savingTitle, setSavingTitle] = useState(false)
@@ -70,6 +72,10 @@ export default function Settings({ onBack, onAbout, onPrivacy, onPatchNotes, mus
     }
   }
 
+  function updatePlayerSetting(change) {
+    savePlayerSettings({ ...playerSettings, ...change })
+  }
+
   return (
     <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="settings">
       <div className={styles.header}>
@@ -95,6 +101,46 @@ export default function Settings({ onBack, onAbout, onPrivacy, onPatchNotes, mus
         </div>
 
         <h2 className={styles.sectionTitle}>Settings</h2>
+
+        <div className={styles.accessibilityPanel} aria-labelledby="gameplay-accessibility-heading">
+          <div>
+            <span className={styles.destinationEyebrow}>Accessibility</span>
+            <h2 id="gameplay-accessibility-heading">Gameplay comfort</h2>
+            <p>Control hints, animation intensity and shake without changing Match-3 rules.</p>
+          </div>
+          <div className={styles.row}>
+            <span className={styles.rowLabel}>Move Hints</span>
+            <button
+              type="button"
+              className={`${styles.toggle} ${playerSettings.moveHints ? styles.toggleOn : ''}`}
+              onClick={() => updatePlayerSetting({ moveHints: !playerSettings.moveHints })}
+              aria-label={playerSettings.moveHints ? 'Disable move hints' : 'Enable move hints'}
+              aria-pressed={playerSettings.moveHints}
+            >
+              <span className={styles.toggleThumb} />
+            </button>
+          </div>
+          <label className={styles.titleField}>
+            <span>Animation intensity</span>
+            <select value={playerSettings.motionMode} onChange={event => updatePlayerSetting({ motionMode: event.target.value })}>
+              <option value="full">Full</option>
+              <option value="reduced">Reduced</option>
+              <option value="off">Instant</option>
+            </select>
+          </label>
+          <div className={styles.row}>
+            <span className={styles.rowLabel}>Screen Shake</span>
+            <button
+              type="button"
+              className={`${styles.toggle} ${playerSettings.screenShake ? styles.toggleOn : ''}`}
+              onClick={() => updatePlayerSetting({ screenShake: !playerSettings.screenShake })}
+              aria-label={playerSettings.screenShake ? 'Disable screen shake' : 'Enable screen shake'}
+              aria-pressed={playerSettings.screenShake}
+            >
+              <span className={styles.toggleThumb} />
+            </button>
+          </div>
+        </div>
 
         <form className={styles.titlePanel} onSubmit={saveTitle} aria-labelledby="player-title-heading">
           <div className={styles.titlePanelIntro}>

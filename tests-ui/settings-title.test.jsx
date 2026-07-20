@@ -72,3 +72,16 @@ test('Settings reports title load failures without blocking other settings', asy
   expect(screen.getByLabelText('Select difficulty')).toBeInTheDocument()
 })
 
+test('Settings persists gameplay comfort controls', async () => {
+  localStorage.removeItem('fo_move_hints')
+  localStorage.removeItem('fo_motion')
+  localStorage.removeItem('fo_screen_shake')
+  renderSettings({ profileLoader: vi.fn().mockResolvedValue(playerPayload) })
+  expect(await screen.findByRole('heading', { name: 'Gameplay comfort' })).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'Disable move hints' }))
+  expect(localStorage.getItem('fo_move_hints')).toBe('false')
+  await userEvent.selectOptions(screen.getByLabelText('Animation intensity'), 'reduced')
+  expect(localStorage.getItem('fo_motion')).toBe('reduced')
+  await userEvent.click(screen.getByRole('button', { name: 'Disable screen shake' }))
+  expect(localStorage.getItem('fo_screen_shake')).toBe('false')
+})

@@ -1,5 +1,15 @@
 # Flip-Out Match-3 balancing and device-preparation report
 
+## RC polish addendum - 20 July 2026
+
+The RC polish pass did not alter level layouts, move budgets, objectives, scoring constants, revive odds, Reward Theatre cadence or economy values. The new hint system is presentation/support only: it selects one deterministic legal move using objective progress, score gain, specials and cascades, then highlights the two involved cells after 30 seconds of idle settled play.
+
+No-moves handling remains server-authoritative. The existing engine reshuffle is now exposed to the UI as `No more moves` plus a visible shuffle phase, so balancing data should no longer understate player confusion caused by silent board changes. Future simulation reports do not need adjustment for this change because the board result is unchanged.
+
+Cascade multiplier communication is clearer: the banner now reports `Cascade chain` and counts only automatic cascade matches after the original move. The current scoring model already keeps the original move at x1 and increases later cascades; this pass changed the display metadata/copy, not the score math.
+
+Verification: focused Match-3 Node 40/40 passed, focused Match-3/Settings UI 11/11 passed, focused lint passed, aggregate local test passed with Node 175 passed / 20 expected Preview-only skips and UI 67/67, and production/Preview builds passed with 160 modules. Production was not touched.
+
 ## Season Journey addendum - 20 July 2026
 
 Season Journey now listens to Match-3 completion and grants 100 Season Score per completed level through an idempotent server event. This adds a progression layer above Match-3 but does not change level layouts, move counts, objectives, auto-player assumptions, cascade scoring, revives or Reward Theatre cadence. Season Tickets are awarded only from journey level-ups, including post-100 levels, and are not directly earned from gameplay actions. Future balancing should evaluate Season Score pacing separately from level difficulty.

@@ -1,5 +1,52 @@
 # Flip-Out continuation report
 
+## RC Match-3 polish pass - 20 July 2026
+
+This milestone moves Match-3 closer to release-candidate feel without adding new economy systems or changing level balance.
+
+Implemented:
+
+- Objective-aware move hints after at least 30 seconds of a completely settled idle board.
+- Hint reset on player click, pointer drag, keyboard input, board changes, animations and power-up interactions.
+- Settings controls for Move Hints, Animation intensity and Screen Shake.
+- Shared `playerSettings` utility so Settings and gameplay use the same persisted accessibility preferences.
+- Explicit `No more moves` presentation for server-authoritative dead-board reshuffles.
+- Explicit `Board shuffled` presentation for the shuffle power-up.
+- Cascade multiplier display now labels the effect as `Cascade chain` and counts only automatic cascade matches after the original player move.
+
+Verification:
+
+- Focused Match-3 Node -> **40/40 passed**.
+- Focused Match-3/Settings UI -> **11/11 passed**.
+- Focused ESLint on changed files -> passed.
+- `npm.cmd run test` -> Node **175 passed / 20 expected Preview-only skips**, UI **67/67 passed**.
+- `npm.cmd run test:preview` -> **20 expected local skips** because no local Preview `DATABASE_URL` is exposed.
+- `npm.cmd run build` -> passed with **160 transformed modules**.
+- `npm.cmd run build:preview` -> passed with **160 transformed modules**.
+
+Files changed:
+
+- `src/match3/hints.js`
+- `src/match3/presentation.js`
+- `src/match3/effects.js`
+- `src/screens/Match3.jsx`
+- `src/screens/Match3.module.css`
+- `src/screens/Settings.jsx`
+- `src/screens/Settings.module.css`
+- `src/ui/motion.js`
+- `src/utils/playerSettings.js`
+- `src/version.js`
+- `tests/match3-hints.test.js`
+- `tests/match3-presentation.test.js`
+- `tests-ui/match3-input.test.jsx`
+- `tests-ui/settings-title.test.jsx`
+
+Remaining risks:
+
+- Needs physical-device QA for hint timing, shake strength and shuffle feel.
+- This pass intentionally did not rebalance levels, modify rewards, alter Coin economy, or implement new booster/foil/Exchange systems.
+- Preview deployment verification is the next step for this milestone. Production was not touched.
+
 ## Season Journey architecture - 20 July 2026
 
 The Season Journey foundation is implemented and verified on development Preview. This is not a new season screen yet; it is the authoritative backend/data boundary needed before a production-quality journey UI, mission UI or seasonal reward shop can safely exist.

@@ -1,5 +1,15 @@
 # Flip-Out Match-3 vertical slice
 
+## RC polish addendum - 20 July 2026
+
+Match-3 now includes a deterministic objective-aware hint system: after at least 30 seconds of a settled idle board, one legal move is highlighted with a subtle pulse/sparkle treatment. The hint does not move tokens or change state, and it resets on click, drag, keyboard input, board changes, animations and power-up interactions. Settings now includes Move Hints, Animation intensity and Screen Shake controls backed by a shared player-settings utility.
+
+Dead-board reshuffles are no longer silent in the presentation layer. When the authoritative engine records `dead-board-shuffle`, the UI presents `No more moves` and a visible shuffle phase; player shuffle power-ups present `Board shuffled`. The engine still owns the final board and the reshuffle requirement that the board has at least one legal move and no immediate automatic matches.
+
+Cascade multiplier display now distinguishes the original player move from automatic cascade matches by labelling the banner `Cascade chain` and counting only matches formed after the move. Existing score calculation, moves, objectives, levels, rewards and economy values were not changed.
+
+Verification: focused Match-3 Node 40/40 passed, focused Match-3/Settings UI 11/11 passed, focused lint passed, aggregate local `npm.cmd run test` passed with Node 175 passed / 20 expected Preview-only skips and UI 67/67, production and Preview builds passed with 160 modules. Production was not touched.
+
 ## Season Journey addendum - 20 July 2026
 
 Match-3 completion now also emits an idempotent server-side Season Score event worth 100 Season Score. This is recorded by `api/_seasonJourney.js` using event ID `season-score:match3:<sessionId>` inside the same completion transaction, so repeated completion calls cannot grant extra Season Score or Season Tickets. Journey levels continue beyond 100, with Tickets awarded from level-ups only; no Match-3 level, objective, move count, cascade logic, revive rule or Reward Theatre cadence changed in this milestone.

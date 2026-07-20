@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { createGame, legalMoves } from '../src/match3/engine.js'
 import { MATCH3_LEVELS } from '../src/match3/levels.js'
@@ -128,7 +128,7 @@ test('Match-3 presentation renders multiplier, announcer and special effect laye
       particleIntensity: 6,
       particleCount: 24,
       announcer: 'OUTSTANDING!',
-      multiplierDisplay: { value: 2.5, cascadeCount: 4, scoreGained: 1200 },
+      multiplierDisplay: { value: 2.5, cascadeCount: 4, cascadeMatches: 3, scoreGained: 1200 },
       stages: [
         {
           createdSpecials: [{ at: { r: 1, c: 1 }, type: 'wrapped', animation: 't-formation' }],
@@ -138,8 +138,46 @@ test('Match-3 presentation renders multiplier, announcer and special effect laye
     },
   }
   const { container } = render(<GameBoard {...props} presentation={presentation} session={{ state: game }}/>)
-  expect(screen.getByText('Cascade multiplier')).toBeInTheDocument()
+  expect(screen.getByText('Cascade chain')).toBeInTheDocument()
   expect(screen.getAllByText('OUTSTANDING!').length).toBeGreaterThanOrEqual(1)
   expect(container.querySelector('[class*="creationShockwave"]')).toBeInTheDocument()
   expect(container.querySelector('[class*="specialImpact"]')).toBeInTheDocument()
+})
+
+test('idle Match-3 board reveals one move hint after the configured delay and resets on interaction', async () => {
+  vi.useFakeTimers()
+  try {
+    localStorage.removeItem('fo_move_hints')
+    const game = createGame(MATCH3_LEVELS[0], 88)
+    render(<GameBoard {...props} hintDelayMs={250} session={{ state: game }}/>)
+    expect(document.querySelectorAll('[class*="hintedTile"]').length).toBe(0)
+    await act(async () => { await vi.advanceTimersByTimeAsync(260) })
+    expect(document.querySelectorAll('[class*="hintedTile"]').length).toBe(2)
+    fireEvent.click(document.querySelector('[class*="hintedTile"]'))
+    expect(document.querySelectorAll('[class*="hintedTile"]').length).toBe(0)
+  } finally {
+    vi.useRealTimers()
+  }
+})
+
+test('disabled Match-3 move hints never highlight a settled board', async () => {
+  vi.useFakeTimers()
+  try {
+    localStorage.setItem('fo_move_hints', 'false')
+    const game = createGame(MATCH3_LEVELS[0], 89)
+    render(<GameBoard {...props} hintDelayMs={20} session={{ state: game }}/>)
+    await vi.advanceTimersByTimeAsync(50)
+    expect(document.querySelectorAll('[class*="hintedTile"]').length).toBe(0)
+  } finally {
+    localStorage.removeItem('fo_move_hints')
+    vi.useRealTimers()
+  }
+})
+
+test('dead-board shuffle presentation displays no-moves message and shuffle class', () => {
+  const game = createGame(MATCH3_LEVELS[0], 90)
+  const presentation = { phase: 'shuffle', shuffle: true, deadBoardShuffle: true, shuffleLabel: 'No more moves', durationMs: 820, cascades: [], cascadeCount: 0, effectPlan: {} }
+  const { container } = render(<GameBoard {...props} presentation={presentation} session={{ state: game }}/>)
+  expect(screen.getByText('No more moves')).toBeInTheDocument()
+  expect(container.querySelector('[class*="shuffling"]')).toBeInTheDocument()
 })

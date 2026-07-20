@@ -106,6 +106,7 @@ export function buildMatch3EffectPlan(cascades = [], { packId = 'classic', motio
     announcer: motionMode === 'off' ? null : cascadeAnnouncer(cascadeCount),
     multiplierDisplay: cascadeCount > 1 ? {
       value: cascades.at(-1)?.multiplier ?? 1,
+      cascadeMatches: cascadeCount - 1,
       cascadeCount,
       scoreGained: cascades.reduce((sum, cascade) => sum + (cascade.scoreGain ?? 0), 0),
       freezeMs: motionMode === 'full' ? 360 : motionMode === 'reduced' ? 120 : 0,
@@ -119,4 +120,3 @@ export function createdSpecialPresentation(presentation, row, column) {
     ?.flatMap(stage => stage.createdSpecials)
     .find(special => special.at?.r === row && special.at?.c === column) ?? null
 }
-
