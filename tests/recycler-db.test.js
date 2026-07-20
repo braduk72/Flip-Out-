@@ -53,7 +53,10 @@ test('Preview Shredder pays ledgered Coins and is atomic, concurrent and idempot
     )
   } finally {
     try {
-      if (players.length) await pool.query(`DELETE FROM fo_accounts WHERE player_id=ANY($1::uuid[])`, [players])
+      if (players.length) {
+        await pool.query(`DELETE FROM fo_coin_ledger WHERE account_id=ANY($1::uuid[])`, [players])
+        await pool.query(`DELETE FROM fo_accounts WHERE player_id=ANY($1::uuid[])`, [players])
+      }
     } finally { await pool.end() }
   }
 })
