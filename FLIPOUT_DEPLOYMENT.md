@@ -2,8 +2,9 @@
 
 ## Verification record - RC Match-3 polish pass, 20 July 2026
 
-- Commit `94674d4` was pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or production database was changed.
-- Focused Preview deployment: `dpl_GKMMdVFUern3fgNiV94Fb8vxLd8y`, generated URL `https://flip-1ultpg9ih-chattocal.vercel.app`, target Preview, created Mon 20 Jul 2026 16:28:15 BST.
+- Commits `94674d4`, `49f3dc7` and `0144fea` were pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or production database was changed.
+- Latest Preview deployment after report and lint cleanup: `dpl_Af3oXiG2Vamf6ETiFAPikDaQmauj`, generated URL `https://flip-9pqbgbshz-chattocal.vercel.app`, target Preview, created Mon 20 Jul 2026 16:33:25 BST.
+- Original focused Match-3 polish deployment: `dpl_GKMMdVFUern3fgNiV94Fb8vxLd8y`, generated URL `https://flip-1ultpg9ih-chattocal.vercel.app`, target Preview, created Mon 20 Jul 2026 16:28:15 BST.
 - Local verification before deployment:
   - `node --test tests\match3-hints.test.js tests\match3-presentation.test.js tests\match3-input.test.js tests\match3-engine.test.js` -> **40/40 passed**.
   - `npx.cmd vitest run --config vitest.config.js tests-ui\match3-input.test.jsx tests-ui\settings-title.test.jsx` -> **11/11 passed**.
@@ -12,8 +13,8 @@
   - `npm.cmd run test:preview` -> **20 expected local skips** because local Preview `DATABASE_URL` is not exposed.
   - `npm.cmd run build` -> passed with **160 transformed modules**.
   - `npm.cmd run build:preview` -> passed with **160 transformed modules**.
-- Broad lint status: `npm.cmd run lint:source -- --quiet` still fails with **17 pre-existing legacy errors** outside this milestone, mostly React compiler `set-state-in-effect` findings in old Memory/Multiplayer flows plus two legacy no-empty/unused-variable findings.
-- Vercel inspect: `npx.cmd vercel inspect https://dev.flipout.gizmogames.uk --scope chattocal` fetched `flip-1ultpg9ih-chattocal.vercel.app`, status Ready, target Preview, aliases `https://dev.flipout.gizmogames.uk` and `https://flip-out-git-dev-chattocal.vercel.app`. Vercel still lists the old historical `https://dev.flipout.app` alias; it was not changed or used.
+- Broad lint status: `npm.cmd run lint:source -- --quiet` passed after follow-up cleanup of the 17 pre-existing legacy errors in `src/App.jsx`, `src/screens/Game.jsx`, `src/screens/MultiplayerLobby.jsx`, `src/data/decks.js`, `src/data/seasonalOpponents.js` and `src/utils/gameStorage.js`.
+- Vercel inspect: `npx.cmd vercel inspect https://dev.flipout.gizmogames.uk --scope chattocal` fetched `flip-9pqbgbshz-chattocal.vercel.app`, status Ready, target Preview, aliases `https://dev.flipout.gizmogames.uk` and `https://flip-out-git-dev-chattocal.vercel.app`. Vercel still lists the old historical `https://dev.flipout.app` alias; it was not changed or used.
 - HTTP verification: generated Preview and `https://dev.flipout.gizmogames.uk` both returned HTTP 200, matching ETag `"877c48c9aa19c753994b4f17a64786f2"` and byte-identical HTML SHA-256 `80A7E2157FF7D414F9016E3B599A93621E7069BF754F510B833D8224064E7E10`.
 - Bundle verification: `https://dev.flipout.gizmogames.uk/assets/index-DbS1GjYG.js` returned HTTP 200, 424,090 bytes and contains `1.21.0-rc-match3-polish`. Lazy Match-3 bundle `https://dev.flipout.gizmogames.uk/assets/Match3-CtEHZd6J.js` returned HTTP 200, 35,793 bytes and contains `No more moves`, `Cascade chain` and `hintedTile`.
 

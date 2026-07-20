@@ -27,9 +27,10 @@ Verification:
 
 Preview deployment:
 
-- Commit: `94674d4 Add Match-3 RC polish controls`.
-- Deployment ID: `dpl_GKMMdVFUern3fgNiV94Fb8vxLd8y`.
-- Generated Preview URL: `https://flip-1ultpg9ih-chattocal.vercel.app`.
+- Commits: `94674d4 Add Match-3 RC polish controls`, `49f3dc7 Record Match-3 RC polish deployment`, `0144fea Clean broad source lint for RC`.
+- Latest deployment ID: `dpl_Af3oXiG2Vamf6ETiFAPikDaQmauj`.
+- Latest generated Preview URL: `https://flip-9pqbgbshz-chattocal.vercel.app`.
+- Original focused Match-3 polish deployment: `dpl_GKMMdVFUern3fgNiV94Fb8vxLd8y` at `https://flip-1ultpg9ih-chattocal.vercel.app`.
 - Permanent development URL: `https://dev.flipout.gizmogames.uk`.
 - Target: Vercel Preview.
 - Permanent dev verification: generated Preview and permanent dev URL both returned HTTP 200 with matching ETag `"877c48c9aa19c753994b4f17a64786f2"` and byte-identical HTML SHA-256 `80A7E2157FF7D414F9016E3B599A93621E7069BF754F510B833D8224064E7E10`.
