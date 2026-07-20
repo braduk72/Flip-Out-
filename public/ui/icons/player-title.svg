@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title">
+  <title id="title">Player title</title>
+  <defs>
+    <linearGradient id="g" x1="12" x2="84" y1="18" y2="78" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffe45f"/>
+      <stop offset=".45" stop-color="#ff9d25"/>
+      <stop offset="1" stop-color="#a855f7"/>
+    </linearGradient>
+    <filter id="s" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity=".45"/>
+    </filter>
+  </defs>
+  <path fill="#101833" d="M13 29c0-7.2 5.8-13 13-13h44c7.2 0 13 5.8 13 13v38c0 7.2-5.8 13-13 13H26c-7.2 0-13-5.8-13-13z"/>
+  <path fill="url(#g)" filter="url(#s)" d="M25 31c0-3.3 2.7-6 6-6h34c3.3 0 6 2.7 6 6v6H25zm0 13h46v21c0 3.3-2.7 6-6 6H31c-3.3 0-6-2.7-6-6z"/>
+  <path fill="#fff7c7" d="M34 52h28v6H34zm6-18h16v5H40z"/>
+  <path fill="#fff" opacity=".78" d="m48 58 4.7 2.5-.9-5.2 3.8-3.7-5.3-.8L48 46l-2.3 4.8-5.3.8 3.8 3.7-.9 5.2z"/>
+</svg>

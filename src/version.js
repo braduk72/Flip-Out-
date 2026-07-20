@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.17.0-revives'
+export const APP_VERSION = '1.18.0-player-titles'

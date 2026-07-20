@@ -130,13 +130,14 @@ export function PlayerSummary({ player, loading = false, onClick }) {
   const Element = onClick ? 'button' : 'div'
   const xpAvailable = player?.xp != null && player?.xpTarget != null
   const avatar = getAvatarById(player?.avatarId)
+  const title = player?.title || 'Choose a title'
   const label = onClick ? `Open player profile${avatar ? `. Avatar: ${avatar.label}` : ''}` : undefined
   return (
     <Element type={onClick ? 'button' : undefined} className={styles.playerSummary} onClick={onClick} aria-label={label}>
       <span className={styles.avatar} data-avatar-id={avatar?.id ?? ''} aria-hidden="true">{avatar && <img className={styles.avatarPortrait} src={avatar.asset} alt=""/>}<img className={styles.avatarFrame} src="/ui/avatar-frame.svg" alt=""/></span>
       <span className={styles.playerText}>
         <strong>{loading ? 'Loading…' : player?.playerName || 'Guest Player'}</strong>
-        <span>{player?.level ? `Level ${player.level}` : 'Level not set'}{player?.accountKind === 'guest' && <Badge tone="guest">Guest</Badge>}</span>
+        <span>{loading ? 'Loading titleâ€¦' : title}{player?.level ? <Badge tone="neutral">Level {player.level}</Badge> : null}{player?.accountKind === 'guest' && <Badge tone="guest">Guest</Badge>}</span>
         <ProgressBar compact unavailable={!xpAvailable} value={player?.xp ?? 0} max={player?.xpTarget ?? 1} label={xpAvailable ? `XP ${player.xp} of ${player.xpTarget}` : 'XP data unavailable'} tone="gold" />
       </span>
     </Element>

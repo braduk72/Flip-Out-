@@ -1,5 +1,6 @@
 import { DECKS } from './decks.js'
 import { SPECIAL_CARDS } from './specialCards.js'
+import { PLAYER_TITLE_CATALOG } from './playerTitles.js'
 
 const DEFAULT_RELEASE = '2026-01-01'
 
@@ -45,6 +46,7 @@ export const ITEM_CATALOG = Object.freeze([
   { id: 'inventory:key:standard', type: 'key', name: 'Standard Key', asset: '/images/padlock.webp', rarity: 'rare', releasedAt: DEFAULT_RELEASE, tradable: false, stackable: true, status: 'available' },
   { id: 'booster:themed', type: 'booster', name: 'Themed Booster Pack', asset: '/ui/shop/booster-packs.webp', rarity: 'rare', releasedAt: DEFAULT_RELEASE, tradable: false, stackable: true, status: 'available' },
   { id: 'booster:random', type: 'booster', name: 'Random Booster Pack', asset: '/ui/shop/booster-packs.webp', rarity: 'epic', releasedAt: DEFAULT_RELEASE, tradable: false, stackable: true, status: 'available' },
+  ...PLAYER_TITLE_CATALOG.map(title => ({ id: title.id, type: title.id.includes(':prefix:') ? 'title_prefix' : 'title_suffix', name: title.label, asset: '/ui/icons/player-title.svg', rarity: 'common', releasedAt: DEFAULT_RELEASE, tradable: false, stackable: false, status: 'available' })),
   ...['hammer', 'shuffle', 'line-blast', 'color-clear', 'extra-moves'].map(id => ({ id: `powerup:match3-${id}`, type: 'powerup', name: `Match-3 ${id.replaceAll('-', ' ')}`, asset: '/images/specialcards/tiebreaker.webp', rarity: 'common', releasedAt: DEFAULT_RELEASE, tradable: false, stackable: true, status: 'available' })),
 ])
 

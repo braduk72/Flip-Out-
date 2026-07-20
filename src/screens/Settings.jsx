@@ -1,7 +1,10 @@
+import { useEffect, useMemo, useState } from 'react'
 import styles from './Settings.module.css'
 import BottomNav from '../components/BottomNav'
 import { APP_VERSION } from '../version.js'
 import { playHoverTick } from '../hooks/useSfx'
+import { PLAYER_TITLE_PREFIXES, PLAYER_TITLE_SUFFIXES, formatPlayerTitle } from '../data/playerTitles.js'
+import { playerGameApi } from '../utils/gameApi.js'
 
 const DIFFICULTIES = [
   { id: 'Easy', label: 'Easy' },
@@ -9,7 +12,64 @@ const DIFFICULTIES = [
   { id: 'Hard', label: 'Hard' },
 ]
 
-export default function Settings({ onBack, onAbout, onPrivacy, onPatchNotes, musicOn, sfxOn, onToggleMusic, onToggleSfx, musicVol = 0.45, sfxVol = 0.7, onMusicVol, onSfxVol, difficulty, onDifficulty, navProps }) {
+export default function Settings({ onBack, onAbout, onPrivacy, onPatchNotes, musicOn, sfxOn, onToggleMusic, onToggleSfx, musicVol = 0.45, sfxVol = 0.7, onMusicVol, onSfxVol, difficulty, onDifficulty, navProps, profileLoader = playerGameApi.state, titleSaver = playerGameApi.setPlayerTitle }) {
+  const [profileState, setProfileState] = useState(null)
+  const [prefixId, setPrefixId] = useState('')
+  const [suffixId, setSuffixId] = useState('')
+  const [savingTitle, setSavingTitle] = useState(false)
+  const [titleMessage, setTitleMessage] = useState('')
+  const [titleError, setTitleError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    profileLoader()
+      .then(payload => {
+        if (cancelled) return
+        const state = payload?.state ?? {}
+        const selected = state.playerTitles?.selected ?? {}
+        setProfileState(state)
+        setPrefixId(selected.prefixId ?? '')
+        setSuffixId(selected.suffixId ?? '')
+      })
+      .catch(error => {
+        if (!cancelled) setTitleError(error?.message || 'Player title settings could not be loaded.')
+      })
+    return () => { cancelled = true }
+  }, [profileLoader])
+
+  const profile = profileState?.profile ?? {}
+  const playerName = profile.display_name ?? 'Player'
+  const availablePrefixes = profileState?.playerTitles?.available?.prefixes ?? PLAYER_TITLE_PREFIXES
+  const availableSuffixes = profileState?.playerTitles?.available?.suffixes ?? PLAYER_TITLE_SUFFIXES
+  const titlePreview = useMemo(() => formatPlayerTitle({ playerName, prefixId: prefixId || null, suffixId: suffixId || null }), [playerName, prefixId, suffixId])
+  const titleChanged = (prefixId || '') !== (profileState?.playerTitles?.selected?.prefixId ?? '') || (suffixId || '') !== (profileState?.playerTitles?.selected?.suffixId ?? '')
+  async function saveTitle(event) {
+    event.preventDefault()
+    if (savingTitle || !titleChanged) return
+    setSavingTitle(true)
+    setTitleError('')
+    setTitleMessage('')
+    try {
+      const result = await titleSaver({ prefixId: prefixId || null, suffixId: suffixId || null })
+      setProfileState(current => ({
+        ...(current ?? {}),
+        playerTitles: result,
+        profile: {
+          ...(current?.profile ?? profile),
+          selected_title_prefix_id: result.selected?.prefixId ?? null,
+          selected_title_suffix_id: result.selected?.suffixId ?? null,
+        },
+      }))
+      setPrefixId(result.selected?.prefixId ?? '')
+      setSuffixId(result.selected?.suffixId ?? '')
+      setTitleMessage('Player title saved.')
+    } catch (error) {
+      setTitleError(error?.message || 'Player title could not be saved.')
+    } finally {
+      setSavingTitle(false)
+    }
+  }
+
   return (
     <div className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="settings">
       <div className={styles.header}>
@@ -35,6 +95,35 @@ export default function Settings({ onBack, onAbout, onPrivacy, onPatchNotes, mus
         </div>
 
         <h2 className={styles.sectionTitle}>Settings</h2>
+
+        <form className={styles.titlePanel} onSubmit={saveTitle} aria-labelledby="player-title-heading">
+          <div className={styles.titlePanelIntro}>
+            <span className={styles.destinationEyebrow}>Profile</span>
+            <h2 id="player-title-heading">Player Title</h2>
+            <p>Choose how your name appears in the header and future social areas.</p>
+          </div>
+          <div className={styles.titlePreview} aria-live="polite">
+            <span>Preview</span>
+            <strong>{titlePreview}</strong>
+          </div>
+          <label className={styles.titleField}>
+            <span>Prefix</span>
+            <select value={prefixId} onChange={event => { setPrefixId(event.target.value); setTitleMessage(''); setTitleError('') }}>
+              <option value="">No prefix</option>
+              {availablePrefixes.map(title => <option key={title.id} value={title.id}>{title.label}</option>)}
+            </select>
+          </label>
+          <label className={styles.titleField}>
+            <span>Suffix</span>
+            <select value={suffixId} onChange={event => { setSuffixId(event.target.value); setTitleMessage(''); setTitleError('') }}>
+              <option value="">No suffix</option>
+              {availableSuffixes.map(title => <option key={title.id} value={title.id}>{title.label}</option>)}
+            </select>
+          </label>
+          {titleError && <p className={styles.titleError} role="alert">{titleError}</p>}
+          {titleMessage && <p className={styles.titleSaved} role="status">{titleMessage}</p>}
+          <button className={styles.saveTitleButton} type="submit" disabled={savingTitle || !titleChanged}>{savingTitle ? 'Saving title…' : 'Save Player Title'}</button>
+        </form>
 
         {/* Difficulty */}
         <div className={styles.row}>

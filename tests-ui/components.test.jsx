@@ -20,10 +20,12 @@ const promotions = [
 
 describe('Flip-Out design-system components', () => {
   test('safe-area header exposes player, exact currency values and Coin Store access', () => {
-    const { container } = render(<SafeAreaHeader player={{ playerName: 'Guest Player', avatarId: 'clash-badger', accountKind: 'guest', level: null }} currencies={{ stars: 1275, coins: 6540 }} onCoinStore={() => {}}/>)
+    const { container } = render(<SafeAreaHeader player={{ playerName: 'Guest Player', title: 'The Collector', avatarId: 'clash-badger', accountKind: 'guest', level: null }} currencies={{ stars: 1275, coins: 6540 }} onCoinStore={() => {}}/>)
     expect(screen.getByRole('banner')).toHaveAttribute('data-safe-area', 'runtime')
     expect(screen.getByAltText('Flip-Out!')).toBeInTheDocument()
     expect(screen.getByText('Guest Player')).toBeInTheDocument()
+    expect(screen.getByText('The Collector')).toBeInTheDocument()
+    expect(screen.queryByText(/level not set/i)).not.toBeInTheDocument()
     expect(screen.getByLabelText('1,275 Stars')).toBeInTheDocument()
     expect(screen.getByLabelText('6,540 Coins')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Open Coin Store' })).toBeInTheDocument()

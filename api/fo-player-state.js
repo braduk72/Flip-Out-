@@ -3,6 +3,7 @@ import { linkDevice, requirePlayer } from './_auth.js'
 import { getPlayerState, mutatePlayerValue } from './_playerState.js'
 import { setInitialDisplayName } from './_nickname.js'
 import { setInitialAvatar } from './_avatars.js'
+import { setPlayerTitle } from './_playerTitles.js'
 
 export default async function handler(req, res) {
   const db = getDb()
@@ -14,6 +15,7 @@ export default async function handler(req, res) {
     if (req.body?.action === 'link-device') return res.json(await linkDevice(db, { playerId: player.player_id, deviceUuid: req.body.deviceUuid }))
     if (req.body?.action === 'set-display-name') return res.json(await setInitialDisplayName(db, { playerId: player.player_id, displayName: req.body.displayName }))
     if (req.body?.action === 'set-avatar') return res.json(await setInitialAvatar(db, { playerId: player.player_id, avatarId: req.body.avatarId }))
+    if (req.body?.action === 'set-player-title') return res.json(await setPlayerTitle(db, { playerId: player.player_id, prefixId: req.body.prefixId, suffixId: req.body.suffixId }))
     if (req.body?.action !== 'mutate') return res.status(400).json({ error: 'Invalid action' })
     // Valuable client calls may spend owned value, but may never mint it.
     if (Number(req.body.amount) > 0) return res.status(403).json({ error: 'Client grants are not allowed' })
