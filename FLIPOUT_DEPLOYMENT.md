@@ -61,7 +61,7 @@ The application currently reports `1.10.0-preview-dev-toolkit` from `src/version
 
 - Hidden route: `https://dev.flipout.gizmogames.uk/?dev=toolkit` after deployment.
 - Backend service: `/api/fo-game?service=dev-tools`.
-- Required Preview env var: `DEV_TOOLKIT_SECRET`.
+- Required Preview env var: `DEV_TOOLKIT_SECRET`, configured as Sensitive for Preview branch `dev`.
 - Production guard: service returns 404 outside `VERCEL_ENV=preview`; normal authenticated player session is still required.
 - Local verification before deployment: focused Node **4/4**, focused UI **2/2**, focused lint passed, production build passed.
 - Production was not touched.

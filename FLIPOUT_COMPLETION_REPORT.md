@@ -6,7 +6,7 @@ Added the first restricted QA toolkit for Preview only. The hidden `?dev=toolkit
 
 Security boundary: `/api/fo-game?service=dev-tools` returns 404 outside Preview, requires a configured `DEV_TOOLKIT_SECRET`, requires the normal Bearer player session, and never exposes a client-authoritative balance path. Coin creation uses the existing `promotional-grant` ledger route. Item grants use `applyReward`, preserving transaction IDs, Inventory-capacity checks and duplicate protection.
 
-Foil grants and achievement resets remain prepared but inactive because the repository still has no authoritative Foil item definitions or achievement tables. No schema migration was added and Production was not touched.
+Foil grants and achievement resets remain prepared but inactive because the repository still has no authoritative Foil item definitions or achievement tables. `DEV_TOOLKIT_SECRET` is configured as a Vercel Sensitive Preview env var for branch `dev` and saved locally in ignored `.dev-toolkit-secret.local`. No schema migration was added and Production was not touched.
 
 Verification:
 

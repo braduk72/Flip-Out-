@@ -2,13 +2,13 @@
 
 ## Preview Developer Toolkit - 20 July 2026
 
-- **Status: Implemented locally; Preview deployment pending in this milestone.** A hidden Preview-only developer toolkit has been added at `?dev=toolkit` so QA accounts can seed and inspect real player state before testing Official Theme Albums, Inventory, Exchange and Recycler flows.
+- **Status: Implemented and deploying to Preview.** A hidden Preview-only developer toolkit has been added at `?dev=toolkit` so QA accounts can seed and inspect real player state before testing Official Theme Albums, Inventory, Exchange and Recycler flows.
 - The backend service is `fo-game?service=dev-tools`; it returns 404 outside Vercel Preview, requires a configured `DEV_TOOLKIT_SECRET`, requires the normal authenticated player session, and routes all grants through existing server-authoritative boundaries.
 - Implemented controls: inspect authoritative player state, grant catalogue items, grant complete Normal Theme inventory, grant authorised promotional Coins through the tamper-evident Coin ledger, reset the current player's Inventory, reset their Theme Album entries/collector records, and reset their Exchange listings.
 - Foil grants and achievement resets are deliberately labelled prepared but unavailable because there are no authoritative Foil item definitions or achievement persistence tables yet.
 - Files changed: `api/_foDevTools.js`, `api/fo-game.js`, `src/utils/gameApi.js`, `src/ui/devToolkitAccess.js`, `src/screens/DevToolkit.jsx`, `src/screens/DevToolkit.module.css`, `src/App.jsx`, `src/version.js`, `tests/dev-tools.test.js`, `tests-ui/dev-toolkit.test.jsx`.
 - Verification so far: focused Node `4/4` passed; focused UI `2/2` passed; focused lint passed; production build passed with the toolkit split into its own lazy chunk (`DevToolkit-BmIjXaLs.js`, 5.32 kB / 1.88 kB gzip). Production was not touched.
-- Remaining risks: Preview needs `DEV_TOOLKIT_SECRET` configured before the route can be used live. The complete-theme grant may still respect Inventory capacity, which is intentional because it uses the real grant boundary.
+- Remaining risks: `DEV_TOOLKIT_SECRET` is configured as a Vercel Sensitive Preview env var for branch `dev` and saved locally in ignored `.dev-toolkit-secret.local`; live API verification must use the deployment created after that env var was added. The complete-theme grant may still respect Inventory capacity, which is intentional because it uses the real grant boundary.
 
 ## Official Theme Album Collection UI — 20 July 2026
 
