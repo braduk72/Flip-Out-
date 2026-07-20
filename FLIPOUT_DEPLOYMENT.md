@@ -62,7 +62,11 @@ The application currently reports `1.10.3-market-seed` from `src/version.js`. Re
 - Toolkit action: `seed-initial-market`.
 - Seed account: `dev-market-maker@flipout.preview.invalid`.
 - Seed shape: up to 15 active listings, one early Normal card per active theme, prices from 25 Coins upward.
-- Local verification before deployment: focused Node **5/5**, focused UI **2/2**, focused lint passed, production build passed.
+- Initial live deployment exposed a lazy-expiry client/pool bug during seed execution; recovery commit `09ab20d` fixed checked-out PostgreSQL client detection and made the seed action relist already granted seed inventory without reminting.
+- Local verification after recovery: focused Node **20 passed / 0 failed / 1 Preview DB skip**, focused UI **2/2**, focused lint passed, production build passed.
+- Deployment: `dpl_5VayvBydRWKqECZyNdRBAWUMcwwg`, generated Preview `https://flip-ebi5cbb29-chattocal.vercel.app`, permanent development URL `https://dev.flipout.gizmogames.uk`.
+- URL verification: both URLs returned HTTP 200 and ETag `"6a150a0c4ac2419f70e33c8c7bce90f5"`; the permanent URL served `/assets/index--PY0bMfv.js`, and the bundle contains `1.10.3-market-seed`.
+- Live seed verification: authenticated guest `19080f5f-f2d6-4c62-9d26-0a1baedf41c7`; first `seed-initial-market` call returned `duplicate=false`, `listingsCreated=15`, `seedId=initial-v1`; immediate retry returned `duplicate=true`, `reason=seed-market-already-active`, `listingsCreated=0`.
 - No schema migration was required.
 - Production was not touched.
 

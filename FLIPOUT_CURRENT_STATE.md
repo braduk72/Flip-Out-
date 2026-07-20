@@ -2,14 +2,16 @@
 
 ## Preview initial Exchange seed - 20 July 2026
 
-- **Status: Implemented locally; Preview deployment pending in this milestone.** The Preview Developer Toolkit can now seed the initial Exchange market through `seed-initial-market`.
+- **Status: Implemented and verified on development Preview.** The Preview Developer Toolkit can now seed the initial Exchange market through `seed-initial-market`.
 - The seed uses a deterministic protected market-maker account (`dev-market-maker@flipout.preview.invalid`) and one early card from each active theme, capped at 15 listings so it remains below the 20 active-listing limit. Prices start at 25 Coins and rise by 5 Coins per theme.
 - The action is rerun-safe: if the market-maker already has active listings, it returns a duplicate response; if the original seed transactions were already consumed, it does not mint a second initial market.
 - Files changed: `api/_foDevTools.js`, `src/screens/DevToolkit.jsx`, `tests/dev-tools.test.js`, `src/version.js`.
 - Verification so far: focused dev-toolkit Node tests **5/5** passed; focused toolkit UI tests **2/2** passed; focused lint passed; production build passed. No schema migration was required and Production was not touched.
 - Live Preview attempt on the first deployment exposed a backend client/pool bug in lazy expiry (`Client has already been connected. You cannot reuse a client.`). The fix now distinguishes checked-out PostgreSQL clients from pools and recovers from the partial seed by relisting already granted seed inventory instead of reminting it.
 - Verification after fix: focused Node **20 passed / 0 failed / 1 Preview DB skip** across dev-tools/progression/game-services, focused UI **2/2** passed after rerunning from the real workspace, focused lint passed and production build passed.
-- Remaining risks: live Preview seed execution still needs to be rerun after deploying the fix with an authenticated Preview account and the local developer secret.
+- Preview deployment `dpl_5VayvBydRWKqECZyNdRBAWUMcwwg` reached Ready at `https://flip-ebi5cbb29-chattocal.vercel.app`; Vercel aliases included `https://dev.flipout.gizmogames.uk`. The permanent development URL returned HTTP 200 with the same ETag `"6a150a0c4ac2419f70e33c8c7bce90f5"` as the generated Preview and served `/assets/index--PY0bMfv.js`, whose bundle contains `1.10.3-market-seed`.
+- Live Preview execution used authenticated guest `19080f5f-f2d6-4c62-9d26-0a1baedf41c7` and the local Preview developer secret. First call: `duplicate=false`, `listingsCreated=15`, `seedId=initial-v1`. Immediate retry: `duplicate=true`, `reason=seed-market-already-active`, `listingsCreated=0`. No schema migration was required and Production was not touched.
+- Remaining risks: the seed is a development-only bootstrap action, not a seller management UI. Seller controls, richer market curation and scheduled expiry remain future work.
 
 ## Exchange listing rules - 20 July 2026
 

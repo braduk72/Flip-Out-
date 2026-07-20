@@ -14,6 +14,8 @@ Verification:
 - Focused UI: `npx.cmd vitest run --config vitest.config.js tests-ui\dev-toolkit.test.jsx` - **2/2 passed**.
 - Focused lint: `npx.cmd eslint api\_foDevTools.js src\screens\DevToolkit.jsx tests\dev-tools.test.js tests-ui\dev-toolkit.test.jsx` - passed.
 - Production build: `npm.cmd run build` - passed.
+- Deployment: recovery commit reached Ready as `dpl_5VayvBydRWKqECZyNdRBAWUMcwwg` at `https://flip-ebi5cbb29-chattocal.vercel.app`; `https://dev.flipout.gizmogames.uk` returned HTTP 200 with matching ETag `"6a150a0c4ac2419f70e33c8c7bce90f5"` and served `/assets/index--PY0bMfv.js` containing `1.10.3-market-seed`.
+- Live Preview seed execution: authenticated guest `19080f5f-f2d6-4c62-9d26-0a1baedf41c7`; first call returned `duplicate=false`, `listingsCreated=15`, `seedId=initial-v1`; immediate retry returned `duplicate=true`, `reason=seed-market-already-active`, `listingsCreated=0`.
 - No schema migration was required. Production was not touched.
 
 ## Exchange listing rules - 20 July 2026
