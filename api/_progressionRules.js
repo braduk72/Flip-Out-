@@ -1,6 +1,9 @@
 import { annualChoiceEligibility } from '../src/data/itemCatalog.js'
 
 export const WHEEL_ACTIONS = Object.freeze(['wheel:free', 'wheel:advert', 'wheel:coins'])
+export const EXCHANGE_MIN_LISTING_PRICE_COINS = 10
+export const EXCHANGE_MAX_ACTIVE_LISTINGS = 20
+export const EXCHANGE_DEFAULT_EXPIRY_DAYS = 7
 
 export function localDateKey(date, timeZone = 'UTC') {
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(date)
@@ -42,10 +45,10 @@ export function auctionAmounts(grossCoins, feeBasisPoints = 2000) {
   return { grossCoins, feeCoins, netCoins: grossCoins - feeCoins }
 }
 
-export function validateListing({ item, quantity, priceCoins, sellerId, buyerId, minPrice = 1, maxPrice = 1000000 }) {
+export function validateListing({ item, quantity, priceCoins, sellerId, buyerId, minPrice = EXCHANGE_MIN_LISTING_PRICE_COINS, maxPrice = null }) {
   if (!item?.tradable) return { allowed: false, reason: 'item-not-tradable' }
   if (!Number.isSafeInteger(quantity) || quantity < 1) return { allowed: false, reason: 'invalid-quantity' }
-  if (!Number.isSafeInteger(priceCoins) || priceCoins < minPrice || priceCoins > maxPrice) return { allowed: false, reason: 'invalid-price' }
+  if (!Number.isSafeInteger(priceCoins) || priceCoins < minPrice || (Number.isSafeInteger(maxPrice) && priceCoins > maxPrice)) return { allowed: false, reason: 'invalid-price' }
   if (buyerId && buyerId === sellerId) return { allowed: false, reason: 'self-purchase' }
   return { allowed: true }
 }

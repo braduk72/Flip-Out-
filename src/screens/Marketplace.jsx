@@ -55,7 +55,7 @@ export default function Marketplace({ onBack, navProps }) {
     <div className={styles.scroll}>
       <CardPanel className={styles.exchangeIntro}>
         <h2>Trade eligible duplicate items</h2>
-        <p>Every listing uses Coins, audited ownership and a complete transaction history. Sellers receive 80%; the Exchange fee is 20%.</p>
+        <p>Every listing uses Coins, audited ownership and a complete transaction history. Sellers receive 80%; the Exchange fee is 20%. Listings start at 10 Coins, expire after seven days and return automatically if unsold.</p>
       </CardPanel>
       {message && status !== 'error' && <p className={styles.notice} role="status">{message}</p>}
       {status === 'loading' && <LoadingState label="Loading Exchange listings…" />}
@@ -65,13 +65,13 @@ export default function Marketplace({ onBack, navProps }) {
           <span className={styles.eyebrow}>Sell</span><h2>List an eligible duplicate</h2>
           {tradable.length === 0 ? <EmptyState title="No tradable duplicates" detail="Eligible duplicate items will appear here." /> : <div className={styles.sellForm}>
             <label>Item<select value={itemId} onChange={event => setItemId(event.target.value)}><option value="">Choose item</option>{tradable.map(row => <option key={row.item_id} value={row.item_id}>{ITEM_BY_ID.get(row.item_id)?.name ?? row.item_id} ×{row.quantity}</option>)}</select></label>
-            <label>Price in Coins<input inputMode="numeric" value={price} onChange={event => setPrice(event.target.value)} placeholder="Coin price" /></label>
+            <label>Price in Coins<input inputMode="numeric" min="10" value={price} onChange={event => setPrice(event.target.value)} placeholder="Minimum 10 Coins" /></label>
             <button className={styles.primary} disabled={!itemId || !Number(price)} onClick={() => act({ action: 'list', itemId, quantity: 1, priceCoins: Number(price) })}>List one item</button>
           </div>}
         </CardPanel>
         <section className={styles.listings} aria-labelledby="active-listings"><span className={styles.eyebrow}>Buy</span><h2 id="active-listings">Active listings</h2>
           {listings.length === 0 ? <CardPanel><EmptyState title="No active listings" detail="Player listings will appear here when available." /></CardPanel> : listings.map(row => <CardPanel as="article" className={styles.listing} key={row.listing_id}>
-            <div><strong>{ITEM_BY_ID.get(row.item_id)?.name ?? row.item_id}</strong><span>Quantity {row.quantity}</span></div>
+            <div><strong>{ITEM_BY_ID.get(row.item_id)?.name ?? row.item_id}</strong><span>Quantity {row.quantity}{row.expires_at ? ` - expires ${new Date(row.expires_at).toLocaleDateString()}` : ''}</span></div>
             <b>{row.price_coins} Coins</b>
             <button className={styles.primary} onClick={() => act({ action: 'buy', listingId: row.listing_id, requestId: `market-buy:${row.listing_id}` })}>Buy</button>
           </CardPanel>)}

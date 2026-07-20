@@ -2,7 +2,7 @@ import crypto from 'node:crypto'
 import { ITEM_BY_ID } from '../src/data/itemCatalog.js'
 import { REWARD_TABLES } from './_rewards.js'
 import { applyReward, enforceRateLimit, secureWeightedReward } from './_gameServices.js'
-import { auctionAmounts } from './_progressionRules.js'
+import { auctionAmounts, EXCHANGE_DEFAULT_EXPIRY_DAYS, EXCHANGE_MAX_ACTIVE_LISTINGS, EXCHANGE_MIN_LISTING_PRICE_COINS, validateListing } from './_progressionRules.js'
 
 export async function continueMatch(db, { playerId, matchId, method, advertCompletionId, requestId }) {
   const transactionId = String(requestId ?? `continue:${matchId}:${method}`)
@@ -63,17 +63,65 @@ export async function openPlayerLockbox(db, { playerId, openingId, boxItemId = '
   } catch (error) { await client.query('ROLLBACK'); throw error } finally { client.release() }
 }
 
+function defaultListingExpiry(now = new Date()) {
+  return new Date(now.getTime() + EXCHANGE_DEFAULT_EXPIRY_DAYS * 86400000)
+}
+
+export async function expireMarketListings(dbOrClient, { sellerId = null, listingId = null } = {}) {
+  const ownsConnection = typeof dbOrClient.connect === 'function'
+  const client = ownsConnection ? await dbOrClient.connect() : dbOrClient
+  try {
+    if (ownsConnection) await client.query('BEGIN')
+    const expired = await client.query(
+      `UPDATE fo_market_listings
+          SET status='expired', cancelled_at=NOW()
+        WHERE status='active'
+          AND expires_at IS NOT NULL
+          AND expires_at<=NOW()
+          AND ($1::uuid IS NULL OR seller_id=$1)
+          AND ($2::uuid IS NULL OR listing_id=$2)
+        RETURNING listing_id,seller_id,item_id,quantity`,
+      [sellerId, listingId]
+    )
+    const returned = []
+    for (const row of expired.rows) {
+      await applyReward(client, {
+        playerId: row.seller_id,
+        transactionId: `market-expire:${row.listing_id}`,
+        source: 'market-return',
+        reward: { itemId: row.item_id, amount: Number(row.quantity) },
+        metadata: { listingId: row.listing_id, reason: 'expired-listing' },
+        skipCapacityCheck: true,
+      })
+      returned.push(row.listing_id)
+    }
+    if (ownsConnection) await client.query('COMMIT')
+    return { expired: returned.length, listingIds: returned }
+  } catch (error) {
+    if (ownsConnection) await client.query('ROLLBACK')
+    throw error
+  } finally {
+    if (ownsConnection) client.release()
+  }
+}
+
 export async function createListing(db, { playerId, itemId, quantity, priceCoins, expiresAt }) {
   const item = ITEM_BY_ID.get(itemId)
-  if (!item?.tradable || !Number.isSafeInteger(quantity) || quantity < 1 || !Number.isSafeInteger(priceCoins) || priceCoins < 1) throw Object.assign(new Error('Invalid listing'), { status: 400 })
+  const validation = validateListing({ item, quantity, priceCoins, sellerId: playerId, minPrice: EXCHANGE_MIN_LISTING_PRICE_COINS })
+  if (!validation.allowed) throw Object.assign(new Error('Invalid listing'), { status: 400, code: validation.reason })
   const listingId = crypto.randomUUID()
   const client = await db.connect()
   try {
     await client.query('BEGIN')
+    await enforceRateLimit(client, { playerId, action: 'market-list', limit: 20 })
+    await expireMarketListings(client, { sellerId: playerId })
+    const active = await client.query(`SELECT COUNT(*)::int AS count FROM fo_market_listings WHERE seller_id=$1 AND status='active' AND (expires_at IS NULL OR expires_at>NOW())`, [playerId])
+    if (Number(active.rows[0].count) >= EXCHANGE_MAX_ACTIVE_LISTINGS) throw Object.assign(new Error('Maximum active listings reached'), { status: 409, code: 'EXCHANGE_ACTIVE_LISTING_LIMIT' })
     await applyReward(client, { playerId, transactionId: `market-list:${listingId}`, source: 'market-escrow', reward: { itemId, amount: -quantity } })
-    await client.query(`INSERT INTO fo_market_listings(listing_id,seller_id,item_id,quantity,price_coins,expires_at) VALUES($1,$2,$3,$4,$5,$6)`, [listingId, playerId, itemId, quantity, priceCoins, expiresAt ?? null])
+    const expiry = expiresAt ? new Date(expiresAt) : defaultListingExpiry()
+    await client.query(`INSERT INTO fo_market_listings(listing_id,seller_id,item_id,quantity,price_coins,expires_at) VALUES($1,$2,$3,$4,$5,$6)`, [listingId, playerId, itemId, quantity, priceCoins, expiry])
     await client.query('COMMIT')
-    return { listingId, status: 'active' }
+    return { listingId, status: 'active', expiresAt: expiry.toISOString() }
   } catch (error) { await client.query('ROLLBACK'); throw error } finally { client.release() }
 }
 
@@ -86,7 +134,10 @@ export async function settleListing(db, { playerId, listingId, requestId }) {
     if (!found.rowCount || found.rows[0].status !== 'active') throw Object.assign(new Error('Listing unavailable'), { status: 409 })
     const listing = found.rows[0]
     if (String(listing.seller_id) === String(playerId)) throw Object.assign(new Error('Cannot buy your own listing'), { status: 409 })
-    if (listing.expires_at && new Date(listing.expires_at) <= new Date()) throw Object.assign(new Error('Listing expired'), { status: 409 })
+    if (listing.expires_at && new Date(listing.expires_at) <= new Date()) {
+      await expireMarketListings(client, { listingId })
+      throw Object.assign(new Error('Listing expired'), { status: 409, code: 'EXCHANGE_LISTING_EXPIRED' })
+    }
     const amounts = auctionAmounts(Number(listing.price_coins))
     const settlementId = String(requestId ?? `market-buy:${listingId}`)
     await applyReward(client, { playerId, transactionId: `${settlementId}:buyer-coins`, source: 'exchange-purchase', reward: { currencyId: 'coins', amount: -amounts.grossCoins }, metadata: { sourceReferenceId: settlementId, listingId } })

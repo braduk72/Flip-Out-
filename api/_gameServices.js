@@ -20,7 +20,7 @@ export function secureWeightedReward(table = REWARD_TABLES.dailyWheelV1) {
   return selectWeightedReward(table, value)
 }
 
-export async function applyReward(client, { playerId, transactionId, source, reward, metadata = {}, minimumRemaining = 0 }) {
+export async function applyReward(client, { playerId, transactionId, source, reward, metadata = {}, minimumRemaining = 0, skipCapacityCheck = false }) {
   const id = safeId(transactionId, 'transaction id')
   const existing = await client.query(`SELECT player_id FROM fo_player_transactions WHERE transaction_id=$1`, [id])
   if (existing.rowCount) {
@@ -47,7 +47,7 @@ export async function applyReward(client, { playerId, transactionId, source, rew
       metadata,
     })
   }
-  if (itemId && amount > 0) await enforceCardInventoryCapacity(client, { playerId, itemId, additionalQuantity: amount })
+  if (itemId && amount > 0 && !skipCapacityCheck) await enforceCardInventoryCapacity(client, { playerId, itemId, additionalQuantity: amount })
   await client.query(`INSERT INTO ${table}(player_id,${key},${value}) VALUES($1,$2,0) ON CONFLICT DO NOTHING`, [playerId, target])
   const floor = currencyId ? '0' : 'GREATEST($4,bound_quantity)'
   const parameters = currencyId ? [playerId, target, amount] : [playerId, target, amount, minimumRemaining]

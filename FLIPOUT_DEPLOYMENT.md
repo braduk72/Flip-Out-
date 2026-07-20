@@ -55,12 +55,22 @@ npx vercel inspect https://dev.flipout.gizmogames.uk --scope chattocal
 npx vercel ls flip-out --scope chattocal
 ```
 
-The application currently reports `1.10.1-exchange-fee` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+The application currently reports `1.10.2-exchange-rules` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+
+## Verification record - Exchange listing rules, 20 July 2026
+
+- Rule changes: 10 Coin minimum listing price, 20 active listings per seller, seven-day default expiry, automatic lazy expiry return, no maximum listing price.
+- Local verification before deployment: focused Node **14 passed / 0 failed / 1 Preview DB skip**, focused lint passed, production build passed.
+- No schema migration was required.
+- Production was not touched.
 
 ## Verification record - Exchange commission update, 20 July 2026
 
 - Rule change: Exchange commission is now 20%; sellers receive 80%.
 - Local verification before deployment: focused Node **14 passed / 0 failed / 1 Preview DB skip**, focused lint passed, production build passed.
+- Deployment: commit `1aa7ff4`, Vercel Ready Preview `https://flip-5jmc7o4jw-chattocal.vercel.app`.
+- URL verification: `https://dev.flipout.gizmogames.uk` and the generated Preview both returned HTTP 200 and ETag `"e52b9c98d9ad03f3e4e3244725c35d49"`.
+- Bundle verification: permanent URL served `/assets/index-DoyArEE8.js` at 412,663 bytes and contained `1.10.1-exchange-fee`.
 - No schema migration was required.
 - Production was not touched.
 

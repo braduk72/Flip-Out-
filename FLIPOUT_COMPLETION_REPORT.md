@@ -1,5 +1,18 @@
 # Flip-Out continuation report
 
+## Exchange listing rules - 20 July 2026
+
+Extended the Exchange server rules beyond the 20% commission slice. Listings now have a 10 Coin minimum, a maximum of 20 active listings per seller, a default seven-day expiry and no maximum price. Expiry is handled lazily by the server when the Exchange is browsed or an expired listing is touched; escrowed items are returned with a `market-return` transaction.
+
+Buying an expired listing now marks it expired, returns the seller's escrowed item and rejects the buyer with `EXCHANGE_LISTING_EXPIRED`. Cancelled and expired returns bypass capacity checks because the item was already owned and temporarily escrowed, not newly granted.
+
+Verification:
+
+- Focused Node: `node --test tests\progression.test.js tests\game-services.test.js tests\game-services-db.test.js` - **14 passed / 0 failed / 1 Preview DB skip**.
+- Focused lint: `npx.cmd eslint api\_progressionRules.js api\_operations.js api\_foMarket.js api\_gameServices.js src\screens\Marketplace.jsx tests\progression.test.js tests\game-services-db.test.js` - passed.
+- Production build: `npm.cmd run build` - passed; main JS `412.66 kB / 130.49 kB gzip`.
+- No schema migration was required. Production was not touched.
+
 ## Exchange commission update - 20 July 2026
 
 Changed the Exchange commission from 10% to 20% in the shared `auctionAmounts` rule. Marketplace settlement still uses the existing server-side flow: the buyer pays Coins, the seller receives the gross amount, the Exchange fee is deducted, the buyer receives the item, and the listing is marked sold atomically.
@@ -11,6 +24,8 @@ Verification:
 - Focused Node: `node --test tests\progression.test.js tests\game-services.test.js tests\game-services-db.test.js` - **14 passed / 0 failed / 1 Preview DB skip**.
 - Focused lint: `npx.cmd eslint api\_progressionRules.js api\_operations.js src\screens\Marketplace.jsx tests\progression.test.js tests\game-services-db.test.js` - passed.
 - Production build: `npm.cmd run build` - passed; main JS `412.66 kB / 130.49 kB gzip`.
+- Deployment: commit `1aa7ff4` was pushed to `dev`; Vercel Ready Preview `https://flip-5jmc7o4jw-chattocal.vercel.app` updated `https://dev.flipout.gizmogames.uk`.
+- Live verification: permanent and generated URLs returned HTTP 200 and matching ETag `"e52b9c98d9ad03f3e4e3244725c35d49"`; permanent bundle `/assets/index-DoyArEE8.js` was 412,663 bytes and contained `1.10.1-exchange-fee`.
 - No schema migration was required. Production was not touched.
 
 ## Preview Developer Toolkit - 20 July 2026

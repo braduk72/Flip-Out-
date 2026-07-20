@@ -1,11 +1,21 @@
 # Flip-Out! current-state audit
 
+## Exchange listing rules - 20 July 2026
+
+- **Status: Implemented locally; Preview deployment pending in this milestone.** Exchange listings now enforce a 10 Coin minimum price, a maximum of 20 active listings per seller and a default seven-day expiry. There remains no maximum listing price.
+- Expired active listings are processed lazily by the server when the Exchange is browsed or when a listing is touched. Expired escrowed items are returned automatically to the seller through a `market-return` transaction. Returns bypass Inventory-capacity checks because the card was already owned and escrowed by that seller.
+- Buying an expired listing now marks it expired, returns the escrowed item and rejects the purchase with `EXCHANGE_LISTING_EXPIRED`.
+- Player-facing Exchange copy now states the 20% fee, 80% seller receipt, 10 Coin minimum and seven-day expiry.
+- Files changed: `api/_progressionRules.js`, `api/_operations.js`, `api/_foMarket.js`, `api/_gameServices.js`, `src/screens/Marketplace.jsx`, `tests/progression.test.js`, `src/version.js`.
+- Verification so far: focused progression/game-services tests **14 passed / 0 failed / 1 Preview DB skip**; focused lint passed; production build passed with main JS `412.66 kB / 130.49 kB gzip`. No schema migration was required and Production was not touched.
+- Remaining risks: seller listing management UI and a scheduled expiry job remain future work; current expiry is automatic but lazy.
+
 ## Exchange commission update - 20 July 2026
 
-- **Status: Implemented locally; Preview deployment pending in this milestone.** Exchange settlement now uses the current sprint rule of a 20% commission instead of the previous 10% fee.
+- **Status: Implemented and deployed to development Preview.** Exchange settlement now uses the current sprint rule of a 20% commission instead of the previous 10% fee.
 - The existing settlement boundary remains unchanged: buyer spend, seller gross receipt, Exchange fee and item receipt are still separate audited ledger/player transactions inside the locked listing settlement.
 - Files changed: `api/_progressionRules.js`, `src/screens/Marketplace.jsx`, `tests/progression.test.js`, `tests/game-services-db.test.js`, `src/version.js`.
-- Verification so far: focused progression/game-services tests **14 passed / 0 failed / 1 Preview DB skip**; focused lint passed; production build passed. No schema migration was required and Production was not touched.
+- Verification: focused progression/game-services tests **14 passed / 0 failed / 1 Preview DB skip**; focused lint passed; production build passed. Vercel Ready Preview `https://flip-5jmc7o4jw-chattocal.vercel.app` updated `https://dev.flipout.gizmogames.uk`; both URLs returned HTTP 200 and ETag `"e52b9c98d9ad03f3e4e3244725c35d49"`. The permanent URL served `/assets/index-DoyArEE8.js` at 412,663 bytes and contained `1.10.1-exchange-fee`. No schema migration was required and Production was not touched.
 - Remaining risks: minimum listing price, maximum active listings, expiry return jobs and seller listing management remain future Exchange work.
 
 ## Preview Developer Toolkit - 20 July 2026

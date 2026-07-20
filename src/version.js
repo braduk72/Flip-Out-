@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.10.1-exchange-fee'
+export const APP_VERSION = '1.10.2-exchange-rules'

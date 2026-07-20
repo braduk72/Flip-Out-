@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  EXCHANGE_DEFAULT_EXPIRY_DAYS, EXCHANGE_MAX_ACTIVE_LISTINGS, EXCHANGE_MIN_LISTING_PRICE_COINS,
   annualChoice, auctionAmounts, claimDailyAction, consumePowerUp, continuationDecision, detectAnomaly,
   localDateKey, nextDailyStreak, openLockbox, resolveCloudSync, validateListing,
 } from '../api/_progressionRules.js'
@@ -42,7 +43,12 @@ test('lockbox opening consumes one box and key and rejects duplicates or missing
 test('auction fee is exactly 20 percent using integer coins', () => {
   assert.deepEqual(auctionAmounts(101), { grossCoins: 101, feeCoins: 20, netCoins: 81 })
   assert.throws(() => auctionAmounts(10.5), /integer/)
+  assert.equal(EXCHANGE_MIN_LISTING_PRICE_COINS, 10)
+  assert.equal(EXCHANGE_MAX_ACTIVE_LISTINGS, 20)
+  assert.equal(EXCHANGE_DEFAULT_EXPIRY_DAYS, 7)
+  assert.equal(validateListing({ item: { tradable: true }, quantity: 1, priceCoins: 9 }).reason, 'invalid-price')
   assert.equal(validateListing({ item: { tradable: true }, quantity: 1, priceCoins: 50, sellerId: 'a', buyerId: 'b' }).allowed, true)
+  assert.equal(validateListing({ item: { tradable: true }, quantity: 1, priceCoins: 10000000, sellerId: 'a', buyerId: 'b' }).allowed, true)
   assert.equal(validateListing({ item: { tradable: false }, quantity: 1, priceCoins: 50 }).reason, 'item-not-tradable')
   assert.equal(validateListing({ item: { tradable: true }, quantity: 1, priceCoins: 50, sellerId: 'a', buyerId: 'a' }).reason, 'self-purchase')
 })
