@@ -1,5 +1,14 @@
 # Flip-Out deployment
 
+## Verification record - Preview Admin Toolkit expansion, 20 July 2026
+
+- Commit `355cfa3` was pushed from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or database was changed.
+- Vercel Ready Preview: `dpl_GDget3euUV6HNRmwzPe8JWVkM3Zd`, generated URL `https://flip-4ghvxov8k-chattocal.vercel.app`, target `preview`, created Mon 20 Jul 2026 12:05:04 BST.
+- Vercel aliases include `https://dev.flipout.gizmogames.uk` and the branch alias `https://flip-out-git-dev-chattocal.vercel.app`. The old `https://dev.flipout.app` alias is still shown by Vercel historically but was not changed or used.
+- HTTP verification: generated Preview and `https://dev.flipout.gizmogames.uk` both returned HTTP 200, byte-identical HTML and ETag `"8283466a5eaf4229a822faafbaeba260"`.
+- Bundle verification: `https://dev.flipout.gizmogames.uk/assets/index-KsKyQ1nQ.js` returned HTTP 200, 412,833 bytes and contains `1.13.0-preview-admin-toolkit`. Lazy chunk `https://dev.flipout.gizmogames.uk/assets/DevToolkit-BsOjrL_h.js` returned HTTP 200, 15,983 bytes and contains `Admin Toolkit`, `match3-unlock-all` and `exchange-clear`.
+- Local verification before deployment: focused backend toolkit **8/8**, focused toolkit UI **4/4**, full Node **146 passed / 15 expected Preview-only skips**, full UI **57/57**, focused changed-file lint passed, production build passed and Preview build passed, both with **155 transformed modules**.
+
 ## Permanent development environment
 
 - URL: `https://dev.flipout.gizmogames.uk`
