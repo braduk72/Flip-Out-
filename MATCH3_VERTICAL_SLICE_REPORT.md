@@ -2,9 +2,9 @@
 
 ## Season Journey addendum - 20 July 2026
 
-Match-3 completion now also emits an idempotent server-side Season Score event worth 100 Season Score. This is recorded by `api/_seasonJourney.js` using event ID `season-score:match3:<sessionId>` inside the same completion transaction, so repeated completion calls cannot grant extra Season Score or Season Tickets. Journey levels and Tickets are separate from Coins/Stars; no Match-3 level, objective, move count, cascade logic, revive rule or Reward Theatre cadence changed in this milestone.
+Match-3 completion now also emits an idempotent server-side Season Score event worth 100 Season Score. This is recorded by `api/_seasonJourney.js` using event ID `season-score:match3:<sessionId>` inside the same completion transaction, so repeated completion calls cannot grant extra Season Score or Season Tickets. Journey levels continue beyond 100, with Tickets awarded from level-ups only; no Match-3 level, objective, move count, cascade logic, revive rule or Reward Theatre cadence changed in this milestone.
 
-Verification: local Season Node 7/7 passed, aggregate Node 171 passed / 20 Preview-only skips and UI 63/63 passed, production and Preview builds passed with 158 modules. Vercel Preview `dpl_33P5ogFSFfRzUem391FhNBChyTL8` at `https://flip-h5thfjj6c-chattocal.vercel.app` applied `020_season_journey.sql` to Railway Preview and passed remote Season tests 8/8; `https://dev.flipout.gizmogames.uk` serves the same build with `1.20.0-season-journey`. Production was not touched.
+Verification: local Season Node 7/7 passed, aggregate Node 171 passed / 20 Preview-only skips and UI 63/63 passed, production and Preview builds passed with 158 modules. Vercel Preview `dpl_BpxwqWJJveURgp7sX2Tj1eTEmEfg` at `https://flip-4k37uf1k1-chattocal.vercel.app` applied `020_season_journey.sql` to Railway Preview and passed remote Season tests 8/8; `https://dev.flipout.gizmogames.uk` serves the same build with `1.20.0-season-journey`. Production was not touched.
 
 ## Effect framework and juice addendum - 20 July 2026
 

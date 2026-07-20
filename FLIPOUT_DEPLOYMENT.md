@@ -3,15 +3,15 @@
 ## Verification record - Season Journey architecture, 20 July 2026
 
 - Preview-only milestone from `dev`; no production branch, production deployment, production domain, root DNS record, nameserver or production database was changed.
-- Focused Preview deployment: `dpl_33P5ogFSFfRzUem391FhNBChyTL8`, generated URL `https://flip-h5thfjj6c-chattocal.vercel.app`, target Preview, created Mon 20 Jul 2026.
+- Focused Preview deployment: `dpl_BpxwqWJJveURgp7sX2Tj1eTEmEfg`, generated URL `https://flip-4k37uf1k1-chattocal.vercel.app`, target Preview, created Mon 20 Jul 2026.
 - Build command from `vercel.season-journey-verify.json`: `node scripts/run-economy-migration.mjs --apply && node --test tests/season-journey.test.js tests/season-journey-db.test.js && vite build`.
 - Migration target: Railway Preview `railway/public`, host `yamanote.proxy.rlwy.net`, user `postgres`, schema `public`, `VERCEL_ENV=preview`, read replica false.
 - Migration result: previous migrations 001-019 were already applied; `020_season_journey.sql` is recorded in `fo_schema_migrations` at `2026-07-20T14:36:50.243Z`.
 - Schema verification output included new tables `fo_seasons`, `fo_season_progress`, `fo_season_score_events`, `fo_season_ticket_transactions`, `fo_season_reward_claims`, `fo_season_missions`, `fo_mission_reroll_usage`, `fo_mission_reroll_transactions` and `fo_season_archive`, plus indexes `fo_season_progress_season_idx`, `fo_season_score_events_player_idx`, `fo_season_ticket_transactions_player_idx`, `fo_season_ticket_reference_unique`, `fo_season_reward_claims_player_idx`, `fo_season_missions_player_idx` and `fo_seasons_single_active_idx`.
 - Remote focused Season tests passed **8/8** with no skips, including the Preview DB test for idempotent score grants, ticket accrual, choice claim retry, concurrent level-100 grant and single archive/inventory Collector Card award.
-- Remote Vite build passed with **158 transformed modules** and entry `assets/index-DOFOMsJ-.js`.
+- Remote Vite build passed with **158 transformed modules** and entry `assets/index-Bh-D8dbL.js`.
 - First focused deployment `dpl_H4f5ZAeCYzt3VwEn4arbd1T4EJcy` failed after migration because an unrelated legacy `tests/match3-db.test.js` cleanup attempted to delete an account referenced by immutable Coin ledger rows. The Season DB test in that run passed; the successful verifier removed that unrelated test from the build command.
-- `https://dev.flipout.gizmogames.uk` returned HTTP 200 with the same ETag `"1982ad0a43e290de3c4d72422913c9cb"` as the generated Preview URL, served byte-identical HTML, and served `/assets/index-DOFOMsJ-.js` containing `1.20.0-season-journey` and `service=seasons`.
+- `https://dev.flipout.gizmogames.uk` returned HTTP 200 with the same ETag `"c572375bb6a0571cf34460b5a4295266"` as the generated Preview URL, served byte-identical HTML, and served `/assets/index-Bh-D8dbL.js` containing `1.20.0-season-journey`, `service=seasons` and `post100`.
 
 ## Verification record - Match-3 Effect Framework and Juice, 20 July 2026
 

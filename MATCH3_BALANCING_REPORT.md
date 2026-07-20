@@ -2,7 +2,7 @@
 
 ## Season Journey addendum - 20 July 2026
 
-Season Journey now listens to Match-3 completion and grants 100 Season Score per completed level through an idempotent server event. This adds a progression layer above Match-3 but does not change level layouts, move counts, objectives, auto-player assumptions, cascade scoring, revives or Reward Theatre cadence. Season Tickets are awarded only from journey level-ups and are not directly earned from gameplay actions. Future balancing should evaluate Season Score pacing separately from level difficulty.
+Season Journey now listens to Match-3 completion and grants 100 Season Score per completed level through an idempotent server event. This adds a progression layer above Match-3 but does not change level layouts, move counts, objectives, auto-player assumptions, cascade scoring, revives or Reward Theatre cadence. Season Tickets are awarded only from journey level-ups, including post-100 levels, and are not directly earned from gameplay actions. Future balancing should evaluate Season Score pacing separately from level difficulty.
 
 Development Preview build `1.20.0-season-journey` is live at `https://dev.flipout.gizmogames.uk`; migration `020_season_journey.sql` applied to Railway Preview and remote Season tests passed 8/8. Production was not touched.
 

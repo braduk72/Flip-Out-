@@ -22,10 +22,11 @@ test('Season Journey keeps Season Score and Season Tickets separate', () => {
   assert.equal(journeyLevelForScore(999), 0)
   assert.equal(journeyLevelForScore(1000), 1)
   assert.equal(journeyLevelForScore(100000), 100)
+  assert.equal(journeyLevelForScore(105000), 105)
   assert.equal(seasonTicketsForLevelDelta(0, 3), 3)
   assert.equal(seasonTicketsForLevelDelta(3, 3), 0)
   assert.equal(seasonTicketsForLevelDelta(99, 100), 1)
-  assert.equal(seasonTicketsForLevelDelta(100, 120), 0)
+  assert.equal(seasonTicketsForLevelDelta(100, 120), 20)
 })
 
 test('Season mission definitions are gameplay-only and do not reward Coins or Tickets directly', () => {
@@ -39,6 +40,7 @@ test('Season reward pages use choice spending and keep the collector card at lev
   const collectorChoices = SEASON_REWARD_PAGES.flatMap(page => page.choices.map(choice => ({ page, choice }))).filter(row => row.choice.reward.itemId === SEASON_COLLECTOR_CARD_ID)
   assert.equal(collectorChoices.length, 1)
   assert.equal(collectorChoices[0].page.unlockLevel, 100)
+  assert.ok(SEASON_REWARD_PAGES.find(page => page.id === 'page:season-supplies').repeatable)
   assert.equal(findSeasonChoice('choice:stars:250').choice.reward.currencyId, 'stars')
   assert.equal(findSeasonChoice('choice:collector-card').choice.collectorOnly, true)
 })

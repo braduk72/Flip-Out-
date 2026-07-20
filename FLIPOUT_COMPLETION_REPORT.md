@@ -9,14 +9,14 @@ Implemented:
 - Data-driven active Preview Season definition.
 - Separate **Season Score** and **Season Tickets**.
 - Match-3 completion grants **100 Season Score** through an idempotent event ID.
-- Journey levels require **1,000 Season Score** and award **1 Season Ticket** per level gained.
+- Journey levels require **1,000 Season Score** and award **1 Season Ticket** per level gained, including levels beyond 100.
 - Authenticated `/api/fo-game?service=seasons` state endpoint.
 - Authenticated Season choice-claim endpoint with ticket spending and reward application.
 - Mission reroll receipt endpoint with two free rerolls/day, future token fallback and Coin-cost fallback support.
 - Gameplay-only daily/weekly mission definitions.
 - Choice reward pages unlocked by journey level.
 - Level-100 Season Collector Card archive and inventory grant, once only.
-- Post-100 supply reward definitions that never award Coins or the level-100 Collector Card.
+- Repeatable post-100 supply reward definitions that never award Coins, exclusives, cosmetics or the level-100 Collector Card.
 - Mission Reroll Token and Preview Season Collector Card catalogue entries.
 
 Schema:
@@ -40,13 +40,13 @@ Verification:
 
 Preview deployment:
 
-- Deployment ID: `dpl_33P5ogFSFfRzUem391FhNBChyTL8`.
-- Generated Preview URL: `https://flip-h5thfjj6c-chattocal.vercel.app`.
+- Deployment ID: `dpl_BpxwqWJJveURgp7sX2Tj1eTEmEfg`.
+- Generated Preview URL: `https://flip-4k37uf1k1-chattocal.vercel.app`.
 - Permanent development URL: `https://dev.flipout.gizmogames.uk`.
 - Migration target: Railway Preview `railway/public`, host `yamanote.proxy.rlwy.net`, user `postgres`, schema `public`, `VERCEL_ENV=preview`.
 - Migration record: `020_season_journey.sql` applied at `2026-07-20T14:36:50.243Z`.
-- Permanent dev verification: generated Preview and permanent dev URL both returned HTTP 200 with ETag `"1982ad0a43e290de3c4d72422913c9cb"` and byte-identical HTML.
-- Main bundle `/assets/index-DOFOMsJ-.js` contains `1.20.0-season-journey` and `service=seasons`.
+- Permanent dev verification: generated Preview and permanent dev URL both returned HTTP 200 with ETag `"c572375bb6a0571cf34460b5a4295266"` and byte-identical HTML.
+- Main bundle `/assets/index-Bh-D8dbL.js` contains `1.20.0-season-journey`, `service=seasons` and `post100`.
 
 Remaining risks:
 

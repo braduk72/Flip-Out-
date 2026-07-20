@@ -4,7 +4,7 @@ import {
   ACTIVE_SEASON,
   FREE_MISSION_REROLLS_PER_DAY,
   MISSION_REROLL_TOKEN_ID,
-  SEASON_MAX_JOURNEY_LEVEL,
+  SEASON_COLLECTOR_LEVEL,
   SEASON_MISSION_DEFINITIONS,
   SEASON_REWARD_PAGES,
   SEASON_SCORE_PER_MATCH3_COMPLETION,
@@ -137,11 +137,11 @@ export async function grantSeasonScore(client, { playerId, eventId, source, scor
     [playerId, season.id, nextScore, nextLevel, ticketsEarned, post100],
   )
   let collectorAwarded = false
-  if (nextLevel >= SEASON_MAX_JOURNEY_LEVEL) {
+  if (nextLevel >= SEASON_COLLECTOR_LEVEL) {
     const archived = await client.query(
       `INSERT INTO fo_season_archive(player_id,season_id,collector_item_id,proof_level)
-       VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING RETURNING collector_item_id`,
-      [playerId, season.id, season.collectorItemId, SEASON_MAX_JOURNEY_LEVEL],
+      VALUES($1,$2,$3,$4) ON CONFLICT DO NOTHING RETURNING collector_item_id`,
+      [playerId, season.id, season.collectorItemId, SEASON_COLLECTOR_LEVEL],
     )
     if (archived.rowCount) {
       await client.query(`UPDATE fo_season_progress SET collector_awarded_at=NOW(),updated_at=NOW() WHERE player_id=$1 AND season_id=$2`, [playerId, season.id])
@@ -150,7 +150,7 @@ export async function grantSeasonScore(client, { playerId, eventId, source, scor
         transactionId: `season-collector:${season.id}:${playerId}`,
         source: 'season-collector-card',
         reward: { itemId: season.collectorItemId, amount: 1 },
-        metadata: { seasonId: season.id, eventId: id, level: SEASON_MAX_JOURNEY_LEVEL },
+        metadata: { seasonId: season.id, eventId: id, level: SEASON_COLLECTOR_LEVEL },
       })
       collectorAwarded = true
     }
@@ -178,7 +178,7 @@ export async function spendSeasonTickets(db, { playerId, claimId, choiceId }) {
     await ensureActiveSeason(client)
     const progress = await ensureProgress(client, playerId)
     if (Number(progress.journey_level) < page.unlockLevel) throw Object.assign(new Error('Season page is locked'), { status: 403, code: 'SEASON_PAGE_LOCKED' })
-    if (choice.collectorOnly && Number(progress.journey_level) < SEASON_MAX_JOURNEY_LEVEL) throw Object.assign(new Error('Collector card requires level 100'), { status: 403, code: 'SEASON_COLLECTOR_LOCKED' })
+    if (choice.collectorOnly && Number(progress.journey_level) < SEASON_COLLECTOR_LEVEL) throw Object.assign(new Error('Collector card requires level 100'), { status: 403, code: 'SEASON_COLLECTOR_LOCKED' })
     const id = safeId(claimId, 'season claim id')
     const duplicate = await client.query(`SELECT reward FROM fo_season_reward_claims WHERE claim_id=$1 AND player_id=$2`, [id, playerId])
     if (duplicate.rowCount) {

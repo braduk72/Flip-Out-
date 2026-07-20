@@ -58,6 +58,13 @@ test('Preview Season Journey grants score, tickets, claims and archive idempoten
     assert.equal(Number(archive.rows[0].proof_level), 100)
     const inventory = await pool.query(`SELECT quantity FROM fo_player_inventory WHERE player_id=$1 AND item_id=$2`, [playerId, SEASON_COLLECTOR_CARD_ID])
     assert.equal(Number(inventory.rows[0].quantity), 1)
+    const post100 = await inTransaction(pool, client => grantSeasonScore(client, { playerId, eventId: `season-score:${suffix}:level105`, source: 'season-db-test', scoreAmount: 5000 }))
+    assert.equal(post100.journeyLevel, 105)
+    assert.equal(post100.ticketsEarned, 5)
+    const post100Progress = await pool.query(`SELECT journey_level,season_tickets,post_100_supply_claims FROM fo_season_progress WHERE player_id=$1 AND season_id=$2`, [playerId, ACTIVE_SEASON.id])
+    assert.equal(Number(post100Progress.rows[0].journey_level), 105)
+    assert.equal(Number(post100Progress.rows[0].season_tickets), 104)
+    assert.equal(Number(post100Progress.rows[0].post_100_supply_claims), 1)
   } finally {
     try {
       if (playerId) {

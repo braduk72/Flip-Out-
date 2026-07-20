@@ -3,6 +3,7 @@ export const SEASON_SCORE_PER_MATCH3_COMPLETION = 100
 export const SEASON_SCORE_PER_LEVEL = 1000
 export const SEASON_TICKETS_PER_LEVEL = 1
 export const SEASON_MAX_JOURNEY_LEVEL = 100
+export const SEASON_COLLECTOR_LEVEL = 100
 export const SEASON_POST_100_SUPPLY_INTERVAL = 5
 export const FREE_MISSION_REROLLS_PER_DAY = 2
 export const MISSION_REROLL_TOKEN_ID = 'inventory:mission-reroll-token'
@@ -51,6 +52,16 @@ export const SEASON_REWARD_PAGES = Object.freeze([
       { id: 'choice:collector-card', ticketCost: 0, reward: { itemId: SEASON_COLLECTOR_CARD_ID, amount: 1 }, label: 'Preview Collector Card', collectorOnly: true },
     ]),
   },
+  {
+    id: 'page:season-supplies',
+    unlockLevel: 101,
+    repeatable: true,
+    choices: Object.freeze([
+      { id: 'choice:post100:stars:500', ticketCost: 1, reward: { currencyId: 'stars', amount: 500 }, label: '500 Stars', supplyOnly: true },
+      { id: 'choice:post100:shuffle:1', ticketCost: 1, reward: { itemId: 'powerup:match3-shuffle', amount: 1 }, label: 'Shuffle Power-Up', supplyOnly: true },
+      { id: 'choice:post100:reroll:1', ticketCost: 1, reward: { itemId: MISSION_REROLL_TOKEN_ID, amount: 1 }, label: 'Mission Reroll Token', supplyOnly: true },
+    ]),
+  },
 ])
 
 export const POST_100_SUPPLY_REWARDS = Object.freeze([
@@ -73,7 +84,7 @@ const DISALLOWED_MISSION_EVENTS = new Set([
 
 export function journeyLevelForScore(score, season = ACTIVE_SEASON) {
   const safeScore = Math.max(0, Math.floor(Number(score) || 0))
-  return Math.min(SEASON_MAX_JOURNEY_LEVEL, Math.floor(safeScore / season.scorePerLevel))
+  return Math.floor(safeScore / season.scorePerLevel)
 }
 
 export function post100SupplyCount(score, season = ACTIVE_SEASON) {
@@ -83,8 +94,8 @@ export function post100SupplyCount(score, season = ACTIVE_SEASON) {
 }
 
 export function seasonTicketsForLevelDelta(previousLevel, nextLevel, season = ACTIVE_SEASON) {
-  const from = Math.max(0, Math.min(SEASON_MAX_JOURNEY_LEVEL, Math.floor(Number(previousLevel) || 0)))
-  const to = Math.max(0, Math.min(SEASON_MAX_JOURNEY_LEVEL, Math.floor(Number(nextLevel) || 0)))
+  const from = Math.max(0, Math.floor(Number(previousLevel) || 0))
+  const to = Math.max(0, Math.floor(Number(nextLevel) || 0))
   return Math.max(0, to - from) * season.ticketsPerLevel
 }
 
@@ -113,11 +124,12 @@ export function validateSeasonJourneyDesign({
     if (!Number.isSafeInteger(mission.seasonScore) || mission.seasonScore <= 0) errors.push(`${mission.id} must reward positive Season Score.`)
   }
   for (const page of pages) {
-    if (!Number.isSafeInteger(page.unlockLevel) || page.unlockLevel < 0 || page.unlockLevel > SEASON_MAX_JOURNEY_LEVEL) errors.push(`${page.id} has an invalid unlock level.`)
+    if (!Number.isSafeInteger(page.unlockLevel) || page.unlockLevel < 0) errors.push(`${page.id} has an invalid unlock level.`)
     for (const choice of page.choices) {
       if (!Number.isSafeInteger(choice.ticketCost) || choice.ticketCost < 0) errors.push(`${choice.id} has an invalid ticket cost.`)
       if (choice.reward?.currencyId === 'coins') errors.push(`${choice.id} must not create Coins.`)
       if (choice.reward?.itemId === season.collectorItemId && page.unlockLevel !== SEASON_MAX_JOURNEY_LEVEL) errors.push(`${choice.id} awards the collector card before level 100.`)
+      if (page.unlockLevel > SEASON_MAX_JOURNEY_LEVEL && !choice.supplyOnly) errors.push(`${choice.id} post-100 page rewards must be consumable supplies only.`)
     }
   }
   for (const entry of post100Rewards) {
