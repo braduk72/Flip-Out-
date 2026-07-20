@@ -135,6 +135,7 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
     sets,
     albums,
     personalAlbums: state.personalAlbums ?? { albums: [], cards: [], limit: 10, createCostCoins: 500 },
+    inventoryCapacity: state.inventoryCapacity ?? { cardCapacity: null, cardCount: null, remainingCardSlots: null },
     recent,
     nonCards,
     stats: {

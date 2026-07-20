@@ -68,6 +68,15 @@ test('Personal Album memberships are organisational and do not change ownership 
   assert.equal(model.personalAlbums.createCostCoins, 500)
 })
 
+test('collection model exposes Inventory capacity readback without deriving it from Theme Album entries', () => {
+  const model = buildCollectionData({
+    inventory: [{ item_id: 'card:cats:1', quantity: 1, bound_quantity: 0 }],
+    themeAlbums: { entries: [{ card_item_id: 'card:cats:2', theme_id: 'cats', variant: 'normal' }] },
+    inventoryCapacity: { cardCapacity: 10, cardCount: 1, remainingCardSlots: 9 },
+  })
+  assert.deepEqual(model.inventoryCapacity, { cardCapacity: 10, cardCount: 1, remainingCardSlots: 9 })
+})
+
 test('card filters combine search, set, ownership, rarity, variants and deterministic sorting', () => {
   const model = buildCollectionData(state)
   const ownedCars = filterCollectionCards(model.cards, { query: 'Ferrari 488', setId: 'sportscars', ownership: 'owned' })

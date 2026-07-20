@@ -2,6 +2,7 @@ import crypto from 'node:crypto'
 import { REWARD_TABLES, selectWeightedReward } from './_rewards.js'
 import { localDateKey } from './_progressionRules.js'
 import { appendCoinTransaction } from './_coinLedger.js'
+import { enforceCardInventoryCapacity } from './_inventoryCapacity.js'
 
 export const DAILY_LOGIN_REWARDS = Object.freeze([5, 10, 15, 20, 25, 50, 50])
 
@@ -46,6 +47,7 @@ export async function applyReward(client, { playerId, transactionId, source, rew
       metadata,
     })
   }
+  if (itemId && amount > 0) await enforceCardInventoryCapacity(client, { playerId, itemId, additionalQuantity: amount })
   await client.query(`INSERT INTO ${table}(player_id,${key},${value}) VALUES($1,$2,0) ON CONFLICT DO NOTHING`, [playerId, target])
   const floor = currencyId ? '0' : 'GREATEST($4,bound_quantity)'
   const parameters = currencyId ? [playerId, target, amount] : [playerId, target, amount, minimumRemaining]
