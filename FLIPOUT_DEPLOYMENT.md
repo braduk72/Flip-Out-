@@ -64,6 +64,10 @@ The application currently reports `1.10.0-preview-dev-toolkit` from `src/version
 - Required Preview env var: `DEV_TOOLKIT_SECRET`, configured as Sensitive for Preview branch `dev`.
 - Production guard: service returns 404 outside `VERCEL_ENV=preview`; normal authenticated player session is still required.
 - Local verification before deployment: focused Node **4/4**, focused UI **2/2**, focused lint passed, production build passed.
+- Deployment: commit `e093a6a` plus report/env trigger commit `6575843`; Vercel Ready Preview `https://flip-6axzz5ohh-chattocal.vercel.app`.
+- URL verification: `https://dev.flipout.gizmogames.uk` and the generated Preview both returned HTTP 200 and ETag `"859865aa8a9dc13357b1cd0adc3896e7"`.
+- Bundle verification: permanent URL served `/assets/index-BHpPfOdN.js` at 412,670 bytes and contained `1.10.0-preview-dev-toolkit`.
+- API guard verification: `/api/fo-game?service=dev-tools` with the saved local secret and no Bearer player session returned HTTP 401.
 - Production was not touched.
 
 ## Verification record — Official Theme Album Collection UI, 20 July 2026

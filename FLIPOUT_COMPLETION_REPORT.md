@@ -14,6 +14,8 @@ Verification:
 - Focused UI: `npx.cmd vitest run --config vitest.config.js tests-ui\dev-toolkit.test.jsx` - **2/2 passed**.
 - Focused lint: `npx.cmd eslint api\_foDevTools.js api\fo-game.js src\utils\gameApi.js src\ui\devToolkitAccess.js src\screens\DevToolkit.jsx tests\dev-tools.test.js tests-ui\dev-toolkit.test.jsx` - passed.
 - Production build: `npm.cmd run build` - passed; main JS `412.66 kB / 130.50 kB gzip`; toolkit lazy chunk `DevToolkit-BmIjXaLs.js`, `5.32 kB / 1.88 kB gzip`.
+- Deployment: toolkit commit `e093a6a` and report/env trigger commit `6575843` were pushed to `dev`; Vercel Ready Preview `https://flip-6axzz5ohh-chattocal.vercel.app` updated `https://dev.flipout.gizmogames.uk`.
+- Live verification: permanent and generated URLs returned HTTP 200 with matching ETag `"859865aa8a9dc13357b1cd0adc3896e7"`; permanent bundle `/assets/index-BHpPfOdN.js` contained `1.10.0-preview-dev-toolkit`; dev-tools API with the saved local secret and no Bearer session returned HTTP 401.
 
 ## Official Theme Album Collection UI — 20 July 2026
 
