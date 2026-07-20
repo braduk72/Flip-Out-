@@ -188,10 +188,8 @@ async function seedInitialMarket(db) {
     await client.query('BEGIN')
     sellerId = await ensureMarketMaker(client)
     const active = await client.query(`SELECT COUNT(*)::int AS count FROM fo_market_listings WHERE seller_id=$1 AND status='active' AND (expires_at IS NULL OR expires_at>NOW())`, [sellerId])
-    const seeded = await client.query(`SELECT COUNT(*)::int AS count FROM fo_player_transactions WHERE player_id=$1 AND transaction_id LIKE $2`, [sellerId, `dev-market-seed:${MARKET_SEED_ID}:%`])
     await client.query('COMMIT')
     if (Number(active.rows[0].count) > 0) return { duplicate: true, sellerId, listingsCreated: 0, reason: 'seed-market-already-active' }
-    if (Number(seeded.rows[0].count) > 0) return { duplicate: true, sellerId, listingsCreated: 0, reason: 'seed-market-already-consumed' }
   } catch (error) {
     await client.query('ROLLBACK')
     throw error
@@ -202,14 +200,17 @@ async function seedInitialMarket(db) {
   const seedItems = initialMarketSeedItems()
   const created = []
   for (const item of seedItems) {
-    await grantItem(db, {
-      playerId: sellerId,
-      itemId: item.itemId,
-      quantity: 1,
-      transactionId: `dev-market-seed:${MARKET_SEED_ID}:${item.itemId.replaceAll(':', '-')}`,
-    })
-    created.push(await createListing(db, { playerId: sellerId, itemId: item.itemId, quantity: 1, priceCoins: item.priceCoins }))
+    const transactionId = `dev-market-seed:${MARKET_SEED_ID}:${item.itemId.replaceAll(':', '-')}`
+    const before = await db.query(`SELECT quantity FROM fo_player_inventory WHERE player_id=$1 AND item_id=$2`, [sellerId, item.itemId])
+    if (Number(before.rows[0]?.quantity ?? 0) < 1) {
+      await grantItem(db, { playerId: sellerId, itemId: item.itemId, quantity: 1, transactionId })
+    }
+    const available = await db.query(`SELECT quantity FROM fo_player_inventory WHERE player_id=$1 AND item_id=$2`, [sellerId, item.itemId])
+    if (Number(available.rows[0]?.quantity ?? 0) >= 1) {
+      created.push(await createListing(db, { playerId: sellerId, itemId: item.itemId, quantity: 1, priceCoins: item.priceCoins }))
+    }
   }
+  if (!created.length) return { duplicate: true, sellerId, listingsCreated: 0, reason: 'seed-market-already-consumed' }
   return { duplicate: false, sellerId, listingsCreated: created.length, seedId: MARKET_SEED_ID, listings: created }
 }
 

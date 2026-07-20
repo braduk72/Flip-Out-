@@ -6,9 +6,11 @@ Added a Preview-only `seed-initial-market` action to the Developer Toolkit. It c
 
 The seed is rerun-safe: existing active seed listings return a duplicate result, and previously consumed seed transactions are not minted again. The action stays behind the existing Preview-only toolkit secret and normal authenticated player session.
 
+Initial live verification exposed a backend bug where lazy expiry tried to reconnect an already checked-out PostgreSQL client. That is fixed by distinguishing pool objects from checked-out clients. The seed path now also recovers from the partial failed run by relisting seed cards that were already granted but not listed.
+
 Verification:
 
-- Focused Node: `node --test tests\dev-tools.test.js` - **5/5 passed**.
+- Focused Node: `node --test tests\dev-tools.test.js tests\progression.test.js tests\game-services.test.js tests\game-services-db.test.js` - **20 passed / 0 failed / 1 Preview DB skip**.
 - Focused UI: `npx.cmd vitest run --config vitest.config.js tests-ui\dev-toolkit.test.jsx` - **2/2 passed**.
 - Focused lint: `npx.cmd eslint api\_foDevTools.js src\screens\DevToolkit.jsx tests\dev-tools.test.js tests-ui\dev-toolkit.test.jsx` - passed.
 - Production build: `npm.cmd run build` - passed.

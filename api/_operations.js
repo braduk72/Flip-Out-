@@ -68,7 +68,7 @@ function defaultListingExpiry(now = new Date()) {
 }
 
 export async function expireMarketListings(dbOrClient, { sellerId = null, listingId = null } = {}) {
-  const ownsConnection = typeof dbOrClient.connect === 'function'
+  const ownsConnection = typeof dbOrClient.connect === 'function' && typeof dbOrClient.release !== 'function'
   const client = ownsConnection ? await dbOrClient.connect() : dbOrClient
   try {
     if (ownsConnection) await client.query('BEGIN')

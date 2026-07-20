@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { initialMarketSeedItems, isDevToolkitAvailable, runDevToolkitAction, verifyDevToolkitAccess } from '../api/_foDevTools.js'
+import { expireMarketListings } from '../api/_operations.js'
 
 test('developer toolkit is Preview-only', () => {
   assert.equal(isDevToolkitAvailable({ VERCEL_ENV: 'preview' }), true)
@@ -33,4 +34,19 @@ test('developer toolkit initial market seed is deterministic and below the listi
   assert.ok(first.length <= 15)
   assert.equal(new Set(first.map(item => item.themeId)).size, first.length)
   assert.ok(first.every(item => item.priceCoins >= 10))
+})
+
+test('market expiry helper accepts an already checked-out database client', async () => {
+  const calls = []
+  const client = {
+    connect: () => { throw new Error('should not reconnect checked-out client') },
+    release: () => {},
+    query: async (sql) => {
+      calls.push(sql)
+      return { rows: [] }
+    },
+  }
+  const result = await expireMarketListings(client)
+  assert.deepEqual(result, { expired: 0, listingIds: [] })
+  assert.equal(calls.length, 1)
 })

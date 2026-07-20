@@ -7,7 +7,9 @@
 - The action is rerun-safe: if the market-maker already has active listings, it returns a duplicate response; if the original seed transactions were already consumed, it does not mint a second initial market.
 - Files changed: `api/_foDevTools.js`, `src/screens/DevToolkit.jsx`, `tests/dev-tools.test.js`, `src/version.js`.
 - Verification so far: focused dev-toolkit Node tests **5/5** passed; focused toolkit UI tests **2/2** passed; focused lint passed; production build passed. No schema migration was required and Production was not touched.
-- Remaining risks: live Preview seed execution still needs to be run after deployment with an authenticated Preview account and the local developer secret.
+- Live Preview attempt on the first deployment exposed a backend client/pool bug in lazy expiry (`Client has already been connected. You cannot reuse a client.`). The fix now distinguishes checked-out PostgreSQL clients from pools and recovers from the partial seed by relisting already granted seed inventory instead of reminting it.
+- Verification after fix: focused Node **20 passed / 0 failed / 1 Preview DB skip** across dev-tools/progression/game-services, focused UI **2/2** passed after rerunning from the real workspace, focused lint passed and production build passed.
+- Remaining risks: live Preview seed execution still needs to be rerun after deploying the fix with an authenticated Preview account and the local developer secret.
 
 ## Exchange listing rules - 20 July 2026
 
