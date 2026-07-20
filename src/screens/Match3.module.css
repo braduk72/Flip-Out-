@@ -140,6 +140,9 @@
 
 .board.resolving { animation: boardResolve 420ms cubic-bezier(.2, .85, .32, 1.25); }
 .board.specialResolution { animation: specialBoardResolve 560ms cubic-bezier(.16, .85, .2, 1.18); }
+.boardShake { animation: boardShake calc(460ms * var(--animation-scale, 1)) cubic-bezier(.17, .76, .22, 1) both; }
+.highIntensity { box-shadow: inset 0 0 0 2px #70dcff73, inset 0 0 42px #08111f, 0 0 26px #25e8ff99, 0 16px 42px #000a; }
+.megaIntensity { box-shadow: inset 0 0 0 2px #fff4a8aa, inset 0 0 48px #23114a, 0 0 40px #ff4dd899, 0 0 70px #25e8ff66, 0 20px 56px #000c; }
 
 .tile {
   --idle-delay: calc(var(--tile-index) * -83ms);
@@ -182,25 +185,29 @@
 .clearedTile { animation: clearFlash 460ms ease-out !important; }
 .triggeredTile { z-index: 6; animation: specialTrigger 560ms ease-out !important; }
 .createdTile { z-index: 6; animation: specialCreated 700ms cubic-bezier(.1, .9, .2, 1.3) !important; }
+.created_sun-materialise { animation: sunMaterialise 980ms cubic-bezier(.08, .82, .16, 1.18) !important; }
+.created_rocket-impact { animation: rocketImpact 820ms cubic-bezier(.1, .9, .2, 1.28) !important; }
+.created_square-pop { animation: squareSpecialPop 780ms cubic-bezier(.1, .9, .2, 1.25) !important; }
+.created_t-formation { animation: tFormation 840ms cubic-bezier(.08, .82, .16, 1.2) !important; }
+.created_l-formation { animation: lFormation 840ms cubic-bezier(.08, .82, .16, 1.2) !important; }
 
 .special {
   position: absolute;
   z-index: 3;
-  top: 2px;
-  right: 2px;
+  inset: 8%;
   display: grid;
-  width: 34%;
+  width: auto;
   aspect-ratio: 1;
   place-items: center;
-  border: 1px solid #fff9;
+  border: 1px solid #ffffffb8;
   border-radius: 50%;
   color: #fff;
-  background: #09031fd4;
-  box-shadow: 0 0 8px #fff9;
-  font-size: 44%;
+  background: radial-gradient(circle at 50% 42%, #1d1244cc, #07031ed9 72%);
+  box-shadow: 0 0 8px #fff9, inset 0 0 18px #ffffff2a, 0 0 22px #9c4dff8c;
+  font-size: 92%;
 }
 
-.special img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 0 4px #ffdf67); }
+.special img { width: 86%; height: 86%; object-fit: contain; filter: drop-shadow(0 0 7px #ffdf67) drop-shadow(0 0 14px #ff6b00); }
 .sunGraphic { position: relative; display: block; width: 68%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 35% 32%, #fff9b0 0 12%, #ffd84d 30%, #f97316 75%); box-shadow: 0 0 5px #fff, 0 0 11px #ffae25; }
 .sunGraphic::before { position: absolute; z-index: -1; inset: -24%; border-radius: 50%; background: repeating-conic-gradient(#ffd84d 0 9deg, transparent 9deg 30deg); content: ""; }
 .special_row::after,
@@ -235,12 +242,25 @@
 .comboBanner { top: 30%; min-width: 70%; animation: comboEnter 950ms cubic-bezier(.13, .85, .22, 1) both; }
 .comboBanner strong { display: block; color: #fff; font-size: clamp(24px, 8vw, 48px); font-weight: 1000; letter-spacing: -.04em; text-transform: uppercase; text-shadow: 0 4px 0 #54217e, 0 0 10px #fff, 0 0 26px #cf4dff; }
 .comboBanner span { display: inline-block; margin-top: 4px; padding: 3px 12px; border-radius: 999px; color: #2a0b44; background: #ffe45e; box-shadow: 0 0 14px #ffcb37; font-weight: 1000; text-transform: uppercase; }
+.multiplierBanner { position: absolute; z-index: 21; top: 8%; left: 50%; display: grid; min-width: clamp(132px, 42vw, 220px); padding: 7px 14px; border: 1px solid #fff8; border-radius: 999px; text-align: center; pointer-events: none; color: #fff; background: linear-gradient(180deg, #3d1a7dcc, #11042acc); box-shadow: 0 0 20px #9b6cffaa, inset 0 1px #ffffff40; transform: translateX(-50%); animation: multiplierFreeze 1050ms cubic-bezier(.12, .82, .18, 1) both; }
+.multiplierBanner span { color: #93efff; font-size: .62rem; font-weight: 1000; letter-spacing: .12em; text-transform: uppercase; }
+.multiplierBanner strong { color: #ffe86c; font-size: clamp(20px, 6vw, 34px); font-weight: 1000; line-height: 1; text-shadow: 0 0 16px #ffc928; }
+.announcerBanner { position: absolute; z-index: 24; top: 40%; left: 50%; width: min(94%, 460px); color: #fff; font-size: clamp(30px, 10vw, 64px); font-weight: 1000; letter-spacing: -.04em; text-align: center; text-shadow: 0 5px 0 #4c1378, 0 0 12px #fff, 0 0 38px #ff4dd8; pointer-events: none; transform: translate(-50%, -50%); animation: announcerBoom 1250ms cubic-bezier(.08, .78, .16, 1) both; }
 .scoreBurst { top: 49%; color: #ffe85f; font-size: clamp(20px, 6vw, 36px); font-weight: 1000; text-shadow: 0 2px 0 #9b4d00, 0 0 12px #ffcc2f; animation: scoreRise 900ms ease-out both; }
 .invalidBanner { position: absolute; z-index: 20; top: 45%; left: 50%; padding: 8px 18px; border: 1px solid #ff9ba9; border-radius: 999px; color: #fff; background: #7d214dcc; box-shadow: 0 0 18px #ff526c; font-weight: 900; pointer-events: none; transform: translate(-50%, -50%); animation: invalidMessage 280ms ease-out both; }
 
 .effects { position: absolute; z-index: 10; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
 .particleBurst { position: absolute; top: var(--effect-y); left: var(--effect-x); width: 1px; height: 1px; animation-delay: var(--effect-delay); }
-.particleBurst i { position: absolute; width: clamp(3px, 1.3vw, 7px); height: clamp(3px, 1.3vw, 7px); border-radius: 50%; background: #fff; box-shadow: 0 0 8px #5deaff, 0 0 14px #c34dff; animation: particleFly 650ms ease-out var(--effect-delay) both; transform: rotate(var(--particle-angle)); }
+.particleBurst i { position: absolute; width: clamp(3px, 1.3vw, 8px); height: clamp(3px, 1.3vw, 8px); border-radius: 50%; background: conic-gradient(#fff, #5deaff, #ff6bea, #ffe66a, #fff); box-shadow: 0 0 8px #5deaff, 0 0 14px #c34dff; animation: particleFly 760ms ease-out var(--effect-delay) both; transform: rotate(var(--particle-angle)); }
+.creationShockwave,
+.specialImpact { position: absolute; top: var(--effect-y); left: var(--effect-x); width: 18%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); }
+.creationShockwave { border: 4px solid #fff; box-shadow: 0 0 18px #fff, 0 0 38px #ffe86c, inset 0 0 16px #fff; animation: creationWave 820ms ease-out both; }
+.specialImpact { background: radial-gradient(circle, #fff 0 8%, #ffe86c 12%, transparent 58%); filter: drop-shadow(0 0 18px #ff4dd8); animation: impactPop 620ms ease-out both; }
+.creation_sun-materialise { box-shadow: 0 0 22px #fff, 0 0 52px #ffd84d, 0 0 78px #ff7a18; }
+.creation_rocket-impact { border-color: #7de8ff; box-shadow: 0 0 22px #7de8ff, 0 0 52px #237bff; }
+.creation_square-pop { border-radius: 24%; border-color: #ff79d7; box-shadow: 0 0 22px #ff79d7, 0 0 46px #b56cff; }
+.creation_t-formation { border-color: #80ffb0; box-shadow: 0 0 22px #80ffb0, 0 0 46px #32d47a; }
+.creation_l-formation { border-color: #ffe86c; box-shadow: 0 0 22px #ffe86c, 0 0 46px #ff8b25; }
 .blastBeam { position: absolute; top: 50%; left: 50%; border-radius: 999px; background: linear-gradient(90deg, transparent, #fff 42%, #65eaff 50%, #fff 58%, transparent); filter: drop-shadow(0 0 8px #27a8ff); animation: beamFire 520ms ease-out both; }
 .horizontalBeam { width: 130%; height: 4%; transform: translate(-50%, -50%); }
 .verticalBeam { width: 4%; height: 130%; transform: translate(-50%, -50%) rotate(90deg); }
@@ -314,15 +334,25 @@
 @keyframes clearFlash { 0% { filter: brightness(1); transform: scale(1); } 35% { filter: brightness(2.2); transform: scale(1.18); } 100% { filter: brightness(1); transform: scale(.92); } }
 @keyframes specialTrigger { 0% { transform: scale(1); } 35% { filter: brightness(2); transform: scale(1.28) rotate(8deg); } 100% { opacity: .75; transform: scale(.85); } }
 @keyframes specialCreated { 0% { filter: brightness(3); transform: scale(.2) rotate(-25deg); } 55% { transform: scale(1.28) rotate(7deg); } 100% { filter: brightness(1); transform: scale(1); } }
+@keyframes sunMaterialise { 0% { filter: brightness(4); transform: scale(.12) rotate(-80deg); } 34% { transform: scale(1.42) rotate(18deg); } 64% { filter: brightness(2.2); transform: scale(.96) rotate(-4deg); } 100% { filter: brightness(1); transform: scale(1); } }
+@keyframes rocketImpact { 0% { filter: brightness(3); transform: translateY(-45%) scale(.35) rotate(-12deg); } 48% { transform: translateY(5%) scale(1.36) rotate(5deg); } 68% { transform: translateY(-3%) scale(.98); } 100% { filter: brightness(1); transform: none; } }
+@keyframes squareSpecialPop { 0% { filter: brightness(2.6); transform: scale(.45); border-radius: 18%; } 46% { transform: scale(1.24); } 74% { transform: scale(.96); } 100% { filter: brightness(1); transform: scale(1); } }
+@keyframes tFormation { 0% { filter: brightness(2.6); transform: scale(.42) rotate(-8deg); } 34% { transform: scaleX(1.28) scaleY(.88); } 62% { transform: scaleX(.94) scaleY(1.18); } 100% { filter: brightness(1); transform: scale(1); } }
+@keyframes lFormation { 0% { filter: brightness(2.6); transform: scale(.42) rotate(18deg); } 46% { transform: scale(1.24) rotate(-8deg); } 72% { transform: scale(.96) rotate(3deg); } 100% { filter: brightness(1); transform: scale(1); } }
 @keyframes boardResolve { 0% { transform: scale(1); } 45% { transform: scale(1.012); } 100% { transform: scale(1); } }
 @keyframes specialBoardResolve { 0% { transform: scale(1); } 30% { filter: brightness(1.28); transform: scale(1.025); } 65% { transform: scale(.995); } 100% { filter: brightness(1); transform: scale(1); } }
+@keyframes boardShake { 0%, 100% { transform: translate3d(0, 0, 0); } 14% { transform: translate3d(calc(var(--shake-strength) * -.7), calc(var(--shake-strength) * .35), 0); } 28% { transform: translate3d(calc(var(--shake-strength) * .8), calc(var(--shake-strength) * -.4), 0); } 42% { transform: translate3d(calc(var(--shake-strength) * -.5), calc(var(--shake-strength) * -.25), 0); } 56% { transform: translate3d(calc(var(--shake-strength) * .45), calc(var(--shake-strength) * .24), 0); } 70% { transform: translate3d(calc(var(--shake-strength) * -.22), 0, 0); } }
 @keyframes stripeHorizontal { 50% { transform: scaleX(.65); opacity: .65; } }
 @keyframes stripeVertical { 50% { transform: scaleY(.65); opacity: .65; } }
 @keyframes wrappedPulse { 50% { filter: brightness(1.5); transform: scale(.82) rotate(8deg); } }
 @keyframes colorSpin { to { transform: rotate(360deg); } }
 @keyframes comboEnter { 0% { opacity: 0; transform: translate(-50%, 35px) scale(.45) rotate(-4deg); } 28% { opacity: 1; transform: translate(-50%, 0) scale(1.12) rotate(1deg); } 72% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -24px) scale(.94); } }
+@keyframes multiplierFreeze { 0% { opacity: 0; transform: translate(-50%, 12px) scale(.75); } 22%, 78% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -8px) scale(.92); } }
+@keyframes announcerBoom { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.28) rotate(-6deg); } 24% { opacity: 1; transform: translate(-50%, -50%) scale(1.18) rotate(2deg); } 70% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -62%) scale(.9); } }
 @keyframes scoreRise { 0% { opacity: 0; transform: translate(-50%, 24px) scale(.5); } 30%, 70% { opacity: 1; transform: translate(-50%, 0) scale(1.12); } 100% { opacity: 0; transform: translate(-50%, -34px) scale(.9); } }
 @keyframes particleFly { 0% { opacity: 1; transform: rotate(var(--particle-angle)) translateX(2px) scale(1.5); } 100% { opacity: 0; transform: rotate(var(--particle-angle)) translateX(clamp(20px, 8vw, 44px)) scale(0); } }
+@keyframes creationWave { 0% { opacity: .95; transform: translate(-50%, -50%) scale(.15); } 70% { opacity: .55; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(2.6); } }
+@keyframes impactPop { 0% { opacity: 1; transform: translate(-50%, -50%) scale(.18); } 52% { opacity: .85; transform: translate(-50%, -50%) scale(1.15); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.9); } }
 @keyframes beamFire { 0% { opacity: 0; scale: .05 1; } 30% { opacity: 1; scale: 1 1; } 100% { opacity: 0; scale: 1.2 .15; } }
 @keyframes ringBlast { 0% { opacity: 1; transform: translate(-50%, -50%) scale(.15); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(7); } }
 @keyframes rainbowBlast { 0% { opacity: .7; transform: scale(.05) rotate(0); } 70% { opacity: .45; } 100% { opacity: 0; transform: scale(1.4) rotate(120deg); } }
@@ -352,12 +382,15 @@
   .game::before,
   .tile,
   .board,
+  .boardShell,
   .special_row::after,
   .special_col::after,
   .special_wrapped::after,
   .special_color::after,
   .resultIcon { animation: none !important; }
   .comboBanner,
+  .multiplierBanner,
+  .announcerBanner,
   .scoreBurst,
   .reel,
   .reviveSpinning,
@@ -365,6 +398,8 @@
   .particleBurst,
   .blastBeam,
   .explosionRing,
-  .rainbowWash { display: none; }
+  .rainbowWash,
+  .creationShockwave,
+  .specialImpact { display: none; }
   .tile { transition-duration: 0s; }
 }

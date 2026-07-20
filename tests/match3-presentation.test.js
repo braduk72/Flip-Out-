@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { buildMatch3EffectPlan, cascadeAnnouncer } from '../src/match3/effects.js'
 import { cellIsInPresentation, createMatch3Presentation, match3ResolutionDuration, match3SwapDuration } from '../src/match3/presentation.js'
 
 const previous = { score: 100 }
@@ -21,6 +22,8 @@ test('presentation data is deterministic and deduplicates affected cells', () =>
   assert.equal(first.label, 'Triple Cross Blast!')
   assert.equal(first.comboType, 'line+wrapped')
   assert.equal(first.scoreGained, 750)
+  assert.equal(first.effectPlan.stages.length, 2)
+  assert.equal(first.effectPlan.multiplierDisplay.cascadeCount, 2)
 })
 
 test('presentation membership supports tile animation classes', () => {
@@ -34,7 +37,7 @@ test('resolution timing is bounded and respects motion preferences', () => {
   assert.equal(match3ResolutionDuration(next.cascades, 'off'), 0)
   assert.equal(match3ResolutionDuration(next.cascades, 'reduced'), 180)
   assert.ok(match3ResolutionDuration(next.cascades, 'full') > 500)
-  assert.ok(match3ResolutionDuration(Array(100).fill(next.cascades[0]), 'full') <= 1500)
+  assert.ok(match3ResolutionDuration(Array(100).fill(next.cascades[0]), 'full') <= 1900)
 })
 
 test('invalid swaps have a bounded return animation without changing authoritative state', () => {
@@ -50,4 +53,28 @@ test('reduced motion preserves semantic phases with shorter timings', () => {
   assert.equal(presentation.phase, 'resolve')
   assert.ok(presentation.durationMs < match3ResolutionDuration(next.cascades, 'full'))
   assert.ok(presentation.label)
+  assert.ok(presentation.effectPlan.particleCount <= 18)
+  assert.equal(presentation.effectPlan.boardShake, 0)
+})
+
+test('effect framework maps special creation reasons to distinct animations', () => {
+  const cascades = [
+    { kind: 'match', multiplier: 1, clearedCells: [{ r: 0, c: 0 }], triggeredSpecials: [], createdSpecials: [{ at: { r: 0, c: 0 }, type: 'row', reason: 'four' }], scoreGain: 100 },
+    { kind: 'match', multiplier: 1.5, clearedCells: [{ r: 1, c: 1 }], triggeredSpecials: [], createdSpecials: [{ at: { r: 1, c: 1 }, type: 'color', reason: 'five' }], scoreGain: 200 },
+    { kind: 'match', multiplier: 2, clearedCells: [{ r: 2, c: 2 }], triggeredSpecials: [], createdSpecials: [{ at: { r: 2, c: 2 }, type: 'wrapped', reason: 't' }], scoreGain: 300 },
+    { kind: 'match', multiplier: 2.5, clearedCells: [{ r: 3, c: 3 }], triggeredSpecials: [], createdSpecials: [{ at: { r: 3, c: 3 }, type: 'wrapped', reason: 'l' }], scoreGain: 400 },
+    { kind: 'match', multiplier: 3, clearedCells: [{ r: 4, c: 4 }], triggeredSpecials: [], createdSpecials: [{ at: { r: 4, c: 4 }, type: 'wrapped', reason: 'square' }], scoreGain: 500 },
+  ]
+  const plan = buildMatch3EffectPlan(cascades)
+  const animations = plan.stages.flatMap(stage => stage.createdSpecials.map(special => special.animation))
+  assert.deepEqual(animations, ['rocket-impact', 'sun-materialise', 't-formation', 'l-formation', 'square-pop'])
+  assert.equal(plan.multiplierDisplay.value, 3)
+  assert.equal(plan.boardShake >= 5, true)
+})
+
+test('announcer lines remain reserved for exceptional cascades', () => {
+  assert.equal(cascadeAnnouncer(1), null)
+  assert.equal(cascadeAnnouncer(3), null)
+  assert.equal(cascadeAnnouncer(4), 'OUTSTANDING!')
+  assert.equal(cascadeAnnouncer(8), 'FLIP OUT!!')
 })

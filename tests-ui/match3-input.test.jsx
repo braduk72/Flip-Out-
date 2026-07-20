@@ -107,3 +107,39 @@ test('lost Match-3 board offers Coin-only revive spinner and no advert revive', 
   await waitFor(() => expect(onRevive).toHaveBeenCalledTimes(1))
   expect(await screen.findByText('No luck this time. You can try the next revive or retry the level.')).toBeInTheDocument()
 })
+
+test('Match-3 presentation renders multiplier, announcer and special effect layers', () => {
+  const game = createGame(MATCH3_LEVELS[0], 77)
+  const presentation = {
+    swapped: [],
+    cleared: [{ r: 0, c: 0 }, { r: 0, c: 1 }, { r: 0, c: 2 }],
+    triggered: [{ r: 0, c: 0 }],
+    created: [{ r: 1, c: 1 }],
+    cascades: [],
+    cascadeCount: 4,
+    scoreGained: 1200,
+    label: 'OUTSTANDING!',
+    comboType: 'line+wrapped',
+    phase: 'resolve',
+    durationMs: 900,
+    effectPlan: {
+      boardShake: 6,
+      intensity: 6,
+      particleIntensity: 6,
+      particleCount: 24,
+      announcer: 'OUTSTANDING!',
+      multiplierDisplay: { value: 2.5, cascadeCount: 4, scoreGained: 1200 },
+      stages: [
+        {
+          createdSpecials: [{ at: { r: 1, c: 1 }, type: 'wrapped', animation: 't-formation' }],
+          triggeredSpecials: [{ at: { r: 0, c: 0 }, type: 'row' }],
+        },
+      ],
+    },
+  }
+  const { container } = render(<GameBoard {...props} presentation={presentation} session={{ state: game }}/>)
+  expect(screen.getByText('Cascade multiplier')).toBeInTheDocument()
+  expect(screen.getAllByText('OUTSTANDING!').length).toBeGreaterThanOrEqual(1)
+  expect(container.querySelector('[class*="creationShockwave"]')).toBeInTheDocument()
+  expect(container.querySelector('[class*="specialImpact"]')).toBeInTheDocument()
+})

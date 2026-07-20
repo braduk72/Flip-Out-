@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Match3FeedbackPanel from '../components/Match3FeedbackPanel.jsx'
 import { objectiveProgress } from '../match3/engine.js'
+import { createdSpecialPresentation } from '../match3/effects.js'
 import { MATCH3_LEVELS, MATCH3_TOKENS, getMatch3Level } from '../match3/levels.js'
 import { cellIsInPresentation, createMatch3Presentation, isMatch3BoardInputLocked } from '../match3/presentation.js'
 import Match3TokenImage from '../match3/Match3TokenImage.jsx'
@@ -416,14 +417,17 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
   }
 
   const boardClass = [styles.board, presentation?.phase === 'swap' ? styles.swapping : '', presentation?.invalidSwap ? styles.invalidSwap : '', presentation?.phase === 'shuffle' ? styles.shuffling : '', presentation?.cascadeCount ? styles.resolving : '', presentation?.comboType ? styles.specialResolution : ''].filter(Boolean).join(' ')
+  const shellClass = [styles.boardShell, presentation?.effectPlan?.boardShake ? styles.boardShake : '', presentation?.effectPlan?.intensity >= 6 ? styles.megaIntensity : presentation?.effectPlan?.intensity >= 4 ? styles.highIntensity : ''].filter(Boolean).join(' ')
   return <main className={`${styles.game} foTheme`} data-concept-screen="gameplay" data-screen="match3-game">
     <div className={styles.gameTop}><button onClick={onQuit}>Quit</button><strong>Level {level.id}</strong><button onClick={() => setPaused(true)}>Pause</button></div>
     <div className={styles.stats}><span>Score <strong>{state.score.toLocaleString()}</strong></span><span>Moves <strong>{state.movesRemaining}</strong></span></div>
     <div className={styles.objectives}>{level.objectives.map((objective, index) => <span key={index}>{objectiveLabel(objective)}: {objectiveProgress(state, objective)}/{objective.target}</span>)}</div>
     <p className={styles.sr} aria-live="polite">{summary}{selected ? ` Selected row ${selected.r + 1}, column ${selected.c + 1}.` : ''}{presentation?.label ? ` ${presentation.label} Plus ${presentation.scoreGained} points.` : ''}</p>
-    <div className={styles.boardShell} style={{ '--board-rows': rows, '--board-columns': columns, '--animation-scale': slowAnimations ? 4 : 1 }}>
+    <div className={shellClass} style={{ '--board-rows': rows, '--board-columns': columns, '--animation-scale': slowAnimations ? 4 : 1, '--shake-strength': `${presentation?.effectPlan?.boardShake ?? 0}px` }}>
       {presentation?.invalidSwap && <div className={styles.invalidBanner} aria-live="polite">Try another swap</div>}
       {presentation?.label && <div className={styles.comboBanner} aria-hidden="true"><strong>{presentation.label}</strong>{presentation.cascadeCount > 1 && <span>×{presentation.cascadeCount} cascade</span>}</div>}
+      {presentation?.effectPlan?.multiplierDisplay && <div className={styles.multiplierBanner} aria-hidden="true"><span>Cascade multiplier</span><strong>Ã—{presentation.effectPlan.multiplierDisplay.value}</strong></div>}
+      {presentation?.effectPlan?.announcer && <div className={styles.announcerBanner} aria-hidden="true">{presentation.effectPlan.announcer}</div>}
       {presentation?.scoreGained > 0 && <div className={styles.scoreBurst} aria-hidden="true">+{presentation.scoreGained.toLocaleString()}</div>}
       <div className={boardClass} role="grid" aria-label={summary} aria-busy={locked} data-input-locked={locked ? 'true' : 'false'}>
         {state.board.map((row, rowIndex) => row.map((cell, columnIndex) => <Tile key={`${rowIndex}:${columnIndex}`} cell={cell} row={rowIndex} column={columnIndex} columns={columns} selected={selected?.r === rowIndex && selected?.c === columnIndex} presentation={presentation} dragState={dragState} onChoose={choose} onKeyDown={keyDown} onPointerDown={event => beginDrag(event, rowIndex, columnIndex, cell.token)} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={() => { if (drag.current) returnDraggedToken(drag.current) }} />))}
@@ -442,8 +446,14 @@ export function GameBoard({ session, busy, error, presentation, onMove, onPower,
 
 function BoardEffects({ presentation, rows, columns }) {
   if (!presentation?.cascadeCount) return null
+  const particleLimit = presentation.effectPlan?.particleCount ?? 32
+  const particlePerBurst = Math.max(3, Math.min(8, 2 + Math.ceil((presentation.effectPlan?.particleIntensity ?? 1) / 2)))
+  const created = presentation.effectPlan?.stages?.flatMap(stage => stage.createdSpecials) ?? []
+  const triggered = presentation.effectPlan?.stages?.flatMap(stage => stage.triggeredSpecials) ?? []
   return <div className={styles.effects} aria-hidden="true">
-    {presentation.cleared.slice(0, 32).map((position, index) => <span key={`${position.r}:${position.c}`} className={styles.particleBurst} style={{ '--effect-x': `${((position.c + 0.5) / columns) * 100}%`, '--effect-y': `${((position.r + 0.5) / rows) * 100}%`, '--effect-delay': `${(index % 6) * 24}ms` }}>{Array.from({ length: 4 }, (_, particle) => <i key={particle} style={{ '--particle-angle': `${particle * 90 + (index % 3) * 15}deg` }} />)}</span>)}
+    {presentation.cleared.slice(0, particleLimit).map((position, index) => <span key={`${position.r}:${position.c}`} className={styles.particleBurst} style={{ '--effect-x': `${((position.c + 0.5) / columns) * 100}%`, '--effect-y': `${((position.r + 0.5) / rows) * 100}%`, '--effect-delay': `${(index % 8) * 20}ms` }}>{Array.from({ length: particlePerBurst }, (_, particle) => <i key={particle} style={{ '--particle-angle': `${particle * (360 / particlePerBurst) + (index % 3) * 15}deg` }} />)}</span>)}
+    {created.map((special, index) => <span key={`created:${special.at.r}:${special.at.c}:${index}`} className={`${styles.creationShockwave} ${styles[`creation_${special.animation}`] ?? ''}`} style={{ '--effect-x': `${((special.at.c + 0.5) / columns) * 100}%`, '--effect-y': `${((special.at.r + 0.5) / rows) * 100}%` }} />)}
+    {triggered.map((special, index) => <span key={`triggered:${special.at.r}:${special.at.c}:${index}`} className={`${styles.specialImpact} ${styles[`impact_${special.type}`] ?? ''}`} style={{ '--effect-x': `${((special.at.c + 0.5) / columns) * 100}%`, '--effect-y': `${((special.at.r + 0.5) / rows) * 100}%` }} />)}
     {presentation.comboType?.includes('line') && <><span className={`${styles.blastBeam} ${styles.horizontalBeam}`} /><span className={`${styles.blastBeam} ${styles.verticalBeam}`} /></>}
     {presentation.comboType?.includes('wrapped') && <span className={styles.explosionRing} />}
     {presentation.comboType?.includes('color') && <span className={styles.rainbowWash} />}
@@ -460,6 +470,7 @@ function Tile({ cell, row, column, columns, selected, presentation, dragState, o
   if (cell.crate) parts.push(`${cell.crate} layer crate`)
   if (cell.ice) parts.push('ice')
   if (cell.chain) parts.push('chained')
+  const createdPresentation = createdSpecialPresentation(presentation, row, column)
   const classes = [
     styles.tile,
     selected ? styles.selected : '',
@@ -468,6 +479,7 @@ function Tile({ cell, row, column, columns, selected, presentation, dragState, o
     cellIsInPresentation(presentation, 'cleared', row, column) ? styles.clearedTile : '',
     cellIsInPresentation(presentation, 'triggered', row, column) ? styles.triggeredTile : '',
     cellIsInPresentation(presentation, 'created', row, column) ? styles.createdTile : '',
+    createdPresentation?.animation ? styles[`created_${createdPresentation.animation}`] : '',
     dragState?.source.r === row && dragState?.source.c === column ? styles.draggingTile : '',
     dragState?.destination?.r === row && dragState?.destination?.c === column ? styles.dragPreviewTile : '',
   ].filter(Boolean).join(' ')
