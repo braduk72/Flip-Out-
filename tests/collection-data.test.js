@@ -29,7 +29,9 @@ test('collection model builds albums, sets, ownership, recency and statistics fr
   assert.equal(model.recent[0].id, 'card:cats:1')
   assert.equal(model.nonCards[0].item_id, 'inventory:lockbox:standard')
   const cars = model.sets.find(entry => entry.id === 'sportscars')
-  assert.equal(cars.owned, 1)
+  assert.equal(cars.owned, 0)
+  assert.equal(cars.inventoryOwned, 1)
+  assert.equal(cars.eligibleInventory, 1)
   assert.equal(cars.goldOwned, true)
 })
 
@@ -49,6 +51,38 @@ test('official Theme Album entries count as collected without remaining in Inven
   assert.equal(card.recyclableQuantity, 0)
   assert.equal(cats.owned, 1)
   assert.equal(cats.collectors.bronze, true)
+})
+
+test('official Theme Album model separates Inventory ownership from filled Normal and Foil slots', () => {
+  const model = buildCollectionData({
+    inventory: [
+      { item_id: 'card:cats:1', quantity: 1, bound_quantity: 0 },
+      { item_id: 'card:cats:2', quantity: 2, bound_quantity: 0 },
+    ],
+    themeAlbums: {
+      entries: [
+        { card_item_id: 'card:cats:2', theme_id: 'cats', variant: 'normal' },
+        { card_item_id: 'card:cats:3', theme_id: 'cats', variant: 'foil' },
+      ],
+      collectors: [],
+    },
+  })
+  const cats = model.officialThemeAlbums.find(theme => theme.id === 'cats')
+  const inventoryOnly = cats.cards.find(card => card.id === 'card:cats:1')
+  const normalStuck = cats.cards.find(card => card.id === 'card:cats:2')
+  const foilStuck = cats.cards.find(card => card.id === 'card:cats:3')
+  assert.equal(cats.cards[0].number, 1)
+  assert.equal(cats.cards[1].number, 2)
+  assert.equal(cats.normalStuck, 1)
+  assert.equal(cats.foilStuck, 1)
+  assert.equal(cats.overallFilled, 2)
+  assert.equal(inventoryOnly.eligibleForThemeAlbum, true)
+  assert.equal(inventoryOnly.normalStuckInThemeAlbum, false)
+  assert.equal(normalStuck.normalStuckInThemeAlbum, true)
+  assert.equal(normalStuck.foilStuckInThemeAlbum, false)
+  assert.equal(foilStuck.normalStuckInThemeAlbum, false)
+  assert.equal(foilStuck.foilStuckInThemeAlbum, true)
+  assert.equal(normalStuck.rarityStars, 1)
 })
 
 test('Personal Album memberships are organisational and do not change ownership quantities', () => {

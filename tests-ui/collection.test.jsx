@@ -14,6 +14,9 @@ const payload = {
       { item_id: 'inventory:key:standard', quantity: 1, bound_quantity: 0 },
     ],
     transactions: [{ item_id: 'card:sportscars:1', amount: 1, created_at: '2026-07-19T10:00:00Z' }],
+    themeAlbums: { entries: [], collectors: [] },
+    personalAlbums: { albums: [{ album_id: '11111111-1111-4111-8111-111111111111', name: 'Favourites' }], cards: [], limit: 10, createCostCoins: 500 },
+    inventoryCapacity: { cardCapacity: 1000, cardCount: 3, remainingCardSlots: 997 },
   },
 }
 
@@ -24,22 +27,40 @@ function renderCollection() {
 }
 
 describe('Collection 2.0', () => {
-  it('presents real album/set progress and opens a set without losing catalogue context', async () => {
+  it('presents Official Theme Album covers with variable totals and collector status', async () => {
     const user = userEvent.setup()
     renderCollection()
-    expect(await screen.findByRole('heading', { name: 'Albums & sets' })).toBeInTheDocument()
-    expect(screen.getByText(/1 of 653 cards collected/)).toBeInTheDocument()
-    const superCars = screen.getByRole('button', { name: /Open Super Cars, 1 of 70 cards owned/ })
+    expect(await screen.findByRole('heading', { name: 'Official Theme Albums' })).toBeInTheDocument()
+    expect(screen.getByText(/0 of 653 Normal cards stuck/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Open Super Cars Official Theme Album, 0 of 70 Normal cards stuck, 0 of 70 Foil cards stuck/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Open Kings & Queens Official Theme Album, 0 of 19 Normal cards stuck, 0 of 19 Foil cards stuck/ })).toBeInTheDocument()
+    expect(screen.getByText('Personal Albums')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Open Super Cars Official Theme Album/ }))
+    expect(screen.getByRole('heading', { name: 'Super Cars' })).toBeInTheDocument()
+  })
+
+  it('opens a Theme Album with collector pyramid, numbered paired slots and rarity labels', async () => {
+    const user = userEvent.setup()
+    renderCollection()
+    await screen.findByRole('heading', { name: 'Official Theme Albums' })
+    const superCars = screen.getByRole('button', { name: /Open Super Cars Official Theme Album/ })
     await user.click(superCars)
-    expect(screen.getByRole('heading', { name: 'Cards' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'All sets' })).toBeInTheDocument()
-    expect(screen.getByRole('searchbox', { name: 'Search cards and sets' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Super Cars Collector Cards')).toBeInTheDocument()
+    expect(screen.getByText('Gold Collector Card')).toBeInTheDocument()
+    expect(screen.getByText('Bronze Collector Card')).toBeInTheDocument()
+    expect(screen.getByText('Silver Collector Card')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Next page' }))
+    const ferrari = screen.getByLabelText(/Ferrari 488 GTB, ★☆☆☆☆ common/)
+    expect(within(ferrari).getAllByText('#1')).toHaveLength(2)
+    expect(within(ferrari).getByLabelText(/Normal slot/)).toHaveTextContent('Normal')
+    expect(within(ferrari).getByLabelText(/Foil slot/)).toHaveTextContent('Foil')
+    expect(within(ferrari).getByRole('heading', { name: 'Ferrari 488 GTB' })).toBeInTheDocument()
   })
 
   it('searches, favourites and reuses the account-scoped favourite in the showcase', async () => {
     const user = userEvent.setup()
     renderCollection()
-    await screen.findByRole('heading', { name: 'Albums & sets' })
+    await screen.findByRole('heading', { name: 'Official Theme Albums' })
     await user.click(screen.getByRole('button', { name: 'Cards' }))
     await user.type(screen.getByRole('searchbox', { name: 'Search cards and sets' }), 'Ferrari 488 GTB')
     expect(screen.getByText('Showing 1 of 1 cards')).toBeInTheDocument()
@@ -52,7 +73,7 @@ describe('Collection 2.0', () => {
   it('exposes complete filters and states clearly that Foils are not yet authoritative', async () => {
     const user = userEvent.setup()
     renderCollection()
-    await screen.findByRole('heading', { name: 'Albums & sets' })
+    await screen.findByRole('heading', { name: 'Official Theme Albums' })
     await user.click(screen.getByRole('button', { name: 'Cards' }))
     await user.click(screen.getByRole('button', { name: 'Filters' }))
     const filterRegion = screen.getByText('Variant').closest('section')
@@ -64,7 +85,7 @@ describe('Collection 2.0', () => {
   it('keeps existing non-card inventory and lockbox actions accessible', async () => {
     const user = userEvent.setup()
     renderCollection()
-    await screen.findByRole('heading', { name: 'Albums & sets' })
+    await screen.findByRole('heading', { name: 'Official Theme Albums' })
     await user.click(screen.getByRole('button', { name: 'Items' }))
     expect(screen.getByText('Standard Lockbox')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Open lockbox' })).toBeInTheDocument()
@@ -82,7 +103,7 @@ describe('Collection 2.0', () => {
     const loader = vi.fn().mockResolvedValue(recyclerPayload)
     const action = vi.fn().mockResolvedValue({ duplicate: false, transactionId: 'recycle:test', cardsConsumed: 5, batches: 1, reward: { currencyId: 'stars', amount: 1 }, items: [{ itemId: 'card:sportscars:1', quantity: 5 }] })
     render(<Inventory onBack={() => {}} navProps={{}} dataLoader={loader} actionRunner={action} storage={localStorage}/>)
-    await screen.findByRole('heading', { name: 'Albums & sets' })
+    await screen.findByRole('heading', { name: 'Official Theme Albums' })
     await user.click(screen.getByRole('button', { name: 'Duplicate card recycler' }))
     const add = screen.getByRole('button', { name: 'Add one Ferrari 488 GTB' })
     for (let count = 0; count < 5; count += 1) await user.click(add)
@@ -104,7 +125,7 @@ describe('Collection 2.0', () => {
     const loader = vi.fn().mockResolvedValue(recyclerPayload)
     const action = vi.fn().mockRejectedValueOnce(new Error('Connection lost')).mockResolvedValue({ duplicate: true, transactionId: 'recycle:retry', cardsConsumed: 5, batches: 1, reward: { currencyId: 'stars', amount: 1 }, items: [{ itemId: 'card:sportscars:1', quantity: 5 }] })
     render(<Inventory onBack={() => {}} navProps={{}} dataLoader={loader} actionRunner={action} storage={localStorage}/>)
-    await screen.findByRole('heading', { name: 'Albums & sets' })
+    await screen.findByRole('heading', { name: 'Official Theme Albums' })
     await user.click(screen.getByRole('button', { name: 'Duplicate card recycler' }))
     const add = screen.getByRole('button', { name: 'Add one Ferrari 488 GTB' })
     for (let count = 0; count < 5; count += 1) await user.click(add)
@@ -114,5 +135,31 @@ describe('Collection 2.0', () => {
     await user.click(screen.getByRole('button', { name: 'Retry secure recycling' }))
     expect(action.mock.calls[1][0].transactionId).toBe(firstId)
     expect(await screen.findByText(/Safe retry confirmed/)).toBeInTheDocument()
+  })
+
+  it('confirms Stick in Album, calls the authoritative action and refreshes album state', async () => {
+    const user = userEvent.setup()
+    const afterStick = {
+      state: {
+        ...payload.state,
+        inventory: [
+          { item_id: 'card:sportscars:1', quantity: 1, bound_quantity: 0 },
+          { item_id: 'card:sportscars:gold', quantity: 1, bound_quantity: 0 },
+        ],
+        themeAlbums: { entries: [{ card_item_id: 'card:sportscars:1', theme_id: 'sportscars', variant: 'normal' }], collectors: [] },
+        inventoryCapacity: { cardCapacity: 1000, cardCount: 2, remainingCardSlots: 998 },
+      },
+    }
+    const loader = vi.fn().mockResolvedValueOnce(payload).mockResolvedValue(afterStick)
+    const action = vi.fn().mockResolvedValue({ duplicate: false, transactionId: 'album-stick:test', itemId: 'card:sportscars:1', themeId: 'sportscars', variant: 'normal', completion: { normalCount: 1, foilCount: 0, total: 70 }, collectorCardsAwarded: [] })
+    render(<Inventory onBack={() => {}} navProps={{}} dataLoader={loader} actionRunner={action} storage={localStorage}/>)
+    await screen.findByRole('heading', { name: 'Official Theme Albums' })
+    await user.click(screen.getByRole('button', { name: /Open Super Cars Official Theme Album/ }))
+    await user.click(screen.getByRole('button', { name: 'Next page' }))
+    await user.click(screen.getByRole('button', { name: 'Stick Ferrari 488 GTB in Album' }))
+    expect(screen.getByRole('dialog', { name: 'Stick in Album' })).toHaveTextContent('It cannot later be removed')
+    await user.click(screen.getByRole('button', { name: 'Stick in Album' }))
+    expect(action).toHaveBeenCalledWith(expect.objectContaining({ action: 'stick-in-album', itemId: 'card:sportscars:1', variant: 'normal' }))
+    expect(await screen.findByText(/Ferrari 488 GTB was permanently stuck/)).toBeInTheDocument()
   })
 })

@@ -9,6 +9,71 @@ export const COLLECTION_ALBUMS = Object.freeze([
 
 export const COLLECTION_MILESTONES = Object.freeze([10, 25, 50, 75, 100])
 
+export const RARITY_STARS = Object.freeze({
+  common: 1,
+  uncommon: 2,
+  rare: 3,
+  epic: 4,
+  legendary: 5,
+})
+
+export const THEME_ALBUM_PRESENTATION = Object.freeze({
+  cats: {
+    family: 'cats',
+    mood: 'Warm scrapbook',
+    background: 'radial-gradient(circle at 15% 15%, rgba(251, 191, 36, .24), transparent 32%), linear-gradient(135deg, #2d1b42, #151024)',
+    texture: 'soft fabric grain',
+    motif: 'paw prints',
+    plaque: 'stitched gold ribbon',
+    accent: '#fbbf24',
+  },
+  woof: {
+    family: 'cats',
+    mood: 'Companion scrapbook',
+    background: 'radial-gradient(circle at 85% 8%, rgba(196, 181, 253, .18), transparent 35%), linear-gradient(135deg, #211535, #10172a)',
+    texture: 'soft paper',
+    motif: 'pet badges',
+    plaque: 'stitched violet ribbon',
+    accent: '#c4b5fd',
+  },
+  mastersOfTheLostWorld: {
+    family: 'dinosaurs',
+    mood: 'Excavation journal',
+    background: 'radial-gradient(circle at 12% 10%, rgba(251, 191, 36, .18), transparent 35%), linear-gradient(135deg, #33220b, #111827)',
+    texture: 'stone and fossil rubbings',
+    motif: 'fossils',
+    plaque: 'aged museum brass',
+    accent: '#d97706',
+  },
+  conquestOfSpace: {
+    family: 'space',
+    mood: 'Deep-space observatory',
+    background: 'radial-gradient(circle at 85% 12%, rgba(34, 211, 238, .2), transparent 34%), linear-gradient(135deg, #050816, #11154a)',
+    texture: 'star field',
+    motif: 'constellations',
+    plaque: 'instrument-panel cyan',
+    accent: '#22d3ee',
+  },
+  sportscars: {
+    family: 'cars',
+    mood: 'Chrome workshop',
+    background: 'radial-gradient(circle at 90% 15%, rgba(248, 113, 113, .18), transparent 32%), linear-gradient(135deg, #250b12, #111827)',
+    texture: 'leather and dashboard grain',
+    motif: 'chrome trim',
+    plaque: 'painted enamel badge',
+    accent: '#ef4444',
+  },
+  birdsOfPrey: {
+    family: 'wildlife',
+    mood: 'Field journal',
+    background: 'radial-gradient(circle at 18% 10%, rgba(74, 222, 128, .15), transparent 32%), linear-gradient(135deg, #17251a, #101827)',
+    texture: 'natural paper',
+    motif: 'feathers and botanical marks',
+    plaque: 'botanical label',
+    accent: '#86efac',
+  },
+})
+
 const CARD_TYPES = new Set(['card', 'card_variant'])
 const RARITY_ORDER = new Map(RARITIES.map((rarity, index) => [rarity, index]))
 const deckById = new Map(DECKS.map(deck => [deck.id, deck]))
@@ -23,6 +88,30 @@ function numberFor(item) {
   return /^\d+$/.test(value) ? Number(value) : Number.MAX_SAFE_INTEGER
 }
 
+function rarityStars(rarity) {
+  return RARITY_STARS[rarity] ?? 1
+}
+
+function variantKey(itemId, variant = 'normal') {
+  return `${itemId}:${variant}`
+}
+
+function collectorKey(themeId, tier) {
+  return `${themeId}:${tier}`
+}
+
+function themePresentation(deck) {
+  return THEME_ALBUM_PRESENTATION[deck.id] ?? {
+    family: 'classic',
+    mood: 'Premium collector album',
+    background: `radial-gradient(circle at 88% 10%, color-mix(in srgb, ${deck.borderColor ?? '#22d3ee'} 28%, transparent), transparent 34%), linear-gradient(135deg, #111827, #070b18)`,
+    texture: 'collector paper',
+    motif: 'subtle foil lines',
+    plaque: 'illuminated title plaque',
+    accent: deck.borderColor ?? '#22d3ee',
+  }
+}
+
 function timestamp(value) {
   const parsed = Date.parse(value ?? '')
   return Number.isFinite(parsed) ? parsed : 0
@@ -30,8 +119,8 @@ function timestamp(value) {
 
 export function buildCollectionData(state = {}, favouriteIds = []) {
   const inventoryById = new Map((state.inventory ?? []).map(row => [row.item_id, row]))
-  const stuckEntries = new Map((state.themeAlbums?.entries ?? []).map(row => [`${row.card_item_id}:${row.variant ?? 'normal'}`, row]))
-  const collectorEntries = new Map((state.themeAlbums?.collectors ?? []).map(row => [`${row.theme_id}:${row.collector_tier}`, row]))
+  const stuckEntries = new Map((state.themeAlbums?.entries ?? []).map(row => [variantKey(row.card_item_id, row.variant ?? 'normal'), row]))
+  const collectorEntries = new Map((state.themeAlbums?.collectors ?? []).map(row => [collectorKey(row.theme_id, row.collector_tier), row]))
   const personalAlbumCards = new Map()
   for (const row of state.personalAlbums?.cards ?? []) {
     const key = `${row.item_id}:${row.variant ?? 'normal'}`
@@ -54,7 +143,9 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
     const boundQuantity = Number(inventory?.bound_quantity) || 0
     const variant = item.variant ?? 'base'
     const albumVariant = variant === 'base' ? 'normal' : variant
-    const stuckEntry = stuckEntries.get(`${item.id}:${albumVariant}`)
+    const stuckEntry = stuckEntries.get(variantKey(item.id, albumVariant))
+    const normalStuckEntry = stuckEntries.get(variantKey(item.id, 'normal'))
+    const foilStuckEntry = stuckEntries.get(variantKey(item.id, 'foil'))
     const stuckInThemeAlbum = Boolean(stuckEntry)
     const personalAlbumIds = personalAlbumCards.get(`${item.id}:${albumVariant}`) ?? []
     return {
@@ -63,12 +154,16 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
       setName: deck?.name ?? 'Unknown Set',
       setColour: deck?.borderColor ?? '#22d3ee',
       number: numberFor(item),
+      rarityStars: rarityStars(item.rarity),
       quantity,
       inventoryQuantity: quantity,
       boundQuantity,
       recyclableQuantity: Math.max(0, quantity - Math.max(1, boundQuantity)),
       stuckInThemeAlbum,
+      normalStuckInThemeAlbum: Boolean(normalStuckEntry),
+      foilStuckInThemeAlbum: Boolean(foilStuckEntry),
       albumStuckAt: stuckEntry?.stuck_at ?? null,
+      eligibleForThemeAlbum: quantity > 0 && !stuckInThemeAlbum && variant === 'base',
       personalAlbumIds,
       owned: quantity > 0 || stuckInThemeAlbum,
       favourite: favouriteSet.has(item.id),
@@ -82,26 +177,47 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
   const sets = DECKS.map(deck => {
     const setCards = cards.filter(card => card.setId === deck.id && card.variant === 'base')
     const variants = cards.filter(card => card.setId === deck.id && card.variant !== 'base')
-    const owned = setCards.filter(card => card.owned).length
+    const normalStuck = setCards.filter(card => card.normalStuckInThemeAlbum).length
+    const foilStuck = setCards.filter(card => card.foilStuckInThemeAlbum).length
+    const inventoryOwned = setCards.filter(card => card.inventoryQuantity > 0).length
+    const owned = normalStuck
+    const total = setCards.length
+    const overallFilled = normalStuck + foilStuck
+    const overallTotal = total * 2
+    const collectors = {
+      bronze: collectorEntries.has(collectorKey(deck.id, 'bronze')),
+      silver: collectorEntries.has(collectorKey(deck.id, 'silver')),
+      gold: collectorEntries.has(collectorKey(deck.id, 'gold')),
+    }
     return {
       id: deck.id,
       name: deck.name,
       detail: `${setCards.length} cards`,
       colour: deck.borderColor,
       coverAssets: setCards.slice(0, 3).map(card => card.asset),
+      coverAsset: setCards[0]?.asset ?? (deck.backFile ? `${deck.path}/${deck.backFile}` : '/images/back.webp'),
+      presentation: themePresentation(deck),
+      cards: setCards.sort((a, b) => a.number - b.number),
       owned,
-      total: setCards.length,
-      percent: setCards.length ? Math.round((owned / setCards.length) * 100) : 0,
-      missing: Math.max(0, setCards.length - owned),
-      complete: Boolean(setCards.length) && owned === setCards.length,
+      total,
+      normalStuck,
+      normalTotal: total,
+      normalPercent: total ? Math.round((normalStuck / total) * 100) : 0,
+      foilStuck,
+      foilTotal: total,
+      foilPercent: total ? Math.round((foilStuck / total) * 100) : 0,
+      overallFilled,
+      overallTotal,
+      overallPercent: overallTotal ? Math.round((overallFilled / overallTotal) * 100) : 0,
+      inventoryOwned,
+      eligibleInventory: setCards.filter(card => card.eligibleForThemeAlbum).length,
+      percent: total ? Math.round((owned / total) * 100) : 0,
+      missing: Math.max(0, total - owned),
+      complete: Boolean(total) && owned === total,
       favourites: setCards.filter(card => card.favourite).length,
       goldOwned: variants.some(card => card.isGold && card.owned),
       goldAvailable: variants.some(card => card.isGold),
-      collectors: {
-        bronze: collectorEntries.has(`${deck.id}:bronze`),
-        silver: collectorEntries.has(`${deck.id}:silver`),
-        gold: collectorEntries.has(`${deck.id}:gold`),
-      },
+      collectors,
     }
   })
   const setById = new Map(sets.map(set => [set.id, set]))
@@ -114,7 +230,7 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
 
   const baseCards = cards.filter(card => card.variant === 'base')
   const uniqueOwned = cards.filter(card => card.owned).length
-  const baseOwned = baseCards.filter(card => card.owned).length
+  const baseOwned = baseCards.filter(card => card.normalStuckInThemeAlbum).length
   const recent = cards.filter(card => card.owned && card.obtainedAt).sort((a, b) => timestamp(b.obtainedAt) - timestamp(a.obtainedAt)).slice(0, 12)
   const rarity = Object.fromEntries(RARITIES.map(name => [name, {
     total: cards.filter(card => card.rarity === name).length,
@@ -133,6 +249,7 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
   return {
     cards,
     sets,
+    officialThemeAlbums: sets,
     albums,
     personalAlbums: state.personalAlbums ?? { albums: [], cards: [], limit: 10, createCostCoins: 500 },
     inventoryCapacity: state.inventoryCapacity ?? { cardCapacity: null, cardCount: null, remainingCardSlots: null },

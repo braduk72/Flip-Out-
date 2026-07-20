@@ -8,7 +8,7 @@ import { playerGameApi } from '../utils/gameApi.js'
 import styles from './Collection.module.css'
 
 const VIEWS = [
-  ['albums', 'Albums', 'Albums'],
+  ['albums', 'Official Albums', 'Official Theme Albums'],
   ['cards', 'Cards', 'Cards'],
   ['favourites', 'Saved', 'Favourite cards'],
   ['stats', 'Stats', 'Collection statistics'],
@@ -16,6 +16,17 @@ const VIEWS = [
   ['items', 'Items', 'Items'],
 ]
 const PAGE_SIZE = 30
+const ALBUM_PAGE_SIZE = 6
+const COLLECTOR_TIERS = [
+  ['gold', 'Gold Collector Card', 'Complete Normal and Foil sets'],
+  ['bronze', 'Bronze Collector Card', 'Complete every Normal card'],
+  ['silver', 'Silver Collector Card', 'Complete every Foil card'],
+]
+
+function rarityLabel(card) {
+  const count = card.rarityStars ?? 1
+  return `${'★'.repeat(count)}${'☆'.repeat(5 - count)} ${card.rarity}`
+}
 
 function CollectionCard({ card, onOpen, onFavourite }) {
   const stateLabel = card.owned ? `${card.quantity} owned` : 'Missing'
@@ -47,17 +58,89 @@ function CardGrid({ cards, total, onOpen, onFavourite, onMore }) {
   </>
 }
 
-function SetCard({ set, onOpen }) {
-  return <button type="button" className={styles.setCard} onClick={() => onOpen(set.id)} aria-label={`Open ${set.name}, ${set.owned} of ${set.total} cards owned`} style={{ '--set-colour': set.colour }}>
-    <span className={styles.setMosaic} aria-hidden="true">{set.coverAssets.map((asset, index) => <img key={asset} src={asset} alt="" loading="lazy" style={{ '--tile': index }}/>)}</span>
-    <span className={styles.setCopy}>
-      <span className={styles.setHeading}><strong>{set.name}</strong>{set.complete && <Badge tone="ready">Complete</Badge>}</span>
-      <span>{set.owned} / {set.total} · {set.percent}%</span>
-      <ProgressBar value={set.owned} max={set.total} label={`${set.name}: ${set.owned} of ${set.total}`} tone="cyan" compact/>
-      <small>{set.missing ? `${set.missing} missing` : 'Full set collected'}{set.goldAvailable ? ` · Gold ${set.goldOwned ? 'owned' : 'missing'}` : ''}</small>
+function CollectorPyramid({ theme }) {
+  return <div className={styles.collectorPyramid} role="list" aria-label={`${theme.name} Collector Cards`}>
+    {COLLECTOR_TIERS.map(([tier, label, requirement]) => {
+      const earned = Boolean(theme.collectors?.[tier])
+      return <article key={tier} role="listitem" className={`${styles.collectorSlot} ${styles[`collector${tier}`]} ${earned ? styles.collectorEarned : ''}`}>
+        <span>{tier}</span>
+        <strong>{label}</strong>
+        <small>{earned ? 'Earned and permanently account-bound' : requirement}</small>
+      </article>
+    })}
+  </div>
+}
+
+function ThemeAlbumCover({ theme, onOpen }) {
+  const style = { '--album-accent': theme.presentation.accent, '--album-bg': theme.presentation.background }
+  return <button type="button" className={styles.themeAlbumCover} style={style} onClick={() => onOpen(theme.id)} aria-label={`Open ${theme.name} Official Theme Album, ${theme.normalStuck} of ${theme.normalTotal} Normal cards stuck, ${theme.foilStuck} of ${theme.foilTotal} Foil cards stuck`}>
+    <span className={styles.albumCoverArt} aria-hidden="true">
+      <img src={theme.coverAsset} alt="" loading="lazy" decoding="async"/>
     </span>
-    <Icon name="right" size={20}/>
+    <span className={styles.albumCoverCopy}>
+      <span className={styles.eyebrow}>Official Theme Album</span>
+      <strong>{theme.name}</strong>
+      <small>{theme.total} unique cards · {theme.presentation.mood}</small>
+    </span>
+    <span className={styles.albumProgressGrid}>
+      <span><b>{theme.normalStuck}/{theme.normalTotal}</b> Normal</span>
+      <span><b>{theme.foilStuck}/{theme.foilTotal}</b> Foil</span>
+      <span><b>{theme.overallPercent}%</b> Overall</span>
+    </span>
+    <span className={styles.collectorBadges} aria-label={`Collector status: Bronze ${theme.collectors.bronze ? 'earned' : 'locked'}, Silver ${theme.collectors.silver ? 'earned' : 'locked'}, Gold ${theme.collectors.gold ? 'earned' : 'locked'}`}>
+      {['bronze', 'silver', 'gold'].map(tier => <i key={tier} className={theme.collectors[tier] ? styles.collectorBadgeEarned : ''}>{tier[0].toUpperCase()}</i>)}
+    </span>
   </button>
+}
+
+function AlbumSlot({ card, variant, justStuck, onStick }) {
+  const isFoil = variant === 'foil'
+  const filled = isFoil ? card.foilStuckInThemeAlbum : card.normalStuckInThemeAlbum
+  const eligible = !isFoil && card.eligibleForThemeAlbum
+  const label = `${card.name} card ${card.number}, ${isFoil ? 'Foil' : 'Normal'} slot, ${filled ? 'stuck in album' : eligible ? 'empty with eligible Inventory copy' : 'empty'}`
+  return <div className={`${styles.albumSlot} ${isFoil ? styles.foilSlot : styles.normalSlot} ${filled ? styles.slotFilled : ''} ${justStuck ? styles.slotJustStuck : ''}`} aria-label={label}>
+    {filled ? <img src={card.asset} alt="" loading="lazy" decoding="async"/> : <>
+      <b>#{card.number}</b>
+      <span>{isFoil ? 'Foil' : 'Normal'}</span>
+      {eligible && <button type="button" className={styles.stickInline} onClick={() => onStick(card)} aria-label={`Stick ${card.name} in Album`}>Stick in Album</button>}
+    </>}
+  </div>
+}
+
+function ThemeAlbumPage({ theme, page, onPage, onBack, onStick, justStuck }) {
+  const totalCardPages = Math.max(1, Math.ceil(theme.cards.length / ALBUM_PAGE_SIZE))
+  const maxPage = totalCardPages
+  const safePage = Math.max(0, Math.min(page, maxPage))
+  const cards = safePage === 0 ? [] : theme.cards.slice((safePage - 1) * ALBUM_PAGE_SIZE, safePage * ALBUM_PAGE_SIZE)
+  const style = { '--album-accent': theme.presentation.accent, '--album-bg': theme.presentation.background }
+  return <section className={styles.officialAlbumPage} style={style} aria-label={`${theme.name} Official Theme Album`}>
+    <div className={styles.albumToolbar}>
+      <button type="button" onClick={onBack}>Return to Theme Albums</button>
+      <button type="button" onClick={() => onPage(0)} disabled={safePage === 0}>Collector Cards</button>
+      <span aria-live="polite">Page {safePage + 1} of {maxPage + 1}</span>
+    </div>
+    <CardPanel className={styles.albumBook}>
+      <header className={styles.albumBookHeader}>
+        <div><span className={styles.eyebrow}>Official Theme Album</span><h2>{theme.name}</h2><p>{theme.presentation.texture} · {theme.presentation.motif} · {theme.presentation.plaque}</p></div>
+        <div className={styles.albumBookProgress}><b>{theme.overallPercent}%</b><span>{theme.overallFilled}/{theme.overallTotal} slots</span></div>
+      </header>
+      {safePage === 0 ? <CollectorPyramid theme={theme}/> : <div className={styles.albumEntryGrid}>
+        {cards.map(card => <article key={card.id} className={styles.albumEntry} aria-label={`${card.name}, ${rarityLabel(card)}`}>
+          <div className={styles.rarityLine} aria-label={`Rarity ${card.rarity}, ${card.rarityStars} of 5 stars`}><span aria-hidden="true">{'★'.repeat(card.rarityStars)}{'☆'.repeat(5 - card.rarityStars)}</span><b>{card.rarity}</b></div>
+          <div className={styles.slotPair}>
+            <AlbumSlot card={card} variant="normal" justStuck={justStuck === `${card.id}:normal`} onStick={onStick}/>
+            <AlbumSlot card={card} variant="foil" justStuck={justStuck === `${card.id}:foil`} onStick={onStick}/>
+          </div>
+          <h3 className={styles.titlePlaque}>{card.name}</h3>
+        </article>)}
+      </div>}
+    </CardPanel>
+    <nav className={styles.albumPager} aria-label="Album page navigation">
+      <button type="button" onClick={() => onPage(safePage - 1)} disabled={safePage === 0}>Previous page</button>
+      <span>{safePage === 0 ? 'Collector Card page' : `Cards ${cards[0]?.number ?? 1}-${cards.at(-1)?.number ?? cards[0]?.number ?? 1}`}</span>
+      <button type="button" onClick={() => onPage(safePage + 1)} disabled={safePage >= maxPage}>Next page</button>
+    </nav>
+  </section>
 }
 
 export default function Inventory({ onBack, navProps, dataLoader = playerGameApi.state, actionRunner = playerGameApi.action, storage = globalThis.localStorage }) {
@@ -75,6 +158,15 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [favourites, setFavourites] = useState([])
   const [selectedCardId, setSelectedCardId] = useState(null)
+  const [selectedThemeId, setSelectedThemeId] = useState(null)
+  const [albumPages, setAlbumPages] = useState({})
+  const [pendingStick, setPendingStick] = useState(null)
+  const [sticking, setSticking] = useState(false)
+  const [stickNotice, setStickNotice] = useState('')
+  const [justStuck, setJustStuck] = useState('')
+  const [personalAlbumName, setPersonalAlbumName] = useState('')
+  const [personalAlbumStatus, setPersonalAlbumStatus] = useState('')
+  const [selectedPersonalAlbumId, setSelectedPersonalAlbumId] = useState(null)
   const [opening, setOpening] = useState(false)
   const [notice, setNotice] = useState('')
   const [recyclerSelection, setRecyclerSelection] = useState({})
@@ -112,14 +204,25 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
   const selectedCard = collection.cards.find(card => card.id === selectedCardId) ?? null
   const recyclerRecipe = state?.recyclerRecipes?.[0] ?? null
   const recycler = useMemo(() => buildRecyclerModel(collection.cards, recyclerRecipe, recyclerSelection), [collection.cards, recyclerRecipe, recyclerSelection])
+  const selectedTheme = collection.officialThemeAlbums.find(theme => theme.id === selectedThemeId) ?? null
+  const selectedAlbumPage = selectedTheme ? (albumPages[selectedTheme.id] ?? 0) : 0
+  const selectedPersonalAlbum = collection.personalAlbums.albums?.find(album => album.album_id === selectedPersonalAlbumId) ?? null
+  const selectedPersonalAlbumCards = selectedPersonalAlbum ? (collection.personalAlbums.cards ?? []).filter(row => row.album_id === selectedPersonalAlbum.album_id) : []
 
   const selectView = next => {
     setView(next)
+    if (next !== 'albums') setSelectedThemeId(null)
     setVisibleCount(PAGE_SIZE)
     if (next === 'favourites') setOwnership('all')
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }
-  const openSet = id => { setSetId(id); setView('cards'); setVisibleCount(PAGE_SIZE); scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' }) }
+  const openThemeAlbum = id => {
+    setSelectedThemeId(id)
+    setView('albums')
+    setStickNotice('')
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+  const setThemePage = (themeId, page) => setAlbumPages(current => ({ ...current, [themeId]: Math.max(0, page) }))
   const toggleFavourite = id => {
     setFavourites(current => {
       const next = current.includes(id) ? current.filter(entry => entry !== id) : [...current, id]
@@ -129,6 +232,62 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
   }
   const changeFilter = (setter, value) => { setter(value); setVisibleCount(PAGE_SIZE) }
   const resetFilters = () => { setQuery(''); setSetId('all'); setOwnership('all'); setRarity('all'); setVariant('all'); setSort('set'); setVisibleCount(PAGE_SIZE) }
+
+  const requestStick = card => {
+    setStickNotice('')
+    setPendingStick({ card, transactionId: `album-stick:${crypto.randomUUID()}` })
+  }
+
+  const stickInAlbum = async () => {
+    if (!pendingStick) return
+    setSticking(true)
+    setStickNotice('')
+    try {
+      const result = await actionRunner({ action: 'stick-in-album', transactionId: pendingStick.transactionId, itemId: pendingStick.card.id, variant: 'normal' })
+      setJustStuck(`${result.itemId}:normal`)
+      setPendingStick(null)
+      applyPayload(await dataLoader())
+      setStickNotice(`${pendingStick.card.name} was permanently stuck into its Official Theme Album.${result.collectorCardsAwarded?.length ? ` Collector awarded: ${result.collectorCardsAwarded.join(', ')}.` : ''}`)
+      setTimeout(() => setJustStuck(''), 450)
+    } catch (stickError) {
+      setStickNotice(`${stickError.message}. You can retry safely; the same transaction ID will be used.`)
+    } finally { setSticking(false) }
+  }
+
+  const createPersonalAlbum = async event => {
+    event.preventDefault()
+    setPersonalAlbumStatus('')
+    try {
+      const transactionId = `personal-album:${crypto.randomUUID()}`
+      const result = await actionRunner({ action: 'create-personal-album', transactionId, name: personalAlbumName })
+      setPersonalAlbumName('')
+      setSelectedPersonalAlbumId(result.albumId)
+      applyPayload(await dataLoader())
+      setPersonalAlbumStatus(`Created ${result.name} for ${result.costCoins} Coins.`)
+    } catch (createError) { setPersonalAlbumStatus(createError.message) }
+  }
+
+  const personalAlbumHasCard = (albumId, itemId) => (collection.personalAlbums.cards ?? []).some(row => row.album_id === albumId && row.item_id === itemId && (row.variant ?? 'normal') === 'normal')
+
+  const addPersonalAlbumCard = async itemId => {
+    if (!selectedPersonalAlbum) return
+    setPersonalAlbumStatus('')
+    try {
+      await actionRunner({ action: 'add-personal-album-card', albumId: selectedPersonalAlbum.album_id, itemId, variant: 'normal' })
+      applyPayload(await dataLoader())
+      setPersonalAlbumStatus('Card added. Inventory quantity is unchanged.')
+    } catch (addError) { setPersonalAlbumStatus(addError.message) }
+  }
+
+  const removePersonalAlbumCard = async itemId => {
+    if (!selectedPersonalAlbum) return
+    setPersonalAlbumStatus('')
+    try {
+      await actionRunner({ action: 'remove-personal-album-card', albumId: selectedPersonalAlbum.album_id, itemId, variant: 'normal' })
+      applyPayload(await dataLoader())
+      setPersonalAlbumStatus('Card removed from this Personal Album. Inventory quantity is unchanged.')
+    } catch (removeError) { setPersonalAlbumStatus(removeError.message) }
+  }
 
   const openLockbox = async () => {
     setOpening(true)
@@ -197,22 +356,52 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
 
       {status === 'ready' && <>
         <CardPanel variant="elevated" className={styles.collectionHero}>
-          <div className={styles.heroCopy}><span className={styles.eyebrow}>Overall completion</span><strong>{stats.completion}%</strong><p>{stats.baseOwned} of {stats.totalBase} cards collected across {stats.totalSets} sets.</p></div>
-          <ProgressBar value={stats.baseOwned} max={stats.totalBase} label={`Collection: ${stats.baseOwned} of ${stats.totalBase}`} tone="foil"/>
-          <div className={styles.heroStats}><span><b>{stats.completedSets}</b> Complete sets</span><span><b>{stats.goldOwned}/{stats.goldTotal}</b> Gold cards</span><span><b>{stats.duplicates}</b> Duplicates</span></div>
+          <div className={styles.heroCopy}><span className={styles.eyebrow}>Official Album completion</span><strong>{stats.completion}%</strong><p>{stats.baseOwned} of {stats.totalBase} Normal cards stuck into Official Theme Albums.</p></div>
+          <ProgressBar value={stats.baseOwned} max={stats.totalBase} label={`Official Albums: ${stats.baseOwned} of ${stats.totalBase}`} tone="foil"/>
+          <div className={styles.heroStats}><span><b>{stats.completedSets}</b> Complete albums</span><span><b>{collection.inventoryCapacity.remainingCardSlots ?? '—'}</b> Free slots</span><span><b>{stats.duplicates}</b> Duplicates</span></div>
         </CardPanel>
 
         {view === 'albums' && <section className={styles.albumView} aria-labelledby="albums-title">
-          {collection.recent.length > 0 && <div className={styles.recentSection}>
-            <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>Fresh finds</span><h2>Recently obtained</h2></div><button type="button" onClick={() => { setSort('newest'); selectView('cards') }}>See all</button></div>
-            <div className={styles.recentRail}>{collection.recent.slice(0, 8).map(card => <button key={card.id} type="button" onClick={() => setSelectedCardId(card.id)} aria-label={`View ${card.name}`}><img src={card.asset} alt="" loading="lazy"/><span>{card.name}</span></button>)}</div>
-          </div>}
-          <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>Browse the catalogue</span><h2 id="albums-title">Albums &amp; sets</h2></div><span>{collection.albums.length} albums · {collection.sets.length} sets</span></div>
-          <div className={styles.albumList}>{collection.albums.map(album => <CardPanel as="article" key={album.id} className={styles.albumPanel}>
-            <div className={styles.albumHeading}><div><h3>{album.name}</h3><p>{album.detail}</p></div><strong>{album.percent}%</strong></div>
-            <ProgressBar value={album.owned} max={album.total} label={`${album.name}: ${album.owned} of ${album.total}`} tone="purple"/>
-            <div className={styles.setList}>{album.sets.map(set => <SetCard key={set.id} set={set} onOpen={openSet}/>)}</div>
-          </CardPanel>)}</div>
+          {stickNotice && <p className={styles.notice} role="status">{stickNotice}</p>}
+          {selectedTheme ? <ThemeAlbumPage
+            theme={selectedTheme}
+            page={selectedAlbumPage}
+            onPage={page => setThemePage(selectedTheme.id, page)}
+            onBack={() => setSelectedThemeId(null)}
+            onStick={requestStick}
+            justStuck={justStuck}
+          /> : <>
+            {collection.recent.length > 0 && <div className={styles.recentSection}>
+              <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>Inventory finds</span><h2>Ready to stick</h2></div><button type="button" onClick={() => { setOwnership('owned'); selectView('cards') }}>See Inventory</button></div>
+              <div className={styles.recentRail}>{collection.recent.slice(0, 8).map(card => <button key={card.id} type="button" onClick={() => openThemeAlbum(card.setId)} aria-label={`Open ${card.setName} album for ${card.name}`}><img src={card.asset} alt="" loading="lazy"/><span>{card.name}</span></button>)}</div>
+            </div>}
+            <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>Permanent sticker albums</span><h2 id="albums-title">Official Theme Albums</h2></div><span>{collection.officialThemeAlbums.length} themes</span></div>
+            <div className={styles.themeAlbumGrid}>{collection.officialThemeAlbums.map(theme => <ThemeAlbumCover key={theme.id} theme={theme} onOpen={openThemeAlbum}/>)}</div>
+            <CardPanel className={styles.personalAlbumsPanel}>
+              <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>Organisational only</span><h2>Personal Albums</h2></div><span>{collection.personalAlbums.albums?.length ?? 0} / {collection.personalAlbums.limit ?? 10}</span></div>
+              <p>Personal Albums are flexible folders. Cards can be added and removed freely and Inventory quantity does not change.</p>
+              <form className={styles.personalCreateForm} onSubmit={createPersonalAlbum}>
+                <label><span className={styles.srOnly}>New Personal Album name</span><input value={personalAlbumName} onChange={event => setPersonalAlbumName(event.target.value)} placeholder="Black Cats" minLength={3} maxLength={32}/></label>
+                <button type="submit" disabled={!personalAlbumName.trim()}>Create for {collection.personalAlbums.createCostCoins ?? 500} Coins</button>
+              </form>
+              {personalAlbumStatus && <p className={styles.notice} role="status">{personalAlbumStatus}</p>}
+              <div className={styles.personalAlbumList}>
+                {(collection.personalAlbums.albums ?? []).map(album => <button key={album.album_id} type="button" onClick={() => setSelectedPersonalAlbumId(album.album_id)} aria-current={selectedPersonalAlbumId === album.album_id ? 'page' : undefined}>{album.name}</button>)}
+              </div>
+              {selectedPersonalAlbum && <div className={styles.personalAlbumDetail}>
+                <h3>{selectedPersonalAlbum.name}</h3>
+                <p>{selectedPersonalAlbumCards.length} cards in this Personal Album.</p>
+                <div className={styles.personalCardRows}>
+                  {selectedPersonalAlbumCards.map(row => {
+                    const card = collection.cards.find(candidate => candidate.id === row.item_id)
+                    if (!card) return null
+                    return <div key={`${row.album_id}:${row.item_id}`}><span>{card.name}</span><button type="button" onClick={() => removePersonalAlbumCard(card.id)}>Remove</button></div>
+                  })}
+                  {collection.cards.filter(card => card.inventoryQuantity > 0 && card.variant === 'base' && !personalAlbumHasCard(selectedPersonalAlbum.album_id, card.id)).slice(0, 8).map(card => <div key={card.id}><span>{card.name}</span><button type="button" onClick={() => addPersonalAlbumCard(card.id)}>Add</button></div>)}
+                </div>
+              </div>}
+            </CardPanel>
+          </>}
         </section>}
 
         {(view === 'cards' || view === 'favourites') && <section className={styles.cardsView} aria-labelledby="cards-title">
@@ -299,6 +488,30 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
       </div>}
     </Modal>
 
+    <Modal
+      open={Boolean(pendingStick)}
+      title="Stick in Album"
+      onDismiss={() => { if (!sticking) setPendingStick(null) }}
+      actions={<>
+        <button type="button" className={styles.resetButton} disabled={sticking} onClick={() => setPendingStick(null)}>Leave in Inventory</button>
+        <button type="button" className={styles.primary} disabled={sticking} onClick={stickInAlbum}>{sticking ? 'Sticking…' : 'Stick in Album'}</button>
+      </>}
+    >
+      {pendingStick && <div className={styles.stickConfirm}>
+        <img src={pendingStick.card.asset} alt="" loading="lazy"/>
+        <div>
+          <p><strong>{pendingStick.card.name}</strong> will be permanently stuck into the Official Theme Album.</p>
+          <ul>
+            <li>It cannot later be removed.</li>
+            <li>It cannot be traded.</li>
+            <li>It cannot be shredded.</li>
+            <li>It will no longer count towards Inventory capacity.</li>
+          </ul>
+          {stickNotice && <p role="alert" className={styles.recyclerError}>{stickNotice}</p>}
+        </div>
+      </div>}
+    </Modal>
+
     <Modal open={Boolean(recyclerReceipt)} title="Recycling complete" tone="reward" onDismiss={() => setRecyclerReceipt(null)} actions={<button type="button" className={styles.primary} onClick={() => setRecyclerReceipt(null)}>Collect reward</button>}>
       {recyclerReceipt && <div className={styles.recyclerResult}>
         <div className={styles.resultMachine} aria-hidden="true"><Icon name="recycle" size={46}/><span/><Icon name={recyclerReceipt.reward.currencyId === 'stars' ? 'star' : 'rewards'} size={52}/></div>
@@ -309,3 +522,4 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
     </Modal>
   </main>
 }
+

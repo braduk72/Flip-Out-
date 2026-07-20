@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.8.0-inventory-capacity'
+export const APP_VERSION = '1.9.0-theme-albums-ui'
