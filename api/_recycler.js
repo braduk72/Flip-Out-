@@ -1,5 +1,6 @@
 import crypto from 'node:crypto'
 import { ITEM_BY_ID } from '../src/data/itemCatalog.js'
+import { appendCoinTransaction } from './_coinLedger.js'
 import { applyReward, enforceRateLimit } from './_gameServices.js'
 
 const SAFE_REQUEST_ID = /^[a-z0-9][a-z0-9:_-]{0,79}$/i
@@ -15,7 +16,7 @@ function requestId(value) {
 }
 
 export function normaliseRecyclerItems(items) {
-  if (!Array.isArray(items) || items.length === 0 || items.length > 100) fail('Select at least one duplicate card')
+  if (!Array.isArray(items) || items.length === 0 || items.length > 100) fail('Select at least one card')
   const combined = new Map()
   for (const entry of items) {
     const itemId = String(entry?.itemId ?? '')
@@ -26,21 +27,33 @@ export function normaliseRecyclerItems(items) {
   return [...combined].map(([itemId, quantity]) => ({ itemId, quantity })).sort((a, b) => a.itemId.localeCompare(b.itemId))
 }
 
+function selectionType(recipe) {
+  return recipe.selection_type ?? recipe.selectionType ?? 'duplicates-by-rarity'
+}
+
+function isFoilCard(card) {
+  return card?.variant === 'foil' || card?.foil === true || /(^|:)foil(:|$)/i.test(card?.id ?? '')
+}
+
 export function validateRecyclerSelection(items, recipe, catalog = ITEM_BY_ID) {
   const selection = normaliseRecyclerItems(items)
   if (!recipe?.enabled) fail('Recycler recipe is unavailable', 409, 'RECYCLER_RECIPE_UNAVAILABLE')
   const batchSize = Number(recipe.batch_size ?? recipe.batchSize)
-  if (!Number.isSafeInteger(batchSize) || batchSize < 2) fail('Recycler recipe is invalid', 500, 'RECYCLER_RECIPE_INVALID')
+  if (!Number.isSafeInteger(batchSize) || batchSize < 1) fail('Recycler recipe is invalid', 500, 'RECYCLER_RECIPE_INVALID')
+  const mode = selectionType(recipe)
   let cardsConsumed = 0
   for (const entry of selection) {
     const card = catalog.get(entry.itemId)
     if (!card || !['card', 'card_variant'].includes(card.type)) fail('Only collectible cards can be recycled')
     if (card.variant === 'gold') fail('Collector cards cannot be recycled', 409, 'RECYCLER_COLLECTOR_CARD')
-    if (card.rarity !== recipe.rarity) fail(`This recipe accepts ${recipe.rarity} cards only`, 409, 'RECYCLER_RARITY_MISMATCH')
+    if (mode === 'duplicates-by-rarity' && card.rarity !== recipe.rarity) fail(`This recipe accepts ${recipe.rarity} cards only`, 409, 'RECYCLER_RARITY_MISMATCH')
+    if (mode === 'normal-card-any' && card.type !== 'card') fail('This Shredder recipe accepts normal Inventory cards only', 409, 'RECYCLER_NORMAL_CARD_REQUIRED')
+    if (mode === 'foil-card-any' && !isFoilCard(card)) fail('This Shredder recipe accepts Foil cards only', 409, 'RECYCLER_FOIL_REQUIRED')
+    if (!['duplicates-by-rarity', 'normal-card-any', 'foil-card-any'].includes(mode)) fail('Recycler recipe selection type is invalid', 500, 'RECYCLER_RECIPE_INVALID')
     cardsConsumed += entry.quantity
   }
   if (cardsConsumed % batchSize !== 0) fail(`Select a complete batch of ${batchSize} cards`, 409, 'RECYCLER_INCOMPLETE_BATCH')
-  return { selection, cardsConsumed, batches: cardsConsumed / batchSize }
+  return { selection, cardsConsumed, batches: cardsConsumed / batchSize, selectionType: mode }
 }
 
 export function recyclerFingerprint(recipeId, items) {
@@ -97,7 +110,7 @@ export async function recycleDuplicateCards(db, { playerId, transactionId: suppl
     }
 
     await enforceRateLimit(client, { playerId, action: 'recycler', limit: 20 })
-    const recipeResult = await client.query(`SELECT recipe_id,rarity,batch_size,reward,enabled,config_version FROM fo_recycler_recipes WHERE recipe_id=$1`, [safeRecipeId])
+    const recipeResult = await client.query(`SELECT recipe_id,rarity,batch_size,reward,enabled,config_version,selection_type FROM fo_recycler_recipes WHERE recipe_id=$1`, [safeRecipeId])
     if (!recipeResult.rowCount) fail('Recycler recipe not found', 404, 'RECYCLER_RECIPE_NOT_FOUND')
     const recipe = recipeResult.rows[0]
     const validated = validateRecyclerSelection(selection, recipe)
@@ -106,28 +119,42 @@ export async function recycleDuplicateCards(db, { playerId, transactionId: suppl
     for (const entry of validated.selection) {
       const row = owned.get(entry.itemId)
       const quantity = Number(row?.quantity ?? 0)
-      const floor = Math.max(1, Number(row?.bound_quantity ?? 0))
+      const floor = validated.selectionType === 'duplicates-by-rarity' ? Math.max(1, Number(row?.bound_quantity ?? 0)) : Number(row?.bound_quantity ?? 0)
       if (quantity - entry.quantity < floor) fail(`Keep at least one copy of ${ITEM_BY_ID.get(entry.itemId)?.name ?? entry.itemId}`, 409, 'RECYCLER_LAST_COPY')
     }
 
     for (const [index, entry] of validated.selection.entries()) {
+      const row = owned.get(entry.itemId)
+      const minimumRemaining = validated.selectionType === 'duplicates-by-rarity' ? 1 : Number(row?.bound_quantity ?? 0)
       await applyReward(client, {
         playerId,
         transactionId: `${transactionId}:card:${index}`,
-        source: 'card-recycler-consume',
+        source: validated.selectionType === 'duplicates-by-rarity' ? 'card-recycler-consume' : 'card-shredder-consume',
         reward: { itemId: entry.itemId, amount: -entry.quantity },
-        minimumRemaining: 1,
+        minimumRemaining,
         metadata: { sourceReferenceId: transactionId, recipeId: safeRecipeId },
       })
     }
     const reward = multiplyReward(recipe.reward, validated.batches)
-    await applyReward(client, {
-      playerId,
-      transactionId: `${transactionId}:reward`,
-      source: 'card-recycler-reward',
-      reward,
-      metadata: { sourceReferenceId: transactionId, recipeId: safeRecipeId, batches: validated.batches },
-    })
+    if (reward.currencyId === 'coins') {
+      await appendCoinTransaction(client, {
+        accountId: playerId,
+        transactionId: `${transactionId}:reward`,
+        amount: reward.amount,
+        transactionType: 'shredder-reward',
+        sourceReferenceId: transactionId,
+        metadata: { sourceReferenceId: transactionId, recipeId: safeRecipeId, batches: validated.batches, selectionType: validated.selectionType },
+        allowCreation: true,
+      })
+    } else {
+      await applyReward(client, {
+        playerId,
+        transactionId: `${transactionId}:reward`,
+        source: 'card-recycler-reward',
+        reward,
+        metadata: { sourceReferenceId: transactionId, recipeId: safeRecipeId, batches: validated.batches },
+      })
+    }
     await client.query(`INSERT INTO fo_recycler_transactions(transaction_id,player_id,recipe_id,input_fingerprint,cards_consumed,batches,reward) VALUES($1,$2,$3,$4,$5,$6,$7)`, [transactionId, playerId, safeRecipeId, fingerprint, validated.cardsConsumed, validated.batches, reward])
     for (const entry of validated.selection) await client.query(`INSERT INTO fo_recycler_transaction_items(transaction_id,item_id,quantity) VALUES($1,$2,$3)`, [transactionId, entry.itemId, entry.quantity])
     await client.query('COMMIT')
@@ -141,12 +168,13 @@ export async function recycleDuplicateCards(db, { playerId, transactionId: suppl
 }
 
 export async function getRecyclerRecipes(db) {
-  const result = await db.query(`SELECT recipe_id,rarity,batch_size,reward,config_version FROM fo_recycler_recipes WHERE enabled ORDER BY rarity,recipe_id`)
+  const result = await db.query(`SELECT recipe_id,rarity,batch_size,reward,config_version,selection_type FROM fo_recycler_recipes WHERE enabled ORDER BY CASE COALESCE(selection_type,'duplicates-by-rarity') WHEN 'normal-card-any' THEN 1 WHEN 'foil-card-any' THEN 2 ELSE 9 END, recipe_id`)
   return result.rows.map(row => ({
     recipeId: row.recipe_id,
     rarity: row.rarity,
     batchSize: Number(row.batch_size),
     reward: row.reward,
     configVersion: Number(row.config_version),
+    selectionType: row.selection_type ?? 'duplicates-by-rarity',
   }))
 }

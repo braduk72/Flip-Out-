@@ -189,6 +189,7 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
       inventoryQuantity: quantity,
       boundQuantity,
       recyclableQuantity: Math.max(0, quantity - Math.max(1, boundQuantity)),
+      shreddableQuantity: Math.max(0, quantity - boundQuantity),
       stuckInThemeAlbum,
       normalStuckInThemeAlbum: Boolean(normalStuckEntry),
       foilStuckInThemeAlbum: Boolean(foilStuckEntry),
@@ -311,10 +312,16 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
 
 export function buildRecyclerModel(cards = [], recipe = null, selection = {}) {
   const batchSize = Number(recipe?.batchSize) || 0
-  const eligibleCards = cards.filter(card => card.rarity === recipe?.rarity && card.recyclableQuantity > 0)
+  const selectionType = recipe?.selectionType ?? 'duplicates-by-rarity'
+  const eligibilityQuantity = card => selectionType === 'duplicates-by-rarity' ? card.recyclableQuantity : card.shreddableQuantity
+  const eligibleCards = cards.filter(card => {
+    if (selectionType === 'normal-card-any') return card.type === 'card' && eligibilityQuantity(card) > 0
+    if (selectionType === 'foil-card-any') return card.isFoil && eligibilityQuantity(card) > 0
+    return card.rarity === recipe?.rarity && eligibilityQuantity(card) > 0
+  })
   const selectedItems = eligibleCards.map(card => ({
     card,
-    quantity: Math.max(0, Math.min(card.recyclableQuantity, Number(selection[card.id]) || 0)),
+    quantity: Math.max(0, Math.min(eligibilityQuantity(card), Number(selection[card.id]) || 0)),
   })).filter(entry => entry.quantity > 0)
   const cardsSelected = selectedItems.reduce((sum, entry) => sum + entry.quantity, 0)
   const batches = batchSize > 0 ? Math.floor(cardsSelected / batchSize) : 0
@@ -328,6 +335,7 @@ export function buildRecyclerModel(cards = [], recipe = null, selection = {}) {
     batchSize,
     batches,
     complete,
+    selectionType,
     reward: complete ? { ...recipe.reward, amount: rewardAmount } : null,
     nextBatchProgress: batchSize > 0 ? cardsSelected % batchSize : 0,
     targetCards,

@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     if (body.action === 'power-up') return res.json(await consumePowerUp(db, { ...body, playerId: player.player_id }))
     if (body.action === 'open-lockbox') return res.json(await openPlayerLockbox(db, { ...body, playerId: player.player_id }))
     if (body.action === 'convert-coins-to-stars') return res.json(await convertCoinsToStars(db, { accountId: player.player_id, coins: body.coins, referenceId: body.referenceId }))
-    if (body.action === 'recycle-duplicates') return res.json(await recycleDuplicateCards(db, { playerId: player.player_id, transactionId: body.transactionId, recipeId: body.recipeId, items: body.items }))
+    if (body.action === 'recycle-duplicates' || body.action === 'shred-cards') return res.json(await recycleDuplicateCards(db, { playerId: player.player_id, transactionId: body.transactionId, recipeId: body.recipeId, items: body.items }))
     if (body.action === 'stick-in-album') return res.json(await stickCardInThemeAlbum(db, { playerId: player.player_id, transactionId: body.transactionId, itemId: body.itemId, variant: body.variant }))
     if (body.action === 'create-personal-album') return res.json(await createPersonalAlbum(db, { playerId: player.player_id, transactionId: body.transactionId, name: body.name }))
     if (body.action === 'add-personal-album-card') return res.json(await addCardToPersonalAlbum(db, { playerId: player.player_id, albumId: body.albumId, itemId: body.itemId, variant: body.variant }))

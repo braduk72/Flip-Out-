@@ -136,25 +136,25 @@ test('favourites are retry-safe and isolated by player account', () => {
   assert.deepEqual(readCollectionFavourites(storage, 'two'), ['card:woof:1'])
 })
 
-test('recycler model exposes only copies above the protected final copy and complete batches', () => {
+test('shredder model exposes unbound normal cards and complete Coin batches', () => {
   const model = buildCollectionData({ inventory: [
     { item_id: 'card:sportscars:1', quantity: 4, bound_quantity: 0 },
     { item_id: 'card:cats:1', quantity: 3, bound_quantity: 2 },
     { item_id: 'card:woof:1', quantity: 2, bound_quantity: 0 },
   ] })
-  const recipe = { recipeId: 'common-stars-v1', rarity: 'common', batchSize: 5, reward: { currencyId: 'stars', amount: 1 } }
-  assert.equal(model.cards.find(card => card.id === 'card:sportscars:1').recyclableQuantity, 3)
-  assert.equal(model.cards.find(card => card.id === 'card:cats:1').recyclableQuantity, 1)
-  const incomplete = buildRecyclerModel(model.cards, recipe, { 'card:sportscars:1': 3, 'card:cats:1': 1 })
+  const recipe = { recipeId: 'shredder-normal-cards-v1', rarity: 'common', batchSize: 5, reward: { currencyId: 'coins', amount: 10 }, selectionType: 'normal-card-any' }
+  assert.equal(model.cards.find(card => card.id === 'card:sportscars:1').shreddableQuantity, 4)
+  assert.equal(model.cards.find(card => card.id === 'card:cats:1').shreddableQuantity, 1)
+  const incomplete = buildRecyclerModel(model.cards, recipe, { 'card:sportscars:1': 4 })
   assert.equal(incomplete.complete, false)
   assert.equal(incomplete.cardsNeeded, 1)
-  const complete = buildRecyclerModel(model.cards, recipe, { 'card:sportscars:1': 3, 'card:cats:1': 1, 'card:woof:1': 1 })
+  const complete = buildRecyclerModel(model.cards, recipe, { 'card:sportscars:1': 4, 'card:cats:1': 1 })
   assert.equal(complete.complete, true)
   assert.equal(complete.cardsSelected, 5)
-  assert.deepEqual(complete.reward, { currencyId: 'stars', amount: 1 })
+  assert.deepEqual(complete.reward, { currencyId: 'coins', amount: 10 })
 })
 
-test('recycler reward copy uses singular Star for the one-Star recipe', () => {
+test('shredder reward copy supports Coin and Star labels', () => {
+  assert.equal(formatRecyclerReward({ currencyId: 'coins', amount: 10 }), '10 Coins')
   assert.equal(formatRecyclerReward({ currencyId: 'stars', amount: 1 }), '1 Star')
-  assert.equal(formatRecyclerReward({ currencyId: 'stars', amount: 5 }), '5 Stars')
 })

@@ -170,6 +170,9 @@
 .machineHeader h3, .machineHeader p { margin: 0; }
 .machineHeader p { color: var(--fo-text-secondary); font-size: .84rem; }
 .machineIcon { display: grid; width: 54px; height: 54px; place-items: center; color: #fff; background: linear-gradient(145deg, #a855f7, #4c1d95); border: 1px solid #d8b4fe; border-radius: 50%; box-shadow: 0 0 18px rgb(168 85 247 / .4), inset 0 1px rgb(255 255 255 / .2); }
+.recipePicker { position: relative; z-index: 1; display: grid; gap: 6px; color: var(--fo-text-secondary); font-size: .78rem; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
+.recipePicker select { min-height: 46px; padding: 0 42px 0 14px; color: #fff; background: rgb(15 23 42 / .9); border: 1px solid rgb(168 85 247 / .5); border-radius: var(--fo-radius-compact); box-shadow: inset 0 1px rgb(255 255 255 / .08), 0 0 14px rgb(168 85 247 / .16); font: inherit; text-transform: none; letter-spacing: normal; }
+.recipePicker select:focus-visible { outline: 3px solid rgb(34 211 238 / .5); outline-offset: 2px; }
 .machineWindow { position: relative; min-height: 150px; overflow: hidden; background: radial-gradient(circle at 50% 42%, rgb(34 211 238 / .18), transparent 48%), linear-gradient(180deg, #050814, #101a32); border: 2px solid rgb(125 211 252 / .42); border-radius: var(--fo-radius-panel); box-shadow: inset 0 0 30px rgb(0 0 0 / .75), 0 0 20px rgb(34 211 238 / .1); }
 .gearLarge, .gearSmall { position: absolute; display: grid; place-items: center; color: #c4b5fd; filter: drop-shadow(0 0 8px rgb(168 85 247 / .5)); animation: recyclerGear 5s linear infinite; }
 .gearLarge { top: 27px; left: calc(50% - 58px); }

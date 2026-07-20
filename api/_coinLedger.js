@@ -1,7 +1,7 @@
 import crypto from 'node:crypto'
 
 export const COIN_TO_STAR_RATE = 10
-export const COIN_CREATION_TYPES = Object.freeze(new Set(['purchase', 'promotional-grant', 'refund']))
+export const COIN_CREATION_TYPES = Object.freeze(new Set(['purchase', 'promotional-grant', 'refund', 'shredder-reward']))
 const GENESIS_HASH = 'GENESIS'
 
 function required(value, label) {

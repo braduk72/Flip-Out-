@@ -12,7 +12,7 @@ const VIEWS = [
   ['cards', 'Cards', 'Cards'],
   ['favourites', 'Saved', 'Favourite cards'],
   ['stats', 'Stats', 'Collection statistics'],
-  ['recycler', 'Recycle', 'Duplicate card recycler'],
+  ['recycler', 'Shred', 'Card Shredder'],
   ['items', 'Items', 'Items'],
 ]
 const PAGE_SIZE = 30
@@ -167,6 +167,7 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
   const [opening, setOpening] = useState(false)
   const [notice, setNotice] = useState('')
   const [recyclerSelection, setRecyclerSelection] = useState({})
+  const [recyclerRecipeId, setRecyclerRecipeId] = useState('')
   const [recycling, setRecycling] = useState(false)
   const [recyclerNotice, setRecyclerNotice] = useState('')
   const [recyclerReceipt, setRecyclerReceipt] = useState(null)
@@ -199,7 +200,8 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
   }), [collection.cards, ownership, query, rarity, setId, sort, variant, view])
   const visibleCards = filteredCards.slice(0, visibleCount)
   const selectedCard = collection.cards.find(card => card.id === selectedCardId) ?? null
-  const recyclerRecipe = state?.recyclerRecipes?.[0] ?? null
+  const recyclerRecipes = state?.recyclerRecipes ?? []
+  const recyclerRecipe = recyclerRecipes.find(recipe => recipe.recipeId === recyclerRecipeId) ?? recyclerRecipes[0] ?? null
   const recycler = useMemo(() => buildRecyclerModel(collection.cards, recyclerRecipe, recyclerSelection), [collection.cards, recyclerRecipe, recyclerSelection])
   const selectedTheme = collection.officialThemeAlbums.find(theme => theme.id === selectedThemeId) ?? null
   const selectedAlbumPage = selectedTheme ? (albumPages[selectedTheme.id] ?? 0) : 0
@@ -301,7 +303,8 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
     pendingRecycle.current = null
     setRecyclerNotice('')
     setRecyclerSelection(current => {
-      const quantity = Math.max(0, Math.min(card.recyclableQuantity, (Number(current[card.id]) || 0) + change))
+      const available = card.shreddableQuantity ?? card.recyclableQuantity
+      const quantity = Math.max(0, Math.min(available, (Number(current[card.id]) || 0) + change))
       if (!quantity) {
         const next = { ...current }
         delete next[card.id]
@@ -311,18 +314,25 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
     })
   }
 
+  const changeRecyclerRecipe = event => {
+    setRecyclerRecipeId(event.target.value)
+    setRecyclerSelection({})
+    setRecyclerNotice('')
+    pendingRecycle.current = null
+  }
+
   const recycleCards = async () => {
     if (!recycler.complete || !recyclerRecipe) return
     const items = recycler.selectedItems.map(entry => ({ itemId: entry.card.id, quantity: entry.quantity }))
     const payloadKey = JSON.stringify({ recipeId: recyclerRecipe.recipeId, items })
     if (!pendingRecycle.current || pendingRecycle.current.payloadKey !== payloadKey) pendingRecycle.current = {
       payloadKey,
-      transactionId: `recycle:${crypto.randomUUID()}`,
+      transactionId: `shred:${crypto.randomUUID()}`,
     }
     setRecycling(true)
     setRecyclerNotice('')
     try {
-      const result = await actionRunner({ action: 'recycle-duplicates', transactionId: pendingRecycle.current.transactionId, recipeId: recyclerRecipe.recipeId, items })
+      const result = await actionRunner({ action: 'shred-cards', transactionId: pendingRecycle.current.transactionId, recipeId: recyclerRecipe.recipeId, items })
       setRecyclerReceipt(result)
       pendingRecycle.current = null
       setRecyclerSelection({})
@@ -436,32 +446,38 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
         </section>}
 
         {view === 'recycler' && <section className={styles.recyclerView} aria-labelledby="recycler-title">
-          <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>Duplicates retain value</span><h2 id="recycler-title">Card Recycler</h2></div><Badge tone="ready">Keep one guaranteed</Badge></div>
-          {!recyclerRecipe ? <CardPanel><EmptyState icon="recycle" title="Recycler recipe unavailable" detail="The server has not supplied an active recycling recipe, so no cards can be destroyed." /></CardPanel> : <>
+          <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>Turn spare cards into Coins</span><h2 id="recycler-title">Card Shredder</h2></div><Badge tone="ready">Unbound only</Badge></div>
+          {!recyclerRecipe ? <CardPanel><EmptyState icon="recycle" title="Shredder recipe unavailable" detail="The server has not supplied an active Shredder recipe, so no cards can be destroyed." /></CardPanel> : <>
             <CardPanel variant="elevated" className={`${styles.recyclerMachine} ${recycling ? styles.recyclerRunning : ''}`} aria-busy={recycling || undefined}>
-              <div className={styles.machineHeader}><span className={styles.machineIcon}><Icon name="recycle" size={34}/></span><div><span className={styles.eyebrow}>Recipe {recyclerRecipe.configVersion}</span><h3>{recyclerRecipe.batchSize} {recyclerRecipe.rarity} duplicates</h3><p>Every batch returns {formatRecyclerReward(recyclerRecipe.reward)}. Your final copy is locked away safely.</p></div></div>
-              <div className={styles.machineWindow} aria-hidden="true"><span className={styles.gearLarge}><Icon name="recycle" size={58}/></span><span className={styles.gearSmall}><Icon name="recycle" size={35}/></span><span className={styles.machineSteam}/><span className={styles.machineTray}><Icon name={recyclerRecipe.reward.currencyId === 'stars' ? 'star' : 'rewards'} size={26}/></span></div>
+              <div className={styles.machineHeader}><span className={styles.machineIcon}><Icon name="recycle" size={34}/></span><div><span className={styles.eyebrow}>Recipe {recyclerRecipe.configVersion}</span><h3>{recyclerRecipe.batchSize} unbound {recyclerRecipe.selectionType === 'foil-card-any' ? 'Foil' : 'normal'} {recyclerRecipe.batchSize === 1 ? 'card' : 'cards'}</h3><p>Every batch returns {formatRecyclerReward(recyclerRecipe.reward)}. Bound Theme Album cards and Collector Cards are protected.</p></div></div>
+              {recyclerRecipes.length > 1 && <label className={styles.recipePicker}>Shredder recipe
+                <select value={recyclerRecipe.recipeId} onChange={changeRecyclerRecipe} disabled={recycling}>
+                  {recyclerRecipes.map(recipe => <option key={recipe.recipeId} value={recipe.recipeId}>{recipe.batchSize} {recipe.selectionType === 'foil-card-any' ? 'Foil' : 'normal'} {recipe.batchSize === 1 ? 'card' : 'cards'} → {formatRecyclerReward(recipe.reward)}</option>)}
+                </select>
+              </label>}
+              <div className={styles.machineWindow} aria-hidden="true"><span className={styles.gearLarge}><Icon name="recycle" size={58}/></span><span className={styles.gearSmall}><Icon name="recycle" size={35}/></span><span className={styles.machineSteam}/><span className={styles.machineTray}><Icon name={recyclerRecipe.reward.currencyId === 'stars' ? 'star' : recyclerRecipe.reward.currencyId === 'coins' ? 'coin' : 'rewards'} size={26}/></span></div>
               <div className={styles.recyclerMeter}>
                 <div><span>Loaded</span><strong>{recycler.cardsSelected} / {recycler.targetCards}</strong></div>
-                <ProgressBar value={recycler.cardsSelected} max={recycler.targetCards} label={`${recycler.cardsSelected} duplicate cards loaded`} tone="purple"/>
-                <p>{recycler.complete ? `${recycler.batches} complete ${recycler.batches === 1 ? 'batch' : 'batches'} · ${formatRecyclerReward(recycler.reward)} guaranteed` : `Select ${recycler.cardsNeeded} more duplicate ${recycler.cardsNeeded === 1 ? 'card' : 'cards'} for a complete batch.`}</p>
+                <ProgressBar value={recycler.cardsSelected} max={recycler.targetCards} label={`${recycler.cardsSelected} cards loaded`} tone="purple"/>
+                <p>{recycler.complete ? `${recycler.batches} complete ${recycler.batches === 1 ? 'batch' : 'batches'} · ${formatRecyclerReward(recycler.reward)} guaranteed` : `Select ${recycler.cardsNeeded} more unbound ${recycler.cardsNeeded === 1 ? 'card' : 'cards'} for a complete batch.`}</p>
               </div>
-              <button type="button" className={styles.recycleButton} disabled={!recycler.complete || recycling} onClick={recycleCards}><Icon name="recycle"/>{recycling ? 'Recycling securely…' : recyclerNotice ? 'Retry secure recycling' : `Recycle ${recycler.cardsSelected || recycler.batchSize} cards`}</button>
+              <button type="button" className={styles.recycleButton} disabled={!recycler.complete || recycling} onClick={recycleCards}><Icon name="recycle"/>{recycling ? 'Shredding securely…' : recyclerNotice ? 'Retry secure shredding' : `Shred ${recycler.cardsSelected || recycler.batchSize} cards`}</button>
               {recyclerNotice && <p className={styles.recyclerError} role="alert">{recyclerNotice}</p>}
             </CardPanel>
 
-            <div className={styles.recyclerRules}><Icon name="info" size={20}/><p>Only duplicates are selectable. Recycling is permanent and server-authoritative. Cards listed on the Exchange are already held outside this inventory and cannot be selected here.</p></div>
+            <div className={styles.recyclerRules}><Icon name="info" size={20}/><p>Only unbound Inventory cards are selectable. Shredding is permanent and server-authoritative. Cards stuck in Theme Albums, Collector Cards and cards listed on the Exchange cannot be selected here.</p></div>
 
-            <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>Available to recycle</span><h3>Choose duplicates</h3></div><span>{recycler.eligibleCards.reduce((sum, card) => sum + card.recyclableQuantity, 0)} available</span></div>
-            {!recycler.eligibleCards.length ? <CardPanel><EmptyState icon="cards" title="No eligible duplicates" detail={`Collect extra ${recyclerRecipe.rarity} cards to fill the machine. Your first copy of every card is always protected.`}/></CardPanel> : <div className={styles.recyclerGrid}>{recycler.eligibleCards.map(card => {
+            <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>Available to shred</span><h3>Choose cards</h3></div><span>{recycler.eligibleCards.reduce((sum, card) => sum + (card.shreddableQuantity ?? card.recyclableQuantity), 0)} available</span></div>
+            {!recycler.eligibleCards.length ? <CardPanel><EmptyState icon="cards" title="No eligible cards" detail="Collect unbound normal cards or Foils to feed the Shredder." /></CardPanel> : <div className={styles.recyclerGrid}>{recycler.eligibleCards.map(card => {
               const selected = Number(recyclerSelection[card.id]) || 0
+              const available = card.shreddableQuantity ?? card.recyclableQuantity
               return <CardPanel as="article" className={`${styles.recyclerCard} ${selected ? styles.recyclerCardSelected : ''}`} key={card.id}>
                 <img src={card.asset} alt="" loading="lazy"/>
-                <div><strong>{card.name}</strong><span>{card.quantity} owned · {card.recyclableQuantity} recyclable</span></div>
+                <div><strong>{card.name}</strong><span>{card.quantity} owned · {available} unbound</span></div>
                 <div className={styles.quantityPicker} aria-label={`${card.name} selected quantity`}>
                   <button type="button" onClick={() => changeRecycleQuantity(card, -1)} disabled={!selected} aria-label={`Remove one ${card.name}`}><Icon name="minus" size={18}/></button>
                   <output aria-live="polite">{selected}</output>
-                  <button type="button" onClick={() => changeRecycleQuantity(card, 1)} disabled={selected >= card.recyclableQuantity} aria-label={`Add one ${card.name}`}><Icon name="plus" size={18}/></button>
+                  <button type="button" onClick={() => changeRecycleQuantity(card, 1)} disabled={selected >= available} aria-label={`Add one ${card.name}`}><Icon name="plus" size={18}/></button>
                 </div>
               </CardPanel>
             })}</div>}
@@ -509,11 +525,11 @@ export default function Inventory({ onBack, navProps, dataLoader = playerGameApi
       </div>}
     </Modal>
 
-    <Modal open={Boolean(recyclerReceipt)} title="Recycling complete" tone="reward" onDismiss={() => setRecyclerReceipt(null)} actions={<button type="button" className={styles.primary} onClick={() => setRecyclerReceipt(null)}>Collect reward</button>}>
+    <Modal open={Boolean(recyclerReceipt)} title="Shredding complete" tone="reward" onDismiss={() => setRecyclerReceipt(null)} actions={<button type="button" className={styles.primary} onClick={() => setRecyclerReceipt(null)}>Collect reward</button>}>
       {recyclerReceipt && <div className={styles.recyclerResult}>
-        <div className={styles.resultMachine} aria-hidden="true"><Icon name="recycle" size={46}/><span/><Icon name={recyclerReceipt.reward.currencyId === 'stars' ? 'star' : 'rewards'} size={52}/></div>
+        <div className={styles.resultMachine} aria-hidden="true"><Icon name="recycle" size={46}/><span/><Icon name={recyclerReceipt.reward.currencyId === 'stars' ? 'star' : recyclerReceipt.reward.currencyId === 'coins' ? 'coin' : 'rewards'} size={52}/></div>
         <strong>+{formatRecyclerReward(recyclerReceipt.reward)}</strong>
-        <p>{recyclerReceipt.cardsConsumed} duplicate cards were permanently recycled in one secure transaction.</p>
+        <p>{recyclerReceipt.cardsConsumed} cards were permanently shredded in one secure transaction.</p>
         <small>Receipt: {recyclerReceipt.transactionId}{recyclerReceipt.duplicate ? ' · Safe retry confirmed' : ''}</small>
       </div>}
     </Modal>
