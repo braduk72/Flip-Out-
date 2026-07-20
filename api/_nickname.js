@@ -8,6 +8,19 @@ const PROFANE_NAMES = new Set([
   'asshole', 'bastard', 'bitch', 'cunt', 'dick', 'fag', 'fuck', 'motherfucker', 'nigger', 'piss', 'porn', 'sex', 'shit', 'slut', 'twat', 'whore',
 ])
 
+export function validateSuitableName(value, { label = 'Name', min = 3, max = 32, allowSpaces = true } = {}) {
+  const name = String(value ?? '').trim().replace(/\s+/g, ' ')
+  const pattern = allowSpaces ? /^[A-Za-z0-9 ]+$/ : /^[A-Za-z0-9]+$/
+  if (name.length < min || name.length > max || !pattern.test(name)) {
+    throw Object.assign(new Error(`${label} must be ${min}-${max} letters or numbers${allowSpaces ? ' with spaces allowed' : ' with no spaces or punctuation'}`), { status: 400, code: 'INVALID_SUITABLE_NAME' })
+  }
+  const compact = name.toLowerCase().replace(/\s+/g, '')
+  const words = name.toLowerCase().split(' ')
+  if (RESERVED_NAMES.has(compact) || words.some(word => RESERVED_NAMES.has(word))) throw Object.assign(new Error(`${label} is reserved`), { status: 400, code: 'RESERVED_SUITABLE_NAME' })
+  if (PROFANE_NAMES.has(compact) || words.some(word => PROFANE_NAMES.has(word))) throw Object.assign(new Error(`${label} is not allowed`), { status: 400, code: 'PROFANE_SUITABLE_NAME' })
+  return name
+}
+
 export function validateDisplayName(value) {
   const displayName = String(value ?? '')
   if (!/^[A-Za-z0-9]{3,12}$/.test(displayName)) {
@@ -35,4 +48,3 @@ export async function setInitialDisplayName(db, { playerId, displayName }) {
   if (existing.rows[0].display_name === safeDisplayName) return { displayName: safeDisplayName, alreadySet: true }
   throw Object.assign(new Error('Nickname has already been chosen'), { status: 409, code: 'DISPLAY_NAME_ALREADY_SET' })
 }
-

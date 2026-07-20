@@ -51,6 +51,23 @@ test('official Theme Album entries count as collected without remaining in Inven
   assert.equal(cats.collectors.bronze, true)
 })
 
+test('Personal Album memberships are organisational and do not change ownership quantities', () => {
+  const model = buildCollectionData({
+    inventory: [{ item_id: 'card:cats:1', quantity: 1, bound_quantity: 0 }],
+    personalAlbums: {
+      albums: [{ album_id: '11111111-1111-4111-8111-111111111111', name: 'Black Cats' }],
+      cards: [{ album_id: '11111111-1111-4111-8111-111111111111', item_id: 'card:cats:1', variant: 'normal' }],
+      limit: 10,
+      createCostCoins: 500,
+    },
+  })
+  const card = model.cards.find(entry => entry.id === 'card:cats:1')
+  assert.equal(card.owned, true)
+  assert.equal(card.quantity, 1)
+  assert.deepEqual(card.personalAlbumIds, ['11111111-1111-4111-8111-111111111111'])
+  assert.equal(model.personalAlbums.createCostCoins, 500)
+})
+
 test('card filters combine search, set, ownership, rarity, variants and deterministic sorting', () => {
   const model = buildCollectionData(state)
   const ownedCars = filterCollectionCards(model.cards, { query: 'Ferrari 488', setId: 'sportscars', ownership: 'owned' })

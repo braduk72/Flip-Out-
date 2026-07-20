@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.6.0-theme-albums'
+export const APP_VERSION = '1.7.0-personal-albums'

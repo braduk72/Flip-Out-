@@ -32,6 +32,13 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
   const inventoryById = new Map((state.inventory ?? []).map(row => [row.item_id, row]))
   const stuckEntries = new Map((state.themeAlbums?.entries ?? []).map(row => [`${row.card_item_id}:${row.variant ?? 'normal'}`, row]))
   const collectorEntries = new Map((state.themeAlbums?.collectors ?? []).map(row => [`${row.theme_id}:${row.collector_tier}`, row]))
+  const personalAlbumCards = new Map()
+  for (const row of state.personalAlbums?.cards ?? []) {
+    const key = `${row.item_id}:${row.variant ?? 'normal'}`
+    const albums = personalAlbumCards.get(key) ?? []
+    albums.push(row.album_id)
+    personalAlbumCards.set(key, albums)
+  }
   const favouriteSet = new Set(favouriteIds)
   const obtained = new Map()
   for (const row of state.transactions ?? []) {
@@ -49,6 +56,7 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
     const albumVariant = variant === 'base' ? 'normal' : variant
     const stuckEntry = stuckEntries.get(`${item.id}:${albumVariant}`)
     const stuckInThemeAlbum = Boolean(stuckEntry)
+    const personalAlbumIds = personalAlbumCards.get(`${item.id}:${albumVariant}`) ?? []
     return {
       ...item,
       setId,
@@ -61,6 +69,7 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
       recyclableQuantity: Math.max(0, quantity - Math.max(1, boundQuantity)),
       stuckInThemeAlbum,
       albumStuckAt: stuckEntry?.stuck_at ?? null,
+      personalAlbumIds,
       owned: quantity > 0 || stuckInThemeAlbum,
       favourite: favouriteSet.has(item.id),
       obtainedAt: obtained.get(item.id) ?? null,
@@ -125,6 +134,7 @@ export function buildCollectionData(state = {}, favouriteIds = []) {
     cards,
     sets,
     albums,
+    personalAlbums: state.personalAlbums ?? { albums: [], cards: [], limit: 10, createCostCoins: 500 },
     recent,
     nonCards,
     stats: {

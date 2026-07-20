@@ -1,5 +1,6 @@
 import { getRecyclerRecipes } from './_recycler.js'
 import { getThemeAlbumState } from './_themeAlbums.js'
+import { getPersonalAlbumState } from './_personalAlbums.js'
 
 const SAFE_ID = /^[a-z0-9][a-z0-9:_-]{0,127}$/
 
@@ -14,13 +15,14 @@ export function validateAmount(value) {
 }
 
 export async function getPlayerState(db, playerId) {
-  const [profile, balances, inventory, transactions, recyclerRecipes, themeAlbums] = await Promise.all([
+  const [profile, balances, inventory, transactions, recyclerRecipes, themeAlbums, personalAlbums] = await Promise.all([
     db.query(`SELECT player_id, account_kind, display_name, selected_avatar_id FROM fo_accounts WHERE player_id=$1`, [playerId]),
     db.query(`SELECT currency_id, balance FROM fo_player_balances WHERE player_id=$1 ORDER BY currency_id`, [playerId]),
     db.query(`SELECT item_id, quantity, bound_quantity FROM fo_player_inventory WHERE player_id=$1 AND quantity > 0 ORDER BY item_id`, [playerId]),
     db.query(`SELECT transaction_id, source, item_id, currency_id, amount, metadata, created_at FROM fo_player_transactions WHERE player_id=$1 ORDER BY created_at DESC LIMIT 100`, [playerId]),
     getRecyclerRecipes(db),
     getThemeAlbumState(db, playerId),
+    getPersonalAlbumState(db, playerId),
   ])
   return {
     profile: profile.rows[0] ?? { player_id: playerId, account_kind: 'guest' },
@@ -29,6 +31,7 @@ export async function getPlayerState(db, playerId) {
     transactions: transactions.rows,
     recyclerRecipes,
     themeAlbums,
+    personalAlbums,
   }
 }
 

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { setInitialDisplayName, validateDisplayName } from '../api/_nickname.js'
+import { setInitialDisplayName, validateDisplayName, validateSuitableName } from '../api/_nickname.js'
 
 function createNicknameDb(accounts = new Map()) {
   return {
@@ -24,6 +24,11 @@ function createNicknameDb(accounts = new Map()) {
 
 test('valid nickname is accepted and preserves display casing', () => {
   assert.equal(validateDisplayName('CatFan99'), 'CatFan99')
+})
+
+test('suitability validation supports longer public names without punctuation', () => {
+  assert.equal(validateSuitableName('  Black   Cats  ', { label: 'Album name' }), 'Black Cats')
+  assert.throws(() => validateSuitableName('Bad!Name', { label: 'Album name' }), error => error.code === 'INVALID_SUITABLE_NAME')
 })
 
 test('nickname validation rejects invalid length, spaces and punctuation', () => {
