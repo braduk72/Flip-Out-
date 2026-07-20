@@ -1,0 +1,5 @@
+{
+  "framework": "vite",
+  "buildCommand": "node --test tests/reward-theatre.test.js tests/reward-theatre-db.test.js tests/foundation.test.js && vite build",
+  "outputDirectory": "dist"
+}
