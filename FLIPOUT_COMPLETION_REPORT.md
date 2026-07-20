@@ -1,5 +1,26 @@
 # Flip-Out continuation report
 
+## Official Theme Album Collection UI — 20 July 2026
+
+The first working Official Theme Album presentation is implemented and deployed to development Preview. The previous generic album/set presentation has been replaced by themed album covers, reusable theme presentation metadata, a Collector Card pyramid page, numbered album pages with paired Normal/Foil slots, rarity stars with text labels, and title plaques. Inventory ownership is now clearly separate from permanent Official Album completion.
+
+Stick placement is wired to the existing authoritative `stick-in-album` operation: eligible inventory copies show the exact `Stick in Album` wording, a confirmation explains permanence/trade/shred/capacity consequences, transaction IDs are generated client-side for retry safety, and successful placement reloads authoritative state before showing the slot-fill highlight. No new migration or new API was added. Collector Card awarding remains the existing server-authoritative/idempotent backend behaviour from the Theme Album boundary. Personal Albums are visible from Albums and reuse the existing 10-album/500-Coin/create/add/remove organisational backend; membership still does not consume inventory or affect Official Album progress.
+
+Files changed: `src/ui/collectionData.js`, `src/screens/Inventory.jsx`, `src/screens/Collection.module.css`, `src/version.js`, `tests/collection-data.test.js`, `tests-ui/collection.test.jsx`.
+
+Verification:
+
+- Focused Node: `node --test tests\collection-data.test.js tests\theme-albums.test.js tests\theme-albums-db.test.js tests\personal-albums.test.js tests\personal-albums-db.test.js` — **16 passed / 0 failed / 2 Preview DB skips**.
+- Focused UI: `npx.cmd vitest run --config vitest.config.js tests-ui\collection.test.jsx tests-ui\collection-responsive.test.js` — **10/10 passed**.
+- Focused lint: `npx.cmd eslint src\screens\Inventory.jsx src\ui\collectionData.js tests\collection-data.test.js tests-ui\collection.test.jsx` — passed.
+- Production build: `npm.cmd run build` — passed; main JS `412.07 kB / 130.29 kB gzip`, Inventory JS `45.86 kB / 13.15 kB gzip`.
+- Full suite: `npm.cmd test` — Node **138 passed / 0 failed / 15 Preview DB skips**; UI **52/52 passed**.
+- Preview DB attempt: relevant `*-db` tests remained skipped because the local Preview env file does not contain `DATABASE_URL`.
+
+Deployment: code commit `7fdb453` was pushed from `dev`. Vercel Ready Preview `dpl_8zVSfKKKkKVJjiVvhpCb3VtJWd91` (`https://flip-fh7x3wnkw-chattocal.vercel.app`) is assigned to `https://dev.flipout.gizmogames.uk`. The permanent URL returned HTTP 200, identical HTML/ETag `"0b98da1361681ff70cc9997521afd2ef"` to the generated Preview, and served `/assets/index-Bw3DN3ii.js` containing `1.9.0-theme-albums-ui`. Production was not touched.
+
+Manual Preview acceptance confirmed the Theme Album landing, variable theme totals, Super Cars Collector pyramid, numbered Normal/Foil paired spaces, rarity stars/text, title plaques, album navigation and responsive behaviour at 360x740, 820x1180 and 1280x900 with no horizontal overflow or undersized visible buttons. A live Stick placement could not be completed in the disposable browser guest because it had no eligible card inventory and there is no approved dev-only card grant UI; automated UI/action and server idempotency tests cover that path until a QA inventory seed exists.
+
 ## Mobile UX polish package — 19 July 2026
 
 Phone shells now use portrait orientation, while tablets retain portrait/landscape at the 600 dp smallest-width boundary. The web uses progressive Screen Orientation support plus an accessible portrait guard, and the shell consumes runtime safe-area insets on all four edges. Phone-landscape presentation CSS was removed instead of maintaining compressed layouts.

@@ -55,7 +55,19 @@ npx vercel inspect https://dev.flipout.gizmogames.uk --scope chattocal
 npx vercel ls flip-out --scope chattocal
 ```
 
-The application currently reports `1.2.1-mobile-ux` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+The application currently reports `1.9.0-theme-albums-ui` from `src/version.js`. Reports must name `https://dev.flipout.gizmogames.uk` as the development URL. A generated `*.vercel.app` URL may be recorded separately as a deployment ID for diagnostics, but must not be presented as the URL Brad should use.
+
+## Verification record — Official Theme Album Collection UI, 20 July 2026
+
+- Code commit `7fdb453` was pushed from `dev`; `main` and production were not changed.
+- Vercel Ready Preview: `dpl_8zVSfKKKkKVJjiVvhpCb3VtJWd91`, generated URL `https://flip-fh7x3wnkw-chattocal.vercel.app`, target `preview`, created Mon 20 Jul 2026 03:19:14 BST.
+- Vercel inspect for both the generated URL and `https://dev.flipout.gizmogames.uk` resolved to the same Ready deployment.
+- `https://dev.flipout.gizmogames.uk` returned HTTP 200 and served byte-identical HTML to the generated Preview URL.
+- Both URLs returned ETag `"0b98da1361681ff70cc9997521afd2ef"`.
+- The permanent URL served `/assets/index-Bw3DN3ii.js` at HTTP 200 (412,078 bytes), containing application version `1.9.0-theme-albums-ui`.
+- Browser acceptance reached Home after disposable onboarding, opened Collection, displayed the 15-theme Official Album landing, opened Super Cars, displayed the Collector Card pyramid, displayed numbered Normal/Foil paired slots with rarity stars/text, and passed responsive overflow/touch-target measurements at 360x740, 820x1180 and 1280x900.
+- Live Stick placement was not executed because the disposable Preview browser account had no eligible inventory card and no approved development card-grant UI exists. Automated UI and server tests cover that path until a QA seed exists.
+- Vercel still lists the old `dev.flipout.app` alias on the deployment, but no production domain, production deployment, root DNS record, nameserver or database was changed.
 
 ## Verification record — mobile UX polish, 19 July 2026
 
