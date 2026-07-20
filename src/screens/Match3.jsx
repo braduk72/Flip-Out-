@@ -26,7 +26,7 @@ export default function Match3({ onBack }) {
   const [progress, setProgress] = useState(loadMatch3Progress)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [stars, setStars] = useState(0)
+  const [coins, setCoins] = useState(0)
   const [presentation, setPresentation] = useState(null)
   const presentationTimer = useRef(null)
   const motionMode = useMotionMode()
@@ -125,15 +125,15 @@ export default function Match3({ onBack }) {
   async function finish(completedSession = session) {
     try {
       const response = await action({ action: 'complete' })
-      setStars(response.totalStars)
+      setCoins(response.totalCoins)
       const saved = {
         highestUnlockedLevel: Math.min(20, Math.max(progress.highestUnlockedLevel, selectedLevel + 1)),
-        completedLevels: { ...progress.completedLevels, [selectedLevel]: { stars: 30, score: completedSession.state.score } },
+        completedLevels: { ...progress.completedLevels, [selectedLevel]: { coins: 10, score: completedSession.state.score } },
       }
       setProgress(saved)
       saveMatch3Progress(saved)
       saveMatch3Resume(null)
-      recordMatch3Event('level-completion', { levelId: selectedLevel, movesUsed: getMatch3Level(selectedLevel).moves - completedSession.state.movesRemaining, starsGranted: 30 })
+      recordMatch3Event('level-completion', { levelId: selectedLevel, movesUsed: getMatch3Level(selectedLevel).moves - completedSession.state.movesRemaining, coinsGranted: 10 })
       setView('win')
     } catch {
       // The action handler exposes the server error in the game UI.
@@ -142,7 +142,7 @@ export default function Match3({ onBack }) {
 
   if (view === 'map') return <LevelMap progress={progress} onBack={onBack} onSelect={id => { setSelectedLevel(id); setView('brief') }} onReset={() => { if (confirm('Reset Match-3 development progress?')) { resetMatch3Development(); setProgress({ highestUnlockedLevel: 1, completedLevels: {} }) } }} />
   if (view === 'brief') return <Brief level={getMatch3Level(selectedLevel)} busy={busy} error={error} onBack={() => setView('map')} onStart={start} />
-  if (view === 'win') return <Result stars={stars} level={selectedLevel} movesUsed={session.state.level.moves - session.state.movesRemaining} error={error} onDouble={async () => { try { const advert = await playerGameApi.verifyAdvert({ provider: 'configured-provider', receipt: uid('receipt'), placement: 'match3-double', matchId: session.sessionId }); const response = await action({ action: 'double', advertCompletionId: advert.completionId }); setStars(response.totalStars); recordMatch3Event('stars-granted', { stars: 30, reason: 'advert-double' }) } catch { return null } }} onMap={() => { clearTimeout(presentationTimer.current); setPresentation(null); setView('map') }} onNext={() => { clearTimeout(presentationTimer.current); setPresentation(null); setSelectedLevel(Math.min(20, selectedLevel + 1)); setView('brief') }} />
+  if (view === 'win') return <Result coins={coins} level={selectedLevel} movesUsed={session.state.level.moves - session.state.movesRemaining} error={error} onDouble={async () => { try { const advert = await playerGameApi.verifyAdvert({ provider: 'configured-provider', receipt: uid('receipt'), placement: 'match3-double', matchId: session.sessionId }); const response = await action({ action: 'double', advertCompletionId: advert.completionId }); setCoins(response.totalCoins); recordMatch3Event('coins-granted', { coins: 10, reason: 'advert-double' }) } catch { return null } }} onMap={() => { clearTimeout(presentationTimer.current); setPresentation(null); setView('map') }} onNext={() => { clearTimeout(presentationTimer.current); setPresentation(null); setSelectedLevel(Math.min(20, selectedLevel + 1)); setView('brief') }} />
   return <><GameBoard session={session} busy={busy} error={error} presentation={presentation} onMove={(from, to) => action({ action: 'move', actionId: uid('move'), from, to })} onPower={(powerUp, target) => action({ action: 'power-up', actionId: uid('power'), powerUp, target }).then(() => recordMatch3Event('power-up-used', { powerUp }))} onRestart={() => { clearTimeout(presentationTimer.current); setPresentation(null); action({ action: 'restart', actionId: uid('restart') }) }} onQuit={() => { clearTimeout(presentationTimer.current); setPresentation(null); if (confirm('Quit this level? Your current board will remain available to resume.')) setView('map') }} />{import.meta.env.DEV && <Match3FeedbackPanel level={selectedLevel} result={session.state.status === 'won' ? 'won' : session.state.status === 'lost' ? 'lost' : 'quit'} movesUsed={session.state.level.moves - session.state.movesRemaining} />}</>
 }
 
@@ -150,8 +150,8 @@ function LevelMap({ progress, onBack, onSelect, onReset }) {
   return <main className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="match3-journey">
     <header className={styles.header}><button className={styles.backBtn} onClick={onBack} aria-label="Back to Home"><span aria-hidden="true">‹</span></button><h1>Match-3 Journey</h1></header>
     <div className={styles.journeyContent}>
-      <CardPanel className={styles.journeyIntro}><span className={styles.eyebrow}>Earned progression</span><h2>Keep your journey moving</h2><p>Complete objectives, earn Stars and unlock the next challenge.</p></CardPanel>
-      <div className={styles.levels}>{MATCH3_LEVELS.map(level => { const unlocked = level.id <= progress.highestUnlockedLevel || import.meta.env.DEV; const complete = progress.completedLevels?.[level.id]; return <button key={level.id} disabled={!unlocked} className={complete ? styles.complete : ''} onClick={() => onSelect(level.id)} aria-label={`${level.name}, ${unlocked ? 'unlocked' : 'locked'}`}><span className={styles.levelNumber}>Level {level.id}</span><strong>{level.name}</strong><span className={styles.levelObjective}>{complete ? `Complete · ${complete.stars ?? 0} Stars` : unlocked ? objectiveLabel(level.objectives[0]) : 'Locked'}</span></button> })}</div>
+      <CardPanel className={styles.journeyIntro}><span className={styles.eyebrow}>Earned progression</span><h2>Keep your journey moving</h2><p>Complete objectives, earn Coins and unlock the next challenge.</p></CardPanel>
+      <div className={styles.levels}>{MATCH3_LEVELS.map(level => { const unlocked = level.id <= progress.highestUnlockedLevel || import.meta.env.DEV; const complete = progress.completedLevels?.[level.id]; return <button key={level.id} disabled={!unlocked} className={complete ? styles.complete : ''} onClick={() => onSelect(level.id)} aria-label={`${level.name}, ${unlocked ? 'unlocked' : 'locked'}`}><span className={styles.levelNumber}>Level {level.id}</span><strong>{level.name}</strong><span className={styles.levelObjective}>{complete ? `Complete · ${complete.coins ?? 10} Coins` : unlocked ? objectiveLabel(level.objectives[0]) : 'Locked'}</span></button> })}</div>
       {import.meta.env.DEV && <button className={styles.dev} onClick={onReset}>Reset development progress</button>}
     </div>
   </main>
@@ -161,8 +161,8 @@ function Brief({ level, busy, error, onBack, onStart }) {
   return <main className={`${styles.page} foTheme`} data-concept-screen="route" data-screen="match3-brief"><header className={styles.header}><button className={styles.backBtn} onClick={onBack} aria-label="Back to level journey"><span aria-hidden="true">‹</span></button><h1>{level.name}</h1></header><div className={styles.briefContent}>{level.teaching && <CardPanel className={styles.teach}><span className={styles.eyebrow}>Level lesson</span><p>{level.teaching}</p></CardPanel>}<CardPanel className={styles.card}><span className={styles.eyebrow}>Level {level.id}</span><h2>Objectives</h2><ul>{level.objectives.map((objective, index) => <li key={index}>{objectiveLabel(objective)}</li>)}</ul><p className={styles.moveBudget}>{level.moves} moves</p></CardPanel><button className={styles.primary} disabled={busy} onClick={onStart}>{busy ? 'Preparing…' : 'Play Match-3'}</button><p role="alert">{error}</p></div></main>
 }
 
-function Result({ stars, level, movesUsed, error, onDouble, onMap, onNext }) {
-  return <main className={`${styles.result} foTheme`} data-concept-screen="route" data-screen="match3-result"><div aria-hidden="true" className={styles.resultIcon}>★</div><h1>Level complete!</h1><p className={styles.starAward}>+{stars} Stars</p><p role="alert">{error}</p>{stars === 30 && <button onClick={onDouble}>Watch verified advert to double</button>}<button className={styles.primary} onClick={onNext}>Next level</button><button onClick={onMap}>Level journey</button>{import.meta.env.DEV && <Match3FeedbackPanel level={level} result="won" movesUsed={movesUsed} />}</main>
+function Result({ coins, level, movesUsed, error, onDouble, onMap, onNext }) {
+  return <main className={`${styles.result} foTheme`} data-concept-screen="route" data-screen="match3-result"><div aria-hidden="true" className={styles.resultIcon}>●</div><h1>Level complete!</h1><p className={styles.starAward}>+{coins} Coins</p><p role="alert">{error}</p>{coins === 10 && <button onClick={onDouble}>Watch verified advert to double to 20 Coins</button>}<button className={styles.primary} onClick={onNext}>Next level</button><button onClick={onMap}>Level journey</button>{import.meta.env.DEV && <Match3FeedbackPanel level={level} result="won" movesUsed={movesUsed} />}</main>
 }
 
 export function GameBoard({ session, busy, error, presentation, onMove, onPower, onRestart, onQuit }) {

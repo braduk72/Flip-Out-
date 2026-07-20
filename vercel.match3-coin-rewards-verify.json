@@ -1,0 +1,5 @@
+{
+  "framework": "vite",
+  "buildCommand": "node --test tests/match3-db.test.js tests/coin-ledger.test.js && vite build",
+  "outputDirectory": "dist"
+}

@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.11.0-theme-collector-cards'
+export const APP_VERSION = '1.12.0-match3-coin-rewards'

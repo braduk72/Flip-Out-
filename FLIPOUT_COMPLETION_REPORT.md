@@ -1,5 +1,22 @@
 # Flip-Out continuation report
 
+## Match-3 Coin reward boundary - 20 July 2026
+
+Implemented the approved Match-3 win reward direction without changing level balance or board mechanics. Completing a Match-3 level now grants **10 Coins** through the tamper-evident Coin ledger. A single verified advert double grants **10 additional Coins**, for **20 Coins** total. The old client-facing `30/60 Stars` result path has been replaced with Coin copy and Coin progress records.
+
+The implementation preserves backwards compatibility with the existing Preview schema by leaving `base_stars_granted` and `advert_stars_granted` as legacy reward-claimed booleans. The API now returns `coinsGranted`, `totalCoins` and a Coin reward object. The old exported double helper remains aliased for compatibility, while the route now calls `doubleMatch3Coins`.
+
+Verification so far:
+
+- Focused Node: `node --test tests\match3-db.test.js tests\coin-ledger.test.js tests\match3-engine.test.js tests\match3-rules.test.js tests\progression.test.js` - **45 passed / 1 expected Preview DB skip**.
+- Focused UI: `npx.cmd vitest run --config vitest.config.js tests-ui\match3-input.test.jsx tests-ui\match3-preview.test.jsx` - **5/5 passed**.
+- Full Node: `node --test tests\*.test.js` - **144 passed / 15 expected Preview-only skips**.
+- Full UI: `npx.cmd vitest run --config vitest.config.js tests-ui` - **55/55 passed**.
+- Focused lint: `npx.cmd eslint api\_match3Sessions.js api\_foMatch3.js src\screens\Match3.jsx tests\match3-db.test.js` - passed.
+- Production build: `npm.cmd run build` - passed with **155 transformed modules** and bundle marker `1.12.0-match3-coin-rewards`.
+
+Remaining risks: Preview DB verification is still pending for the live Coin ledger write path. No schema migration was required. Production was not touched.
+
 ## Official Theme Album Collector Cards - 20 July 2026
 
 Implemented the next album milestone without changing booster, reward or revive economy. Gold Collector catalogue variants are now marked non-tradable and non-stackable, and Recycler validation explicitly rejects Collector cards so future recipes cannot accidentally shred them. Exchange listing validation already respects the catalogue `tradable` flag, so Collector cards are blocked from player listing through the existing boundary.
