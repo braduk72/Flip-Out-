@@ -155,3 +155,24 @@ The supplied booster artwork is bundled as `public/ui/shop/booster-packs.webp`. 
 - Focused remote verification passed **18/18** tests with no skips and built 152 modules.
 - `https://dev.flipout.gizmogames.uk` returned HTTP 200 with ETag `"d3051c0efe0a55d4215bc78e917a8646"`, served `assets/index-kPR7Ipt_.js`, and that asset contains `1.7.0-personal-albums`. The generated Preview URL returned the same ETag, same asset and same build marker.
 - A first focused deployment attempt timed out locally and left `flip-dvrd1c1j3-chattocal.vercel.app` queued with no permanent dev alias; it was removed before rerunning verification.
+
+## Verification record - Inventory capacity boundary, 20 July 2026
+
+- Commit `e9659ae` was pushed from `dev`; no production branch, production deployment, production domain, root DNS record or nameserver was changed.
+- Implemented files: `api/_inventoryCapacity.js`, `api/migrations/016_inventory_capacity.sql`, `api/_gameServices.js`, `api/_playerState.js`, `src/ui/collectionData.js`, `src/version.js`, `tests/inventory-capacity.test.js`, `tests/inventory-capacity-db.test.js`, `tests/collection-data.test.js`, and `vercel.inventory-capacity-verify.json`.
+- Local verification passed:
+  - `node --test tests/inventory-capacity.test.js tests/inventory-capacity-db.test.js tests/collection-data.test.js` -> **10 passed / 2 expected Preview DB skips**.
+  - `npx.cmd eslint api/_inventoryCapacity.js api/_gameServices.js api/_playerState.js src/ui/collectionData.js tests/inventory-capacity.test.js tests/inventory-capacity-db.test.js tests/collection-data.test.js` -> passed with no output.
+  - `npm.cmd test` -> **137 Node passed / 15 expected Preview-only skips**, **50 UI passed**.
+  - `npm.cmd run build` -> passed, **152 transformed modules**, entry `dist/assets/index-b0rTx18c.js`.
+- Focused Preview deployment did **not** reach Ready:
+  - `npx.cmd vercel deploy --yes --scope chattocal --local-config vercel.inventory-capacity-verify.json` timed out locally after 604 seconds.
+  - Vercel then listed `flip-q6dgi12es-chattocal.vercel.app` and `flip-cbdp99o79-chattocal.vercel.app` as `● Queued`; both were removed with `npx.cmd vercel remove ... --yes --scope chattocal`.
+  - `npx.cmd vercel deploy --yes --force --scope chattocal --local-config vercel.inventory-capacity-verify.json` timed out locally after 904 seconds and left `flip-6yrlaxzte-chattocal.vercel.app` queued.
+  - `npx.cmd vercel inspect https://flip-6yrlaxzte-chattocal.vercel.app --scope chattocal --wait --timeout 180s --logs` stopped after 3 minutes with `status ● Queued`; the URL served Vercel's "Deployment is building" placeholder rather than a Flip-Out bundle. It was removed.
+- Fallback verification notes:
+  - `npx.cmd vercel env ls preview --scope chattocal` confirms encrypted `DATABASE_URL` exists for **Preview (dev)**.
+  - `npx.cmd vercel env pull .env.preview.local --environment=preview --scope chattocal --local-config vercel.inventory-capacity-verify.json --yes` did not expose `DATABASE_URL`, so the migration runner correctly refused to run locally with `DATABASE_URL is required`.
+  - `npx.cmd vercel build --target=preview --scope chattocal --local-config vercel.inventory-capacity-verify.json` failed before project code with `spawn cmd.exe ENOENT`; retrying with explicit `ComSpec` and `PATH` produced the same Vercel CLI error.
+- Permanent development URL status: `https://dev.flipout.gizmogames.uk` returned HTTP 200, served `assets/index-Bg_oms7A.js`, and that asset contains `1.7.0-personal-albums` but not `1.8.0-inventory-capacity`.
+- Result: Inventory capacity is implemented and pushed, but migration `016_inventory_capacity.sql`, its Preview DB tests and the permanent development URL update are still blocked by Vercel Preview deployment queue/build execution. Production was not touched.
