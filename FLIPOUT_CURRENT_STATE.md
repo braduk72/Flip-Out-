@@ -1,5 +1,14 @@
 # Flip-Out! current-state audit
 
+## Preview Admin Toolkit expansion - 20 July 2026
+
+- **Status: Implemented locally; Preview deployment pending in this session.** The hidden `?dev=toolkit` route has been expanded from a small backend-capable utility into a responsive in-game Preview-only Admin Toolkit.
+- What changed: the toolkit is still blocked outside Vercel Preview, still requires `DEV_TOOLKIT_SECRET`, and still requires the normal authenticated player session. It now exposes pages for Player, Match-3, Collection, Albums, Economy, Exchange, Achievements and Debug. Implemented actions include grant any catalogue card/item, grant complete Theme inventory, grant complete collection inventory, grant Collector Cards, authorised Coin grants through the Coin ledger, grant all defined power-ups, Match-3 level jump, mark level complete, unlock all Match-3 levels, reset Match-3 progress, reset Theme/Personal Albums, seed/expire/clear Exchange listings and inspect server player JSON, Coin ledger, inventory capacity and Exchange state.
+- Deliberately not faked: Foil grants, booster grants, Reward Theatre forcing, Daily Wheel forcing and achievement unlock/reset remain labelled as prepared/unavailable until their authoritative persistence boundaries exist.
+- Files changed: `api/_foDevTools.js`, `src/screens/DevToolkit.jsx`, `src/screens/DevToolkit.module.css`, `src/App.jsx`, `src/screens/Match3.jsx`, `src/version.js`, `tests/dev-tools.test.js`, `tests-ui/dev-toolkit.test.jsx`.
+- Verification so far: focused backend toolkit tests **8/8** passed; focused toolkit UI tests **4/4** passed; focused changed-file lint passed; production build passed with **155 transformed modules** and app marker `1.13.0-preview-admin-toolkit`.
+- Remaining risks: live Preview verification and deployment evidence still need to be recorded after deployment. Full `App.jsx` lint remains blocked by pre-existing legacy `react-hooks/set-state-in-effect` issues outside this package; changed-file lint excluding those unrelated legacy blocks is clean.
+
 ## Match-3 Coin reward boundary - 20 July 2026
 
 - **Status: Implemented and deployed to development Preview; focused Preview DB verification blocked by tool approval timeout.** Match-3 completion rewards now follow the approved sprint direction: a completed level grants **10 Coins**, and one verified advert double grants **10 more Coins** for **20 Coins** total.

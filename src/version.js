@@ -1,1 +1,1 @@
-export const APP_VERSION = '1.12.0-match3-coin-rewards'
+export const APP_VERSION = '1.13.0-preview-admin-toolkit'

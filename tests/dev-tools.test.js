@@ -36,6 +36,36 @@ test('developer toolkit initial market seed is deterministic and below the listi
   assert.ok(first.every(item => item.priceCoins >= 10))
 })
 
+test('developer toolkit can mark Match-3 progress complete for a selected level', async () => {
+  const calls = []
+  const db = {
+    query: async (sql, params) => {
+      calls.push({ sql, params })
+      return { rows: [] }
+    },
+  }
+  const result = await runDevToolkitAction(db, { playerId: '00000000-0000-0000-0000-000000000001', body: { action: 'match3-mark-complete', levelId: 3 } })
+  assert.equal(result.levelId, 3)
+  assert.equal(result.highestUnlockedLevel, 4)
+  assert.equal(calls.length, 1)
+  assert.equal(calls[0].params[1], 4)
+  assert.deepEqual(Object.keys(calls[0].params[2]), ['1', '2', '3'])
+})
+
+test('developer toolkit can unlock all Match-3 levels', async () => {
+  const calls = []
+  const db = {
+    query: async (sql, params) => {
+      calls.push({ sql, params })
+      return { rows: [] }
+    },
+  }
+  const result = await runDevToolkitAction(db, { playerId: '00000000-0000-0000-0000-000000000001', body: { action: 'match3-unlock-all' } })
+  assert.equal(result.highestUnlockedLevel, 20)
+  assert.equal(calls.length, 1)
+  assert.match(calls[0].sql, /highest_unlocked_level/)
+})
+
 test('market expiry helper accepts an already checked-out database client', async () => {
   const calls = []
   const client = {

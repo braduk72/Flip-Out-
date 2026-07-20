@@ -1,5 +1,22 @@
 # Flip-Out continuation report
 
+## Preview Admin Toolkit expansion - 20 July 2026
+
+Priority 1 is implemented locally as a coherent milestone. The hidden `?dev=toolkit` route is now a proper Preview-only Admin Toolkit with responsive pages for Player, Match-3, Collection, Albums, Economy, Exchange, Achievements and Debug. Server access still fails closed outside Vercel Preview, requires `DEV_TOOLKIT_SECRET`, and requires the normal authenticated player session.
+
+Implemented toolkit actions: inspect player/currencies/progression/inventory capacity, inspect Coin ledger and Exchange rows, grant catalogue cards/items, grant complete Theme inventory, grant complete collection inventory, grant Collector Cards, grant authorised promotional Coins through the Coin ledger, grant all defined power-ups, jump to any Match-3 level, mark a level complete, unlock all levels, reset Match-3 progress, reset Theme Albums, reset Personal Albums, seed market, expire listings and clear listings with escrow return.
+
+Not implemented/faked in this milestone: Foil grants, booster grants, Reward Theatre forcing, Daily Wheel forcing and achievement unlock/reset remain explicitly labelled unavailable until their authoritative persistence boundaries exist.
+
+Verification so far:
+
+- `node --test tests\dev-tools.test.js` -> **8/8 passed**.
+- `npm.cmd run test:ui -- tests-ui/dev-toolkit.test.jsx` -> **4/4 passed**.
+- `npx.cmd eslint api/_foDevTools.js src/screens/DevToolkit.jsx src/screens/Match3.jsx tests/dev-tools.test.js tests-ui/dev-toolkit.test.jsx` -> passed with no output.
+- `npm.cmd run build` -> passed with **155 transformed modules**, entry `dist/assets/index-S01jHPcD.js`, app marker `1.13.0-preview-admin-toolkit`.
+
+Remaining before closing the milestone: deploy to Preview, verify `https://dev.flipout.gizmogames.uk` serves the same build, and record the Preview deployment ID. Full `App.jsx` lint still reports existing unrelated legacy hook-rule failures in older multiplayer/query effects; those were not changed.
+
 ## Match-3 Coin reward boundary - 20 July 2026
 
 Implemented the approved Match-3 win reward direction without changing level balance or board mechanics. Completing a Match-3 level now grants **10 Coins** through the tamper-evident Coin ledger. A single verified advert double grants **10 additional Coins**, for **20 Coins** total. The old client-facing `30/60 Stars` result path has been replaced with Coin copy and Coin progress records.

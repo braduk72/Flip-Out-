@@ -19,9 +19,13 @@ const objectiveLabel = objective => objective.type === 'score'
     ? `Collect ${objective.target} ${TOKEN.get(objective.token)?.label}`
     : objective.type === 'blockers' ? `Clear ${objective.target} blocker layers` : `Drop ${objective.target} objects`
 
-export default function Match3({ onBack }) {
-  const [view, setView] = useState('map')
-  const [selectedLevel, setSelectedLevel] = useState(1)
+export default function Match3({ onBack, initialLevel = null }) {
+  const requestedInitialLevel = useMemo(() => {
+    const requested = Number(initialLevel)
+    return MATCH3_LEVELS.some(level => level.id === requested) ? requested : null
+  }, [initialLevel])
+  const [view, setView] = useState(() => requestedInitialLevel ? 'brief' : 'map')
+  const [selectedLevel, setSelectedLevel] = useState(() => requestedInitialLevel ?? 1)
   const [session, setSession] = useState(null)
   const [progress, setProgress] = useState(loadMatch3Progress)
   const [busy, setBusy] = useState(false)
@@ -38,6 +42,10 @@ export default function Match3({ onBack }) {
       const saved = { highestUnlockedLevel: Number(data.progress?.highest_unlocked_level ?? 1), completedLevels: data.progress?.completed_levels ?? {} }
       setProgress(saved)
       saveMatch3Progress(saved)
+      if (requestedInitialLevel) {
+        saveMatch3Resume(null)
+        return
+      }
       if (data.resume) {
         setSession(data.resume)
         setSelectedLevel(data.resume.levelId)
@@ -45,7 +53,7 @@ export default function Match3({ onBack }) {
       }
     }).catch(() => {
       const resume = loadMatch3Resume()
-      if (resume) {
+      if (resume && !requestedInitialLevel) {
         setSession(resume)
         setSelectedLevel(resume.levelId)
         setView('game')
@@ -55,7 +63,7 @@ export default function Match3({ onBack }) {
       live = false
       clearTimeout(presentationTimer.current)
     }
-  }, [])
+  }, [requestedInitialLevel])
 
   useEffect(() => {
     const settle = () => {

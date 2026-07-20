@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import DevToolkit from '../src/screens/DevToolkit.jsx'
 
@@ -13,9 +13,19 @@ vi.mock('../src/utils/gameApi.js', () => ({
 
 const payload = {
   state: {
+    profile: { player_id: 'player-one', display_name: 'BradSC', account_kind: 'guest', selected_avatar_id: 'star' },
     balances: [{ currency_id: 'stars', balance: 120 }, { currency_id: 'coins', balance: 50 }],
     inventory: [{ item_id: 'card:cats:1', quantity: 1 }],
     inventoryCapacity: { used: 1, capacity: 500 },
+    transactions: [],
+    themeAlbums: { entries: [] },
+    personalAlbums: { albums: [] },
+  },
+  dev: {
+    match3: { highest_unlocked_level: 1, completed_levels: {} },
+    coinLedger: [],
+    exchange: [],
+    featureFlags: [],
   },
   catalogue: {
     themes: [{ id: 'cats', name: 'Cats', cardCount: 70, coverAsset: '/images/cards/cats/back.webp' }],
@@ -23,6 +33,8 @@ const payload = {
     unsupported: {
       foilCards: 'Prepared only: no authoritative Foil item definitions exist yet.',
       achievements: 'Prepared only: no achievement persistence tables exist yet.',
+      boosters: 'Prepared only: no secure booster ownership/receipt table exists yet.',
+      rewardTheatre: 'Prepared only: reward presentation exists, but every-fifth-completion persistence is not live yet.',
     },
   },
 }
@@ -41,16 +53,39 @@ describe('Preview developer toolkit screen', () => {
     fireEvent.change(screen.getByLabelText('Developer secret'), { target: { value: 'preview-secret' } })
     fireEvent.click(screen.getByRole('button', { name: 'Unlock toolkit' }))
     await waitFor(() => expect(mockApi.devToolsState).toHaveBeenCalledWith('preview-secret'))
-    expect(await screen.findByText('120')).toBeInTheDocument()
-    expect(screen.getByText('Foils and achievements are not live yet')).toBeInTheDocument()
+    expect(await screen.findByText('BradSC')).toBeInTheDocument()
+    expect(screen.getByText('120')).toBeInTheDocument()
+    expect(within(screen.getByRole('navigation', { name: 'Admin toolkit pages' })).getByRole('button', { name: 'Match-3' })).toBeInTheDocument()
   })
 
   test('submits item grants through the Preview toolkit API', async () => {
     sessionStorage.setItem('fo_dev_toolkit_secret', 'preview-secret')
     render(<DevToolkit onBack={() => {}} navProps={{ active: 'more', onHome: () => {}, onCollection: () => {}, onRewards: () => {}, onMore: () => {} }} />)
-    expect(await screen.findByText('Grant Item')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Grant item' }))
+    await screen.findByText('BradSC')
+    fireEvent.click(within(screen.getByRole('navigation', { name: 'Admin toolkit pages' })).getByRole('button', { name: 'Collection' }))
+    expect(await screen.findByText('Grant any card')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Grant card' }))
     await waitFor(() => expect(mockApi.devTools).toHaveBeenCalledWith({ action: 'grant-item', itemId: 'card:cats:1', quantity: 1 }, 'preview-secret'))
-    expect(screen.getByRole('status')).toHaveTextContent('Preview toolkit action applied')
+    expect(screen.getByRole('status')).toHaveTextContent('Applied: grant-item')
+  })
+
+  test('opens a selected Match-3 level through the route callback', async () => {
+    const onJumpMatch3 = vi.fn()
+    sessionStorage.setItem('fo_dev_toolkit_secret', 'preview-secret')
+    render(<DevToolkit onBack={() => {}} onJumpMatch3={onJumpMatch3} navProps={{ active: 'more', onHome: () => {}, onCollection: () => {}, onRewards: () => {}, onMore: () => {} }} />)
+    await screen.findByText('BradSC')
+    fireEvent.click(within(screen.getByRole('navigation', { name: 'Admin toolkit pages' })).getByRole('button', { name: 'Match-3' }))
+    fireEvent.change(screen.getByLabelText('Level'), { target: { value: '8' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Open Match-3 level' }))
+    expect(onJumpMatch3).toHaveBeenCalledWith(8)
+  })
+
+  test('exposes exchange clearing without using the destructive reset endpoint', async () => {
+    sessionStorage.setItem('fo_dev_toolkit_secret', 'preview-secret')
+    render(<DevToolkit onBack={() => {}} navProps={{ active: 'more', onHome: () => {}, onCollection: () => {}, onRewards: () => {}, onMore: () => {} }} />)
+    await screen.findByText('BradSC')
+    fireEvent.click(within(screen.getByRole('navigation', { name: 'Admin toolkit pages' })).getByRole('button', { name: 'Exchange' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Clear listings + seed' }))
+    await waitFor(() => expect(mockApi.devTools).toHaveBeenCalledWith({ action: 'exchange-clear', includeSeed: true }, 'preview-secret'))
   })
 })

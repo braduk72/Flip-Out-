@@ -91,6 +91,7 @@ export default function App() {
   const [mode,       setMode]       = useState('vs')
   const [purchaseStatus, setPurchaseStatus] = useState(null) // null | 'verifying' | 'success' | 'error'
   const [purchaseResult, setPurchaseResult] = useState(null)
+  const [devMatch3Level, setDevMatch3Level] = useState(null)
 
   // Multiplayer
   const mp = useMultiplayer()
@@ -589,10 +590,10 @@ export default function App() {
   if (screen === 'luckyspin') {
     return <LuckySpin onBack={() => setScreen('shop')} navProps={navProps} />
   }
-  if (screen === 'match3') return <Match3 onBack={() => setScreen('home')} />
+  if (screen === 'match3') return <Match3 onBack={() => { setDevMatch3Level(null); setScreen('home') }} initialLevel={devMatch3Level} />
   if (screen === 'match3-token-review') return <Match3TokenReview onBack={() => { window.history.replaceState({}, '', window.location.pathname); setScreen('home') }} />
   if (screen === 'booster-opening-review') return <BoosterOpeningReview onBack={() => { window.history.replaceState({}, '', window.location.pathname); setScreen('home') }} />
-  if (screen === 'dev-toolkit') return <DevToolkit onBack={() => { window.history.replaceState({}, '', window.location.pathname); setScreen('home') }} navProps={navProps} />
+  if (screen === 'dev-toolkit') return <DevToolkit onBack={() => { window.history.replaceState({}, '', window.location.pathname); setScreen('home') }} navProps={navProps} onJumpMatch3={level => { setDevMatch3Level(level); window.history.replaceState({}, '', window.location.pathname); setScreen('match3') }} />
   if (screen === 'inventory') {
     return <Inventory onBack={() => setScreen('home')} navProps={navProps} />
   }
@@ -750,7 +751,7 @@ export default function App() {
       <p>{streakBest > 0 ? <>Your best streak is <strong>{streakBest}</strong>. Can you beat it?</> : <>You have not set a streak yet. Time to change that.</>}</p>
     </Modal>
     <Home
-      onMatch3={() => setScreen('match3')}
+      onMatch3={() => { setDevMatch3Level(null); setScreen('match3') }}
       onMemory={() => handlePlay(false)}
       onKnockout={handleKnockout}
       onOnline={handleOnline}
